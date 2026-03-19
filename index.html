@@ -139,11 +139,15 @@
 
                         <td v-for="col in columns" :key="col.id" class="border-b border-r border-gray-300 px-4 py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors">
                             <input
+                                :id="'input-' + row.id + '-' + col.id"
                                 v-if="col.type === 'text' || col.type === 'number'"
                                 v-model="row[col.id]"
-                                :type="col.type"
+                                type="text"
+                                :inputmode="col.type === 'number' ? 'decimal' : 'text'"
+                                @input="formatNumberInput(row, col)"
                                 class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
                                 :placeholder="col.type === 'number' ? '0' : '...'"
+                                @keydown="focusNextInput($event, row.id, col.id)"
                             >
                             <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ (((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))).toLocaleString() }}
@@ -246,11 +250,11 @@
         </div>
     </div>
 <script type="module">
-        import { createApp, ref, computed, watch } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, computed, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
-                "TY's Data Builder": "TY的資料生成器",
+                "TY's Data Builder": "TY的資料表計算器",
                 "My Dynamic Table": "我的動態表格",
                 "Enter table title...": "請輸入表格標題...",
                 "Column Name": "欄位名稱",
@@ -311,7 +315,7 @@
 
         const app = createApp({
             setup() {
-                const STORAGE_KEY = 'vue3-dynamic-table-i18n-v7'
+                const STORAGE_KEY = 'ty-db'
 
                 const tableTitle = ref('')
                 const columns = ref([])
@@ -349,11 +353,8 @@
                     });
                 };
 
-                // === 修改：加入 silent 參數，防止背景合併時跳出多餘的 Alert ===
                 const mergeDuplicates = (silent = false) => {
-                    // Vue 的 @click 預設會傳入 MouseEvent 物件，所以要嚴格比對是否為 true
                     const isSilent = silent === true;
-
                     const keyCol = columns.value.find(col => col.type === 'text');
                     if (!keyCol) {
                         if (!isSilent) alert(translate('Cannot find a text column to merge by.'));
@@ -437,7 +438,6 @@
                             return { ...row, id: Date.now() + mergeCounter }
                         })
 
-                        // === 新增：在此處安靜地呼叫自動合併 ===
                         mergeDuplicates(true);
 
                         setTimeout(() => alert(translate('Successfully loaded and merged data from the link!')), 100)
@@ -458,7 +458,6 @@
                     }
                 }
 
-                // 必須先定義完 mergeDuplicates 才能呼叫 loadData
                 loadData()
 
                 watch([tableTitle, columns, rows], () => {
@@ -510,10 +509,144 @@
                     newColLabel.value = ''; newColType.value = 'text'; formulaA.value = ''; formulaB.value = ''
                 }
 
-                const addRow = () => {
-                    const newRow = { id: Date.now(), remark: '', isExpanded: false }
-                    columns.value.forEach(col => { if (col.type !== 'multiply') newRow[col.id] = col.type === 'number' ? null : '' })
+                const addRow = async () => {
+                    const newRowId = Date.now()
+                    const newRow = { id: newRowId, remark: '', isExpanded: false }
+
+                    columns.value.forEach(col => {
+                        if (col.type !== 'multiply') newRow[col.id] = col.type === 'number' ? null : ''
+                    })
+
                     rows.value.push(newRow)
+
+                    await nextTick()
+
+                    const firstInputCol = columns.value.find(col => col.type === 'text')
+                    if (firstInputCol) {
+                        const targetInput = document.getElementById(`input-${newRowId}-${firstInputCol.id}`)
+                        if (targetInput) targetInput.focus()
+                    }
+                }
+
+                const formatNumberInput = (row, col) => {
+                    if (col.type === 'number' && row[col.id] != null) {
+                        let valStr = String(row[col.id])
+                        row[col.id] = valStr.replaceAll(/[^0-9.-]/g, '')
+                    }
+                }
+
+                const focusNextInput = async (event, rowId, colId) => {
+                    const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
+                    if (!allowedKeys.includes(event.key)) return
+
+                    const target = event.target
+                    const currentIndex = columns.value.findIndex(col => col.id === colId)
+                    const firstEditableColIndex = columns.value.findIndex(c => c.type === 'text' || c.type === 'number')
+
+                    if (event.key === 'Backspace') {
+                        if (currentIndex === firstEditableColIndex && target.value === '') {
+                            event.preventDefault()
+
+                            if (rows.value.length > 1) {
+                                const currentRowIndex = rows.value.findIndex(r => r.id === rowId)
+
+                                const focusRowId = currentRowIndex > 0
+                                    ? rows.value[currentRowIndex - 1].id
+                                    : rows.value[currentRowIndex + 1].id
+
+                                removeRow(rowId)
+
+                                await nextTick()
+
+                                const focusInput = document.getElementById(`input-${focusRowId}-${colId}`)
+                                if (focusInput) focusInput.focus()
+
+                            }
+                        }
+                        return;
+                    }
+
+                    let direction = 1
+                    let isHorizontal = false
+                    let isVertical = false
+                    let shouldMove = false
+
+                    if (event.key === 'ArrowLeft') {
+                        if (target.selectionStart > 0) return
+                        direction = -1
+                        isHorizontal = true
+                        shouldMove = true
+                    } else if (event.key === 'ArrowRight') {
+                        if (target.selectionEnd < target.value.length) return
+                        isHorizontal = true
+                        shouldMove = true
+                    } else if (event.key === 'Enter') {
+                        isHorizontal = true
+                        shouldMove = true
+                    } else if (event.key === 'ArrowUp') {
+                        direction = -1
+                        isVertical = true
+                        shouldMove = true
+                    } else if (event.key === 'ArrowDown') {
+                        isVertical = true
+                        shouldMove = true
+                    }
+
+                    if (!shouldMove) return
+
+                    event.preventDefault()
+
+                    if (isHorizontal) {
+                        let nextIndex = currentIndex
+
+                        for (const _ of columns.value) {
+                            nextIndex += direction
+
+                            if (nextIndex >= columns.value.length) {
+                                if (event.key === 'Enter') {
+                                    addRow();
+                                    setTimeout(() => {
+                                        const newRowId = rows.value[rows.value.length - 1].id
+                                        const firstCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
+                                        if (firstCol) {
+                                            const nextInput = document.getElementById(`input-${newRowId}-${firstCol.id}`)
+                                            if (nextInput) {
+                                                nextInput.focus()
+                                                nextInput.select()
+                                            }
+                                        }
+                                    }, 50)
+                                    return
+                                }
+                                nextIndex = 0
+                            } else if (nextIndex < 0) {
+                                nextIndex = columns.value.length - 1
+                            }
+
+                            const nextCol = columns.value[nextIndex];
+                            if (nextCol.type === 'text' || nextCol.type === 'number') {
+                                const nextInput = document.getElementById(`input-${rowId}-${nextCol.id}`)
+                                if (nextInput) {
+                                    nextInput.focus()
+                                    setTimeout(() => nextInput.select(), 10)
+                                }
+                                break
+                            }
+                        }
+                    }
+                    else if (isVertical) {
+                        const currentRowIndex = rows.value.findIndex(r => r.id === rowId)
+                        const nextRowIndex = currentRowIndex + direction
+
+                        if (nextRowIndex >= 0 && nextRowIndex < rows.value.length) {
+                            const nextRowId = rows.value[nextRowIndex].id
+                            const nextInput = document.getElementById(`input-${nextRowId}-${colId}`)
+                            if (nextInput) {
+                                nextInput.focus()
+                                setTimeout(() => nextInput.select(), 10)
+                            }
+                        }
+                    }
                 }
 
                 const removeColumn = (idToRemove) => {
@@ -620,7 +753,7 @@
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates
+                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput
                 }
             }
         });
