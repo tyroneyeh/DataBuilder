@@ -409,7 +409,7 @@
                     }
                 };
 
-                const loadData = () => {
+                const loadData = async () => {
                     let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
 
@@ -439,8 +439,8 @@
                         })
 
                         mergeDuplicates(true);
-
-                        setTimeout(() => alert(translate('Successfully loaded and merged data from the link!')), 100)
+                        await nextTick()
+                        alert(translate('Successfully loaded and merged data from the link!'))
 
                     } else if (localData.columns && localData.columns.length > 0) {
                         tableTitle.value = localData.title || translate('My Dynamic Table')
@@ -605,17 +605,16 @@
                             if (nextIndex >= columns.value.length) {
                                 if (event.key === 'Enter') {
                                     addRow();
-                                    setTimeout(() => {
-                                        const newRowId = rows.value[rows.value.length - 1].id
-                                        const firstCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
-                                        if (firstCol) {
-                                            const nextInput = document.getElementById(`input-${newRowId}-${firstCol.id}`)
-                                            if (nextInput) {
-                                                nextInput.focus()
-                                                nextInput.select()
-                                            }
+                                    await nextTick()
+                                    const newRowId = rows.value[rows.value.length - 1].id
+                                    const firstCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
+                                    if (firstCol) {
+                                        const nextInput = document.getElementById(`input-${newRowId}-${firstCol.id}`)
+                                        if (nextInput) {
+                                            nextInput.focus()
+                                            nextInput.select()
                                         }
-                                    }, 50)
+                                    }
                                     return
                                 }
                                 nextIndex = 0
@@ -628,7 +627,8 @@
                                 const nextInput = document.getElementById(`input-${rowId}-${nextCol.id}`)
                                 if (nextInput) {
                                     nextInput.focus()
-                                    setTimeout(() => nextInput.select(), 10)
+                                    await nextTick()
+                                    nextInput.select()
                                 }
                                 break
                             }
@@ -643,7 +643,8 @@
                             const nextInput = document.getElementById(`input-${nextRowId}-${colId}`)
                             if (nextInput) {
                                 nextInput.focus()
-                                setTimeout(() => nextInput.select(), 10)
+                                await nextTick()
+                                nextInput.select()
                             }
                         }
                     }
