@@ -88,7 +88,7 @@
                 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
             >
         </div>
-        <div class="overflow-x-auto mb-6 border border-gray-300 rounded shadow-sm hide-scrollbar print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch;">
+        <div class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
             <table class="w-full border-collapse relative print:w-full">
                 <thead class="bg-gray-100 print:bg-gray-100">
                     <tr>
@@ -199,18 +199,20 @@
                     </tr>
                 </tbody>
 
-                <tfoot class="bg-gray-100 font-semibold text-gray-700 print:bg-gray-100 print:border-t-2 print:border-gray-800">
+                <tfoot class="font-semibold text-gray-700 print:bg-gray-100 print:border-t-2 print:border-gray-800">
                     <tr>
-                        <td class="sticky left-0 z-10 print:static bg-gray-200 print:bg-gray-100 border-r border-gray-300 px-4 py-3 text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none">{{ translate('Total') }}</td>
+                        <td class="sticky bottom-0 left-0 z-20 print:static bg-gray-200 print:bg-gray-100 border-t-2 border-r border-gray-300 px-4 py-3 text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none">{{ translate('Total') }}</td>
 
-                        <td v-for="col in columns" :key="'total-' + col.id" class="border-r border-gray-300 px-4 py-3 bg-gray-100 print:bg-transparent" :class="col.type === 'multiply' ? 'text-right' : 'text-left'">
+                        <td v-for="col in columns" :key="'total-' + col.id"
+                            class="sticky bottom-0 z-10 border-t-2 border-r border-gray-300 px-4 py-3 bg-gray-100 print:bg-transparent print:static"
+                            :class="col.type === 'multiply' ? 'text-right' : 'text-left'">
                             <span v-if="col.type === 'number' || col.type === 'multiply'" class="text-blue-700 print:text-black text-lg print:text-base font-bold">
                                 {{ Number(columnTotals[col.id]).toLocaleString() }}
                             </span>
                             <span v-else class="text-gray-400 print:text-gray-500">-</span>
                         </td>
 
-                        <td class="px-4 py-3 bg-gray-100 print:hidden"></td>
+                        <td class="sticky bottom-0 z-10 border-t-2 border-gray-300 px-4 py-3 bg-gray-100 print:hidden"></td>
                     </tr>
                 </tfoot>
             </table>
