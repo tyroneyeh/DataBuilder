@@ -103,7 +103,7 @@
                             @drop="onDrop($event, index)"
                             @dragend="onDragEnd"
                             :class="[
-                                'sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab active:cursor-grabbing transition-colors min-w-[140px] print:min-w-0 bg-gray-100 print:bg-gray-100',
+                                'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab active:cursor-grabbing transition-colors min-w-[140px] print:min-w-0 bg-gray-100 print:bg-gray-100',
                                 dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600'
                             ]">
 
