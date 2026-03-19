@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue 3 + Tailwind 動態表格 (含公式計算)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="mx-auto bg-white rounded-lg shadow-md" v-cloak>
+
+        <div class="mb-6 flex items-start justify-between bg-gray-50 p-4 rounded-md border border-gray-200">
+            <div class="flex flex-wrap items-end gap-4">
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-600 mb-1">欄位名稱</label>
+                    <input v-model="newColLabel" type="text" placeholder="例如：小計、總價" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-40">
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="text-sm text-gray-600 mb-1">資料類型</label>
+                    <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="text">文字 (Text)</option>
+                        <option value="number">數字 (Number)</option>
+                        <option value="multiply">乘法計算 (A × B)</option>
+                    </select>
+                </div>
+
+                <div v-if="newColType === 'multiply'" class="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200">
+                    <select v-model="formulaA" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-32">
+                        <option value="" disabled>選擇數字欄位 A</option>
+                        <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
+                    </select>
+                    <span class="text-gray-500 font-bold">×</span>
+                    <select v-model="formulaB" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm w-32">
+                        <option value="" disabled>選擇數字欄位 B</option>
+                        <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col justify-end">
+                    <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm">
+                        新增欄位
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <button @click="clearStorage" class="text-sm text-gray-400 hover:text-red-500 underline transition-colors">
+                    清除所有資料
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto mb-6">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border border-gray-300 px-4 py-3 w-16 text-center text-gray-600 font-semibold">#</th>
+
+                        <th v-for="(col, index) in columns" :key="col.id"
+                            draggable="true"
+                            @dragstart="onDragStart($event, index)"
+                            @dragover.prevent="onDragOver($event, index)"
+                            @dragenter.prevent="onDragEnter($event, index)"
+                            @dragleave="onDragLeave($event, index)"
+                            @drop="onDrop($event, index)"
+                            @dragend="onDragEnd"
+                            :class="[
+                                'relative group border border-gray-300 px-4 py-3 text-left font-semibold pr-8 cursor-grab active:cursor-grabbing transition-colors',
+                                dragOverIndex === index ? 'bg-blue-100 border-blue-400' : 'text-gray-600'
+                            ]">
+
+                            <span class="text-gray-300 mr-1 text-xs select-none">⋮⋮</span>
+
+                            {{ col.label }}
+
+                            <span v-if="col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none">(計算)</span>
+                            <span v-else class="text-xs text-gray-400 font-normal ml-1 select-none">({{ col.type === 'number' ? '數字' : '文字' }})</span>
+
+                            <button @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="刪除此欄位">
+                                ✖
+                            </button>
+                        </th>
+
+                        <th class="border border-gray-300 px-4 py-3 w-20 text-center text-gray-600 font-semibold">操作</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="(row, index) in rows" :key="row.id" class="hover:bg-gray-50 transition-colors group">
+                        <td class="border border-gray-300 px-4 py-2 text-center text-gray-500 bg-gray-50 font-medium">
+                            {{ index + 1 }}
+                        </td>
+
+                        <td v-for="col in columns" :key="col.id" class="border border-gray-300 px-4 py-2">
+                            <input
+                                v-if="col.type === 'text' || col.type === 'number'"
+                                v-model="row[col.id]"
+                                :type="col.type"
+                                class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-1"
+                                :placeholder="col.type === 'number' ? '0' : '輸入...'"
+                            >
+                            <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-1 text-blue-700 font-semibold bg-blue-50/50 rounded text-right">
+                                {{ (((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))).toLocaleString() }}
+                            </div>
+                        </td>
+
+                        <td class="border border-gray-300 px-4 py-2 text-center bg-gray-50">
+                            <button @click="removeRow(row.id)" class="text-sm text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded transition-colors">
+                                刪除
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td @click="addRow" class="border border-gray-300 px-4 py-3 text-center cursor-pointer bg-green-50 hover:bg-green-100 transition-colors group" title="點擊新增一列">
+                            <span class="text-green-600 font-bold text-xl group-hover:scale-125 inline-block transition-transform">+</span>
+                        </td>
+                        <td :colspan="columns.length + 1" class="border border-gray-300 bg-gray-50">
+                            <span class="text-sm text-gray-400 pl-4">← 點擊左側 + 新增資料列</span>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tfoot class="bg-blue-50 font-semibold text-gray-700">
+                    <tr>
+                        <td class="border border-gray-300 px-4 py-3 text-center">總計</td>
+
+                        <td v-for="col in columns" :key="'total-' + col.id" class="border border-gray-300 px-4 py-3" :class="col.type === 'multiply' ? 'text-right' : 'text-left'">
+                            <span v-if="col.type === 'number' || col.type === 'multiply'" class="text-blue-700">
+                                {{ Number(columnTotals[col.id]).toLocaleString() }}
+                            </span>
+                            <span v-else class="text-gray-400">-</span>
+                        </td>
+
+                        <td class="border border-gray-300 px-4 py-3 bg-gray-100"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="flex flex-col gap-4 border-t border-gray-200 pt-6">
+            <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm self-start">
+                輸出成 JSON
+            </button>
+
+            <div v-if="outputJson" class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner">
+                <pre class="text-sm font-mono whitespace-pre-wrap"><code>{{ outputJson }}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createApp, ref, computed, watch } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+        createApp({
+            setup() {
+                const STORAGE_KEY = 'vue3-dynamic-table-data'
+
+                const columns = ref([])
+                const rows = ref([])
+
+                const newColLabel = ref('')
+                const newColType = ref('text')
+                const formulaA = ref('')
+                const formulaB = ref('')
+                const outputJson = ref('')
+
+                const draggedIndex = ref(null)
+                const dragOverIndex = ref(null)
+
+                const numberColumns = computed(() => {
+                    return columns.value.filter(col => col.type === 'number')
+                })
+
+                const loadData = () => {
+                    const savedData = localStorage.getItem(STORAGE_KEY)
+                    if (savedData) {
+                        try {
+                            const parsed = JSON.parse(savedData)
+                            columns.value = parsed.columns || []
+                            rows.value = parsed.rows || []
+                        } catch (e) {
+                            console.error('資料讀取失敗', e)
+                        }
+                    }
+
+                    if (columns.value.length === 0) {
+                        columns.value = [
+                            { id: 'col_1', label: '品項', type: 'text' },
+                            { id: 'col_2', label: '單價', type: 'number' },
+                            { id: 'col_3', label: '數量', type: 'number' },
+                            { id: 'col_4', label: '小計', type: 'multiply', opA: 'col_2', opB: 'col_3' }
+                        ]
+                        rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null }]
+                    }
+                }
+                loadData()
+
+                watch([columns, rows], () => {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        columns: columns.value,
+                        rows: rows.value
+                    }))
+                }, { deep: true })
+
+                watch(newColType, (newVal) => {
+                    if (newVal !== 'multiply') {
+                        formulaA.value = ''
+                        formulaB.value = ''
+                    }
+                })
+
+                const clearStorage = () => {
+                    if(confirm('確定要清除所有欄位與資料嗎？這將會恢復為初始狀態。')) {
+                        localStorage.removeItem(STORAGE_KEY)
+                        location.reload()
+                    }
+                }
+
+                const columnTotals = computed(() => {
+                    const totals = {}
+                    columns.value.forEach(col => {
+                        if (col.type === 'number') {
+                            totals[col.id] = rows.value.reduce((sum, row) => sum + (parseFloat(row[col.id]) || 0), 0)
+                        } else if (col.type === 'multiply') {
+                            totals[col.id] = rows.value.reduce((sum, row) => {
+                                const a = parseFloat(row[col.opA]) || 0
+                                const b = parseFloat(row[col.opB]) || 0
+                                return sum + (a * b)
+                            }, 0)
+                        } else {
+                            totals[col.id] = '-'
+                        }
+                    })
+                    return totals
+                })
+
+                const onDragStart = (e, index) => { draggedIndex.value = index; e.dataTransfer.effectAllowed = 'move' }
+                const onDragOver = (e, index) => { dragOverIndex.value = index }
+                const onDragEnter = (e, index) => { dragOverIndex.value = index }
+                const onDragLeave = (e, index) => { if (dragOverIndex.value === index) dragOverIndex.value = null }
+                const onDrop = (e, index) => {
+                    const from = draggedIndex.value
+                    const to = index
+                    if (from !== null && from !== to) {
+                        const movedCol = columns.value.splice(from, 1)[0]
+                        columns.value.splice(to, 0, movedCol)
+                    }
+                    dragOverIndex.value = null
+                    draggedIndex.value = null
+                }
+                const onDragEnd = () => { dragOverIndex.value = null; draggedIndex.value = null }
+
+                const addColumn = () => {
+                    if (!newColLabel.value.trim()) {
+                        alert('請輸入欄位名稱！')
+                        return
+                    }
+
+                    if (newColType.value === 'multiply') {
+                        if (!formulaA.value || !formulaB.value) {
+                            alert('請選擇要相乘的兩個數字欄位 A 與 B！')
+                            return
+                        }
+                        if (formulaA.value === formulaB.value) {
+                            alert('來源欄位 A 和 B 不能是同一個！')
+                            return
+                        }
+                    }
+
+                    const newColId = 'col_' + Date.now()
+
+                    const newColData = {
+                        id: newColId,
+                        label: newColLabel.value.trim(),
+                        type: newColType.value
+                    }
+
+                    if (newColType.value === 'multiply') {
+                        newColData.opA = formulaA.value
+                        newColData.opB = formulaB.value
+                    }
+
+                    columns.value.push(newColData)
+
+                    rows.value.forEach(row => {
+                        if (newColType.value !== 'multiply') {
+                            row[newColId] = newColType.value === 'number' ? null : ''
+                        }
+                    })
+
+                    newColLabel.value = ''
+                    newColType.value = 'text'
+                    formulaA.value = ''
+                    formulaB.value = ''
+                }
+
+                const addRow = () => {
+                    const newRow = { id: Date.now() }
+                    columns.value.forEach(col => {
+                        if (col.type !== 'multiply') {
+                            newRow[col.id] = col.type === 'number' ? null : ''
+                        }
+                    })
+                    rows.value.push(newRow)
+                }
+
+                const removeColumn = (idToRemove) => {
+                    const isDependent = columns.value.some(col => col.type === 'multiply' && (col.opA === idToRemove || col.opB === idToRemove))
+                    if (isDependent) {
+                        alert('無法刪除！有其他的「計算欄位」正在使用此欄位，請先刪除該計算欄位。')
+                        return
+                    }
+
+                    columns.value = columns.value.filter(col => col.id !== idToRemove)
+                    rows.value.forEach(row => delete row[idToRemove])
+                }
+
+                const removeRow = (idToRemove) => {
+                    rows.value = rows.value.filter(row => row.id !== idToRemove)
+                }
+
+                const exportJson = () => {
+                    const cleanData = rows.value.map(row => {
+                        const cleanRow = {}
+                        columns.value.forEach(col => {
+                            if (col.type === 'number') {
+                                cleanRow[col.label] = row[col.id] ? parseFloat(row[col.id]) : 0
+                            } else if (col.type === 'multiply') {
+                                const a = parseFloat(row[col.opA]) || 0
+                                const b = parseFloat(row[col.opB]) || 0
+                                cleanRow[col.label] = a * b
+                            } else {
+                                cleanRow[col.label] = row[col.id] || ''
+                            }
+                        })
+                        return cleanRow
+                    })
+
+                    outputJson.value = JSON.stringify(cleanData, null, 2)
+                }
+
+                return {
+                    columns,
+                    rows,
+                    newColLabel,
+                    newColType,
+                    formulaA,
+                    formulaB,
+                    numberColumns,
+                    outputJson,
+                    columnTotals,
+
+                    dragOverIndex,
+                    onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
+
+                    addColumn, addRow, removeColumn, removeRow, exportJson, clearStorage
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
