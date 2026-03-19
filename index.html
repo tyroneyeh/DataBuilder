@@ -107,7 +107,7 @@
                                 dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600'
                             ]">
 
-                            <span class="text-gray-400 mr-1 text-xs select-none print:hidden">⋮⋮</span>
+                            <span class="text-gray-400 mr-1 text-xs select-none print:hidden">⋮</span>
                             {{ col.label }}
 
                             <span v-if="col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('(Calc)') }}</span>
@@ -133,7 +133,7 @@
                         @dragend="onRowDragEnd"
                     >
                         <td class="sticky left-0 z-10 print:static bg-gray-50 print:bg-transparent border-b border-r border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:cursor-grabbing print:cursor-auto">
-                            <span class="text-gray-300 mr-1 text-xs select-none print:hidden">⋮⋮</span>
+                            <span class="text-gray-300 mr-1 text-xs select-none print:hidden">⋮</span>
                             {{ index + 1 }}
                         </td>
 
@@ -212,7 +212,9 @@
             </table>
         </div>
 
-        <div class="flex flex-col pb-6 gap-4 print:hidden">
+        <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">&copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a></footer>
+
+        <div class="flex flex-col ps-2 pb-2 gap-4 print:hidden">
             <div class="flex flex-wrap gap-3">
                 <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
                     {{ translate('{ } Export JSON') }}
