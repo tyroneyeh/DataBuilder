@@ -243,8 +243,7 @@
             </div>
         </div>
     </div>
-
-    <script type="module">
+<script type="module">
         import { createApp, ref, computed, watch } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js'
 
         const translations = {
@@ -268,6 +267,7 @@
                 "Price": "單價",
                 "Quantity": "數量",
                 "Subtotal": "小計",
+                "Note": "備註",
                 "📝 Note": "📝 備註",
                 "📝 Note (*)": "📝 有備註",
                 "Delete": "刪除",
@@ -285,7 +285,7 @@
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
                 "Source columns cannot be the same!": "來源欄位不能相同！",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
-                "Successfully loaded and merged data from the link!": "已成功載入並合併來自連結的資料！",
+                "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！", // <- 稍微修改了提示文字
                 "Share link generated and copied to clipboard!": "分享連結已產生並複製到剪貼簿！",
                 "Failed to generate link.": "產生連結失敗，可能資料包含無法轉碼的特殊字元。",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
@@ -347,16 +347,17 @@
                     });
                 };
 
-                // === 新增：合併相同品項功能 ===
-                const mergeDuplicates = () => {
-                    // 自動尋找第一個 text 類型的欄位作為「主鍵 (Primary Key)」
+                // === 修改：加入 silent 參數，防止背景合併時跳出多餘的 Alert ===
+                const mergeDuplicates = (silent = false) => {
+                    // Vue 的 @click 預設會傳入 MouseEvent 物件，所以要嚴格比對是否為 true
+                    const isSilent = silent === true;
+
                     const keyCol = columns.value.find(col => col.type === 'text');
                     if (!keyCol) {
-                        alert(translate('Cannot find a text column to merge by.'));
+                        if (!isSilent) alert(translate('Cannot find a text column to merge by.'));
                         return;
                     }
 
-                    // 防呆：辨識名稱包含「價」或「Price」的欄位，避免把單價相加
                     const priceKeywords = ['price', '單價', '價'];
                     const isPriceCol = (colLabel) => {
                         const lowerLabel = colLabel.toLowerCase();
@@ -368,14 +369,9 @@
                     rows.value.forEach(row => {
                         const keyValue = String(row[keyCol.id] || '').trim();
 
-                        if (!mergedMap.has(keyValue)) {
-                            // 第一次遇到的品項，深拷貝存入 Map
-                            mergedMap.set(keyValue, { ...row });
-                        } else {
-                            // 遇到相同的品項，進行合併
+                        if (mergedMap.has(keyValue)) {
                             const existingRow = mergedMap.get(keyValue);
 
-                            // 1. 數字欄位相加 (排除單價)
                             columns.value.forEach(col => {
                                 if (col.type === 'number' && !isPriceCol(col.label)) {
                                     const val1 = parseFloat(existingRow[col.id]) || 0;
@@ -384,29 +380,30 @@
                                 }
                             });
 
-                            // 2. 備註相加 (用空一格串接)
                             const currentRemark = (existingRow.remark || '').trim();
                             const incomingRemark = (row.remark || '').trim();
                             if (incomingRemark !== '') {
-                                if (currentRemark !== '') {
-                                    existingRow.remark = currentRemark + ' ' + incomingRemark;
-                                } else {
+                                if (currentRemark === '') {
                                     existingRow.remark = incomingRemark;
+                                } else {
+                                    existingRow.remark = currentRemark + ' ' + incomingRemark;
                                 }
-                                // 有合併備註時自動展開，方便確認
                                 existingRow.isExpanded = true;
                             }
+                        } else {
+                            mergedMap.set(keyValue, { ...row });
                         }
                     });
 
-                    // 重新賦予合併後的資料，並給予新的 ID 確保 Vue 渲染正常
                     let mergeCounter = 0;
                     rows.value = Array.from(mergedMap.values()).map(r => {
                         mergeCounter++;
                         return { ...r, id: Date.now() + mergeCounter };
                     });
 
-                    alert(translate('Items merged successfully!'));
+                    if (!isSilent) {
+                        alert(translate('Items merged successfully!'));
+                    }
                 };
 
                 const loadData = () => {
@@ -437,6 +434,10 @@
                             mergeCounter++
                             return { ...row, id: Date.now() + mergeCounter }
                         })
+
+                        // === 新增：在此處安靜地呼叫自動合併 ===
+                        mergeDuplicates(true);
+
                         setTimeout(() => alert(translate('Successfully loaded and merged data from the link!')), 100)
 
                     } else if (localData.columns && localData.columns.length > 0) {
@@ -454,6 +455,8 @@
                         rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
                 }
+
+                // 必須先定義完 mergeDuplicates 才能呼叫 loadData
                 loadData()
 
                 watch([tableTitle, columns, rows], () => {
@@ -554,7 +557,7 @@
                             else if (col.type === 'multiply') cleanRow[col.label] = (parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)
                             else cleanRow[col.label] = row[col.id] || ''
                         })
-                        if (row.remark && row.remark.trim() !== '') cleanRow['_remark'] = row.remark.trim()
+                        if (row.remark && row.remark.trim() !== '') cleanRow[translate('Note')] = row.remark.trim()
                         return cleanRow
                     })
                     outputJson.value = JSON.stringify({ title: tableTitle.value, data: cleanData }, null, 2)
