@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <style>
-        [v-clark] { display: none; }
+        [v-cloak] { display: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -19,10 +19,10 @@
         }
     </style>
 </head>
-<body class="print:bg-white print:p-0">
-    <div id="app" class="mx-auto bg-white px-2 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
+<body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
+    <div id="app" class="mx-auto bg-white rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
 
-        <div class="relative mb-2">
+        <div class="relative">
             <div class="absolute top-0 right-0 print:hidden z-10">
                 <select v-model="currentLanguage" class="border border-gray-300 px-2 py-1 rounded text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
                     <option value="en">English</option>
@@ -32,8 +32,8 @@
 
         </div>
 
-        <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 p-2 rounded-md border border-gray-200 gap-4 print:hidden">
-            <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-4 w-full">
+        <div class=" flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 p-4 rounded-md border border-gray-200 gap-4 print:hidden">
+            <div class="flex flex-col sm:flex-row flex-wrap items-start sm:items-end gap-4">
                 <div class="flex flex-col w-full sm:w-auto">
                     <label class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</label>
                     <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base">
@@ -61,13 +61,16 @@
                 </div>
 
                 <div class="flex flex-col justify-end w-full sm:w-auto mt-2 sm:mt-0">
-                    <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full">
+                    <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full">
                         {{ translate('Add Column') }}
                     </button>
                 </div>
             </div>
 
-            <div class="w-full sm:w-auto text-right sm:text-left flex justify-end sm:justify-start gap-1">
+            <div class="w-full sm:w-auto text-right sm:text-left flex flex-wrap justify-end sm:justify-start gap-1">
+                <button @click="mergeDuplicates" class="text-sm text-emerald-600 hover:text-emerald-800 underline transition-colors p-2 whitespace-nowrap">
+                    {{ translate('Merge Duplicates') }}
+                </button>
                 <button @click="toggleAllNotes" class="text-sm text-blue-500 hover:text-blue-700 underline transition-colors p-2 whitespace-nowrap">
                     {{ areAllExpanded ? translate('Collapse All Notes') : translate('Expand All Notes') }}
                 </button>
@@ -82,10 +85,10 @@
                 v-model="tableTitle"
                 type="text"
                 :placeholder="translate('Enter table title...')"
-                class="text-xl sm:text-2xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors w-full print:text-black print:border-none"
+                class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
             >
         </div>
-        <div class="overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-x-auto mb-6 border border-gray-300 rounded shadow-sm hide-scrollbar print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch;">
             <table class="w-full border-collapse relative print:w-full">
                 <thead class="bg-gray-100 print:bg-gray-100">
                     <tr>
@@ -209,18 +212,18 @@
             </table>
         </div>
 
-        <div class="flex flex-col pb-2 gap-4 print:hidden">
+        <div class="flex flex-col pb-6 gap-4 print:hidden">
             <div class="flex flex-wrap gap-3">
-                <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
+                <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
                     {{ translate('{ } Export JSON') }}
                 </button>
-                <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
+                <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
                     {{ translate('📥 Export CSV') }}
                 </button>
-                <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+                <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
                     {{ translate('🔗 Share Link & QRCode') }}
                 </button>
-                <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">
+                <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">
                     {{ translate('🖨️ Print') }}
                 </button>
             </div>
@@ -228,7 +231,7 @@
             <div v-if="shareLink" class="bg-indigo-50 p-4 sm:p-6 rounded-lg border border-indigo-200 shadow-inner flex flex-col items-center gap-4 mt-2">
                 <div class="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 text-center">
                     <span class="text-sm text-gray-500 mb-3 font-semibold" v-html="translate('Scan the QRCode below to load data<br>(Ideal for mobile)')"></span>
-                    <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class=" pointer-events-none">
+                    <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class="pointer-events-none">
                 </div>
                 <div class="text-indigo-700 text-xs sm:text-sm break-all w-full bg-white p-3 rounded shadow-sm border border-indigo-100">
                     <span class="font-bold mr-2 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>{{ shareLink }}
@@ -287,7 +290,10 @@
                 "Failed to generate link.": "產生連結失敗，可能資料包含無法轉碼的特殊字元。",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
                 "Expand All Notes": "展開全部備註",
-                "Collapse All Notes": "隱藏全部備註"
+                "Collapse All Notes": "隱藏全部備註",
+                "Merge Duplicates": "合併相同品項",
+                "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
+                "Items merged successfully!": "相同品項已成功合併！"
             }
         };
 
@@ -303,7 +309,7 @@
 
         const app = createApp({
             setup() {
-                const STORAGE_KEY = 'vue3-dynamic-table-i18n-v6'
+                const STORAGE_KEY = 'vue3-dynamic-table-i18n-v7'
 
                 const tableTitle = ref('')
                 const columns = ref([])
@@ -323,7 +329,6 @@
                 const draggedRowIndex = ref(null)
                 const dragOverRowIndex = ref(null)
 
-                // === 新增：動態更新網頁標籤 <title> ===
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`;
                 }, { immediate: true });
@@ -340,6 +345,68 @@
                     rows.value.forEach(row => {
                         row.isExpanded = newState;
                     });
+                };
+
+                // === 新增：合併相同品項功能 ===
+                const mergeDuplicates = () => {
+                    // 自動尋找第一個 text 類型的欄位作為「主鍵 (Primary Key)」
+                    const keyCol = columns.value.find(col => col.type === 'text');
+                    if (!keyCol) {
+                        alert(translate('Cannot find a text column to merge by.'));
+                        return;
+                    }
+
+                    // 防呆：辨識名稱包含「價」或「Price」的欄位，避免把單價相加
+                    const priceKeywords = ['price', '單價', '價'];
+                    const isPriceCol = (colLabel) => {
+                        const lowerLabel = colLabel.toLowerCase();
+                        return priceKeywords.some(kw => lowerLabel.includes(kw));
+                    };
+
+                    const mergedMap = new Map();
+
+                    rows.value.forEach(row => {
+                        const keyValue = String(row[keyCol.id] || '').trim();
+
+                        if (!mergedMap.has(keyValue)) {
+                            // 第一次遇到的品項，深拷貝存入 Map
+                            mergedMap.set(keyValue, { ...row });
+                        } else {
+                            // 遇到相同的品項，進行合併
+                            const existingRow = mergedMap.get(keyValue);
+
+                            // 1. 數字欄位相加 (排除單價)
+                            columns.value.forEach(col => {
+                                if (col.type === 'number' && !isPriceCol(col.label)) {
+                                    const val1 = parseFloat(existingRow[col.id]) || 0;
+                                    const val2 = parseFloat(row[col.id]) || 0;
+                                    existingRow[col.id] = val1 + val2;
+                                }
+                            });
+
+                            // 2. 備註相加 (用空一格串接)
+                            const currentRemark = (existingRow.remark || '').trim();
+                            const incomingRemark = (row.remark || '').trim();
+                            if (incomingRemark !== '') {
+                                if (currentRemark !== '') {
+                                    existingRow.remark = currentRemark + ' ' + incomingRemark;
+                                } else {
+                                    existingRow.remark = incomingRemark;
+                                }
+                                // 有合併備註時自動展開，方便確認
+                                existingRow.isExpanded = true;
+                            }
+                        }
+                    });
+
+                    // 重新賦予合併後的資料，並給予新的 ID 確保 Vue 渲染正常
+                    let mergeCounter = 0;
+                    rows.value = Array.from(mergedMap.values()).map(r => {
+                        mergeCounter++;
+                        return { ...r, id: Date.now() + mergeCounter };
+                    });
+
+                    alert(translate('Items merged successfully!'));
                 };
 
                 const loadData = () => {
@@ -548,7 +615,7 @@
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes
+                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates
                 }
             }
         });
