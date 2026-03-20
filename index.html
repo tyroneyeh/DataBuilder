@@ -763,7 +763,7 @@
                     }
 
                     let csvContent = ""
-                    const headers = ['#', ...columns.value.map(c => c.label), translate('📝 Note')]
+                    const headers = ['#', ...columns.value.map(c => c.label), translate('Note')]
                     csvContent += headers.map(escapeCsv).join(',') + '\n'
 
                     rows.value.forEach((row, idx) => {
@@ -825,9 +825,46 @@
                 }
 
                 let dragCounter = 0
-                const handleDragEnter = (e) => { e.preventDefault(); dragCounter++; isDragging.value = true; }
-                const handleDragLeave = (e) => { e.preventDefault(); dragCounter--; if (dragCounter === 0) isDragging.value = false; }
-                const handleDragOver = (e) => { e.preventDefault(); }
+                const hasFiles = (e) => {
+                    return e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')
+                }
+
+                const handleDragEnter = (e) => {
+                    if (!hasFiles(e)) return
+                    e.preventDefault()
+                    dragCounter++
+                    isDragging.value = true
+                }
+
+                const handleDragLeave = (e) => {
+                    if (!hasFiles(e)) return
+                    e.preventDefault()
+                    dragCounter--
+                    if (dragCounter <= 0) {
+                        dragCounter = 0
+                        isDragging.value = false
+                    }
+                }
+
+                const handleDragOver = (e) => {
+                    if (!hasFiles(e)) return
+                    e.preventDefault()
+                }
+
+                const handleDrop = async (e) => {
+                    if (!hasFiles(e)) return
+                    e.preventDefault()
+                    dragCounter = 0
+                    isDragging.value = false
+
+                    const file = e.dataTransfer.files[0]
+                    if (!file) return
+
+                    if (file.type.includes('csv') || file.type.includes('json') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+                        const text = await file.text()
+                        processImportText(text)
+                    }
+                }
 
                 const processImportText = (rawText) => {
                     let dataList = []
@@ -871,7 +908,7 @@
 
                     allKeys.forEach(key => {
                         if (ignoreKeys.includes(key)) return
-                        if (key === translate('📝 Note') || key === '_remark') return
+                        if (key === translate('Note')) return
 
                         let existingCol = columns.value.find(c => c.label === key)
                         if (!existingCol) {
@@ -898,7 +935,7 @@
                             }
                         })
 
-                        const noteKey = Object.keys(item).find(k => k === translate('📝 Note') || k === '_remark')
+                        const noteKey = Object.keys(item).find(k => k === translate('Note'))
                         if (noteKey && item[noteKey]) {
                             newRow.remark = item[noteKey]
                             newRow.isExpanded = true
@@ -908,19 +945,6 @@
                     })
 
                     if (addCount > 0) alert(`${translate('Imported items successfully!')} (${addCount})`)
-                }
-
-                const handleDrop = async (e) => {
-                    e.preventDefault()
-                    dragCounter = 0
-                    isDragging.value = false
-                    const file = e.dataTransfer.files[0]
-                    if (!file) return
-
-                    if (file.type.includes('csv') || file.type.includes('json') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
-                        const text = await file.text()
-                        processImportText(text)
-                    }
                 }
 
                 const handlePaste = (e) => {
