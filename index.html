@@ -7,6 +7,8 @@
     <title>TY's Data Builder</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop/default.css">
     <style>
         [v-cloak] { display: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -286,7 +288,7 @@
             </div>
         </div>
     </div>
-<script type="module">
+    <script type="module">
         import { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
@@ -353,6 +355,11 @@
             const dict = translations[currentLanguage.value]
             return (dict && dict[key]) ? dict[key] : key
         }
+
+        MobileDragDrop.polyfill({
+            dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+        })
+        window.addEventListener('touchmove', function() {}, {passive: false})
 
         const app = createApp({
             setup() {
