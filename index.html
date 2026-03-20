@@ -357,7 +357,8 @@
         }
 
         MobileDragDrop.polyfill({
-            dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+            dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride,
+            holdToDrag: 300
         })
         window.addEventListener('touchmove', function() {}, {passive: false})
 
