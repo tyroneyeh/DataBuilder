@@ -96,7 +96,7 @@
                         <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 print:bg-gray-100 border-b border-r border-gray-300 px-4 py-3 w-20 text-center text-gray-600 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12">#</th>
 
                         <th v-for="(col, index) in columns" :key="col.id"
-                            draggable="true"
+                            :draggable="editingColId !== col.id"
                             @dragstart="onDragStart($event, index)"
                             @dragover.prevent="onDragOver($event, index)"
                             @dragenter.prevent="onDragEnter($event, index)"
@@ -105,11 +105,27 @@
                             @dragend="onDragEnd"
                             :class="[
                                 'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab active:cursor-grabbing transition-colors min-w-[140px] print:min-w-0 bg-gray-100 print:bg-gray-100',
-                                dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600'
+                                dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600',
+                                editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                             ]">
 
                             <span class="text-gray-400 mr-1 text-xs select-none print:hidden">⋮</span>
-                            {{ col.label }}
+
+                            <span v-if="editingColId !== col.id"
+                                @click="startEditingCol(col.id)"
+                                class="cursor-pointer border-b border-transparent hover:border-blue-400 hover:text-blue-600 transition-colors"
+                                title="Click to rename">
+                                {{ col.label }}
+                            </span>
+
+                            <input v-else
+                                :id="'edit-col-' + col.id"
+                                v-model="col.label"
+                                type="text"
+                                @blur="stopEditingCol"
+                                @keyup.enter="stopEditingCol"
+                                class="w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 bg-white border border-blue-400 rounded outline-none shadow-inner"
+                            >
 
                             <span v-if="col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('(Calc)') }}</span>
                             <span v-else class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
@@ -304,17 +320,17 @@
                 "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
                 "Items merged successfully!": "相同品項已成功合併！"
             }
-        };
+        }
 
         const browserLang = navigator.language || navigator.userLanguage;
-        const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en';
+        const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en'
 
-        const currentLanguage = ref(initialLang);
+        const currentLanguage = ref(initialLang)
 
         const translate = (key) => {
-            const dict = translations[currentLanguage.value];
+            const dict = translations[currentLanguage.value]
             return (dict && dict[key]) ? dict[key] : key;
-        };
+        }
 
         const app = createApp({
             setup() {
@@ -324,6 +340,7 @@
                 const columns = ref([])
                 const rows = ref([])
 
+                const editingColId = ref(null)
                 const newColLabel = ref('')
                 const newColType = ref('text')
                 const formulaA = ref('')
@@ -340,77 +357,77 @@
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`;
-                }, { immediate: true });
+                }, { immediate: true })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
 
                 const areAllExpanded = computed(() => {
                     if (rows.value.length === 0) return false;
-                    return rows.value.every(row => row.isExpanded);
-                });
+                    return rows.value.every(row => row.isExpanded)
+                })
 
                 const toggleAllNotes = () => {
-                    const newState = !areAllExpanded.value;
+                    const newState = !areAllExpanded.value
                     rows.value.forEach(row => {
-                        row.isExpanded = newState;
-                    });
-                };
+                        row.isExpanded = newState
+                    })
+                }
 
                 const mergeDuplicates = (silent = false) => {
                     const isSilent = silent === true;
-                    const keyCol = columns.value.find(col => col.type === 'text');
+                    const keyCol = columns.value.find(col => col.type === 'text')
                     if (!keyCol) {
-                        if (!isSilent) alert(translate('Cannot find a text column to merge by.'));
+                        if (!isSilent) alert(translate('Cannot find a text column to merge by.'))
                         return;
                     }
 
-                    const priceKeywords = ['price', '單價', '價'];
+                    const priceKeywords = ['price', '單價', '價']
                     const isPriceCol = (colLabel) => {
-                        const lowerLabel = colLabel.toLowerCase();
-                        return priceKeywords.some(kw => lowerLabel.includes(kw));
-                    };
+                        const lowerLabel = colLabel.toLowerCase()
+                        return priceKeywords.some(kw => lowerLabel.includes(kw))
+                    }
 
-                    const mergedMap = new Map();
+                    const mergedMap = new Map()
 
                     rows.value.forEach(row => {
-                        const keyValue = String(row[keyCol.id] || '').trim();
+                        const keyValue = String(row[keyCol.id] || '').trim()
 
                         if (mergedMap.has(keyValue)) {
-                            const existingRow = mergedMap.get(keyValue);
+                            const existingRow = mergedMap.get(keyValue)
 
                             columns.value.forEach(col => {
                                 if (col.type === 'number' && !isPriceCol(col.label)) {
-                                    const val1 = parseFloat(existingRow[col.id]) || 0;
-                                    const val2 = parseFloat(row[col.id]) || 0;
-                                    existingRow[col.id] = val1 + val2;
+                                    const val1 = parseFloat(existingRow[col.id]) || 0
+                                    const val2 = parseFloat(row[col.id]) || 0
+                                    existingRow[col.id] = val1 + val2
                                 }
-                            });
+                            })
 
-                            const currentRemark = (existingRow.remark || '').trim();
-                            const incomingRemark = (row.remark || '').trim();
+                            const currentRemark = (existingRow.remark || '').trim()
+                            const incomingRemark = (row.remark || '').trim()
                             if (incomingRemark !== '') {
                                 if (currentRemark === '') {
-                                    existingRow.remark = incomingRemark;
+                                    existingRow.remark = incomingRemark
                                 } else {
-                                    existingRow.remark = currentRemark + ' ' + incomingRemark;
+                                    existingRow.remark = currentRemark + ' ' + incomingRemark
                                 }
-                                existingRow.isExpanded = true;
+                                existingRow.isExpanded = true
                             }
                         } else {
-                            mergedMap.set(keyValue, { ...row });
+                            mergedMap.set(keyValue, { ...row })
                         }
-                    });
+                    })
 
                     let mergeCounter = 0;
                     rows.value = Array.from(mergedMap.values()).map(r => {
                         mergeCounter++;
-                        return { ...r, id: Date.now() + mergeCounter };
-                    });
+                        return { ...r, id: Date.now() + mergeCounter }
+                    })
 
                     if (!isSilent) {
-                        alert(translate('Items merged successfully!'));
+                        alert(translate('Items merged successfully!'))
                     }
-                };
+                }
 
                 const loadData = async () => {
                     let localData = { title: '', columns: [], rows: [] }
@@ -441,7 +458,7 @@
                             return { ...row, id: Date.now() + mergeCounter }
                         })
 
-                        mergeDuplicates(true);
+                        mergeDuplicates(true)
                         await nextTick()
                         alert(translate('Successfully loaded and merged data from the link!'))
 
@@ -465,7 +482,8 @@
 
                 watch([tableTitle, columns, rows], () => {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
-                    shareLink.value = ''; qrCodeUrl.value = ''
+                    shareLink.value = ''
+                    qrCodeUrl.value = ''
                 }, { deep: true })
 
                 const onDragStart = (e, index) => { draggedIndex.value = index; e.dataTransfer.effectAllowed = 'move' }
@@ -482,7 +500,7 @@
                 }
                 const onDragEnd = () => { dragOverIndex.value = null; draggedIndex.value = null }
 
-                const onRowDragStart = (e, index) => { draggedRowIndex.value = index; e.dataTransfer.effectAllowed = 'move'; }
+                const onRowDragStart = (e, index) => { draggedRowIndex.value = index; e.dataTransfer.effectAllowed = 'move' }
                 const onRowDragOver = (e, index) => { dragOverRowIndex.value = index }
                 const onRowDragEnter = (e, index) => { dragOverRowIndex.value = index }
                 const onRowDragLeave = (e, index) => { if (dragOverRowIndex.value === index) dragOverRowIndex.value = null }
@@ -509,7 +527,10 @@
 
                     columns.value.push(newColData)
                     rows.value.forEach(row => { if (newColType.value !== 'multiply') row[newColId] = newColType.value === 'number' ? null : '' })
-                    newColLabel.value = ''; newColType.value = 'text'; formulaA.value = ''; formulaB.value = ''
+                    newColLabel.value = ''
+                    newColType.value = 'text'
+                    formulaA.value = ''
+                    formulaB.value = ''
                 }
 
                 const addRow = async () => {
@@ -607,7 +628,7 @@
 
                             if (nextIndex >= columns.value.length) {
                                 if (event.key === 'Enter') {
-                                    addRow();
+                                    addRow()
                                     await nextTick()
                                     const newRowId = rows.value[rows.value.length - 1].id
                                     const firstCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
@@ -625,7 +646,7 @@
                                 nextIndex = columns.value.length - 1
                             }
 
-                            const nextCol = columns.value[nextIndex];
+                            const nextCol = columns.value[nextIndex]
                             if (nextCol.type === 'text' || nextCol.type === 'number') {
                                 const nextInput = document.getElementById(`input-${rowId}-${nextCol.id}`)
                                 if (nextInput) {
@@ -704,51 +725,71 @@
 
                 const exportCsv = () => {
                     const escapeCsv = (val) => {
-                        if (val === null || val === undefined) return '';
-                        const str = String(val);
+                        if (val === null || val === undefined) return ''
+                        const str = String(val)
                         if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`;
                         return str;
-                    };
+                    }
 
-                    let csvContent = "";
-                    const headers = ['#', ...columns.value.map(c => c.label), translate('📝 Note')];
-                    csvContent += headers.map(escapeCsv).join(',') + '\n';
+                    let csvContent = ""
+                    const headers = ['#', ...columns.value.map(c => c.label), translate('📝 Note')]
+                    csvContent += headers.map(escapeCsv).join(',') + '\n'
 
                     rows.value.forEach((row, idx) => {
-                        const rowData = [idx + 1];
+                        const rowData = [idx + 1]
                         columns.value.forEach(col => {
-                            if (col.type === 'number') rowData.push(parseFloat(row[col.id]) || 0);
-                            else if (col.type === 'multiply') rowData.push((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0));
-                            else rowData.push(row[col.id] || '');
-                        });
-                        rowData.push(row.remark || '');
-                        csvContent += rowData.map(escapeCsv).join(',') + '\n';
-                    });
+                            if (col.type === 'number') rowData.push(parseFloat(row[col.id]) || 0)
+                            else if (col.type === 'multiply') rowData.push((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))
+                            else rowData.push(row[col.id] || '')
+                        })
+                        rowData.push(row.remark || '')
+                        csvContent += rowData.map(escapeCsv).join(',') + '\n'
+                    })
 
-                    const totalRow = [translate('Total')];
+                    const totalRow = [translate('Total')]
                     columns.value.forEach(col => {
-                        if (col.type === 'number' || col.type === 'multiply') totalRow.push(columnTotals.value[col.id] || 0);
-                        else totalRow.push('-');
-                    });
-                    totalRow.push('');
-                    csvContent += totalRow.map(escapeCsv).join(',') + '\n';
+                        if (col.type === 'number' || col.type === 'multiply') totalRow.push(columnTotals.value[col.id] || 0)
+                        else totalRow.push('-')
+                    })
+                    totalRow.push('')
+                    csvContent += totalRow.map(escapeCsv).join(',') + '\n'
 
-                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-                    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF])
+                    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' })
 
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = tableTitle.value ? `${tableTitle.value}.csv` : 'Export.csv';
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    const link = document.createElement("a")
+                    link.href = URL.createObjectURL(blob)
+                    link.download = tableTitle.value ? `${tableTitle.value}.csv` : 'Export.csv'
+                    link.style.visibility = 'hidden'
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
                 }
 
                 const clearStorage = () => {
                     if(confirm(translate('Are you sure you want to clear all data?'))) {
-                        localStorage.removeItem(STORAGE_KEY); window.location.hash = ''; location.reload()
+                        localStorage.removeItem(STORAGE_KEY)
+                        window.location.hash = ''
+                        window.location.reload()
                     }
+                }
+
+                const startEditingCol = async (colId) => {
+                    editingColId.value = colId
+                    await nextTick()
+                    const input = document.getElementById(`edit-col-${colId}`)
+                    if (input) {
+                        input.focus()
+                        input.select()
+                    }
+                }
+
+                const stopEditingCol = () => {
+                    const col = columns.value.find(c => c.id === editingColId.value)
+                    if (col && !col.label.trim()) {
+                        col.label = translate('Column Name')
+                    }
+                    editingColId.value = null
                 }
 
                 return {
@@ -757,14 +798,14 @@
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput
+                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol
                 }
             }
-        });
+        })
 
         app.config.globalProperties.translate = translate;
 
-        app.mount('#app');
+        app.mount('#app')
     </script>
 </body>
 </html>
