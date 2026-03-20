@@ -22,7 +22,12 @@
 </head>
 <body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
     <div id="app" class="mx-auto bg-white rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
-
+        <div v-if="isDragging" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-600/80 backdrop-blur-sm border-8 border-dashed border-white transition-all">
+            <div class="text-white text-3xl sm:text-5xl font-bold flex flex-col items-center gap-6 pointer-events-none">
+                <span class="text-7xl sm:text-8xl">📥</span>
+                {{ translate('Drop JSON or CSV file here to import') }}
+            </div>
+        </div>
         <div class="relative">
             <div class="absolute top-0 right-0 print:hidden z-10">
                 <select v-model="currentLanguage" class="border border-gray-300 px-2 py-1 rounded text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
@@ -269,7 +274,7 @@
         </div>
     </div>
 <script type="module">
-        import { createApp, ref, computed, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
@@ -310,7 +315,7 @@
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
                 "Source columns cannot be the same!": "來源欄位不能相同！",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
-                "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！", // <- 稍微修改了提示文字
+                "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！",
                 "Share link generated and copied to clipboard!": "分享連結已產生並複製到剪貼簿！",
                 "Failed to generate link.": "產生連結失敗，可能資料包含無法轉碼的特殊字元。",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
@@ -318,7 +323,8 @@
                 "Collapse All Notes": "隱藏全部備註",
                 "Merge Duplicates": "合併相同品項",
                 "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
-                "Items merged successfully!": "相同品項已成功合併！"
+                "Items merged successfully!": "相同品項已成功合併！",
+                "Drop JSON or CSV file here to import": "拖拽 JSON 或 CSV 檔案到這裡以進行匯入"
             }
         }
 
@@ -354,6 +360,7 @@
                 const dragOverIndex = ref(null)
                 const draggedRowIndex = ref(null)
                 const dragOverRowIndex = ref(null)
+                const isDragging = ref(false)
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
@@ -792,13 +799,135 @@
                     editingColId.value = null
                 }
 
+                let dragCounter = 0
+                const handleDragEnter = (e) => { e.preventDefault(); dragCounter++; isDragging.value = true; }
+                const handleDragLeave = (e) => { e.preventDefault(); dragCounter--; if (dragCounter === 0) isDragging.value = false; }
+                const handleDragOver = (e) => { e.preventDefault(); }
+
+                const processImportText = (rawText) => {
+                    let dataList = []
+                    let isJSON = false
+
+                    try {
+                        const parsed = JSON.parse(rawText)
+                        dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
+                        isJSON = true
+                    } catch(e) {}
+
+                    if (!isJSON) {
+                        const lines = rawText.split(/\r?\n/).filter(l => l.trim() !== '')
+                        if (lines.length > 1) {
+                            const separator = lines[0].includes('\t') ? '\t' : ','
+                            const parseCSVLine = (text) => {
+                                const re = new RegExp(`${separator}(?=(?:(?:[^"]*"){2})*[^"]*$)`)
+                                return text.split(re).map(v => {
+                                    let s = v.trim()
+                                    if(s.startsWith('"') && s.endsWith('"')) s = s.substring(1, s.length - 1).replace(/""/g, '"')
+                                    return s
+                                })
+                            }
+
+                            const headers = parseCSVLine(lines[0])
+                            for (let i = 1; i < lines.length; i++) {
+                                const values = parseCSVLine(lines[i])
+                                let obj = {}
+                                headers.forEach((h, idx) => { obj[h] = values[idx]; })
+                                dataList.push(obj)
+                            }
+                        }
+                    }
+
+                    if(dataList.length === 0) return
+
+                    const allKeys = new Set()
+                    dataList.forEach(item => Object.keys(item).forEach(k => allKeys.add(k)))
+
+                    const ignoreKeys = ['#', translate('Total'), 'Total']
+
+                    allKeys.forEach(key => {
+                        if (ignoreKeys.includes(key)) return
+                        if (key === translate('📝 Note') || key === '_remark') return
+
+                        let existingCol = columns.value.find(c => c.label === key)
+                        if (!existingCol) {
+                            let isAllNumbers = dataList.every(item => !item[key] || !isNaN(parseFloat(item[key])))
+                            columns.value.push({
+                                id: 'col_' + Date.now() + Math.floor(Math.random()*1000),
+                                label: key,
+                                type: isAllNumbers ? 'number' : 'text'
+                            })
+                        }
+                    })
+
+                    let addCount = 0
+                    dataList.forEach(item => {
+                        if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
+
+                        let newRow = { id: Date.now() + Math.floor(Math.random()*10000), remark: '', isExpanded: false }
+                        columns.value.forEach(col => {
+                            const val = item[col.label]
+                            if (val !== undefined && val !== null && val !== '') {
+                                newRow[col.id] = col.type === 'number' ? (parseFloat(val) || 0) : String(val)
+                            } else {
+                                newRow[col.id] = col.type === 'number' ? null : ''
+                            }
+                        })
+
+                        const noteKey = Object.keys(item).find(k => k === translate('📝 Note') || k === '_remark')
+                        if (noteKey && item[noteKey]) {
+                            newRow.remark = item[noteKey]
+                            newRow.isExpanded = true
+                        }
+                        rows.value.push(newRow)
+                        addCount++
+                    })
+
+                    if (addCount > 0) alert(`${translate('Imported items successfully!')} (${addCount})`)
+                }
+
+                const handleDrop = async (e) => {
+                    e.preventDefault()
+                    dragCounter = 0
+                    isDragging.value = false
+                    const file = e.dataTransfer.files[0]
+                    if (!file) return
+
+                    if (file.type.includes('csv') || file.type.includes('json') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
+                        const text = await file.text()
+                        processImportText(text)
+                    }
+                }
+
+                const handlePaste = (e) => {
+                    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return
+
+                    const text = e.clipboardData.getData('text')
+                    if (text) processImportText(text)
+                }
+
+                onMounted(() => {
+                    window.addEventListener('dragenter', handleDragEnter)
+                    window.addEventListener('dragleave', handleDragLeave)
+                    window.addEventListener('dragover', handleDragOver)
+                    window.addEventListener('drop', handleDrop)
+                    window.addEventListener('paste', handlePaste)
+                })
+
+                onUnmounted(() => {
+                    window.removeEventListener('dragenter', handleDragEnter)
+                    window.removeEventListener('dragleave', handleDragLeave)
+                    window.removeEventListener('dragover', handleDragOver)
+                    window.removeEventListener('drop', handleDrop)
+                    window.removeEventListener('paste', handlePaste)
+                })
+
                 return {
                     currentLanguage, translate,
                     tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputJson,
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol
+                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging
                 }
             }
         })
