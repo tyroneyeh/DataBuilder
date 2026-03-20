@@ -322,14 +322,14 @@
             }
         }
 
-        const browserLang = navigator.language || navigator.userLanguage;
+        const browserLang = navigator.language || navigator.userLanguage
         const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en'
 
         const currentLanguage = ref(initialLang)
 
         const translate = (key) => {
             const dict = translations[currentLanguage.value]
-            return (dict && dict[key]) ? dict[key] : key;
+            return (dict && dict[key]) ? dict[key] : key
         }
 
         const app = createApp({
@@ -356,13 +356,13 @@
                 const dragOverRowIndex = ref(null)
 
                 watch([tableTitle, currentLanguage], () => {
-                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`;
+                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
                 }, { immediate: true })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
 
                 const areAllExpanded = computed(() => {
-                    if (rows.value.length === 0) return false;
+                    if (rows.value.length === 0) return false
                     return rows.value.every(row => row.isExpanded)
                 })
 
@@ -374,11 +374,11 @@
                 }
 
                 const mergeDuplicates = (silent = false) => {
-                    const isSilent = silent === true;
+                    const isSilent = silent === true
                     const keyCol = columns.value.find(col => col.type === 'text')
                     if (!keyCol) {
                         if (!isSilent) alert(translate('Cannot find a text column to merge by.'))
-                        return;
+                        return
                     }
 
                     const priceKeywords = ['price', '單價', '價']
@@ -418,9 +418,9 @@
                         }
                     })
 
-                    let mergeCounter = 0;
+                    let mergeCounter = 0
                     rows.value = Array.from(mergedMap.values()).map(r => {
-                        mergeCounter++;
+                        mergeCounter++
                         return { ...r, id: Date.now() + mergeCounter }
                     })
 
@@ -505,12 +505,12 @@
                 const onRowDragEnter = (e, index) => { dragOverRowIndex.value = index }
                 const onRowDragLeave = (e, index) => { if (dragOverRowIndex.value === index) dragOverRowIndex.value = null }
                 const onRowDrop = (e, index) => {
-                    const from = draggedRowIndex.value; const to = index;
+                    const from = draggedRowIndex.value; const to = index
                     if (from !== null && from !== to) {
                         const movedRow = rows.value.splice(from, 1)[0]
                         rows.value.splice(to, 0, movedRow)
                     }
-                    dragOverRowIndex.value = null; draggedRowIndex.value = null;
+                    dragOverRowIndex.value = null; draggedRowIndex.value = null
                 }
                 const onRowDragEnd = () => { dragOverRowIndex.value = null; draggedRowIndex.value = null; }
 
@@ -587,7 +587,7 @@
 
                             }
                         }
-                        return;
+                        return
                     }
 
                     let direction = 1
@@ -727,8 +727,8 @@
                     const escapeCsv = (val) => {
                         if (val === null || val === undefined) return ''
                         const str = String(val)
-                        if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`;
-                        return str;
+                        if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`
+                        return str
                     }
 
                     let csvContent = ""
@@ -803,7 +803,7 @@
             }
         })
 
-        app.config.globalProperties.translate = translate;
+        app.config.globalProperties.translate = translate
 
         app.mount('#app')
     </script>
