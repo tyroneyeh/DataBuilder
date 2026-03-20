@@ -462,6 +462,17 @@
                     }
                 }
 
+                const decompressFromBase64 = async (base64) => {
+                    const binaryString = atob(base64);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.codePointAt(i)
+                    }
+                    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
+                    const decompressedBlob = await new Response(stream).blob()
+                    return await decompressedBlob.text()
+                }
+
                 const loadData = async () => {
                     let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
@@ -474,9 +485,18 @@
                     const hashStr = window.location.hash.slice(1)
                     if (hashStr) {
                         try {
-                            hashData = JSON.parse(decodeURIComponent(atob(hashStr)))
+                            const safeBase64 = decodeURIComponent(hashStr)
+                            const jsonString = await decompressFromBase64(safeBase64)
+                            hashData = JSON.parse(jsonString)
                             window.history.replaceState(null, null, window.location.pathname)
-                        } catch (e) { console.error('Hash error', e) }
+                        } catch (e) {
+                            try {
+                                hashData = JSON.parse(decodeURIComponent(atob(hashStr)))
+                                window.history.replaceState(null, null, window.location.pathname)
+                            } catch (e2) {
+                                console.error('Hash error', e2)
+                            }
+                        }
                     }
 
                     if (hashData) {
@@ -761,10 +781,24 @@
                     return totals
                 })
 
-                const generateShareLink = () => {
+                const compressToBase64 = async (text) => {
+                    const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
+                    const compressedBlob = await new Response(stream).blob()
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            resolve(reader.result.split(',')[1])
+                        }
+                        reader.readAsDataURL(compressedBlob)
+                    })
+                }
+
+                const generateShareLink = async () => {
                     try {
                         const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value }
-                        const encoded = btoa(encodeURIComponent(JSON.stringify(payload)))
+                        const jsonString = JSON.stringify(payload)
+                        const compressedBase64 = await compressToBase64(jsonString)
+                        const encoded = encodeURIComponent(compressedBase64)
                         shareLink.value = `${window.location.origin}${window.location.pathname}#${encoded}`
 
                         QRCode.toDataURL(shareLink.value, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
@@ -773,7 +807,10 @@
                         navigator.clipboard.writeText(shareLink.value).then(() => {
                             alert(translate('Share link generated and copied to clipboard!'))
                         }).catch(() => {})
-                    } catch (e) { alert(translate('Failed to generate link.')) }
+                    } catch (e) {
+                        console.error(e)
+                        alert(translate('Failed to generate link.'))
+                    }
                 }
 
                 const exportJson = () => {
