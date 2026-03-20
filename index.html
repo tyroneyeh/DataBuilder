@@ -244,6 +244,11 @@
 
         <div class="flex flex-col ps-2 pb-2 gap-4 print:hidden">
             <div class="flex flex-wrap gap-3">
+                <input type="file" ref="fileInput" accept=".json,.csv" class="hidden" @change="handleFileUpload">
+
+                <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
+                    {{ translate('📂 Upload (JSON/CSV)') }}
+                </button>
                 <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
                     {{ translate('{ } Export JSON') }}
                 </button>
@@ -324,7 +329,9 @@
                 "Merge Duplicates": "合併相同品項",
                 "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
                 "Items merged successfully!": "相同品項已成功合併！",
-                "Drop JSON or CSV file here to import": "拖拽 JSON 或 CSV 檔案到這裡以進行匯入"
+                "Drop JSON or CSV file here to import": "拖拽 JSON 或 CSV 檔案到這裡以進行匯入",
+                "📂 Upload (JSON/CSV)": "📂 上傳檔案 (JSON/CSV)",
+                "Failed to read file.": "讀取檔案失敗。"
             }
         }
 
@@ -361,6 +368,7 @@
                 const draggedRowIndex = ref(null)
                 const dragOverRowIndex = ref(null)
                 const isDragging = ref(false)
+                const fileInput = ref(null)
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
@@ -906,6 +914,27 @@
                     if (text) processImportText(text)
                 }
 
+                const triggerFileUpload = () => {
+                    if (fileInput.value) {
+                        fileInput.value.click()
+                    }
+                }
+
+                const handleFileUpload = async (event) => {
+                    const file = event.target.files[0]
+                    if (!file) return
+
+                    try {
+                        const text = await file.text()
+                        processImportText(text)
+                    } catch (error) {
+                        console.error(error)
+                        alert(translate('Failed to read file.'))
+                    } finally {
+                        event.target.value = ''
+                    }
+                }
+
                 onMounted(() => {
                     window.addEventListener('dragenter', handleDragEnter)
                     window.addEventListener('dragleave', handleDragLeave)
@@ -928,7 +957,7 @@
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging
+                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging, fileInput, triggerFileUpload, handleFileUpload
                 }
             }
         })
