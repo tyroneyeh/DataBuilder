@@ -112,6 +112,7 @@
                             @dragend="onDragEnd"
                             :class="[
                                 'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab active:cursor-grabbing transition-colors min-w-[140px] print:min-w-0 bg-gray-100 print:bg-gray-100',
+                                'select-none [-webkit-touch-callout:none] touch-none',
                                 dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600',
                                 editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                             ]">
@@ -151,7 +152,7 @@
                        @drop="onRowDrop($event, index)"
                        :class="dragOverRowIndex === index ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/50 print:ring-0 print:bg-transparent' : ''"
                 >
-                    <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group"
+                    <tr class="select-none [-webkit-touch-callout:none] touch-none hover:bg-gray-50 print:hover:bg-transparent transition-colors group"
                         draggable="true"
                         @dragstart="onRowDragStart($event, index)"
                         @dragend="onRowDragEnd"
