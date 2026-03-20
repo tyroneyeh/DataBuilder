@@ -367,6 +367,8 @@
             setup() {
                 const STORAGE_KEY = 'ty-db'
 
+                const window = globalThis
+
                 const tableTitle = ref('')
                 const columns = ref([])
                 const rows = ref([])
@@ -491,10 +493,11 @@
                             window.history.replaceState(null, null, window.location.pathname)
                         } catch (e) {
                             try {
+                                console.info('Hash error', e)
                                 hashData = JSON.parse(decodeURIComponent(atob(hashStr)))
                                 window.history.replaceState(null, null, window.location.pathname)
-                            } catch (e2) {
-                                console.error('Hash error', e2)
+                            } catch (error_) {
+                                console.error('Hash error', error_)
                             }
                         }
                     }
@@ -831,7 +834,7 @@
                     const escapeCsv = (val) => {
                         if (val === null || val === undefined) return ''
                         const str = String(val)
-                        if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`
+                        if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replaceAll('"', '""')}"`
                         return str
                     }
 
@@ -868,7 +871,7 @@
                     link.style.visibility = 'hidden'
                     document.body.appendChild(link)
                     link.click()
-                    document.body.removeChild(link)
+                    link.remove()
                 }
 
                 const clearStorage = () => {
@@ -947,7 +950,9 @@
                         const parsed = JSON.parse(rawText)
                         dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
                         isJSON = true
-                    } catch(e) {}
+                    } catch(e) {
+                        console.error(e)
+                    }
 
                     if (!isJSON) {
                         const lines = rawText.split(/\r?\n/).filter(l => l.trim() !== '')
@@ -957,7 +962,7 @@
                                 const re = new RegExp(`${separator}(?=(?:(?:[^"]*"){2})*[^"]*$)`)
                                 return text.split(re).map(v => {
                                     let s = v.trim()
-                                    if(s.startsWith('"') && s.endsWith('"')) s = s.substring(1, s.length - 1).replace(/""/g, '"')
+                                    if(s.startsWith('"') && s.endsWith('"')) s = s.substring(1, s.length - 1).replaceAll('""', '"')
                                     return s
                                 })
                             }
@@ -977,10 +982,10 @@
                     const allKeys = new Set()
                     dataList.forEach(item => Object.keys(item).forEach(k => allKeys.add(k)))
 
-                    const ignoreKeys = ['#', translate('Total'), 'Total']
+                    const ignoreKeys = new Set(['#', translate('Total'), 'Total'])
 
                     allKeys.forEach(key => {
-                        if (ignoreKeys.includes(key)) return
+                        if (ignoreKeys.has(key)) return
                         if (key === translate('Note')) return
 
                         let existingCol = columns.value.find(c => c.label === key)
