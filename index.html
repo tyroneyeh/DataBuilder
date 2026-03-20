@@ -178,9 +178,9 @@
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
 
-                                <div v-if="col.type === 'number'" class="flex gap-1 ml-1 opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0">
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                <div v-if="col.type === 'number'" class="gap-1 ml-1 opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0">
                                     <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                 </div>
                             </div>
 
