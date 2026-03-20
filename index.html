@@ -199,9 +199,8 @@
                                     class="text-xs font-medium px-2 py-2 rounded transition-colors whitespace-nowrap">
                                     {{ (row.remark && row.remark.trim() !== '' && !row.isExpanded) ? translate('📝 Note (*)') : translate('📝 Note') }}
                                 </button>
-                                <button @click="removeRow(row.id)" class="text-xs text-red-500 hover:bg-red-50 font-medium px-2 py-2 rounded transition-colors whitespace-nowrap">
-                                    {{ translate('Delete') }}
-                                </button>
+                                <button @click="copyRow(index)" class="text-blue-400 hover:text-blue-600 transition-colors p-1 mx-1 active:scale-90" :title="translate('Copy')">📄</button>
+                                <button @click="removeRow(row.id)" class="text-xs text-red-500 hover:bg-red-50 font-medium px-2 py-2 rounded transition-colors whitespace-nowrap" :title="translate('Delete')">✖</button>
                             </div>
                         </td>
                     </tr>
@@ -318,6 +317,7 @@
                 "Note": "備註",
                 "📝 Note": "📝 備註",
                 "📝 Note (*)": "📝 有備註",
+                "Copy": "複製",
                 "Delete": "刪除",
                 "↳ Sub-details": "↳ 備註 (Sub-details)",
                 "Enter details here...": "輸入詳細說明...",
@@ -723,6 +723,32 @@
                     rows.value.forEach(row => delete row[idToRemove])
                 }
 
+                const copyRow = async (rowIndex) => {
+                    const originalRow = rows.value[rowIndex]
+                    if (!originalRow) return
+
+                    const newRowId = Date.now() + Math.floor(Math.random() * 1000)
+
+                    const clonedRow = {
+                        ...originalRow,
+                        id: newRowId,
+                        isExpanded: false
+                    }
+
+                    rows.value.splice(rowIndex + 1, 0, clonedRow)
+
+                    await nextTick()
+
+                    const firstEditableCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
+                    if (firstEditableCol) {
+                        const targetInput = document.getElementById(`input-${newRowId}-${firstEditableCol.id}`)
+                        if (targetInput) {
+                            targetInput.focus()
+                            targetInput.select()
+                        }
+                    }
+                }
+
                 const removeRow = (idToRemove) => { rows.value = rows.value.filter(row => row.id !== idToRemove) }
 
                 const columnTotals = computed(() => {
@@ -1007,7 +1033,7 @@
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging, fileInput, triggerFileUpload, handleFileUpload, adjustNumber
+                    addColumn, addRow, removeColumn, copyRow, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging, fileInput, triggerFileUpload, handleFileUpload, adjustNumber
                 }
             }
         })
