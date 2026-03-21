@@ -93,6 +93,22 @@
                         {{ translate('Add Column') }}
                     </button>
                 </div>
+                <div class="flex flex-col w-full sm:w-auto">
+                    <label class="text-sm text-gray-600 mb-1">{{ translate('Workspace') }}</label>
+                    <input
+                        type="text"
+                        v-model="currentStorageKey"
+                        list="storage-key-options"
+                        @change="changeStorageKey"
+                        @focus="onKeyFocus" @blur="onKeyBlur"
+                        :placeholder="translate('Select or create a workspace')"
+                        class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base"
+                    >
+
+                    <datalist id="storage-key-options">
+                        <option v-for="key in savedKeysList" :key="key" :value="key"></option>
+                    </datalist>
+                </div>
             </div>
 
             <div class="w-full sm:w-auto text-right sm:text-left flex flex-wrap justify-end sm:justify-start gap-1">
@@ -340,6 +356,8 @@
         const translations = {
             "zh-TW": {
                 "TY's Data Builder": "TY的資料表計算器",
+                "Workspace": "切換存檔",
+                "Select or create a workspace": "選擇或創建工作區",
                 "My Dynamic Table": "我的動態表格",
                 "Enter table title...": "請輸入表格標題...",
                 "Column Name": "欄位名稱",
@@ -412,7 +430,9 @@
 
         const app = createApp({
             setup() {
-                const STORAGE_KEY = 'ty-db'
+                const currentStorageKey = ref('ty-db')
+                const savedKeysList = ref([])
+                const tempKey = ref('')
 
                 const window = globalThis
 
@@ -447,6 +467,49 @@
                     if (rows.value.length === 0) return false
                     return rows.value.every(row => row.isExpanded)
                 })
+
+                const initStorageKeys = () => {
+                    try {
+                        const listStr = localStorage.getItem('TY_TABLE_MASTER_KEY_LIST')
+                        if (listStr) {
+                            savedKeysList.value = JSON.parse(listStr)
+                        } else {
+                            savedKeysList.value = ['ty-db']
+                            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                        }
+                    } catch (e) {
+                        console.error(e)
+                        savedKeysList.value = ['ty-db']
+                    }
+                }
+
+                initStorageKeys()
+
+                const changeStorageKey = async () => {
+                    let newKey = currentStorageKey.value.trim()
+                    if (!newKey) {
+                        newKey = 'ty-db'
+                        currentStorageKey.value = newKey
+                    }
+
+                    if (!savedKeysList.value.includes(newKey)) {
+                        savedKeysList.value.push(newKey)
+                        localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                    }
+
+                    await loadData()
+                }
+
+                const onKeyFocus = () => {
+                    tempKey.value = currentStorageKey.value
+                    currentStorageKey.value = ''
+                }
+
+                const onKeyBlur = () => {
+                    if (currentStorageKey.value.trim() === '') {
+                        currentStorageKey.value = tempKey.value
+                    }
+                }
 
                 const toggleAllNotes = () => {
                     const newState = !areAllExpanded.value
@@ -526,7 +589,7 @@
                     let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
 
-                    const savedStr = localStorage.getItem(STORAGE_KEY)
+                    const savedStr = localStorage.getItem(currentStorageKey.value)
                     if (savedStr) {
                         try { localData = JSON.parse(savedStr) } catch (e) { console.error('Local error', e) }
                     }
@@ -584,7 +647,7 @@
                 loadData()
 
                 watch([tableTitle, columns, rows], () => {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
                     shareLink.value = ''
                     qrCodeUrl.value = ''
                 }, { deep: true })
@@ -933,9 +996,13 @@
 
                 const clearStorage = () => {
                     if(confirm(translate('Are you sure you want to clear all data?'))) {
-                        localStorage.removeItem(STORAGE_KEY)
-                        window.location.hash = ''
-                        window.location.reload()
+                        localStorage.removeItem(currentStorageKey.value)
+                        savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
+                        if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
+                        localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                        currentStorageKey.value = savedKeysList.value[0]
+                        window.history.replaceState(null, null, window.location.pathname)
+                        loadData()
                     }
                 }
 
@@ -1128,7 +1195,7 @@
 
                 return {
                     currentLanguage, translate,
-                    tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputJson,
+                    currentStorageKey, changeStorageKey, savedKeysList, onKeyFocus, onKeyBlur, tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputJson,
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
