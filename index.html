@@ -52,6 +52,7 @@
                     <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
                         <option value="text">{{ translate('Text') }}</option>
                         <option value="number">{{ translate('Number') }}</option>
+                        <option value="date">{{ translate('Date') }}</option>
                         <option value="multiply">{{ translate('Multiply (A × B)') }}</option>
                     </select>
                 </div>
@@ -112,7 +113,7 @@
                             @dragend="onDragEnd"
                             :class="[
                                 'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab transition-colors bg-gray-100 print:min-w-0 print:bg-gray-100',
-                                col.type === 'number' || col.type === 'multiply' ? 'w-[140px] min-w-[140px] max-w-[140px]' : 'min-w-[200px]',
+                                col.type === 'number' || col.type === 'date' || col.type === 'multiply' ? 'w-[140px] min-w-[140px] max-w-[140px]' : 'min-w-[200px]',
                                 'select-none [-webkit-touch-callout:none] touch-none',
                                 'active:scale-[0.98] active:bg-gray-200 active:shadow-inner active:cursor-grabbing',
                                 dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600',
@@ -138,6 +139,7 @@
                             >
 
                             <span v-if="col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('(Calc)') }}</span>
+                            <span v-else-if="col.type === 'date'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Date') }}</span>
                             <span v-else class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
                             <button @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 print:hidden" title="Delete Column">✖</button>
@@ -183,7 +185,17 @@
                                     <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                 </div>
                             </div>
-
+                            <div v-else-if="col.type === 'date'" class="flex items-center w-full">
+                                <input
+                                    draggable="false"
+                                    :id="'input-' + row.id + '-' + col.id"
+                                    v-model="row[col.id]"
+                                    type="date"
+                                    :title="row[col.id]"
+                                    class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-700 cursor-pointer"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                >
+                            </div>
                             <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ (((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))).toLocaleString() }}
                             </div>
@@ -303,6 +315,7 @@
                 "Data Type": "資料類型",
                 "Text": "文字",
                 "Number": "數字",
+                "Date": "日期",
                 "Multiply (A × B)": "乘法計算 (A × B)",
                 "Column A": "欄位 A",
                 "Column B": "欄位 B",
@@ -627,9 +640,11 @@
                     const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
                     if (!allowedKeys.includes(event.key)) return
 
+                    const editableTypes = new Set(['text', 'date', 'number']);
+
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
-                    const firstEditableColIndex = columns.value.findIndex(c => c.type === 'text' || c.type === 'number')
+                    const firstEditableColIndex = columns.value.findIndex(c => editableTypes.has(c.type))
 
                     if (event.key === 'Backspace') {
                         if (currentIndex === firstEditableColIndex && target.value === '') {
@@ -674,10 +689,10 @@
                     } else if (event.key === 'ArrowUp') {
                         direction = -1
                         isVertical = true
-                        shouldMove = true
+                        if (columns.value[currentIndex].type !== 'date') shouldMove = true
                     } else if (event.key === 'ArrowDown') {
                         isVertical = true
-                        shouldMove = true
+                        if (columns.value[currentIndex].type !== 'date') shouldMove = true
                     }
 
                     if (!shouldMove) return
@@ -695,7 +710,7 @@
                                     addRow()
                                     await nextTick()
                                     const newRowId = rows.value[rows.value.length - 1].id
-                                    const firstCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
+                                    const firstCol = columns.value.find(c => editableTypes.has(c.type))
                                     if (firstCol) {
                                         const nextInput = document.getElementById(`input-${newRowId}-${firstCol.id}`)
                                         if (nextInput) {
@@ -711,7 +726,7 @@
                             }
 
                             const nextCol = columns.value[nextIndex]
-                            if (nextCol.type === 'text' || nextCol.type === 'number') {
+                            if (editableTypes.has(nextCol.type)) {
                                 const nextInput = document.getElementById(`input-${rowId}-${nextCol.id}`)
                                 if (nextInput) {
                                     nextInput.focus()
@@ -762,7 +777,7 @@
 
                     await nextTick()
 
-                    const firstEditableCol = columns.value.find(c => c.type === 'text' || c.type === 'number')
+                    const firstEditableCol = columns.value.find(c => editableTypes.includes(c.type))
                     if (firstEditableCol) {
                         const targetInput = document.getElementById(`input-${newRowId}-${firstEditableCol.id}`)
                         if (targetInput) {
