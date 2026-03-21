@@ -325,7 +325,7 @@
                     {{ translate('{ } Export JSON') }}
                 </button>
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    {{ translate('📥 Export CSV') }}
+                    {{ translate('⊞ Export CSV') }}
                 </button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
                     {{ translate('🔗 Share Link & QRCode') }}
@@ -345,9 +345,10 @@
                 </div>
             </div>
 
-            <div v-if="outputJson" class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
-                <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputJson }}</code></pre>
+            <div v-if="outputToScreen" class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
+                <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
             </div>
+            <button v-if="outputToScreen" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">{{ translate('📥 Download') }}</button>
         </div>
     </div>
     <script type="module">
@@ -389,10 +390,11 @@
                 "← Click to add a row": "← 點擊新增一列",
                 "Total": "總計",
                 "{ } Export JSON": "{ } 輸出 JSON",
-                "📥 Export CSV": "📥 匯出 CSV (Excel)",
+                "⊞ Export CSV": "⊞ 輸出 CSV (Excel)",
                 "🔗 Share Link & QRCode": "🔗 分享連結與 QRCode",
                 "🖨️ Print": "🖨️ 列印報表",
                 "Share Link:": "分享連結：",
+                "📥 Download": "📥 下載",
                 "Scan the QRCode below to load data<br>(Ideal for mobile)": "掃描下方 QRCode 載入資料<br>(適合手機直接掃描)",
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
@@ -445,7 +447,8 @@
                 const newColType = ref('text')
                 const formulaA = ref('')
                 const formulaB = ref('')
-                const outputJson = ref('')
+                const outputToScreen = ref('')
+                const outputType = ref('json')
 
                 const shareLink = ref('')
                 const qrCodeUrl = ref('')
@@ -936,6 +939,20 @@
                     }
                 }
 
+                const downloadFile = (fileContent) => {
+                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF])
+                    const blob = new Blob([bom, fileContent], { type: `text/${outputType.value};charset=utf-8;` })
+
+                    const link = document.createElement("a")
+                    link.href = URL.createObjectURL(blob)
+                    const nowDate = new Date().toISOString().slice(0, 10)
+                    link.download = `${currentStorageKey.value}_${nowDate}.${outputType.value}`
+                    link.style.visibility = 'hidden'
+                    document.body.appendChild(link)
+                    link.click()
+                    link.remove()
+                }
+
                 const exportJson = () => {
                     const cleanData = rows.value.map(row => {
                         const cleanRow = {}
@@ -947,7 +964,8 @@
                         if (row.remark && row.remark.trim() !== '') cleanRow[translate('Note')] = row.remark.trim()
                         return cleanRow
                     })
-                    outputJson.value = JSON.stringify({ title: tableTitle.value, data: cleanData }, null, 2)
+                    outputToScreen.value = JSON.stringify({ title: tableTitle.value, data: cleanData }, null, 2)
+                    outputType.value = 'json'
                 }
 
                 const exportCsv = () => {
@@ -980,18 +998,8 @@
                     })
                     totalRow.push('')
                     csvContent += totalRow.map(escapeCsv).join(',') + '\n'
-
-                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF])
-                    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' })
-
-                    const link = document.createElement("a")
-                    link.href = URL.createObjectURL(blob)
-                    const nowDate = new Date().toISOString().slice(0, 10)
-                    link.download = `${[nowDate, tableTitle.value].filter(Boolean).join('_')}.csv`
-                    link.style.visibility = 'hidden'
-                    document.body.appendChild(link)
-                    link.click()
-                    link.remove()
+                    outputToScreen.value = csvContent
+                    outputType.value = 'csv'
                 }
 
                 const clearStorage = () => {
@@ -1195,7 +1203,7 @@
 
                 return {
                     currentLanguage, translate,
-                    currentStorageKey, changeStorageKey, savedKeysList, onKeyFocus, onKeyBlur, tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputJson,
+                    currentStorageKey, changeStorageKey, savedKeysList, onKeyFocus, onKeyBlur, tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputToScreen, outputType,downloadFile,
                     shareLink, qrCodeUrl, columnTotals, areAllExpanded,
                     dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
                     dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
