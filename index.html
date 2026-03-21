@@ -433,7 +433,7 @@
 
         const app = createApp({
             setup() {
-                const currentStorageKey = ref('ty-db')
+                const currentStorageKey = ref('')
                 const savedKeysList = ref([])
                 const tempKey = ref('')
 
@@ -477,6 +477,9 @@
                         const listStr = localStorage.getItem('TY_TABLE_MASTER_KEY_LIST')
                         if (listStr) {
                             savedKeysList.value = JSON.parse(listStr)
+                            if (!Array.isArray(savedKeysList.value) || savedKeysList.value.length == 0) {
+                                savedKeysList.value = ['ty-db']
+                            }
                         } else {
                             savedKeysList.value = ['ty-db']
                             localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
@@ -485,6 +488,7 @@
                         console.error(e)
                         savedKeysList.value = ['ty-db']
                     }
+                    currentStorageKey.value = savedKeysList.value[0]
                 }
 
                 initStorageKeys()
@@ -496,10 +500,9 @@
                         currentStorageKey.value = newKey
                     }
 
-                    if (!savedKeysList.value.includes(newKey)) {
-                        savedKeysList.value.push(newKey)
-                        localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
-                    }
+                    savedKeysList.value = savedKeysList.value.filter(key => key !== newKey)
+                    savedKeysList.value.unshift(newKey)
+                    localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
 
                     await loadData()
                 }
