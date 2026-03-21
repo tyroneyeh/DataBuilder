@@ -72,6 +72,7 @@
                         <option value="date">{{ translate('Date') }}</option>
                         <option value="time">{{ translate('Time') }}</option>
                         <option value="checkbox">{{ translate('Checkbox') }}</option>
+                        <option value="category">{{ translate('Category') }}</option>
                         <option value="multiply">{{ translate('Multiply (A × B)') }}</option>
                     </select>
                 </div>
@@ -177,6 +178,7 @@
                             <span v-else-if="col.type === 'date'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Date') }}</span>
                             <span v-else-if="col.type === 'time'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Time') }}</span>
                             <span v-else-if="col.type === 'checkbox'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Checkbox') }}</span>
+                            <span v-else-if="col.type === 'category'" class="text-xs text-blue-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">({{ translate('Category') }})</span>
                             <span v-else class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
                             <button @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 print:hidden" title="Delete Column">✖</button>
@@ -243,6 +245,20 @@
                                 <span class="hidden print:inline-block text-xl leading-none text-gray-800">
                                     {{ row[col.id] ? '☑' : '☐' }}
                                 </span>
+                            </div>
+                            <div v-else-if="col.type === 'category'" class="flex items-center w-full relative">
+                                <input
+                                    :id="'input-' + row.id + '-' + col.id"
+                                    v-model="row[col.id]"
+                                    :list="'datalist-' + col.id"
+                                    type="text"
+                                    class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-blue-700 font-medium"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                    @focus="$event.target.select()"
+                                >
+                                <datalist :id="'datalist-' + col.id">
+                                    <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
+                                </datalist>
                             </div>
                             <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ (((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))).toLocaleString() }}
@@ -370,6 +386,7 @@
                 "Date": "日期",
                 "Time": "時間",
                 "Checkbox": "核取方塊",
+                "Category": "類別",
                 "Multiply (A × B)": "乘法計算 (A × B)",
                 "Column A": "欄位 A",
                 "Column B": "欄位 B",
@@ -579,6 +596,12 @@
                     if (!isSilent) {
                         alert(translate('Items merged successfully!'))
                     }
+                }
+
+                const getUniqueValues = (colId) => {
+                    const allValues = rows.value.map(row => row[colId])
+                    const validValues = allValues.filter(val => val !== null && val !== undefined && String(val).trim() !== '')
+                    return [...new Set(validValues)]
                 }
 
                 const decompressFromBase64 = async (base64) => {
@@ -1280,12 +1303,64 @@
                 })
 
                 return {
-                    currentLanguage, translate,
-                    currentStorageKey, changeStorageKey, savedKeysList, onKeyFocus, onKeyBlur, tableTitle, columns, rows, newColLabel, newColType, formulaA, formulaB, numberColumns, outputToScreen, outputType,downloadFile,
-                    shareLink, qrCodeUrl, columnTotals, areAllExpanded,
-                    dragOverIndex, onDragStart, onDragOver, onDragEnter, onDragLeave, onDrop, onDragEnd,
-                    dragOverRowIndex, onRowDragStart, onRowDragOver, onRowDragEnter, onRowDragLeave, onRowDrop, onRowDragEnd,
-                    addColumn, addRow, removeColumn, copyRow, removeRow, exportJson, exportCsv, clearStorage, generateShareLink, toggleAllNotes, mergeDuplicates, formatNumberInput, focusNextInput, editingColId, startEditingCol, stopEditingCol, isDragging, fileInput, triggerFileUpload, handleFileUpload, adjustNumber
+                    currentLanguage,
+                    translate,
+                    currentStorageKey,
+                    changeStorageKey,
+                    savedKeysList,
+                    onKeyFocus,
+                    onKeyBlur,
+                    tableTitle,
+                    columns,
+                    rows,
+                    newColLabel,
+                    newColType,
+                    formulaA,
+                    formulaB,
+                    numberColumns,
+                    outputToScreen,
+                    outputType,
+                    downloadFile,
+                    shareLink,
+                    qrCodeUrl,
+                    columnTotals,
+                    areAllExpanded,
+                    dragOverIndex,
+                    onDragStart,
+                    onDragOver,
+                    onDragEnter,
+                    onDragLeave,
+                    onDrop,
+                    onDragEnd,
+                    dragOverRowIndex,
+                    onRowDragStart,
+                    onRowDragOver,
+                    onRowDragEnter,
+                    onRowDragLeave,
+                    onRowDrop,
+                    onRowDragEnd,
+                    addColumn,
+                    addRow,
+                    removeColumn,
+                    copyRow,
+                    removeRow,
+                    exportJson,
+                    exportCsv,
+                    clearStorage,
+                    generateShareLink,
+                    toggleAllNotes,
+                    mergeDuplicates,
+                    formatNumberInput,
+                    focusNextInput,
+                    editingColId,
+                    startEditingCol,
+                    stopEditingCol,
+                    isDragging,
+                    fileInput,
+                    triggerFileUpload,
+                    handleFileUpload,
+                    adjustNumber,
+                    getUniqueValues
                 }
             }
         })
