@@ -1026,7 +1026,6 @@
                     const totalRow = [translate('Total')]
                     columns.value.forEach(col => {
                         if (col.type === 'number' || col.type === 'multiply') totalRow.push(columnTotals.value[col.id] || 0)
-                        else totalRow.push('-')
                     })
                     totalRow.push('')
                     csvContent += totalRow.map(escapeCsv).join(',') + '\n'
