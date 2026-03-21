@@ -1112,12 +1112,15 @@
                     let parsedColumnMeta = {}
 
                     try {
-                        const parsed = JSON.parse(rawText)
-                        if (parsed.columns && parsed.raw_rows) {
-                            parsed.columns.forEach(c => { parsedColumnMeta[c.label] = c })
+                        const trimmedText = rawText.trim()
+                        if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
+                            const parsed = JSON.parse(rawText)
+                            if (parsed.columns && parsed.raw_rows) {
+                                parsed.columns.forEach(c => { parsedColumnMeta[c.label] = c })
+                            }
+                            dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
+                            isJSON = true
                         }
-                        dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
-                        isJSON = true
                     } catch(e) {
                         console.error(e)
                     }
