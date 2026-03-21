@@ -3,6 +3,8 @@
 一個強大、輕量且**完全無需後端**的單頁式動態表格應用。
 只需一個 HTML 檔案，點開瀏覽器即可開始使用！完美解決臨時資料收集、團購統計、快速報價單生成等需求。
 
+![TY's Data Builder - TY的資料表計算器](https://ty-db.pages.dev/databuilder.png)
+
 ## ✨ 核心特色 (Features)
 
 * **⚡ 零依賴 & 免安裝**：拋棄繁瑣的 `npm install` 與依賴地獄，採用 Vue 3 (CDN) + Tailwind CSS 構建，下載單一 HTML 檔即可離線運行。
