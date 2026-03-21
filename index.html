@@ -270,7 +270,7 @@
                             <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 print:text-black text-lg print:text-base font-bold">
                                 {{ Number(columnTotals[col.id]).toLocaleString() }}
                             </span>
-                            <span v-else class="text-gray-400 print:text-gray-500">-</span>
+                            <span v-else class="text-gray-400 print:text-gray-500"></span>
                         </td>
 
                         <td class="sticky bottom-0 z-10 border-t-2 border-gray-300 px-4 py-3 bg-gray-100 print:hidden"></td>
@@ -495,8 +495,8 @@
                 }
 
                 const decompressFromBase64 = async (base64) => {
-                    const binaryString = atob(base64);
-                    const bytes = new Uint8Array(binaryString.length);
+                    const binaryString = atob(base64)
+                    const bytes = new Uint8Array(binaryString.length)
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.codePointAt(i)
                     }
@@ -622,9 +622,17 @@
                 const addRow = async () => {
                     const newRowId = Date.now()
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
+                    const now = new Date()
+                    const localOffset = now.getTimezoneOffset() * 60000
+                    const localDate = new Date(now.getTime() - localOffset)
+                    const todayDate = localDate.toISOString().slice(0, 10)
+                    const currentTime = localDate.toISOString().slice(11, 16)
 
                     columns.value.forEach(col => {
-                        if (col.type !== 'multiply') newRow[col.id] = col.type === 'number' ? null : ''
+                        if (col.type === 'date') newRow[col.id] = todayDate
+                        else if (col.type === 'time') newRow[col.id] = currentTime
+                        else if (col.type !== 'multiply') newRow[col.id] = col.type === 'number' ? null : ''
+
                     })
 
                     rows.value.push(newRow)
@@ -657,7 +665,7 @@
                     const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
                     if (!allowedKeys.includes(event.key)) return
 
-                    const editableTypes = new Set(['text', 'date', 'number', 'checkbox']);
+                    const editableTypes = new Set(['text', 'date', 'number', 'checkbox'])
 
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
@@ -820,7 +828,7 @@
                     const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
                     const compressedBlob = await new Response(stream).blob()
                     return new Promise((resolve) => {
-                        const reader = new FileReader();
+                        const reader = new FileReader()
                         reader.onloadend = () => {
                             resolve(reader.result.split(',')[1])
                         }
