@@ -341,7 +341,8 @@
                     <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class="pointer-events-none">
                 </div>
                 <div class="text-indigo-700 text-xs sm:text-sm break-all w-full bg-white p-3 rounded shadow-sm border border-indigo-100">
-                    <span class="font-bold mr-2 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>{{ shareLink }}
+                    <span class="font-bold mr-2 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>
+                    <div class="w-full bg-indigo-50/50 border border-indigo-100 rounded p-2 text-gray-600 select-all cursor-text leading-relaxed">{{ shareLink }}</div>
                 </div>
             </div>
 
@@ -619,7 +620,7 @@
                         tableTitle.value = hashData.title || localData.title || translate('My Dynamic Table')
                         columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                         const localRows = localData.rows || []
-                        const incomingRows = hashData.rows || []
+                        const incomingRows = hashData.raw_rows || hashData.rows || []
 
                         let mergeCounter = 0
                         rows.value = [...localRows, ...incomingRows].map(row => {
@@ -957,14 +958,30 @@
                     const cleanData = rows.value.map(row => {
                         const cleanRow = {}
                         columns.value.forEach(col => {
-                            if (col.type === 'number') cleanRow[col.label] = row[col.id] ? parseFloat(row[col.id]) : 0
-                            else if (col.type === 'multiply') cleanRow[col.label] = (parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)
-                            else cleanRow[col.label] = row[col.id] || ''
+                            if (col.type === 'number') {
+                                cleanRow[col.label] = row[col.id] ? parseFloat(row[col.id]) : 0
+                            } else if (col.type === 'multiply') {
+                                cleanRow[col.label] = (parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)
+                            } else if (col.type === 'checkbox') {
+                                cleanRow[col.label] = !!row[col.id]
+                            } else if (col.type === 'date' || col.type === 'time') {
+                                cleanRow[col.label] = row[col.id] || ''
+                            } else {
+                                cleanRow[col.label] = row[col.id] || ''
+                            }
                         })
                         if (row.remark && row.remark.trim() !== '') cleanRow[translate('Note')] = row.remark.trim()
                         return cleanRow
                     })
-                    outputToScreen.value = JSON.stringify({ title: tableTitle.value, data: cleanData }, null, 2)
+
+                    const payload = {
+                        title: tableTitle.value,
+                        columns: columns.value,
+                        raw_rows: rows.value,
+                        data: cleanData
+                    }
+
+                    outputToScreen.value = JSON.stringify(payload, null, 2)
                     outputType.value = 'json'
                 }
 
@@ -977,15 +994,30 @@
                     }
 
                     let csvContent = ""
-                    const headers = ['#', ...columns.value.map(c => c.label), translate('Note')]
+
+                    const schemaHeaders = columns.value.map(c => {
+                        let meta = c.type
+                        if (c.type === 'multiply') meta += `|${c.opA}|${c.opB}`
+                        return `${c.label} [${meta}]`
+                    })
+
+                    const headers = ['#', ...schemaHeaders, translate('Note')]
                     csvContent += headers.map(escapeCsv).join(',') + '\n'
 
                     rows.value.forEach((row, idx) => {
                         const rowData = [idx + 1]
                         columns.value.forEach(col => {
-                            if (col.type === 'number') rowData.push(parseFloat(row[col.id]) || 0)
-                            else if (col.type === 'multiply') rowData.push((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))
-                            else rowData.push(row[col.id] || '')
+                            if (col.type === 'number') {
+                                rowData.push(parseFloat(row[col.id]) || 0)
+                            } else if (col.type === 'multiply') {
+                                rowData.push((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))
+                            } else if (col.type === 'checkbox') {
+                                rowData.push(row[col.id] ? 'true' : 'false')
+                            } else if (col.type === 'date' || col.type === 'time') {
+                                rowData.push(row[col.id] || '')
+                            } else {
+                                rowData.push(row[col.id] || '')
+                            }
                         })
                         rowData.push(row.remark || '')
                         csvContent += rowData.map(escapeCsv).join(',') + '\n'
@@ -1077,9 +1109,13 @@
                 const processImportText = (rawText) => {
                     let dataList = []
                     let isJSON = false
+                    let parsedColumnMeta = {}
 
                     try {
                         const parsed = JSON.parse(rawText)
+                        if (parsed.columns && parsed.raw_rows) {
+                            parsed.columns.forEach(c => { parsedColumnMeta[c.label] = c })
+                        }
                         dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
                         isJSON = true
                     } catch(e) {
@@ -1099,7 +1135,18 @@
                                 })
                             }
 
-                            const headers = parseCSVLine(lines[0])
+                            let rawHeaders = parseCSVLine(lines[0])
+                            const headers = rawHeaders.map(h => {
+                                const match = h.match(/(.+) \[([^\]]+)\]$/)
+                                if (match) {
+                                    const label = match[1].trim()
+                                    const meta = match[2]
+                                    parsedColumnMeta[label] = { type: meta }
+                                    return label
+                                }
+                                return h
+                            })
+
                             for (let i = 1; i < lines.length; i++) {
                                 const values = parseCSVLine(lines[i])
                                 let obj = {}
@@ -1122,11 +1169,28 @@
 
                         let existingCol = columns.value.find(c => c.label === key)
                         if (!existingCol) {
-                            let isAllNumbers = dataList.every(item => !item[key] || !isNaN(parseFloat(item[key])))
+                            let targetType, targetOpA = null, targetOpB = null
+
+                            if (parsedColumnMeta[key]) {
+                                const metaStr = parsedColumnMeta[key].type
+                                if (metaStr.startsWith('multiply')) {
+                                    targetType = 'multiply'
+                                    const parts = metaStr.split('|')
+                                    targetOpA = parts[1]; targetOpB = parts[2]
+                                } else {
+                                    targetType = metaStr
+                                }
+                            } else {
+                                let isAllNumbers = dataList.every(item => !item[key] || !isNaN(parseFloat(item[key])))
+                                targetType = isAllNumbers ? 'number' : 'text'
+                            }
+
                             columns.value.push({
                                 id: 'col_' + Date.now() + Math.floor(Math.random()*1000),
                                 label: key,
-                                type: isAllNumbers ? 'number' : 'text'
+                                type: targetType,
+                                opA: targetOpA,
+                                opB: targetOpB
                             })
                         }
                     })
@@ -1139,9 +1203,17 @@
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
-                                newRow[col.id] = col.type === 'number' ? (parseFloat(val) || 0) : String(val)
+                                if (col.type === 'number') {
+                                    newRow[col.id] = parseFloat(val) || 0
+                                } else if (col.type === 'checkbox') {
+                                    newRow[col.id] = (val === 'true' || val === true || val === '☑' || val === '1')
+                                } else if (col.type === 'multiply') {
+                                    newRow[col.id] = null
+                                } else {
+                                    newRow[col.id] = String(val)
+                                }
                             } else {
-                                newRow[col.id] = col.type === 'number' ? null : ''
+                                newRow[col.id] = col.type === 'checkbox' ? false : (col.type === 'number' ? null : '')
                             }
                         })
 
