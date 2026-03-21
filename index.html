@@ -53,6 +53,7 @@
                         <option value="text">{{ translate('Text') }}</option>
                         <option value="number">{{ translate('Number') }}</option>
                         <option value="date">{{ translate('Date') }}</option>
+                        <option value="checkbox">{{ translate('Checkbox') }}</option>
                         <option value="multiply">{{ translate('Multiply (A × B)') }}</option>
                     </select>
                 </div>
@@ -112,8 +113,8 @@
                             @drop="onDrop($event, index)"
                             @dragend="onDragEnd"
                             :class="[
-                                'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left font-semibold cursor-grab transition-colors bg-gray-100 print:min-w-0 print:bg-gray-100',
-                                col.type === 'number' || col.type === 'date' || col.type === 'multiply' ? 'w-[140px] min-w-[140px] max-w-[140px]' : 'min-w-[200px]',
+                                'group pr-8 sticky top-0 z-10 print:static border-b border-r border-gray-300 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 print:min-w-0 print:bg-gray-100',
+                                ['number', 'date', 'multiply'].includes(col.type) ? 'w-[140px] min-w-[140px] max-w-[140px]' : col.type === 'checkbox' ? 'w-[100px] min-w-[100px] max-w-[100px]' : 'min-w-[200px]',
                                 'select-none [-webkit-touch-callout:none] touch-none',
                                 'active:scale-[0.98] active:bg-gray-200 active:shadow-inner active:cursor-grabbing',
                                 dragOverIndex === index ? 'bg-blue-200 border-blue-400' : 'text-gray-600',
@@ -140,6 +141,7 @@
 
                             <span v-if="col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('(Calc)') }}</span>
                             <span v-else-if="col.type === 'date'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Date') }}</span>
+                            <span v-else-if="col.type === 'checkbox'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">{{ translate('Checkbox') }}</span>
                             <span v-else class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap print:hidden">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
                             <button @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 print:hidden" title="Delete Column">✖</button>
@@ -167,7 +169,7 @@
 
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b border-r border-gray-300 px-4 py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors">
 
-                            <div v-if="col.type === 'text' || col.type === 'number'" class="flex items-center w-full">
+                            <div v-if="['text', 'number'].includes(col.type)" class="flex items-center w-full">
                                 <input
                                     :id="'input-' + row.id + '-' + col.id"
                                     v-model="row[col.id]"
@@ -195,6 +197,18 @@
                                     class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-700 cursor-pointer"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
+                            </div>
+                            <div v-else-if="col.type === 'checkbox'" class="flex items-center justify-center w-full py-1">
+                                <input
+                                    :id="'input-' + row.id + '-' + col.id"
+                                    type="checkbox"
+                                    v-model="row[col.id]"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer print:hidden transition-all active:scale-90"
+                                >
+                                <span class="hidden print:inline-block text-xl leading-none text-gray-800">
+                                    {{ row[col.id] ? '☑' : '☐' }}
+                                </span>
                             </div>
                             <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ (((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))).toLocaleString() }}
@@ -252,7 +266,7 @@
                         <td v-for="col in columns" :key="'total-' + col.id"
                             class="sticky bottom-0 z-10 border-t-2 border-r border-gray-300 px-4 py-3 bg-gray-100 print:bg-transparent print:static"
                             :class="col.type === 'multiply' ? 'text-right' : 'text-left'">
-                            <span v-if="col.type === 'number' || col.type === 'multiply'" class="text-blue-700 print:text-black text-lg print:text-base font-bold">
+                            <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 print:text-black text-lg print:text-base font-bold">
                                 {{ Number(columnTotals[col.id]).toLocaleString() }}
                             </span>
                             <span v-else class="text-gray-400 print:text-gray-500">-</span>
@@ -316,6 +330,7 @@
                 "Text": "文字",
                 "Number": "數字",
                 "Date": "日期",
+                "Checkbox": "核取方塊",
                 "Multiply (A × B)": "乘法計算 (A × B)",
                 "Column A": "欄位 A",
                 "Column B": "欄位 B",
@@ -640,7 +655,7 @@
                     const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
                     if (!allowedKeys.includes(event.key)) return
 
-                    const editableTypes = new Set(['text', 'date', 'number']);
+                    const editableTypes = new Set(['text', 'date', 'number', 'checkbox']);
 
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
