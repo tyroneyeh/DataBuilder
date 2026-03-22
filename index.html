@@ -303,8 +303,8 @@
                                         (row.remark && row.remark.trim() !== '') ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
                                     ]"
                                     class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.remark && row.remark.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                                <button @click="copyRow(index); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors" :title="translate('Copy')">📄 {{ translate('Copy') }}</button>
-                                <button @click="removeRow(row.id); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors" :title="translate('Delete')">✖ {{ translate('Delete') }}</button>
+                                <button @click="copyRow(index); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                                <button @click="removeRow(row.id); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
                     </tr>
