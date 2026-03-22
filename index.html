@@ -37,6 +37,19 @@
             .overflow-x-auto { overflow: visible !important; }
             ::placeholder { color: transparent !important; }
         }
+        input::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        input:hover::-webkit-calendar-picker-indicator {
+            opacity: 1;
+        }
+        @media print {
+            input::-webkit-calendar-picker-indicator {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
