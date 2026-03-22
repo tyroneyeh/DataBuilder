@@ -41,6 +41,11 @@
 </head>
 <body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
     <div id="app" class="mx-auto bg-white rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
+        <div
+            v-if="activeMenuRowId"
+            @click="closeActionMenu"
+            class="fixed inset-0 z-40 cursor-default"
+        ></div>
         <div v-if="isDragging" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-600/80 backdrop-blur-sm border-8 border-dashed border-white transition-all">
             <div class="text-white text-3xl sm:text-5xl font-bold flex flex-col items-center gap-6 pointer-events-none">
                 <span class="text-7xl sm:text-8xl">📥</span>
@@ -266,17 +271,25 @@
                         </td>
 
                         <td class="border-b border-gray-300 px-2 py-2 text-center bg-white transition-colors print:hidden">
-                            <div class="flex items-center justify-center gap-1">
-                                <button @click="row.isExpanded = !row.isExpanded"
+                            <div class="flex items-center justify-center space-x-2">
+                                <button
+                                    @click.stop="toggleActionMenu(row.id)"
+                                    class="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded transition-colors font-bold tracking-widest rotate-90 outline-none z-50 relative"
+                                    :class="{'text-indigo-600': row.remark && row.remark.trim() !== '' && !row.isExpanded}"
+                                >•••</button>
+                            </div>
+                            <div
+                                v-show="activeMenuRowId === row.id"
+                                class="absolute right-8 top-8 mt-1 w-24 bg-white border border-gray-200 shadow-xl rounded-md z-50 flex flex-col overflow-hidden transform origin-top-right"
+                            >
+                                <button @click="row.isExpanded = !row.isExpanded; closeActionMenu()"
                                     :class="[
                                         row.isExpanded ? 'text-blue-700 bg-blue-100' :
                                         (row.remark && row.remark.trim() !== '') ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
                                     ]"
-                                    class="text-xs font-medium px-2 py-2 rounded transition-colors whitespace-nowrap">
-                                    {{ (row.remark && row.remark.trim() !== '' && !row.isExpanded) ? translate('📝 Note (*)') : translate('📝 Note') }}
-                                </button>
-                                <button @click="copyRow(index)" class="text-blue-400 hover:text-blue-600 transition-colors p-1 mx-1 active:scale-90" :title="translate('Copy')">📄</button>
-                                <button @click="removeRow(row.id)" class="text-xs text-red-500 hover:bg-red-50 font-medium px-2 py-2 rounded transition-colors whitespace-nowrap" :title="translate('Delete')">✖</button>
+                                    class="text-xs font-medium px-2 py-2 rounded transition-colors whitespace-nowrap">📝 {{ row.remark && row.remark.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
+                                <button @click="copyRow(index); closeActionMenu()" class="text-xs font-medium px-2 py-2 rounded transition-colors whitespace-nowrap" :title="translate('Copy')">📄 {{ translate('Copy') }}</button>
+                                <button @click="removeRow(row.id); closeActionMenu()" class="text-xs text-red-500 hover:bg-red-50 font-medium px-2 py-2 rounded transition-colors whitespace-nowrap" :title="translate('Delete')">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
                     </tr>
@@ -333,19 +346,19 @@
                 <input type="file" ref="fileInput" accept=".json,.csv" class="hidden" @change="handleFileUpload">
 
                 <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    {{ translate('📂 Upload (JSON/CSV)') }}
+                    📂 {{ translate('Upload (JSON/CSV)') }}
                 </button>
                 <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    {{ translate('{ } Export JSON') }}
+                    { } {{ translate('Export JSON') }}
                 </button>
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    {{ translate('⊞ Export CSV') }}
+                    ⊞ {{ translate('Export CSV') }}
                 </button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
-                    {{ translate('🔗 Share Link & QRCode') }}
+                    🔗 {{ translate('Share Link & QRCode') }}
                 </button>
                 <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">
-                    {{ translate('🖨️ Print') }}
+                    🖨️ {{ translate('Print') }}
                 </button>
             </div>
 
@@ -363,7 +376,7 @@
             <div v-if="outputToScreen" class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
                 <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
             </div>
-            <button v-if="outputToScreen" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">{{ translate('📥 Download') }}</button>
+            <button v-if="outputToScreen" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
         </div>
 
         <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">&copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a></footer>
@@ -399,20 +412,19 @@
                 "Quantity": "數量",
                 "Subtotal": "小計",
                 "Note": "備註",
-                "📝 Note": "📝 備註",
-                "📝 Note (*)": "📝 有備註",
+                "Note (*)": "備註 (*)",
                 "Copy": "複製",
                 "Delete": "刪除",
                 "↳ Sub-details": "↳ 備註 (Sub-details)",
                 "Enter details here...": "輸入詳細說明...",
                 "← Click to add a row": "← 點擊新增一列",
                 "Total": "總計",
-                "{ } Export JSON": "{ } 輸出 JSON",
-                "⊞ Export CSV": "⊞ 輸出 CSV (Excel)",
-                "🔗 Share Link & QRCode": "🔗 分享連結與 QRCode",
-                "🖨️ Print": "🖨️ 列印報表",
+                "Export JSON": "輸出 JSON",
+                "Export CSV": "輸出 CSV (Excel)",
+                "Share Link & QRCode": "分享連結與 QRCode",
+                "Print": "列印",
                 "Share Link:": "分享連結：",
-                "📥 Download": "📥 下載",
+                "Download": "下載",
                 "Scan the QRCode below to load data<br>(Ideal for mobile)": "掃描下方 QRCode 載入資料<br>(適合手機直接掃描)",
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
@@ -428,7 +440,7 @@
                 "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
                 "Items merged successfully!": "相同品項已成功合併！",
                 "Drop JSON or CSV file here to import": "拖拽 JSON 或 CSV 檔案到這裡以進行匯入",
-                "📂 Upload (JSON/CSV)": "📂 上傳檔案 (JSON/CSV)",
+                "Upload (JSON/CSV)": "上傳檔案 (JSON/CSV)",
                 "Failed to read file.": "讀取檔案失敗。",
                 "Imported items successfully!": "已成功匯入品項！"
             }
@@ -459,6 +471,8 @@
                 const tableTitle = ref('')
                 const columns = ref([])
                 const rows = ref([])
+
+                const activeMenuRowId = ref(null)
 
                 const editingColId = ref(null)
                 const newColLabel = ref('')
@@ -523,6 +537,14 @@
                     localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
 
                     await loadData()
+                }
+
+                const toggleActionMenu = (rowId) => {
+                    activeMenuRowId.value = activeMenuRowId.value === rowId ? null : rowId
+                }
+
+                const closeActionMenu = () => {
+                    activeMenuRowId.value = null
                 }
 
                 const onKeyFocus = () => {
@@ -1307,6 +1329,9 @@
                     currentStorageKey,
                     changeStorageKey,
                     savedKeysList,
+                    activeMenuRowId,
+                    toggleActionMenu,
+                    closeActionMenu,
                     onKeyFocus,
                     onKeyBlur,
                     tableTitle,
