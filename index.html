@@ -506,7 +506,7 @@
                 const dragOverRowIndex = ref(null)
                 const isDragging = ref(false)
                 const fileInput = ref(null)
-                const editableTypes = new Set(['text', 'date', 'number', 'checkbox'])
+                const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
@@ -860,10 +860,12 @@
                     } else if (event.key === 'ArrowUp') {
                         direction = -1
                         isVertical = true
-                        if (columns.value[currentIndex].type !== 'date') shouldMove = true
+                        if (!['date', 'time', 'number'].includes(columns.value[currentIndex].type)) shouldMove = true
+                        if (columns.value[currentIndex].type === 'number') adjustNumber(rows.value.find(r => r.id === rowId), colId, 1)
                     } else if (event.key === 'ArrowDown') {
                         isVertical = true
-                        if (columns.value[currentIndex].type !== 'date') shouldMove = true
+                        if (!['date', 'time', 'number'].includes(columns.value[currentIndex].type)) shouldMove = true
+                        if (columns.value[currentIndex].type === 'number') adjustNumber(rows.value.find(r => r.id === rowId), colId, -1)
                     }
 
                     if (!shouldMove) return
