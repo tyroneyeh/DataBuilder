@@ -477,6 +477,7 @@
                 const dragOverRowIndex = ref(null)
                 const isDragging = ref(false)
                 const fileInput = ref(null)
+                const editableTypes = new Set(['text', 'date', 'number', 'checkbox'])
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
@@ -775,8 +776,6 @@
                     const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
                     if (!allowedKeys.includes(event.key)) return
 
-                    const editableTypes = new Set(['text', 'date', 'number', 'checkbox'])
-
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
                     const firstEditableColIndex = columns.value.findIndex(c => editableTypes.has(c.type))
@@ -912,7 +911,7 @@
 
                     await nextTick()
 
-                    const firstEditableCol = columns.value.find(c => editableTypes.includes(c.type))
+                    const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
                         const targetInput = document.getElementById(`input-${newRowId}-${firstEditableCol.id}`)
                         if (targetInput) {
