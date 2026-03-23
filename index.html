@@ -80,13 +80,7 @@
                 <div class="flex flex-col w-full sm:w-auto">
                     <label class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</label>
                     <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
-                        <option value="text">{{ translate('Text') }}</option>
-                        <option value="number">{{ translate('Number') }}</option>
-                        <option value="date">{{ translate('Date') }}</option>
-                        <option value="time">{{ translate('Time') }}</option>
-                        <option value="checkbox">{{ translate('Checkbox') }}</option>
-                        <option value="category">{{ translate('Category') }}</option>
-                        <option value="multiply">{{ translate('Multiply (A × B)') }}</option>
+                        <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>
 
@@ -507,10 +501,27 @@
                 const isDragging = ref(false)
                 const fileInput = ref(null)
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
+                const typeOptions = ref([
+                    {value: 'text', label: translate('Text')},
+                    {value: 'number', label: translate('Number')},
+                    {value: 'date', label: translate('Date')},
+                    {value: 'time', label: translate('Time')},
+                    {value: 'checkbox', label: translate('Checkbox')},
+                    {value: 'category', label: translate('Category')},
+                    {value: 'multiply', label: translate('Multiply (A × B)')},
+                ])
 
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
                 }, { immediate: true })
+                watch([tableTitle, columns, rows], () => {
+                    localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    shareLink.value = ''
+                    qrCodeUrl.value = ''
+                }, { deep: true })
+                watch(newColType, (newVal) => {
+                    newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
+                })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
 
@@ -713,12 +724,6 @@
                 }
 
                 loadData()
-
-                watch([tableTitle, columns, rows], () => {
-                    localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
-                    shareLink.value = ''
-                    qrCodeUrl.value = ''
-                }, { deep: true })
 
                 const onDragStart = (e, index) => { draggedIndex.value = index; e.dataTransfer.effectAllowed = 'move' }
                 const onDragOver = (e, index) => { dragOverIndex.value = index }
@@ -1356,6 +1361,7 @@
                     rows,
                     newColLabel,
                     newColType,
+                    typeOptions,
                     formulaA,
                     formulaB,
                     numberColumns,
