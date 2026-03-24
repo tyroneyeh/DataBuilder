@@ -1421,7 +1421,7 @@
                 const centerTextPlugin = {
                     id: 'centerText',
                     afterDraw(chart) {
-                        const { width, height, ctx, chartArea: { top, bottom, left, right } } = chart;
+                        const { width, height, ctx, chartArea: { top, bottom, left, right } } = chart
                         ctx.save()
                         const dataset = chart.data.datasets[0]
                         if (!dataset || !dataset.data || dataset.data.length === 0) {
@@ -1431,8 +1431,8 @@
                         const total = dataset.data.reduce((sum, val) => sum + val, 0)
                         ctx.textBaseline = 'middle'
                         ctx.textAlign = 'center'
-                        const centerX = (left + right) / 2;
-                        const centerY = (top + bottom) / 2;
+                        const centerX = (left + right) / 2
+                        const centerY = (top + bottom) / 2
 
                         const labelFontSize = (height / 240).toFixed(2)
                         ctx.font = `500 ${labelFontSize}em sans-serif`
