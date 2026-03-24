@@ -187,7 +187,7 @@
 
                 <tbody v-for="(row, index) in rows" :key="row.id">
                     <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group" :data-index="index">
-                        <td class="sticky left-0 z-10 print:static bg-gray-50 print:bg-transparent border border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:cursor-auto select-none touch-action-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
+                        <td class="sticky left-0 z-10 print:static bg-gray-50 print:bg-transparent border border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
                             <span class="text-gray-300 mr-1 text-xs print:hidden">⋮</span>
                             {{ index + 1 }}
                         </td>
@@ -757,7 +757,7 @@
                     window.addEventListener('pointermove', onPointerMove, { passive: false })
                     window.addEventListener('pointerup', onPointerUp)
                     window.addEventListener('pointercancel', onPointerUp)
-                };
+                }
 
                 const onPointerMove = (event) => {
                     if (draggingIndex === -1) return
