@@ -63,36 +63,51 @@
 
         </div>
 
-        <div class=" flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 p-4 rounded-md border border-gray-200 gap-4 print:hidden">
+        <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 rounded-md border border-gray-200 gap-4 print:hidden">
             <div class="flex sm:flex-row flex-wrap items-start sm:items-end gap-4">
-                <div class="flex flex-col w-full sm:w-auto">
-                    <label class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</label>
-                    <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base">
+                <div
+                    @click="toggleMenu"
+                    class="p-2 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-50 transition-colors"
+                >
+                    <span class="flex items-center">☰ {{ translate('Columns') }}</span>
+                    <span
+                        class="transform transition-transform duration-300 text-gray-400"
+                        :class="isMenuOpen ? 'rotate-180' : 'rotate-0'"
+                    >▼</span>
                 </div>
+                <div
+                    class="flex"
+                    :class="{'hidden': !isMenuOpen}"
+                >
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</label>
+                        <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base">
+                    </div>
 
-                <div class="flex flex-col w-full sm:w-auto">
-                    <label class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</label>
-                    <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
-                        <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                    </select>
-                </div>
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</label>
+                        <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
+                            <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                        </select>
+                    </div>
 
-                <div v-if="newColType === 'multiply'" class="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200 w-full sm:w-auto">
-                    <select v-model="formulaA" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
-                        <option value="" disabled>{{ translate('Column A') }}</option>
-                        <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
-                    </select>
-                    <span class="text-gray-500 font-bold">×</span>
-                    <select v-model="formulaB" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
-                        <option value="" disabled>{{ translate('Column B') }}</option>
-                        <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
-                    </select>
-                </div>
+                    <div v-if="newColType === 'multiply'" class="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200 w-full sm:w-auto">
+                        <select v-model="formulaA" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
+                            <option value="" disabled>{{ translate('Column A') }}</option>
+                            <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <span class="text-gray-500 font-bold">×</span>
+                        <select v-model="formulaB" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
+                            <option value="" disabled>{{ translate('Column B') }}</option>
+                            <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                    </div>
 
-                <div class="flex flex-col justify-end w-full sm:w-auto mt-2 sm:mt-0">
-                    <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full">
-                        {{ translate('Add') }}
-                    </button>
+                    <div class="flex flex-col justify-end">
+                        <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white text-nowrap p-2 rounded-md transition-colors font-medium shadow-sm w-full">
+                            {{ translate('Add') }}
+                        </button>
+                    </div>
                 </div>
                 <div class="flex flex-col w-full sm:w-auto">
                     <label class="text-sm text-gray-600 mb-1">{{ translate('Workspace') }}</label>
@@ -103,9 +118,8 @@
                         @change="changeStorageKey"
                         @focus="onKeyFocus" @blur="onKeyBlur"
                         :placeholder="translate('Select or create a workspace')"
-                        class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base"
+                        class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base"
                     >
-
                     <datalist id="storage-key-options">
                         <option v-for="key in savedKeysList" :key="key" :value="key"></option>
                     </datalist>
@@ -409,6 +423,7 @@
         const translations = {
             "zh-TW": {
                 "TY's Data Builder": "TY的資料表計算器",
+                "Columns": "欄位",
                 "Workspace": "切換存檔",
                 "Select or create a workspace": "選擇或創建工作區",
                 "My Dynamic Table": "我的動態表格",
@@ -510,6 +525,7 @@
 
                 const fileInput = ref(null)
 
+                const isMenuOpen = ref(false)
                 const isChartOpen = ref(localStorage.getItem('isExpenseChartOpen'))
                 const selectedChartCatColId = ref(localStorage.getItem('chartCatColId') || null)
                 const selectedChartNumColId = ref(localStorage.getItem('chartNumColId') || null)
@@ -1496,6 +1512,10 @@
                     }
                 }
 
+                const toggleMenu = () => {
+                    isMenuOpen.value = !isMenuOpen.value
+                }
+
                 return {
                     currentLanguage,
                     translate,
@@ -1554,7 +1574,9 @@
                     isChartOpen,
                     updateChart,
                     selectedChartCatColId,
-                    selectedChartNumColId
+                    selectedChartNumColId,
+                    toggleMenu,
+                    isMenuOpen
                 }
             }
         })
