@@ -53,12 +53,6 @@
 </head>
 <body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
     <div id="app" class="mx-auto bg-white rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
-        <div v-if="isDragging" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-600/80 backdrop-blur-sm border-8 border-dashed border-white transition-all">
-            <div class="text-white text-3xl sm:text-5xl font-bold flex flex-col items-center gap-6 pointer-events-none">
-                <span class="text-7xl sm:text-8xl">📥</span>
-                {{ translate('Drop JSON or CSV file here to import') }}
-            </div>
-        </div>
         <div class="relative">
             <div class="absolute top-0 right-0 print:hidden z-10">
                 <select v-model="currentLanguage" class="border border-gray-300 px-2 py-1 rounded text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
@@ -410,7 +404,7 @@
         <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">&copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a></footer>
     </div>
     <script type="module">
-        import { createApp, ref, computed, watch, nextTick, onMounted, onUnmounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, computed, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
@@ -514,7 +508,6 @@
                 const shareLink = ref('')
                 const qrCodeUrl = ref('')
 
-                const isDragging = ref(false)
                 const fileInput = ref(null)
 
                 const isChartOpen = ref(localStorage.getItem('isExpenseChartOpen'))
@@ -1228,43 +1221,6 @@
                     return e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')
                 }
 
-                const handleDragEnter = (e) => {
-                    if (!hasFiles(e)) return
-                    e.preventDefault()
-                    dragCounter++
-                    isDragging.value = true
-                }
-
-                const handleDragLeave = (e) => {
-                    if (!hasFiles(e)) return
-                    e.preventDefault()
-                    dragCounter--
-                    if (dragCounter <= 0) {
-                        dragCounter = 0
-                        isDragging.value = false
-                    }
-                }
-
-                const handleDragOver = (e) => {
-                    if (!hasFiles(e)) return
-                    e.preventDefault()
-                }
-
-                const handleDrop = async (e) => {
-                    if (!hasFiles(e)) return
-                    e.preventDefault()
-                    dragCounter = 0
-                    isDragging.value = false
-
-                    const file = e.dataTransfer.files[0]
-                    if (!file) return
-
-                    if (file.type.includes('csv') || file.type.includes('json') || file.name.endsWith('.csv') || file.name.endsWith('.json')) {
-                        const text = await file.text()
-                        processImportText(text)
-                    }
-                }
-
                 const processImportText = (rawText) => {
                     let dataList = []
                     let isJSON = false
@@ -1540,22 +1496,6 @@
                     }
                 }
 
-                onMounted(() => {
-                    window.addEventListener('dragenter', handleDragEnter)
-                    window.addEventListener('dragleave', handleDragLeave)
-                    window.addEventListener('dragover', handleDragOver)
-                    window.addEventListener('drop', handleDrop)
-                    window.addEventListener('paste', handlePaste)
-                })
-
-                onUnmounted(() => {
-                    window.removeEventListener('dragenter', handleDragEnter)
-                    window.removeEventListener('dragleave', handleDragLeave)
-                    window.removeEventListener('dragover', handleDragOver)
-                    window.removeEventListener('drop', handleDrop)
-                    window.removeEventListener('paste', handlePaste)
-                })
-
                 return {
                     currentLanguage,
                     translate,
@@ -1605,7 +1545,6 @@
                     editingColId,
                     startEditingCol,
                     stopEditingCol,
-                    isDragging,
                     fileInput,
                     triggerFileUpload,
                     handleFileUpload,
