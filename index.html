@@ -136,9 +136,7 @@
                 @click="toggleChart"
                 class="p-4 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors print:hidden"
             >
-                <span class="flex items-center">
-                    <span class="mr-2">📊</span> {{ translate('Expense Summary') }}
-                </span>
+                <span class="flex items-center">📊 {{ translate('Expense Summary') }}</span>
                 <span
                     class="transform transition-transform duration-300 text-gray-400"
                     :class="isChartOpen ? 'rotate-180' : 'rotate-0'"
@@ -365,21 +363,11 @@
             <div class="flex flex-wrap gap-3">
                 <input type="file" ref="fileInput" accept=".json,.csv" class="hidden" @change="handleFileUpload">
 
-                <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    📂 {{ translate('Upload (JSON/CSV)') }}
-                </button>
-                <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    { } {{ translate('Export JSON') }}
-                </button>
-                <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">
-                    ⊞ {{ translate('Export CSV') }}
-                </button>
-                <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
-                    🔗 {{ translate('Share Link & QRCode') }}
-                </button>
-                <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">
-                    🖨️ {{ translate('Print') }}
-                </button>
+                <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">📂 {{ translate('Upload (JSON/CSV)') }}</button>
+                <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
+                <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
+                <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
+                <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
             </div>
 
             <div v-if="shareLink" class="bg-indigo-50 p-4 sm:p-6 rounded-lg border border-indigo-200 shadow-inner flex flex-col items-center gap-4 mt-2">
@@ -388,7 +376,7 @@
                     <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class="pointer-events-none">
                 </div>
                 <div class="text-indigo-700 text-xs sm:text-sm break-all w-full bg-white p-3 rounded shadow-sm border border-indigo-100">
-                    <span class="font-bold mr-2 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>
+                    <span class="font-bold mr-1 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>
                     <div class="w-full bg-indigo-50/50 border border-indigo-100 rounded p-2 text-gray-600 select-all cursor-text leading-relaxed">{{ shareLink }}</div>
                 </div>
             </div>
