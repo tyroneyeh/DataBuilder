@@ -131,10 +131,10 @@
             </div>
         </div>
 
-        <div class="mb-6 bg-white rounded-lg shadow-md border border-gray-100 print:hidden overflow-hidden">
+        <div class="mb-6 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden" :class="{'print:hidden': !isChartOpen}">
             <div
                 @click="toggleChart"
-                class="p-4 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors"
+                class="p-4 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors print:hidden"
             >
                 <span class="flex items-center">
                     <span class="mr-2">📊</span> {{ translate('Expense Summary') }}
