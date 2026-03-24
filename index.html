@@ -541,6 +541,8 @@
                     {value: 'multiply', label: translate('Multiply (A × B)')},
                 ])
 
+                let isInitializing = true
+
                 watch([tableTitle, currentLanguage], () => {
                     document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
                 }, { immediate: true })
@@ -554,6 +556,7 @@
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
                 })
                 watch([selectedChartCatColId, selectedChartNumColId], () => {
+                    if (isInitializing) return
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
                     nextTick(() => { updateChart() })
@@ -565,6 +568,11 @@
                     if (rows.value.length === 0) return false
                     return rows.value.every(row => row.isExpanded)
                 })
+
+                const loadChartCols = () => {
+                    selectedChartCatColId.value = localStorage.getItem(`${currentStorageKey.value}_chartCatColId`)
+                    selectedChartNumColId.value = localStorage.getItem(`${currentStorageKey.value}_chartNumColId`)
+                }
 
                 const initStorageKeys = () => {
                     try {
@@ -583,8 +591,8 @@
                         savedKeysList.value = ['ty-db']
                     }
                     currentStorageKey.value = savedKeysList.value[0]
-                    selectedChartCatColId.value = localStorage.getItem(`${currentStorageKey.value}_chartCatColId`) || null
-                    selectedChartNumColId.value = localStorage.getItem(`${currentStorageKey.value}_chartNumColId`) || null
+                    loadChartCols()
+                    isInitializing = false
                 }
 
                 initStorageKeys()
@@ -599,6 +607,8 @@
                     savedKeysList.value = savedKeysList.value.filter(key => key !== newKey)
                     savedKeysList.value.unshift(newKey)
                     localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+
+                    loadChartCols()
 
                     await loadData()
                 }
@@ -1234,7 +1244,6 @@
                     editingColId.value = null
                 }
 
-                let dragCounter = 0
                 const hasFiles = (e) => {
                     return e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')
                 }
@@ -1364,13 +1373,6 @@
                     })
 
                     if (addCount > 0) alert(`${translate('Imported items successfully!')} (${addCount})`)
-                }
-
-                const handlePaste = (e) => {
-                    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return
-
-                    const text = e.clipboardData.getData('text')
-                    if (text) processImportText(text)
                 }
 
                 const triggerFileUpload = () => {
