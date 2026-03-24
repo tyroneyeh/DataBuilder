@@ -794,7 +794,7 @@
                     if (!targetElement) return
                     const targetTh = targetElement.closest('th[data-col-index]')
                     if (targetTh) {
-                        const targetIndex = parseInt(targetTh.getAttribute('data-col-index'), 10)
+                        const targetIndex = parseInt(targetTh.dataset.colIndex, 10)
                         if (!isNaN(targetIndex) && targetIndex !== draggingColIndex) {
                             const movedCol = columns.value.splice(draggingColIndex, 1)[0]
                             columns.value.splice(targetIndex, 0, movedCol)
@@ -840,7 +840,7 @@
                     if (!targetElement) return
                     const targetRow = targetElement.closest('tr[data-index]')
                     if (targetRow) {
-                        const targetIndex = parseInt(targetRow.getAttribute('data-index'), 10)
+                        const targetIndex = parseInt(targetRow.dataset.index, 10)
                         if (!isNaN(targetIndex) && targetIndex !== draggingIndex) {
                             const movedItem = rows.value.splice(draggingIndex, 1)[0]
                             rows.value.splice(targetIndex, 0, movedItem)
