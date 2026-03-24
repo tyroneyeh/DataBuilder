@@ -161,7 +161,11 @@
                                 editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                             ]">
 
-                            <span class="text-gray-400 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:hidden">⋮</span>
+                            <span class="text-gray-400 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:hidden"
+                                @touchstart.stop="onTouchStart(index, $event)"
+                                @touchmove.stop.prevent="onTouchMove($event)"
+                                @touchend.stop="onTouchEnd"
+                                @touchcancel.stop="onTouchEnd">⋮</span>
 
                             <span v-if="editingColId !== col.id"
                                 @click="startEditingCol(col.id)"
@@ -745,7 +749,36 @@
                     }
                     dragOverRowIndex.value = null; draggedRowIndex.value = null
                 }
-                const onRowDragEnd = () => { dragOverRowIndex.value = null; draggedRowIndex.value = null; }
+                const onRowDragEnd = () => { dragOverRowIndex.value = null; draggedRowIndex.value = null }
+
+                const onTouchStart = (index, event) => {
+                    draggingIndex = index
+                    dragRowElement = event.target.closest('tr')
+                    if (dragRowElement) dragRowElement.classList.add('opacity-50', 'bg-indigo-50', 'shadow-lg')
+                }
+
+                const onTouchMove = (event) => {
+                    if (draggingIndex === -1) return
+                    const touch = event.touches[0]
+                    const targetElement = document.elementFromPoint(touch.clientX, touch.clientY)
+                    if (!targetElement) return
+
+                    const targetRow = targetElement.closest('tr[data-index]')
+                    if (targetRow) {
+                        const targetIndex = parseInt(targetRow.getAttribute('data-index'), 10)
+                        if (!isNaN(targetIndex) && targetIndex !== draggingIndex) {
+                            const movedItem = rows.value.splice(draggingIndex, 1)[0]
+                            rows.value.splice(targetIndex, 0, movedItem)
+                            draggingIndex = targetIndex
+                        }
+                    }
+                }
+
+                const onTouchEnd = () => {
+                    if (dragRowElement) dragRowElement.classList.remove('opacity-50', 'bg-indigo-50', 'shadow-lg')
+                    draggingIndex = -1
+                    dragRowElement = null
+                }
 
                 const addColumn = () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
@@ -1216,7 +1249,7 @@
                             for (let i = 1; i < lines.length; i++) {
                                 const values = parseCSVLine(lines[i])
                                 let obj = {}
-                                headers.forEach((h, idx) => { obj[h] = values[idx]; })
+                                headers.forEach((h, idx) => { obj[h] = values[idx] })
                                 dataList.push(obj)
                             }
                         }
@@ -1242,7 +1275,8 @@
                                 if (metaStr.startsWith('multiply')) {
                                     targetType = 'multiply'
                                     const parts = metaStr.split('|')
-                                    targetOpA = parts[1]; targetOpB = parts[2]
+                                    targetOpA = parts[1]
+                                    targetOpB = parts[2]
                                 } else {
                                     targetType = metaStr
                                 }
@@ -1380,6 +1414,9 @@
                     onRowDragLeave,
                     onRowDrop,
                     onRowDragEnd,
+                    onTouchStart,
+                    onTouchMove,
+                    onTouchEnd,
                     addColumn,
                     addRow,
                     removeColumn,
