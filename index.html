@@ -131,7 +131,7 @@
             </div>
         </div>
 
-        <div class="mb-6 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden" :class="{'print:hidden': !isChartOpen}">
+        <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden" :class="{'print:hidden': !isChartOpen}">
             <div
                 @click="toggleChart"
                 class="p-2 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors print:hidden"
@@ -1462,6 +1462,36 @@
                     return totals
                 }
 
+                const centerTextPlugin = {
+                    id: 'centerText',
+                    afterDraw(chart) {
+                        const { width, height, ctx, chartArea: { top, bottom, left, right } } = chart;
+                        ctx.save()
+                        const dataset = chart.data.datasets[0]
+                        if (!dataset || !dataset.data || dataset.data.length === 0) {
+                            ctx.restore()
+                            return
+                        }
+                        const total = dataset.data.reduce((sum, val) => sum + val, 0)
+                        ctx.textBaseline = 'middle'
+                        ctx.textAlign = 'center'
+                        const centerX = (left + right) / 2;
+                        const centerY = (top + bottom) / 2;
+
+                        const labelFontSize = (height / 240).toFixed(2)
+                        ctx.font = `500 ${labelFontSize}em sans-serif`
+                        ctx.fillStyle = '#9ca3af'
+                        const labelText = translate('Total')
+                        ctx.fillText(labelText, centerX, centerY - 20)
+                        const fontSize = (height / 110).toFixed(2)
+                        ctx.font = `bold ${fontSize}em sans-serif`
+                        ctx.fillStyle = '#1f2937'
+                        const text = total.toLocaleString()
+                        ctx.fillText(text, centerX, centerY + 15)
+                        ctx.restore()
+                    }
+                }
+
                 const updateChart = () => {
                     const data = getChartData()
                     const ctx = document.getElementById('expenseChart')
@@ -1504,7 +1534,8 @@
                                     }
                                 },
                                 animation: { animateScale: true, animateRotate: true }
-                            }
+                            },
+                            plugins: [centerTextPlugin]
                         })
                     }
                 }
