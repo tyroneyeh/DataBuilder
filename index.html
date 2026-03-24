@@ -1244,10 +1244,6 @@
                     editingColId.value = null
                 }
 
-                const hasFiles = (e) => {
-                    return e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')
-                }
-
                 const processImportText = (rawText) => {
                     let dataList = []
                     let isJSON = false
@@ -1441,7 +1437,7 @@
                 const centerTextPlugin = {
                     id: 'centerText',
                     afterDraw(chart) {
-                        const { width, height, ctx, chartArea: { top, bottom, left, right } } = chart
+                        const { height, ctx, chartArea: { top, bottom, left, right } } = chart
                         ctx.save()
                         const dataset = chart.data.datasets[0]
                         if (!dataset || !dataset.data || dataset.data.length === 0) {
