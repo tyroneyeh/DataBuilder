@@ -507,7 +507,7 @@
                 const isDragging = ref(false)
                 const fileInput = ref(null)
 
-                const isChartOpen = ref(false)
+                const isChartOpen = ref(localStorage.getItem('isExpenseChartOpen'))
 
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
                 const typeOptions = ref([
@@ -1407,6 +1407,7 @@
 
                 const toggleChart = () => {
                     isChartOpen.value = !isChartOpen.value
+                    isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
                         nextTick(() => {
                             if (expenseChart) expenseChart.resize()
@@ -1427,7 +1428,7 @@
                         if (numCol.type === 'multiply') val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
                         if (val > 0) {
                             totals[cat] = (totals[cat] || 0) + val
-                            if (!isChartOpen.value) isChartOpen.value = true
+                            if (localStorage.getItem('isExpenseChartOpen') && !isChartOpen.value) isChartOpen.value = true
                         }
                     })
                     return totals
