@@ -1437,7 +1437,7 @@
                         const labelFontSize = (height / 240).toFixed(2)
                         ctx.font = `500 ${labelFontSize}em sans-serif`
                         ctx.fillStyle = '#9ca3af'
-                        const labelText = translate('Total')
+                        const labelText = columns.value.find(c => c.id === selectedChartNumColId.value).label
                         ctx.fillText(labelText, centerX, centerY - 20)
                         const fontSize = (height / 110).toFixed(2)
                         ctx.font = `bold ${fontSize}em sans-serif`
