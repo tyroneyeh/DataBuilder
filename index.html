@@ -131,7 +131,7 @@
             </div>
         </div>
 
-        <div v-show="hasChart" class="mb-6 bg-white rounded-lg shadow-md border border-gray-100 print:hidden overflow-hidden">
+        <div class="mb-6 bg-white rounded-lg shadow-md border border-gray-100 print:hidden overflow-hidden">
             <div
                 @click="toggleChart"
                 class="p-4 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors"
@@ -507,8 +507,7 @@
                 const isDragging = ref(false)
                 const fileInput = ref(null)
 
-                const isChartOpen = ref(true)
-                const hasChart = ref(false)
+                const isChartOpen = ref(false)
 
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
                 const typeOptions = ref([
@@ -1420,7 +1419,6 @@
                     const numCol = columns.value.find(c => c.type === 'multiply') || columns.value.find(c => c.type === 'number')
 
                     if (!catCol || !numCol) return null
-                    hasChart.value = true
 
                     const totals = {}
                     rows.value.forEach(row => {
@@ -1429,6 +1427,7 @@
                         if (numCol.type === 'multiply') val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
                         if (val > 0) {
                             totals[cat] = (totals[cat] || 0) + val
+                            if (!isChartOpen.value) isChartOpen.value = true
                         }
                     })
                     return totals
@@ -1552,7 +1551,6 @@
                     handleFileUpload,
                     adjustNumber,
                     getUniqueValues,
-                    hasChart,
                     toggleChart,
                     isChartOpen,
                     updateChart
