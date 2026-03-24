@@ -419,6 +419,7 @@
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
                 "Source columns cannot be the same!": "來源欄位不能相同！",
+                "Are you sure you want to delete this column?": "確定要刪除此欄位嗎?",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
                 "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！",
                 "Share link generated and copied to clipboard!": "分享連結已產生並複製到剪貼簿！",
@@ -970,6 +971,7 @@
                     if (columns.value.some(col => col.type === 'multiply' && (col.opA === idToRemove || col.opB === idToRemove))) {
                         return alert(translate("Cannot delete! Other 'Calculate' columns depend on this."))
                     }
+                    if (!confirm(translate("Are you sure you want to delete this column?"))) return
                     columns.value = columns.value.filter(col => col.id !== idToRemove)
                     rows.value.forEach(row => delete row[idToRemove])
                 }
