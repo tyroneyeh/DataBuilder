@@ -1547,7 +1547,7 @@
 
                         const total = dataset.data.reduce((sum, val) => sum + val, 0)
 
-                        customLegendItems.value = chart.data.labels.map((label, index) => {
+                        const rawItems = chart.data.labels.map((label, index) => {
                             let value = dataset.data[index]
                             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
 
@@ -1568,6 +1568,8 @@
                                 hidden: !chart.getDataVisibility(index)
                             }
                         })
+                        rawItems.sort((a, b) => b.value - a.value)
+                        customLegendItems.value = rawItems
                     }
                 }
 
