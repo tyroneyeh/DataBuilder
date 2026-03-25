@@ -1534,13 +1534,11 @@
                                 notation: 'compact',
                                 maximumFractionDigits: 1
                             })
-                            const compactValue = compactFormatter.format(value)
-                            const exactValue = value.toLocaleString()
 
                             return {
                                 index: index,
                                 text: label,
-                                value: value >= 10000 ? compactValue : exactValue,
+                                value: value >= 10000 ? compactFormatter.format(value) : value.toLocaleString(),
                                 percentage: percentage,
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index)
