@@ -156,31 +156,49 @@
                 :class="isChartOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
             >
                 <div class="overflow-hidden">
-                    <div class="p-2 border-t border-gray-100 flex flex-col items-center">
-                        <div class="relative h-64 w-full flex justify-center max-w-md">
-                            <canvas id="expenseChart"></canvas>
-                        </div>
-                        <div class="w-full max-w-md flex justify-between items-center mt-6 bg-gray-50 p-2 rounded-lg text-sm border border-gray-100 print:hidden">
-                            <div class="flex items-center space-x-2 w-1/2 pr-2 border-r border-gray-200">
-                                <span class="text-gray-500 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
-                                <select v-model="selectedChartCatColId" class="w-full bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                                    <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
-                                        {{ col.label }}
-                                    </option>
-                                </select>
+                    <div class="flex flex-col md:flex-row items-center w-full max-w-2xl mx-auto">
+
+                            <div class="relative h-64 w-full md:w-1/2 flex justify-center items-center">
+                                <canvas id="expenseChart" class="z-10"></canvas>
                             </div>
 
-                            <div class="flex items-center space-x-2 w-1/2 pl-2">
-                                <span class="text-gray-500 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
-                                <select v-model="selectedChartNumColId" class="w-full bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                                    <option v-for="col in columns.filter(c => ['number', 'multiply'].includes(c.type))" :key="col.id" :value="col.id">
-                                        {{ col.label }}
-                                    </option>
-                                </select>
+                            <div class="w-full md:w-1/2 mt-6 md:mt-0 md:pl-8 flex flex-col space-y-2">
+
+                                <div
+                                    v-for="item in customLegendItems"
+                                    :key="item.index"
+                                    @click="toggleLegend(item.index)"
+                                    class="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200"
+                                    :class="{ 'opacity-40 grayscale': item.hidden }"
+                                >
+                                    <div class="flex items-center space-x-3 overflow-hidden w-full">
+                                        <span
+                                            class="w-4 h-4 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: item.color }"
+                                        ></span>
+
+                                        <span
+                                            class="text-gray-700 font-medium truncate"
+                                            :class="{ 'line-through text-gray-400': item.hidden }"
+                                            :title="item.text"
+                                        >
+                                            {{ item.text }}
+                                        </span>
+                                    </div>
+
+                                    <div class="text-right pl-4">
+                                        <div class="text-gray-900 font-bold tracking-tight">
+                                            {{ item.value.toLocaleString() }}
+                                        </div>
+                                        <div class="text-xs text-gray-400 font-medium">
+                                            {{ item.percentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
                         </div>
-                    </div>
                 </div>
             </div>
 
@@ -527,6 +545,7 @@
 
                 const isMenuOpen = ref(false)
                 const isChartOpen = ref(localStorage.getItem('isExpenseChartOpen'))
+                const customLegendItems = ref([])
                 const selectedChartCatColId = ref(null)
                 const selectedChartNumColId = ref(null)
 
@@ -1495,6 +1514,40 @@
                     }
                 }
 
+                const htmlLegendPlugin = {
+                    id: 'htmlLegend',
+                    afterUpdate(chart) {
+                        const dataset = chart.data.datasets[0]
+                        if (!dataset || !dataset.data) return
+
+                        const total = dataset.data.reduce((sum, val) => sum + val, 0)
+
+                        customLegendItems.value = chart.data.labels.map((label, index) => {
+                            const value = dataset.data[index]
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
+
+                            const meta = chart.getDatasetMeta(0)
+                            const style = meta.controller.getStyle(index)
+
+                            return {
+                                index: index,
+                                text: label,
+                                value: value,
+                                percentage: percentage,
+                                color: style.backgroundColor,
+                                hidden: !chart.getDataVisibility(index)
+                            }
+                        })
+                    }
+                }
+
+                const toggleLegend = (index) => {
+                    if (expenseChart) {
+                        expenseChart.toggleDataVisibility(index)
+                        expenseChart.update()
+                    }
+                }
+
                 const updateChart = () => {
                     const data = getChartData()
                     const ctx = document.getElementById('expenseChart')
@@ -1531,38 +1584,11 @@
                                 maintainAspectRatio: false,
                                 cutout: '65%',
                                 plugins: {
-                                    legend: {
-                                        position: 'right',
-                                        labels: {
-                                            padding: 20,
-                                            generateLabels: (chart) => {
-                                                const data = chart.data
-                                                if (data.labels.length && data.datasets.length) {
-                                                    const dataset = data.datasets[0]
-                                                    const total = dataset.data.reduce((sum, val) => sum + val, 0)
-                                                    return data.labels.map((label, i) => {
-                                                        const value = dataset.data[i]
-                                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-                                                        const meta = chart.getDatasetMeta(0)
-                                                        const style = meta.controller.getStyle(i)
-                                                        return {
-                                                            text: `${label} ${percentage}%`,
-                                                            fillStyle: style.backgroundColor,
-                                                            strokeStyle: style.borderColor,
-                                                            lineWidth: style.borderWidth,
-                                                            hidden: !chart.getDataVisibility(i),
-                                                            index: i
-                                                        }
-                                                    })
-                                                }
-                                                return []
-                                            }
-                                        }
-                                    }
+                                    legend: { display: false }
                                 },
                                 animation: { animateScale: true, animateRotate: true }
                             },
-                            plugins: [centerTextPlugin, slicePercentagePlugin]
+                            plugins: [centerTextPlugin, slicePercentagePlugin, htmlLegendPlugin]
                         })
                     }
                 }
@@ -1627,6 +1653,8 @@
                     getUniqueValues,
                     toggleChart,
                     isChartOpen,
+                    customLegendItems,
+                    toggleLegend,
                     updateChart,
                     selectedChartCatColId,
                     selectedChartNumColId,
