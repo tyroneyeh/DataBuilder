@@ -1479,7 +1479,7 @@
                             notation: 'compact',
                             maximumFractionDigits: 1
                         })
-                        ctx.fillText(formatter.format(total), centerX, centerY + 15)
+                        ctx.fillText(total >= 10000 ? formatter.format(total) : total.toLocaleString(), centerX, centerY + 15)
                         ctx.restore()
                     }
                 }
