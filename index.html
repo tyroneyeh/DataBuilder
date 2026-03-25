@@ -554,7 +554,7 @@
         const browserLang = navigator.language || navigator.userLanguage
         const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en'
 
-        const currentLanguage = ref(initialLang)
+        const currentLanguage = ref(localStorage.getItem('lang') || initialLang)
 
         const translate = (key) => {
             const dict = translations[currentLanguage.value]
@@ -563,6 +563,7 @@
 
         const app = createApp({
             setup() {
+
                 const currentStorageKey = ref('')
                 const savedKeysList = ref([])
                 const tempKey = ref('')
@@ -607,11 +608,10 @@
 
                 let isInitializing = true
 
-                watch([tableTitle, currentLanguage], () => {
-                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
-                }, { immediate: true })
-                watch([tableTitle, columns, rows], () => {
+                watch([currentLanguage, tableTitle, columns, rows], () => {
+                    if (isInitializing) return
                     localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    localStorage.setItem('lang', currentLanguage.value)
                     shareLink.value = ''
                     qrCodeUrl.value = ''
                     nextTick(() => { updateChart() })
@@ -655,8 +655,8 @@
                         savedKeysList.value = ['ty-db']
                     }
                     currentStorageKey.value = savedKeysList.value[0]
+                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
                     loadChartCols()
-                    isInitializing = false
                 }
 
                 initStorageKeys()
@@ -833,6 +833,10 @@
                         ]
                         rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
+
+                    await nextTick()
+                    updateChart()
+                    isInitializing = false
                 }
 
                 loadData()
