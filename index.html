@@ -484,7 +484,8 @@
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B！",
                 "Source columns cannot be the same!": "來源欄位不能相同！",
-                "Are you sure you want to delete this column?": "確定要刪除此欄位嗎?",
+                "Are you sure you want to delete this column?": "確定要刪除此欄嗎?",
+                "Are you sure you want to delete this row?": "確定要刪除此列嗎?",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
                 "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！",
                 "Share link generated and copied to clipboard!": "分享連結已產生並複製到剪貼簿！",
@@ -957,12 +958,9 @@
 
                             if (rows.value.length > 1) {
                                 const currentRowIndex = rows.value.findIndex(r => r.id === rowId)
+                                const focusRowId = currentRowIndex > 0 ? rows.value[currentRowIndex - 1].id : rows.value[currentRowIndex + 1].id
 
-                                const focusRowId = currentRowIndex > 0
-                                    ? rows.value[currentRowIndex - 1].id
-                                    : rows.value[currentRowIndex + 1].id
-
-                                removeRow(rowId)
+                                if (confirm(translate('Are you sure you want to delete this row?'))) removeRow(rowId)
 
                                 await nextTick()
 
