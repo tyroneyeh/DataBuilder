@@ -468,7 +468,13 @@
             </div>
         </div>
 
-        <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">&copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a></footer>
+        <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">
+            &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
+            <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex justify-end" target="_blank">
+                <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" />
+                <img src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" />
+            </a>
+        </footer>
     </div>
     <script type="module">
         import { createApp, ref, computed, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
