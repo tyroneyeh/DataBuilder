@@ -1500,7 +1500,7 @@
 
                 const centerTextPlugin = {
                     id: 'centerText',
-                    afterDraw(chart) {
+                    afterDatasetsDraw(chart) {
                         const { height, ctx, chartArea: { top, bottom, left, right } } = chart
                         ctx.save()
                         const dataset = chart.data.datasets[0]
