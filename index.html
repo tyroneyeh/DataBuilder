@@ -1533,7 +1533,31 @@
                                 plugins: {
                                     legend: {
                                         position: 'right',
-                                        labels: { font: { family: 'sans-serif' } }
+                                        labels: {
+                                            padding: 20,
+                                            generateLabels: (chart) => {
+                                                const data = chart.data
+                                                if (data.labels.length && data.datasets.length) {
+                                                    const dataset = data.datasets[0]
+                                                    const total = dataset.data.reduce((sum, val) => sum + val, 0)
+                                                    return data.labels.map((label, i) => {
+                                                        const value = dataset.data[i]
+                                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
+                                                        const meta = chart.getDatasetMeta(0)
+                                                        const style = meta.controller.getStyle(i)
+                                                        return {
+                                                            text: `${label} ${percentage}%`,
+                                                            fillStyle: style.backgroundColor,
+                                                            strokeStyle: style.borderColor,
+                                                            lineWidth: style.borderWidth,
+                                                            hidden: !chart.getDataVisibility(i),
+                                                            index: i
+                                                        }
+                                                    })
+                                                }
+                                                return []
+                                            }
+                                        }
                                     }
                                 },
                                 animation: { animateScale: true, animateRotate: true }
