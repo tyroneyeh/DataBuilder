@@ -187,8 +187,8 @@
                                 </div>
 
                                 <div class="text-right pl-4">
-                                    <div class="text-gray-900 font-bold tracking-tight text-nowrap">
-                                        {{ item.value.toLocaleString() }}
+                                    <div class="text-gray-900 font-bold tracking-tight text-nowrap" :title="item.value.toLocaleString()">
+                                        {{ formatNumber(item.value) }}
                                     </div>
                                     <div class="text-xs text-gray-400 font-medium">
                                         {{ item.percentage }}%
@@ -1489,7 +1489,7 @@
                     return totals
                 }
 
-                const compactFormatter = new Intl.NumberFormat('zh-TW', {
+                const compactFormatter = new Intl.NumberFormat(navigator.language || 'en-US', {
                     notation: 'compact',
                     maximumFractionDigits: 1
                 })
@@ -1576,7 +1576,7 @@
                             return {
                                 index: index,
                                 text: label,
-                                value: formatNumber(value),
+                                value: value,
                                 percentage: percentage,
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index)
@@ -1638,7 +1638,7 @@
                                                 const dataset = context.chart.data.datasets[0]
                                                 const total = dataset.data.reduce((sum, val) => sum + val, 0)
                                                 const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-                                                return `${formatNumber(value)} ${percentage}%`
+                                                return `${value.toLocaleString()} ${percentage}%`
                                             }
                                         }
                                     }
