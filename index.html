@@ -1495,7 +1495,7 @@
                     return totals
                 }
 
-                const compactFormatter = new Intl.NumberFormat(navigator.language || 'en-US', {
+                const compactFormatter = new Intl.NumberFormat(navigator.language || navigator.userLanguage || 'en-US', {
                     notation: 'compact',
                     maximumFractionDigits: 1
                 })
