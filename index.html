@@ -1410,8 +1410,8 @@
                                 if (metaStr.startsWith('multiply')) {
                                     targetType = 'multiply'
                                     const parts = metaStr.split('|')
-                                    targetOpA = parts[1]
-                                    targetOpB = parts[2]
+                                    targetOpA = columns.value.find(col => col.label === parts[1])?.id
+                                    targetOpB = columns.value.find(col => col.label === parts[2])?.id
                                 } else {
                                     targetType = metaStr
                                 }
