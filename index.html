@@ -1667,7 +1667,7 @@
                                                 const dataset = context.chart.data.datasets[0]
                                                 const total = dataset.data.reduce((sum, val) => sum + val, 0)
                                                 const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-                                                return `${value.toLocaleString()} ${percentage}%`
+                                                return `${value.toLocaleString()} (${percentage}%)`
                                             }
                                         }
                                     }
