@@ -360,7 +360,7 @@
                             ></div>
                             <div
                                 v-show="activeMenuRowId === row.id"
-                                class="absolute right-0 top-full mt-1 w-28 bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+                                class="absolute right-0 top-full mt-1 w-[180px] bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
                             >
                                 <button @click="row.isExpanded = !row.isExpanded; closeActionMenu()"
                                     :class="[
@@ -369,6 +369,7 @@
                                     ]"
                                     class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.remark && row.remark.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
                                 <button @click="copyRow(index); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                                <button v-if="hasDateColumn" @click="copyRow(index, 1); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
                                 <button @click="removeRow(row.id); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
@@ -510,6 +511,7 @@
                 "Note": "備註",
                 "Note (*)": "備註 (*)",
                 "Copy": "複製",
+                "Copy no date": "複製 (不包含日期)",
                 "Delete": "刪除",
                 "↳ Sub-details": "↳ 備註 (Sub-details)",
                 "Enter details here...": "輸入詳細說明...",
@@ -573,6 +575,7 @@
                 const tableTitle = ref('')
                 const columns = ref([])
                 const rows = ref([])
+                const hasDateColumn = ref(false)
 
                 const activeMenuRowId = ref(null)
 
@@ -834,6 +837,7 @@
                         ]
                         rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
+                    hasDateColumn.value = columns.value.some(column => column.type === 'date');
 
                     tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
                     updateTitle()
@@ -942,7 +946,7 @@
                         if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const newColId = 'col_' + Date.now()
+                    const newColId = 'col_' + (columns.value.length + 1)
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply') { newColData.opA = formulaA.value; newColData.opB = formulaB.value }
 
@@ -954,14 +958,17 @@
                     formulaB.value = ''
                 }
 
-                const addRow = async () => {
-                    const newRowId = rows.value.length + 1
-                    const newRow = { id: newRowId, remark: '', isExpanded: false }
+                const getDate = () => {
                     const now = new Date()
                     const localOffset = now.getTimezoneOffset() * 60000
                     const localDate = new Date(now.getTime() - localOffset)
-                    const todayDate = localDate.toISOString().slice(0, 10)
-                    const currentTime = localDate.toISOString().slice(11, 16)
+                    return {todayDate: localDate.toISOString().slice(0, 10), currentTime: localDate.toISOString().slice(11, 16)}
+                }
+
+                const addRow = async () => {
+                    const newRowId = rows.value.length + 1
+                    const newRow = { id: newRowId, remark: '', isExpanded: false }
+                    const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
                         if (col.type === 'date') newRow[col.id] = todayDate
@@ -1119,16 +1126,29 @@
                     rows.value.forEach(row => delete row[idToRemove])
                 }
 
-                const copyRow = async (rowIndex) => {
+                const copyRow = async (rowIndex, ignoreDate = 0) => {
                     const originalRow = rows.value[rowIndex]
                     if (!originalRow) return
 
-                    const newRowId = Date.now() + Math.floor(Math.random() * 1000)
+                    const newRowId = rows.value.length + 1
 
                     const clonedRow = {
                         ...originalRow,
                         id: newRowId,
                         isExpanded: false
+                    }
+                    if (ignoreDate) {
+                        const {todayDate, currentTime} = getDate()
+                        for (const column of columns.value) {
+                            switch (column.type) {
+                                case 'date':
+                                    clonedRow[column.id] = todayDate;
+                                    break;
+                                case 'time':
+                                    clonedRow[column.id] = currentTime;
+                                    break;
+                            }
+                        }
                     }
 
                     rows.value.splice(rowIndex + 1, 0, clonedRow)
@@ -1397,7 +1417,7 @@
                             }
 
                             columns.value.push({
-                                id: 'col_' + Date.now() + Math.floor(Math.random()*1000),
+                                id: 'col_' + columns.value.length + 1,
                                 label: key,
                                 type: targetType,
                                 opA: targetOpA,
@@ -1715,6 +1735,7 @@
                     tableTitle,
                     columns,
                     rows,
+                    hasDateColumn,
                     newColLabel,
                     newColType,
                     typeOptions,
