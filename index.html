@@ -441,7 +441,7 @@
                 </div>
             </div>
 
-            <div v-if="outputToScreen" class="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
+            <div v-if="outputToScreen" class="h-64 bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
                 <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
             </div>
             <button v-if="outputToScreen" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
@@ -614,6 +614,7 @@
                     localStorage.setItem('lang', currentLanguage.value)
                     shareLink.value = ''
                     qrCodeUrl.value = ''
+                    updateTitle()
                     nextTick(() => { updateChart() })
                 }, { deep: true })
                 watch(newColType, (newVal) => {
@@ -638,6 +639,10 @@
                     selectedChartNumColId.value = localStorage.getItem(`${currentStorageKey.value}_chartNumColId`)
                 }
 
+                const updateTitle = () => {
+                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
+                }
+
                 const initStorageKeys = () => {
                     try {
                         const listStr = localStorage.getItem('TY_TABLE_MASTER_KEY_LIST')
@@ -655,7 +660,6 @@
                         savedKeysList.value = ['ty-db']
                     }
                     currentStorageKey.value = savedKeysList.value[0]
-                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
                     loadChartCols()
                 }
 
@@ -804,7 +808,6 @@
                     }
 
                     if (hashData) {
-                        tableTitle.value = hashData.title || localData.title || translate('My Dynamic Table')
                         columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                         const localRows = localData.rows || []
                         const incomingRows = hashData.raw_rows || hashData.rows || []
@@ -820,11 +823,9 @@
                         alert(translate('Successfully loaded and merged data from the link!'))
 
                     } else if (localData.columns && localData.columns.length > 0) {
-                        tableTitle.value = localData.title || translate('My Dynamic Table')
                         columns.value = localData.columns
                         rows.value = localData.rows
                     } else {
-                        tableTitle.value = translate('My Dynamic Table')
                         columns.value = [
                             { id: 'col_1', label: translate('Item'), type: 'text' },
                             { id: 'col_2', label: translate('Price'), type: 'number' },
@@ -834,8 +835,11 @@
                         rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
 
+                    tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
+                    updateTitle()
                     await nextTick()
                     updateChart()
+
                     isInitializing = false
                 }
 
