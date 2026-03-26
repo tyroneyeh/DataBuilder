@@ -1150,9 +1150,10 @@
                                     break;
                             }
                         }
+                        rows.value.push(clonedRow)
+                    } else {
+                        rows.value.splice(rowIndex + 1, 0, clonedRow)
                     }
-
-                    rows.value.splice(rowIndex + 1, 0, clonedRow)
 
                     await nextTick()
 
