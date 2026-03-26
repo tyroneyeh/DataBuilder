@@ -200,17 +200,17 @@
 
                     </div>
                     <div class="w-full max-w-md flex justify-between items-center mx-auto mt-6 bg-gray-50 p-2 rounded-lg text-sm border border-gray-100 print:hidden">
-                        <div class="flex items-center space-x-2 w-1/2 pr-2 border-r border-gray-200">
+                        <div class="flex items-center space-x-2 pr-2 border-r border-gray-200">
                             <span class="text-gray-500 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
-                            <select v-model="selectedChartCatColId" class="w-full bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <select v-model="selectedChartCatColId" class="w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
                             </select>
                         </div>
-                        <div class="flex items-center space-x-2 w-1/2 pl-2">
+                        <div class="flex items-center space-x-2 pl-2">
                             <span class="text-gray-500 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
-                            <select v-model="selectedChartNumColId" class="w-full bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <select v-model="selectedChartNumColId" class="w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['number', 'multiply'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
@@ -835,7 +835,7 @@
                             { id: 'col_3', label: translate('Quantity'), type: 'number' },
                             { id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3' }
                         ]
-                        rows.value = [{ id: Date.now(), col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
+                        rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
                     hasDateColumn.value = columns.value.some(column => column.type === 'date');
 
@@ -968,7 +968,7 @@
 
                 const addRow = async () => {
                     const newRowId = rows.value.length + 1
-                    const newRow = { id: newRowId, remark: '', isExpanded: false }
+                    const newRow = { id: `row_${newRowId}`, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
@@ -1434,7 +1434,7 @@
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
 
-                        let newRow = { id: `col_${addCount+1}` }
+                        let newRow = { id: `row_${addCount+1}` }
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
