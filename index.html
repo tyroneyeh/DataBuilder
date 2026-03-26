@@ -80,12 +80,12 @@
                     :class="{'hidden': !isMenuOpen}"
                 >
                     <div class="flex flex-col">
-                        <label class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</label>
+                        <span class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</span>
                         <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base">
                     </div>
 
                     <div class="flex flex-col">
-                        <label class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</label>
+                        <span class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</span>
                         <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
                             <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                         </select>
@@ -110,7 +110,7 @@
                     </div>
                 </div>
                 <div class="flex flex-col w-full sm:w-auto">
-                    <label class="text-sm text-gray-600 mb-1">{{ translate('Workspace') }}</label>
+                    <span class="text-sm text-gray-600 mb-1">{{ translate('Workspace') }}</span>
                     <input
                         type="text"
                         v-model="currentStorageKey"
@@ -482,7 +482,7 @@
                 "Number": "數字",
                 "Date": "日期",
                 "Time": "時間",
-                "Checkbox": "核取方塊",
+                "Checkbox": "確認",
                 "Category": "類別",
                 "Multiply (A × B)": "乘法計算 (A × B)",
                 "Column A": "欄位 A",
@@ -517,7 +517,7 @@
                 "Are you sure you want to delete this column?": "確定要刪除此欄嗎?",
                 "Are you sure you want to delete this row?": "確定要刪除此列嗎?",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
-                "Successfully loaded and merged data from the link!": "已成功載入並自動合併相同品項！",
+                "Successfully loaded data from the link!": "已成功載入來自連結的資料！",
                 "Share link generated and copied to clipboard!": "分享連結已產生並複製到剪貼簿！",
                 "Failed to generate link.": "產生連結失敗，可能資料包含無法轉碼的特殊字元。",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
@@ -800,7 +800,7 @@
                     if (hashData) {
                         columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                         const localRows = localData.rows || []
-                        const incomingRows = hashData.rows || hashData.rows || []
+                        const incomingRows = hashData.rows || []
 
                         let mergeCounter = 0
                         rows.value = [...localRows, ...incomingRows].map(row => {
@@ -808,9 +808,9 @@
                             return { ...row, id: Date.now() + mergeCounter }
                         })
 
-                        mergeDuplicates(true)
+                        if (await showConfirm(translate('Do you want to merge duplicates?'))) mergeDuplicates(true)
                         await nextTick()
-                        alert(translate('Successfully loaded and merged data from the link!'))
+                        alert(translate('Successfully loaded data from the link!'))
 
                     } else if (localData.columns && localData.columns.length > 0) {
                         columns.value = localData.columns
