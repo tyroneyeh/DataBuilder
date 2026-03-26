@@ -1271,7 +1271,7 @@
                         if (c.type === 'multiply') {
                             const colA = columns.value.find(col => col.id === c.opA)
                             const colB = columns.value.find(col => col.id === c.opB)
-                            meta += `|${colA.label}*${colB.label}`
+                            meta += `|${colA.label}|${colB.label}`
                         }
                         return `${c.label} [${meta}]`
                     })
