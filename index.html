@@ -279,44 +279,16 @@
 
                 <tbody v-for="(row, index) in rows" :key="row.id">
                     <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group" :data-index="index">
-                        <td class="sticky left-0 z-10 print:static bg-gray-50 print:bg-transparent border border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
+                        <td class="sticky text-nowrap left-0 z-10 print:static bg-gray-50 print:bg-transparent border border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
                             <span class="text-gray-300 mr-1 text-xs print:hidden">⋮</span>
                             {{ index + 1 }}
                         </td>
 
                         <td v-for="col in columns" :key="col.id" class="group/cell border border-gray-300 px-4 py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors">
 
-                            <div v-if="['text', 'number'].includes(col.type)" class="flex items-center w-full">
+                            <div v-if="col.type === 'checkbox'" class="flex items-center justify-center w-full py-1">
                                 <input
-                                    :id="'input-' + row.id + '-' + col.id"
-                                    v-model="row[col.id]"
-                                    type="text"
-                                    :inputmode="col.type === 'number' ? 'decimal' : 'text'"
-                                    @input="formatNumberInput(row, col)"
-                                    :title="row[col.id]"
-                                    class="w-full truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
-                                    :placeholder="col.type === 'number' ? '0' : '...'"
-                                    @keydown="focusNextInput($event, row.id, col.id)"
-                                >
-
-                                <div v-if="col.type === 'number'" class="gap-1 ml-1 opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0">
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
-                                </div>
-                            </div>
-                            <div v-else-if="['date', 'time'].includes(col.type)" class="flex items-center w-full">
-                                <input
-                                    :id="'input-' + row.id + '-' + col.id"
-                                    v-model="row[col.id]"
-                                    :type="col.type"
-                                    :title="row[col.id]"
-                                    class="w-full bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-700 cursor-pointer"
-                                    @keydown="focusNextInput($event, row.id, col.id)"
-                                >
-                            </div>
-                            <div v-else-if="col.type === 'checkbox'" class="flex items-center justify-center w-full py-1">
-                                <input
-                                    :id="'input-' + row.id + '-' + col.id"
+                                    :ref="(el) => inputRefs[`${row.id}-${col.id}`] = el"
                                     type="checkbox"
                                     v-model="row[col.id]"
                                     @keydown="focusNextInput($event, row.id, col.id)"
@@ -326,22 +298,35 @@
                                     {{ row[col.id] ? '☑' : '☐' }}
                                 </span>
                             </div>
-                            <div v-else-if="col.type === 'category'" class="flex items-center w-full relative">
+                            <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
+                            <div v-else class="flex items-center w-full relative">
                                 <input
-                                    :id="'input-' + row.id + '-' + col.id"
+                                    :ref="(el) => inputRefs[`${row.id}-${col.id}`] = el"
                                     v-model="row[col.id]"
-                                    :list="'datalist-' + col.id"
+                                    :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
+                                    :inputmode="col.type === 'number' ? 'decimal' : 'text'"
+                                    :list="col.type === 'category' ? 'datalist-' + col.id : null"
                                     :title="row[col.id]"
-                                    type="text"
-                                    class="w-full truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-blue-700 font-medium"
+                                    :placeholder="col.type === 'number' ? '0' : '...'"
+                                    class="w-full truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
+                                    :class="{
+                                        'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
+                                        'text-blue-700 font-medium': col.type === 'category'
+                                    }"
+                                    @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
+                                    @focus="col.type === 'category' && $event.target.select()"
                                     @keydown="focusNextInput($event, row.id, col.id)"
-                                    @focus="$event.target.select()"
                                 >
-                                <datalist :id="'datalist-' + col.id">
+
+                                <div v-if="col.type === 'number'" class="gap-1 ml-1 opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0">
+                                    <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                </div>
+
+                                <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
                                     <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
                                 </datalist>
                             </div>
-                            <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
                         </td>
 
                         <td class="border border-gray-300 px-2 py-2 text-center bg-white transition-colors relative print:hidden">
@@ -459,10 +444,12 @@
                     <button
                         ref="confirmCancelBtnRef"
                         @click="onConfirmCancel"
+                        accesskey="n"
                         class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-gray-200 transition-colors"
                     >{{ translate('Cancel') }}</button>
                     <button
                         @click="onConfirmOk"
+                        accesskey="y"
                         class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
                     >{{ translate('OK') }}</button>
                 </div>
@@ -575,6 +562,7 @@
                 const tableTitle = ref('')
                 const columns = ref([])
                 const rows = ref([])
+                const inputRefs = ref({})
                 const hasDateColumn = ref(false)
 
                 const activeMenuRowId = ref(null)
@@ -757,8 +745,7 @@
 
                     let mergeCounter = 0
                     rows.value = Array.from(mergedMap.values()).map(r => {
-                        mergeCounter++
-                        return { ...r, id: Date.now() + mergeCounter }
+                        return { ...r, id: `row_${++mergeCounter}` }
                     })
 
                     if (!isSilent) {
@@ -984,8 +971,8 @@
 
                     const firstInputCol = columns.value.find(col => col.type === 'text')
                     if (firstInputCol) {
-                        const targetInput = document.getElementById(`input-${newRowId}-${firstInputCol.id}`)
-                        if (targetInput) targetInput.focus()
+                        const targetInput = inputRefs.value[`row_${newRowId}-${firstInputCol.id}`]
+                        targetInput?.focus()
                     }
                 }
 
@@ -1017,16 +1004,10 @@
                             event.preventDefault()
 
                             if (rows.value.length > 1) {
-                                const currentRowIndex = rows.value.findIndex(r => r.id === rowId)
-                                const focusRowId = currentRowIndex > 0 ? rows.value[currentRowIndex - 1].id : rows.value[currentRowIndex + 1].id
-
                                 if (await showConfirm(translate('Are you sure you want to delete this row?'))) removeRow(rowId)
-
                                 await nextTick()
-
-                                const focusInput = document.getElementById(`input-${focusRowId}-${colId}`)
-                                if (focusInput) focusInput.focus()
-
+                                const lastInput = inputRefs.value[`row_${rows.value.length}-${colId}`]
+                                lastInput?.focus()
                             }
                         }
                         return
@@ -1077,7 +1058,7 @@
                                     const newRowId = rows.value[rows.value.length - 1].id
                                     const firstCol = columns.value.find(c => editableTypes.has(c.type))
                                     if (firstCol) {
-                                        const nextInput = document.getElementById(`input-${newRowId}-${firstCol.id}`)
+                                        const nextInput = inputRefs.value[`${newRowId}-${firstCol.id}`]
                                         if (nextInput) {
                                             nextInput.focus()
                                             nextInput.select()
@@ -1092,7 +1073,7 @@
 
                             const nextCol = columns.value[nextIndex]
                             if (editableTypes.has(nextCol.type)) {
-                                const nextInput = document.getElementById(`input-${rowId}-${nextCol.id}`)
+                                const nextInput = inputRefs.value[`${rowId}-${nextCol.id}`]
                                 if (nextInput) {
                                     nextInput.focus()
                                     await nextTick()
@@ -1108,7 +1089,7 @@
 
                         if (nextRowIndex >= 0 && nextRowIndex < rows.value.length) {
                             const nextRowId = rows.value[nextRowIndex].id
-                            const nextInput = document.getElementById(`input-${nextRowId}-${colId}`)
+                            const nextInput = inputRefs.value[`${nextRowId}-${colId}`]
                             if (nextInput) {
                                 nextInput.focus()
                                 await nextTick()
@@ -1739,6 +1720,7 @@
                     tableTitle,
                     columns,
                     rows,
+                    inputRefs,
                     hasDateColumn,
                     newColLabel,
                     newColType,
