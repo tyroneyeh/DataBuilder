@@ -810,7 +810,7 @@
                     if (hashData) {
                         columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                         const localRows = localData.rows || []
-                        const incomingRows = hashData.raw_rows || hashData.rows || []
+                        const incomingRows = hashData.rows || hashData.rows || []
 
                         let mergeCounter = 0
                         rows.value = [...localRows, ...incomingRows].map(row => {
@@ -955,7 +955,7 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = Date.now()
+                    const newRowId = rows.value.length + 1
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
                     const now = new Date()
                     const localOffset = now.getTimezoneOffset() * 60000
@@ -1203,31 +1203,31 @@
                     link.remove()
                 }
 
-                const exportJson = () => {
-                    const cleanData = rows.value.map(row => {
-                        const cleanRow = {}
-                        columns.value.forEach(col => {
-                            if (col.type === 'number') {
-                                cleanRow[col.label] = row[col.id] ? parseFloat(row[col.id]) : 0
-                            } else if (col.type === 'multiply') {
-                                cleanRow[col.label] = (parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)
-                            } else if (col.type === 'checkbox') {
-                                cleanRow[col.label] = !!row[col.id]
-                            } else if (col.type === 'date' || col.type === 'time') {
-                                cleanRow[col.label] = row[col.id] || ''
-                            } else {
-                                cleanRow[col.label] = row[col.id] || ''
-                            }
-                        })
-                        if (row.remark && row.remark.trim() !== '') cleanRow[translate('Note')] = row.remark.trim()
-                        return cleanRow
+                const getCleanData = () => rows.value.map(row => {
+                    const cleanRow = {}
+                    columns.value.forEach(col => {
+                        if (col.type === 'number') {
+                            cleanRow[col.label] = row[col.id] ? parseFloat(row[col.id]) : 0
+                        } else if (col.type === 'multiply') {
+                            cleanRow[col.label] = (parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)
+                        } else if (col.type === 'checkbox') {
+                            cleanRow[col.label] = row[col.id] ? 1 : 0
+                        } else if (col.type === 'date' || col.type === 'time') {
+                            cleanRow[col.label] = row[col.id] || ''
+                        } else {
+                            cleanRow[col.label] = row[col.id] || ''
+                        }
                     })
+                    cleanRow[translate('Note')] = row.remark?.trim() || ''
+                    return cleanRow
+                })
+
+                const exportJson = () => {
 
                     const payload = {
                         title: tableTitle.value,
                         columns: columns.value,
-                        raw_rows: rows.value,
-                        data: cleanData
+                        rows: getCleanData()
                     }
 
                     outputToScreen.value = JSON.stringify(payload, null, 2)
@@ -1322,10 +1322,10 @@
                         const trimmedText = rawText.trim()
                         if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
                             const parsed = JSON.parse(rawText)
-                            if (parsed.columns && parsed.raw_rows) {
+                            if (parsed.columns && parsed.rows) {
                                 parsed.columns.forEach(c => { parsedColumnMeta[c.label] = c })
                             }
-                            dataList = Array.isArray(parsed) ? parsed : (parsed.data || [])
+                            dataList = Array.isArray(parsed) ? parsed : (parsed.rows || parsed.data || [])
                             isJSON = true
                         }
                     } catch(e) {
@@ -1410,14 +1410,14 @@
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
 
-                        let newRow = { id: Date.now() + Math.floor(Math.random()*10000), remark: '', isExpanded: false }
+                        let newRow = { id: `col_${addCount+1}` }
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
                                 if (col.type === 'number') {
                                     newRow[col.id] = parseFloat(val) || 0
                                 } else if (col.type === 'checkbox') {
-                                    newRow[col.id] = (val === 'true' || val === true || val === '☑' || val === '1')
+                                    newRow[col.id] = !!val
                                 } else if (col.type === 'multiply') {
                                     newRow[col.id] = null
                                 } else {
@@ -1428,11 +1428,6 @@
                             }
                         })
 
-                        const noteKey = Object.keys(item).find(k => k === translate('Note'))
-                        if (noteKey && item[noteKey]) {
-                            newRow.remark = item[noteKey]
-                            newRow.isExpanded = true
-                        }
                         rows.value.push(newRow)
                         addCount++
                     })
