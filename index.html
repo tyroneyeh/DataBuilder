@@ -1268,7 +1268,11 @@
 
                     const schemaHeaders = columns.value.map(c => {
                         let meta = c.type
-                        if (c.type === 'multiply') meta += `|${c.opA}|${c.opB}`
+                        if (c.type === 'multiply') {
+                            const colA = columns.value.find(col => col.id === c.opA)
+                            const colB = columns.value.find(col => col.id === c.opB)
+                            meta += `|${colA.label}*${colB.label}`
+                        }
                         return `${c.label} [${meta}]`
                     })
 
@@ -1283,9 +1287,7 @@
                             } else if (col.type === 'multiply') {
                                 rowData.push((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0))
                             } else if (col.type === 'checkbox') {
-                                rowData.push(row[col.id] ? 'true' : 'false')
-                            } else if (col.type === 'date' || col.type === 'time') {
-                                rowData.push(row[col.id] || '')
+                                rowData.push(row[col.id] ? 1 : 0)
                             } else {
                                 rowData.push(row[col.id] || '')
                             }
