@@ -452,7 +452,23 @@
                 </div>
             </div>
         </div>
+        <div class="fixed bottom-8 right-6 flex flex-col gap-3 z-50 print:hidden opacity-40 hover:opacity-100 transition-opacity duration-300">
+            <button
+                @click="scrollToPosition('top')"
+                class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
+                :title="translate('Scroll to Top')"
+            >
+                <span class="text-xl leading-none">▲</span>
+            </button>
 
+            <button
+                @click="scrollToPosition('bottom')"
+                class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
+                :title="translate('Scroll to Bottom')"
+            >
+                <span class="text-xl leading-none">▼</span>
+            </button>
+        </div>
         <footer class="items-center text-center text-sm text-gray-600 mt-4 mb-4 print:hidden">
             &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
             <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex justify-end" target="_blank">
@@ -975,6 +991,16 @@
                     return {todayDate: localDate.toISOString().slice(0, 10), currentTime: localDate.toISOString().slice(11, 16)}
                 }
 
+                const scrollToPosition = (direction) => {
+                    if (!tableContainer.value) return
+                    const targetTop = direction === 'bottom' ? tableContainer.value.scrollHeight : 0
+
+                    tableContainer.value.scrollTo({
+                        top: targetTop,
+                        behavior: 'smooth'
+                    })
+                }
+
                 const addRow = async () => {
                     const newRowId = gererateId(rows.value[rows.value.length - 1].id)
                     const newRow = { id: `row_${newRowId}`, remark: '', isExpanded: false }
@@ -991,11 +1017,16 @@
 
                     await nextTick()
 
-                    const firstInputCol = columns.value.find(col => col.type === 'text')
-                    if (firstInputCol) {
-                        const targetInput = inputRefs.value[`row_${newRowId}-${firstInputCol.id}`]
-                        targetInput?.focus()
-                    }
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            const firstInputCol = columns.value.find(col => col.type === 'text')
+                            if (firstInputCol) {
+                                const targetInput = inputRefs.value[`row_${newRowId}-${firstInputCol.id}`]
+                                targetInput?.focus()
+                            }
+                            scrollToPosition('bottom')
+                        })
+                    })
                 }
 
                 const formatNumberInput = (row, col) => {
@@ -1825,7 +1856,8 @@
                     tableContainer,
                     saveScrollPosition,
                     onFocusInput,
-                    formatNumber
+                    formatNumber,
+                    scrollToPosition
                 }
             }
         })
