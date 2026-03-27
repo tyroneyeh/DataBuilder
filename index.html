@@ -226,12 +226,11 @@
                 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
             >
         </div>
-        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
-            <table class="w-full border-collapse relative print:w-full">
-                <thead class="bg-gray-100 print:bg-gray-100">
+        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden md:overflow-x-auto mb-2 border-none md:border border-gray-300 md:rounded shadow-none md:shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 md:bg-transparent" style="-webkit-overflow-scrolling: touch">
+            <table class="w-full border-collapse relative print:w-full block md:table">
+                <thead class="hidden md:table-header-group bg-gray-100 print:bg-gray-100">
                     <tr>
                         <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 print:bg-gray-100 border border-gray-300 px-4 py-3 w-20 text-center text-gray-600 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12">#</th>
-
                         <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index"
                             :class="[
                                 'group pr-8 sticky top-0 z-10 print:static border border-gray-300 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 print:min-w-0 print:bg-gray-100',
@@ -268,34 +267,34 @@
 
                             <button @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 print:hidden" title="Delete Column">✖</button>
                         </th>
-
                         <th class="sticky top-0 z-10 print:static bg-gray-100 border border-gray-300 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 font-semibold print:hidden">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
 
-                <tbody v-for="(row, index) in rows" :key="row.id">
-                    <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group" :data-index="index">
-                        <td class="sticky text-nowrap left-0 z-10 print:static bg-gray-50 print:bg-transparent border border-gray-300 px-2 py-2 text-center text-gray-500 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
-                            <span class="text-gray-300 mr-1 text-xs print:hidden">⋮</span>
-                            {{ index + 1 }}
+                <tbody v-for="(row, index) in rows" :key="row.id" class="block md:table-row-group mb-4 md:mb-0 bg-white md:bg-transparent rounded-lg shadow-sm md:shadow-none border border-gray-200 md:border-none relative">
+                    <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group block md:table-row relative" :data-index="index">
+                        <td class="md:sticky text-nowrap left-0 z-10 print:static bg-gray-100 md:bg-gray-50 print:bg-transparent border-b md:border border-gray-200 md:border-gray-300 px-4 md:px-2 py-3 md:py-2 text-left md:text-center text-gray-600 md:text-gray-500 font-bold md:font-medium shadow-none md:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block md:table-cell rounded-t-lg md:rounded-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
+                            <span class="text-gray-400 mr-2 md:mr-1 text-xs print:hidden">⋮</span>
+                            <span class="md:hidden mr-1 text-gray-400">#</span>{{ index + 1 }}
                         </td>
 
-                        <td v-for="col in columns" :key="col.id" class="group/cell border border-gray-300 px-4 py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors">
+                        <td v-for="col in columns" :key="col.id" class="group/cell border-b md:border border-gray-100 md:border-gray-300 px-4 py-2 md:py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors flex items-center justify-between md:table-cell last:border-b-0 md:last:border-b">
 
-                            <div v-if="col.type === 'checkbox'" class="flex items-center justify-center w-full py-1">
+                            <span class="md:hidden text-gray-500 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0">{{ col.label }}</span>
+                            <div v-if="col.type === 'checkbox'" class="flex items-center justify-end md:justify-center w-full py-1">
                                 <input
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     type="checkbox"
                                     v-model="row[col.id]"
                                     @keydown="focusNextInput($event, row.id, col.id)"
-                                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer print:hidden transition-all active:scale-90"
+                                    class="w-6 h-6 md:w-5 md:h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer print:hidden transition-all active:scale-90"
                                 >
                                 <span class="hidden print:inline-block text-xl leading-none text-gray-800">
                                     {{ row[col.id] ? '☑' : '☐' }}
                                 </span>
                             </div>
-                            <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
-                            <div v-else class="flex items-center w-full relative">
+                            <div v-else-if="col.type === 'multiply'" class="w-auto md:w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
+                            <div v-else class="flex items-center w-full relative justify-end md:justify-start">
                                 <input
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     v-model="row[col.id]"
@@ -304,7 +303,7 @@
                                     :list="col.type === 'category' ? 'datalist-' + col.id : null"
                                     :title="row[col.id]"
                                     :placeholder="col.type === 'number' ? '0' : '...'"
-                                    class="w-full truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
+                                    class="w-full min-w-0 text-right md:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
                                     :class="{
                                         'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
                                         'text-blue-700 font-medium': col.type === 'category'
@@ -315,9 +314,9 @@
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
 
-                                <div v-if="col.type === 'number'" class="gap-1 ml-1 opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0">
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                <div v-if="col.type === 'number'" class="gap-1 ml-2 md:ml-1 opacity-100 md:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0 flex">
+                                    <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 md:w-6 md:h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 md:w-6 md:h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                 </div>
 
                                 <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
@@ -326,11 +325,11 @@
                             </div>
                         </td>
 
-                        <td class="border border-gray-300 px-2 py-2 text-center bg-white transition-colors relative print:hidden">
+                        <td class="absolute md:relative top-1 md:top-auto right-1 md:right-auto md:border border-gray-300 px-2 py-2 text-center bg-transparent md:bg-white transition-colors print:hidden block md:table-cell">
                             <div class="flex items-center justify-center space-x-2">
                                 <button
                                     @click.stop="toggleActionMenu(row.id)"
-                                    class="text-gray-400 hover:text-indigo-600 active:bg-indigo-100 px-3 py-2 rounded transition-colors text-xl font-bold leading-none rotate-90 outline-none z-50 relative"
+                                    class="text-gray-400 hover:text-indigo-600 active:bg-indigo-100 px-3 py-2 rounded transition-colors text-2xl md:text-xl font-bold leading-none rotate-90 outline-none z-50 relative"
                                     :class="{'text-indigo-600': row.remark && row.remark.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
@@ -342,7 +341,7 @@
                             ></div>
                             <div
                                 v-show="activeMenuRowId === row.id"
-                                class="absolute right-0 top-full mt-1 w-[180px] bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+                                class="absolute right-6 md:right-0 top-10 md:top-full mt-1 w-[180px] bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
                             >
                                 <button @click="row.isExpanded = !row.isExpanded; closeActionMenu()"
                                     :class="[
@@ -357,10 +356,10 @@
                         </td>
                     </tr>
 
-                    <tr :class="row.isExpanded ? 'table-row' : 'hidden'"
-                        class="bg-blue-50/30 print:bg-transparent">
-                        <td class="sticky left-0 z-10 print:static bg-blue-50/80 print:bg-transparent border border-gray-300"></td>
-                        <td :colspan="columns.length + 1" class="border border-gray-300 px-4 py-2 shadow-inner">
+                    <tr :class="row.isExpanded ? 'block md:table-row' : 'hidden'"
+                        class="bg-blue-50/30 print:bg-transparent rounded-b-lg md:rounded-none">
+                        <td class="hidden md:table-cell md:sticky left-0 z-10 print:static bg-blue-50/80 print:bg-transparent border border-gray-300"></td>
+                        <td :colspan="columns.length + 1" class="block md:table-cell border-t md:border border-gray-200 md:border-gray-300 px-4 py-3 md:py-2 shadow-inner">
                             <div class="flex flex-col">
                                 <textarea
                                     v-model="row.remark"
@@ -374,29 +373,38 @@
                     </tr>
                 </tbody>
 
-                <tbody class="print:hidden">
-                    <tr>
-                        <td @click="addRow" class="sticky left-0 z-10 border border-gray-300 px-4 py-4 text-center cursor-pointer bg-green-50 hover:bg-green-100 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)]">
-                            <span class="text-green-600 font-bold text-xl group-hover:scale-125 inline-block transition-transform">+</span>
+                <tbody class="print:hidden block md:table-row-group">
+                    <tr class="flex md:table-row bg-white md:bg-transparent border border-gray-200 md:border-none rounded-lg md:rounded-none overflow-hidden mt-2 md:mt-0">
+                        <td @click="addRow" class="md:sticky left-0 z-10 md:border border-gray-300 p-0 text-center cursor-pointer bg-green-50 hover:bg-green-100 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 md:w-auto">
+                            <button class="w-full h-full min-h-[60px] md:min-h-[50px] flex items-center justify-center focus:outline-none outline-none">
+                                <span class="text-green-600 font-bold text-2xl md:text-xl group-hover:scale-125 transition-transform">+</span>
+                            </button>
                         </td>
-                        <td :colspan="columns.length + 1" class="border-b border-gray-300 bg-gray-50 py-4">
-                            <span class="text-sm text-gray-500 pl-4 font-medium cursor-pointer" @click="addRow">{{ translate('← Click to add a row') }}</span>
+                        <td :colspan="columns.length + 1" class="border-l md:border-l-0 border-b-0 md:border-b border-gray-200 md:border-gray-300 bg-gray-50 p-0 flex-grow flex items-center md:table-cell">
+                            <button @click="addRow" class="w-full h-full min-h-[60px] md:min-h-[50px] text-left pl-4 focus:outline-none outline-none">
+                                <span class="text-base md:text-sm text-gray-500 font-medium hover:text-gray-700 transition-colors">{{ translate('← Click to add a row') }}</span>
+                            </button>
                         </td>
                     </tr>
                 </tbody>
 
-                <tfoot class="font-semibold text-gray-700 print:bg-gray-100 print:border-t-2 print:border-gray-800">
-                    <tr>
-                        <td class="sticky bottom-0 left-0 z-20 print:static bg-gray-200 print:bg-gray-100 border-t-2 border border-gray-300 px-4 py-3 text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none">{{ translate('Total') }}</td>
+                <tfoot class="font-semibold text-gray-700 print:bg-gray-100 print:border-t-2 print:border-gray-800 block md:table-footer-group mt-4 md:mt-0 bg-white md:bg-transparent rounded-lg border border-gray-200 md:border-none shadow-sm md:shadow-none p-2 md:p-0">
+                    <tr class="block md:table-row">
+                        <td class="md:sticky bottom-0 left-0 z-20 print:static bg-gray-100 md:bg-gray-200 print:bg-gray-100 border-b md:border-t-2 md:border border-gray-200 md:border-gray-300 px-4 py-3 text-left md:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block md:table-cell rounded-t-lg md:rounded-none">{{ translate('Total') }}</td>
 
                         <td v-for="col in columns" :key="'total-' + col.id"
-                            class="sticky bottom-0 z-10 border-t-2 border border-gray-300 px-4 py-3 bg-gray-100 print:bg-transparent print:static"
-                            :class="col.type === 'multiply' ? 'text-right' : 'text-left'">
-                            <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 print:text-black text-lg print:text-base font-bold" :title="columnTotals[col.id].toLocaleString()">{{ formatNumber(columnTotals[col.id]) }}</span>
-                            <span v-else class="text-gray-400 print:text-gray-500"></span>
+                            class="md:sticky bottom-0 z-10 border-b md:border-t-2 md:border border-gray-100 md:border-gray-300 px-4 py-3 bg-white md:bg-gray-100 print:bg-transparent print:static flex items-center justify-between md:table-cell last:border-b-0 md:last:border-b"
+                            :class="col.type === 'multiply' ? 'md:text-right' : 'md:text-left'">
+
+                            <span class="md:hidden text-gray-500 font-bold text-sm mr-4">{{ col.label }}</span>
+
+                            <div class="text-right" :class="col.type === 'multiply' ? 'md:text-right' : 'md:text-left'">
+                                <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 print:text-black text-lg print:text-base font-bold" :title="columnTotals[col.id].toLocaleString()">{{ formatNumber(columnTotals[col.id]) }}</span>
+                                <span v-else class="text-gray-400 print:text-gray-500"></span>
+                            </div>
                         </td>
 
-                        <td class="sticky bottom-0 z-10 border-t-2 border-gray-300 px-4 py-3 bg-gray-100 print:hidden"></td>
+                        <td class="hidden md:table-cell md:sticky bottom-0 z-10 md:border-t-2 border-gray-300 px-4 py-3 bg-gray-100 print:hidden"></td>
                     </tr>
                 </tfoot>
             </table>
