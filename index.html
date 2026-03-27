@@ -327,7 +327,7 @@
                             </div>
                         </td>
 
-                        <td class="absolute md:relative top-1 md:top-auto right-1 md:right-auto md:border border-gray-300 px-2 py-2 text-center bg-transparent md:bg-white transition-colors print:hidden block md:table-cell print:hidden">
+                        <td class="absolute md:relative top-1 md:top-auto right-1 md:right-auto md:border border-gray-300 px-2 py-2 text-center bg-transparent md:bg-white transition-colors print:hidden block md:table-cell print:hidden" @pointerdown.stop.prevent="onPointerDown(index, $event)">
                             <div class="flex items-center justify-center space-x-2">
                                 <button
                                     @click.stop="toggleActionMenu(row.id)"
@@ -587,7 +587,7 @@
         }
 
         class SimpleDB {
-            constructor(storeName = 'items', dbName = 'ty-db') {
+            constructor(storeName = 'ty-db', dbName = 'ty-db') {
                 this.dbName = dbName
                 this.storeName = storeName
                 this.db = null
@@ -935,7 +935,7 @@
                     let savedStr = await db.get(currentStorageKey.value)
                     if (!savedStr) {
                         savedStr = localStorage.getItem(currentStorageKey.value)
-                        savedStr && db.set('items', savedStr)
+                        savedStr && db.set(currentStorageKey.value, savedStr)
                         localStorage.removeItem(currentStorageKey.value)
                     }
 
