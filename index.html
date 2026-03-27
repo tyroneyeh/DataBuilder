@@ -1067,7 +1067,7 @@
                         for (const _ of columns.value) {
                             nextIndex += direction
 
-                            if (nextIndex >= columns.value.length) {
+                            if (event.shiftKey || nextIndex >= columns.value.length) {
                                 if (event.key === 'Enter') {
                                     addRow()
                                     await nextTick()
