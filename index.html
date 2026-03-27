@@ -548,12 +548,11 @@
 
         const app = createApp({
             setup() {
+                const window = globalThis
 
                 const currentStorageKey = ref('')
                 const savedKeysList = ref([])
                 const tempKey = ref('')
-
-                const window = globalThis
 
                 const tableTitle = ref('')
                 const columns = ref([])
@@ -581,8 +580,13 @@
                 const customLegendItems = ref([])
                 const selectedChartCatColId = ref(null)
                 const selectedChartNumColId = ref(null)
-
-                const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
+                const confirmModal = ref({
+                    isOpen: false,
+                    title: '',
+                    message: '',
+                    resolvePromise: null
+                })
+                const confirmCancelBtnRef = ref(null)
                 const typeOptions = ref([
                     {value: 'text', label: translate('Text')},
                     {value: 'number', label: translate('Number')},
@@ -592,6 +596,7 @@
                     {value: 'category', label: translate('Category')},
                     {value: 'multiply', label: translate('Multiply (A × B)')},
                 ])
+                const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
 
                 let isInitializing = true
                 let expenseChart = null
@@ -1659,14 +1664,6 @@
                 const toggleMenu = () => {
                     isMenuOpen.value = !isMenuOpen.value
                 }
-
-                const confirmModal = ref({
-                    isOpen: false,
-                    title: '',
-                    message: '',
-                    resolvePromise: null
-                })
-                const confirmCancelBtnRef = ref(null)
 
                 const showConfirm = (message) => {
                     return new Promise((resolve) => {
