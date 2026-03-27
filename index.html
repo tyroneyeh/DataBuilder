@@ -226,7 +226,7 @@
                 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
             >
         </div>
-        <div ref="tableContainer" @scroll="saveScrollPosition" class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
+        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
             <table class="w-full border-collapse relative print:w-full">
                 <thead class="bg-gray-100 print:bg-gray-100">
                     <tr>
@@ -671,7 +671,6 @@
 
                 const saveScrollPosition = debounce((e) => {
                     localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
-                    handleTableScroll(e)
                 }, 300)
 
                 const loadChartCols = () => {
@@ -976,7 +975,7 @@
                         if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const newColId = 'col_' + gererateId(columns.value[columns.value.length + 1]?.id || 'col_1')
+                    const newColId = gererateId(columns.value[columns.value.length + 1]?.id || 'col_1')
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply') { newColData.opA = formulaA.value; newColData.opB = formulaB.value }
 
@@ -1008,7 +1007,7 @@
 
                 const addRow = async () => {
                     const newRowId = gererateId(rows.value[rows.value.length - 1].id)
-                    const newRow = { id: `row_${newRowId}`, remark: '', isExpanded: false }
+                    const newRow = { id: newRowId, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
@@ -1026,7 +1025,7 @@
                         requestAnimationFrame(() => {
                             const firstInputCol = columns.value.find(col => col.type === 'text')
                             if (firstInputCol) {
-                                const targetInput = inputRefs.value[`row_${newRowId}-${firstInputCol.id}`]
+                                const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                                 targetInput?.focus()
                             }
                             scrollToPosition('bottom')
@@ -1198,7 +1197,7 @@
 
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
-                        const targetInput = document.getElementById(`input-${newRowId}-${firstEditableCol.id}`)
+                        const targetInput = inputRefs.value[`${newRowId}-${firstEditableCol.id}`]
                         if (targetInput) {
                             targetInput.focus()
                             targetInput.select()
