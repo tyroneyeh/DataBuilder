@@ -559,6 +559,7 @@
         const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en'
 
         const currentLanguage = ref(localStorage.getItem('lang') || initialLang)
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         const translate = (key) => {
             const dict = translations[currentLanguage.value]
@@ -1023,16 +1024,16 @@
 
                     await nextTick()
 
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        if (!isMobile) {
                             const firstInputCol = columns.value.find(col => col.type === 'text')
                             if (firstInputCol) {
                                 const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                                 targetInput?.focus()
                             }
-                            scrollToPosition('bottom')
-                        })
-                    })
+                        }
+                        scrollToPosition('bottom')
+                    }, 50)
                 }
 
                 const formatNumberInput = (row, col) => {
