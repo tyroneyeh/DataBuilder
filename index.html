@@ -461,7 +461,7 @@
         </footer>
     </div>
     <script type="module">
-        import { createApp, ref, computed, watch, nextTick } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, computed, watch, nextTick, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
@@ -823,11 +823,7 @@
                     hasDateColumn.value = columns.value.some(column => column.type === 'date');
 
                     tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
-                    updateTitle()
-                    await nextTick()
-                    updateChart()
 
-                    isInitializing = false
                 }
 
                 loadData()
@@ -1701,6 +1697,13 @@
                     }
                     confirmModal.value.isOpen = false
                 }
+
+                onMounted(async () => {
+                    await nextTick()
+                    updateChart()
+                    updateTitle()
+                    isInitializing = false
+                })
 
                 return {
                     currentLanguage,
