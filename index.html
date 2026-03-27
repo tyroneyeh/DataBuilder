@@ -1008,6 +1008,7 @@
                 }
 
                 const addRow = async () => {
+                    try {
                     const lastRowIndex = rows.value.length || 1
                     const newRowId = gererateId(rows.value[lastRowIndex - 1].id)
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
@@ -1034,6 +1035,9 @@
                         }
                         scrollToPosition('bottom')
                     }, 50)
+                    } catch (error) {
+                        alert(error.message)
+                    }
                 }
 
                 const formatNumberInput = (row, col) => {
