@@ -594,6 +594,11 @@
                 ])
 
                 let isInitializing = true
+                let expenseChart = null
+                let draggingColIndex = -1
+                let dragColElement = null
+                let draggingIndex = -1
+                let dragRowElement = null
 
                 watch([currentLanguage, tableTitle, columns, rows], () => {
                     if (isInitializing) return
@@ -828,8 +833,6 @@
 
                 loadData()
 
-                let draggingColIndex = -1
-                let dragColElement = null
                 const onColPointerDown = (index, event) => {
                     draggingColIndex = index
                     document.body.classList.add('select-none', 'cursor-col-resize')
@@ -873,8 +876,6 @@
                     window.removeEventListener('pointercancel', onColPointerUp)
                 }
 
-                let draggingIndex = -1
-                let dragRowElement = null
                 const onPointerDown = (index, event) => {
                     draggingIndex = index
                     document.body.classList.add('select-none')
@@ -1476,7 +1477,6 @@
                         })
                     }
                 }
-                let expenseChart = null
                 const getChartData = () => {
                     const catCol = columns.value.find(c => c.id === selectedChartCatColId.value)
                     const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
