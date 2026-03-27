@@ -284,7 +284,7 @@
 
                             <div v-if="col.type === 'checkbox'" class="flex items-center justify-center w-full py-1">
                                 <input
-                                    :ref="(el) => inputRefs[`${row.id}-${col.id}`] = el"
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     type="checkbox"
                                     v-model="row[col.id]"
                                     @keydown="focusNextInput($event, row.id, col.id)"
@@ -297,7 +297,7 @@
                             <div v-else-if="col.type === 'multiply'" class="w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
                             <div v-else class="flex items-center w-full relative">
                                 <input
-                                    :ref="(el) => inputRefs[`${row.id}-${col.id}`] = el"
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     v-model="row[col.id]"
                                     :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
                                     :inputmode="col.type === 'number' ? 'decimal' : 'text'"
@@ -462,7 +462,7 @@
         </footer>
     </div>
     <script type="module">
-        import { createApp, ref, computed, watch, nextTick, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, shallowRef, computed, watch, nextTick, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
@@ -547,6 +547,16 @@
             return (dict && dict[key]) ? dict[key] : key
         }
 
+        const debounce = (func, delay) => {
+            let timer = null
+            return (...args) => {
+                clearTimeout(timer)
+                timer = setTimeout(() => {
+                    func(...args)
+                }, delay)
+            }
+        }
+
         const app = createApp({
             setup() {
                 const window = globalThis
@@ -603,20 +613,24 @@
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
 
                 let isInitializing = true
-                let expenseChart = null
+                const expenseChart = shallowRef(null)
                 let draggingColIndex = -1
                 let dragColElement = null
                 let draggingIndex = -1
                 let dragRowElement = null
 
-                watch([currentLanguage, tableTitle, columns, rows], () => {
-                    if (isInitializing) return
+                const debouncedSave = debounce(() => {
                     localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
                     localStorage.setItem('lang', currentLanguage.value)
+                    nextTick(() => updateChart())
+                }, 500)
+
+                watch([currentLanguage, tableTitle, columns, rows], () => {
+                    if (isInitializing) return
+                    debouncedSave()
                     shareLink.value = ''
                     qrCodeUrl.value = ''
                     updateTitle()
-                    nextTick(() => { updateChart() })
                 }, { deep: true })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
@@ -625,7 +639,7 @@
                     if (isInitializing) return
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
-                    nextTick(() => { updateChart() })
+                    nextTick(() => updateChart())
                 })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
@@ -634,16 +648,6 @@
                     if (rows.value.length === 0) return false
                     return rows.value.every(row => row.isExpanded)
                 })
-
-                const debounce = (func, delay) => {
-                    let timer = null
-                    return (...args) => {
-                        clearTimeout(timer)
-                        timer = setTimeout(() => {
-                            func(...args)
-                        }, delay)
-                    }
-                }
 
                 const saveScrollPosition = debounce((e) => {
                     localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
@@ -942,6 +946,8 @@
                     window.removeEventListener('pointercancel', onPointerUp)
                 }
 
+                const gererateId = (lastId) => lastId.replace(/(\d+$)/, n => parseInt(n) + 1);
+
                 const addColumn = () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
                     if (newColType.value === 'multiply') {
@@ -949,7 +955,7 @@
                         if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const newColId = 'col_' + (columns.value.length + 1)
+                    const newColId = 'col_' + gererateId(columns.value[columns.value.length + 1]?.id || 'col_1')
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply') { newColData.opA = formulaA.value; newColData.opB = formulaB.value }
 
@@ -970,7 +976,7 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = rows.value.length + 1
+                    const newRowId = gererateId(rows.value[rows.value.length - 1].id)
                     const newRow = { id: `row_${newRowId}`, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
@@ -1128,7 +1134,7 @@
                     const originalRow = rows.value[rowIndex]
                     if (!originalRow) return
 
-                    const newRowId = rows.value.length + 1
+                    const newRowId = gererateId(rows.value[rows.value.length - 1].id)
 
                     const clonedRow = {
                         ...originalRow,
@@ -1496,7 +1502,7 @@
                     isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
                         nextTick(() => {
-                            if (expenseChart) expenseChart.resize()
+                            if (expenseChart.value) expenseChart.value.resize()
                         })
                     }
                 }
@@ -1617,9 +1623,9 @@
                 }
 
                 const toggleLegend = (index) => {
-                    if (expenseChart) {
-                        expenseChart.toggleDataVisibility(index)
-                        expenseChart.update()
+                    if (expenseChart.value) {
+                        expenseChart.value.toggleDataVisibility(index)
+                        expenseChart.value.update()
                     }
                 }
 
@@ -1627,9 +1633,9 @@
                     const data = getChartData()
                     const ctx = document.getElementById('expenseChart')
                     if (!data || Object.keys(data).length === 0 || !ctx) {
-                        if (expenseChart) {
-                            expenseChart.destroy()
-                            expenseChart = null
+                        if (expenseChart.value) {
+                            expenseChart.value.destroy()
+                            expenseChart.value = null
                         }
                         return
                     }
@@ -1638,12 +1644,12 @@
                     const values = Object.values(data)
                     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e']
 
-                    if (expenseChart) {
-                        expenseChart.data.labels = labels
-                        expenseChart.data.datasets[0].data = values
-                        expenseChart.update()
+                    if (expenseChart.value) {
+                        expenseChart.value.data.labels = labels
+                        expenseChart.value.data.datasets[0].data = values
+                        expenseChart.value.update()
                     } else {
-                        expenseChart = new Chart(ctx, {
+                        expenseChart.value = new Chart(ctx, {
                             type: 'doughnut',
                             data: {
                                 labels: labels,
