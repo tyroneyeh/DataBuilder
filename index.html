@@ -454,6 +454,7 @@
         </div>
         <div class="fixed bottom-8 right-6 flex flex-col gap-3 z-50 print:hidden opacity-40 hover:opacity-100 transition-opacity duration-300">
             <button
+                v-show="!isAtTop"
                 @click="scrollToPosition('top')"
                 class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :title="translate('Scroll to Top')"
@@ -462,6 +463,7 @@
             </button>
 
             <button
+                v-show="!isAtBottom"
                 @click="scrollToPosition('bottom')"
                 class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :title="translate('Scroll to Bottom')"
@@ -625,11 +627,13 @@
                 ])
                 const tableContainer = ref(null)
                 const lastFocused = ref({ rowId: null, colId: null })
+                const isAtTop = ref(true)
+                const isAtBottom = ref(false)
+                const expenseChart = shallowRef(null)
 
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
 
                 let isInitializing = true
-                const expenseChart = shallowRef(null)
                 let draggingColIndex = -1
                 let dragColElement = null
                 let draggingIndex = -1
@@ -667,6 +671,7 @@
 
                 const saveScrollPosition = debounce((e) => {
                     localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
+                    handleTableScroll(e)
                 }, 300)
 
                 const loadChartCols = () => {
@@ -1759,6 +1764,18 @@
                     onBlur ? localStorage.removeItem('lastFocused') : localStorage.setItem('lastFocused', JSON.stringify(lastFocused.value))
                 }
 
+                const checkScrollState = () => {
+                    if (!tableContainer.value) return
+                    const { scrollTop, scrollHeight, clientHeight } = tableContainer.value
+                    isAtTop.value = scrollTop <= 5
+                    isAtBottom.value = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 5
+                }
+
+                const handleTableScroll = (e) => {
+                    checkScrollState()
+                    saveScrollPosition(e)
+                }
+
                 onMounted(async () => {
                     await nextTick()
                     updateChart()
@@ -1779,6 +1796,7 @@
                             targetInput.focus()
                         }
                     }
+                    checkScrollState()
 
                     isInitializing = false
                 })
@@ -1857,7 +1875,10 @@
                     saveScrollPosition,
                     onFocusInput,
                     formatNumber,
-                    scrollToPosition
+                    scrollToPosition,
+                    isAtTop,
+                    isAtBottom,
+                    handleTableScroll
                 }
             }
         })
