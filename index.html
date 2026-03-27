@@ -1015,7 +1015,6 @@
                 }
 
                 const addRow = async () => {
-                    try {
                     const newRowId = gererateId('row')
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
@@ -1029,21 +1028,18 @@
 
                     rows.value.push(newRow)
 
-                    await nextTick()
-
-                    setTimeout(() => {
-                        if (!isMobile) {
+                    if (!isMobile) {
+                        await nextTick()
+                        setTimeout(() => {
                             const firstInputCol = columns.value.find(col => col.type === 'text')
                             if (firstInputCol) {
                                 const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                                 targetInput?.focus()
                             }
-                        }
-                        scrollToPosition('bottom')
-                    }, 50)
-                    } catch (error) {
-                        alert(error.message)
+                            scrollToPosition('bottom')
+                        }, 50)
                     }
+
                 }
 
                 const formatNumberInput = (row, col) => {
