@@ -975,7 +975,8 @@
                         if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const newColId = gererateId(columns.value[columns.value.length + 1]?.id || 'col_1')
+                    const nextIndex = columns.value.length + 1
+                    const newColId = gererateId(columns.value[nextIndex]?.id || 'col_1')
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply') { newColData.opA = formulaA.value; newColData.opB = formulaB.value }
 
@@ -1006,7 +1007,8 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = gererateId(rows.value[rows.value.length - 1].id)
+                    const lastRowIndex = rows.value.length || 1
+                    const newRowId = gererateId(rows.value[lastRowIndex - 1].id)
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
@@ -1169,7 +1171,8 @@
                     const originalRow = rows.value[rowIndex]
                     if (!originalRow) return
 
-                    const newRowId = gererateId(rows.value[rows.value.length - 1].id)
+                    const lastRowIndex = rows.value.length || 1
+                    const newRowId = gererateId(rows.value[lastRowIndex - 1].id)
 
                     const clonedRow = {
                         ...originalRow,
