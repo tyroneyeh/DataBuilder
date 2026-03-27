@@ -584,10 +584,108 @@
             }
         }
 
+        class SimpleDB {
+            constructor(storeName = 'items', dbName = 'ty-db') {
+                this.dbName = dbName
+                this.storeName = storeName
+                this.db = null
+            }
+
+            async _openDB(version) {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(this.dbName, version)
+
+                    req.onupgradeneeded = () => {
+                        const db = req.result
+                        if (!db.objectStoreNames.contains(this.storeName)) {
+                            db.createObjectStore(this.storeName, {keyPath: 'key'})
+                        }
+                    }
+
+                    req.onsuccess = () => resolve(req.result)
+                    req.onerror = () => reject(req.error)
+                })
+            }
+
+            async init() {
+                if (this.db) return this.db
+
+                let version = 1
+                try {
+                    const tmp = await this._openDB()
+                    version = tmp.version
+                    const hasStore = tmp.objectStoreNames.contains(this.storeName)
+                    tmp.close()
+                    if (!hasStore) version += 1
+                } catch {}
+
+                this.db = await this._openDB(version)
+                return this.db
+            }
+
+            async get(key) {
+                const db = await this.init()
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite')
+                    const store = tx.objectStore(this.storeName)
+                    const req = store.get(key)
+
+                    req.onsuccess = () => {
+                        const item = req.result
+                        if (!item) return resolve(null)
+                        resolve(item.value)
+                    }
+
+                    req.onerror = () => reject(req.error)
+                })
+            }
+
+            async set(key, value) {
+                const db = await this.init()
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite')
+                    const store = tx.objectStore(this.storeName)
+
+                    const req = store.put({
+                        key,
+                        value
+                    })
+
+                    req.onsuccess = () => resolve(true)
+                    req.onerror = () => reject(req.error)
+                })
+            }
+
+            async remove(key) {
+                const db = await this.init()
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite')
+                    const store = tx.objectStore(this.storeName)
+                    const req = store.delete(key)
+
+                    req.onsuccess = () => resolve(true)
+                    req.onerror = () => reject(req.error)
+                })
+            }
+
+            async clear() {
+                const db = await this.init()
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(this.storeName, 'readwrite')
+                    const store = tx.objectStore(this.storeName)
+                    const req = store.clear()
+
+                    req.onsuccess = () => resolve()
+                    req.onerror = () => reject(req.error)
+                })
+            }
+        }
+
         const app = createApp({
             setup() {
                 const window = globalThis
 
+                const db = new SimpleDB()
                 const currentStorageKey = ref('')
                 const savedKeysList = ref([])
                 const tempKey = ref('')
@@ -649,7 +747,8 @@
                 let dragRowElement = null
 
                 const debouncedSave = debounce(() => {
-                    localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    // localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    db.set(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
                     localStorage.setItem('lang', currentLanguage.value)
                     nextTick(() => updateChart())
                 }, 500)
@@ -831,7 +930,13 @@
                     let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
 
-                    const savedStr = localStorage.getItem(currentStorageKey.value)
+                    let savedStr = await db.get(currentStorageKey.value)
+                    if (!savedStr) {
+                        savedStr = localStorage.getItem(currentStorageKey.value)
+                        savedStr && db.set('items', savedStr)
+                        localStorage.removeItem(currentStorageKey.value)
+                    }
+
                     if (savedStr) {
                         try { localData = JSON.parse(savedStr) } catch (e) { console.error('Local error', e) }
                     }
@@ -886,8 +991,6 @@
                     tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
 
                 }
-
-                loadData()
 
                 const onColPointerDown = (index, event) => {
                     draggingColIndex = index
@@ -1356,7 +1459,8 @@
 
                 const clearStorage = async () => {
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
-                        localStorage.removeItem(currentStorageKey.value)
+                        // localStorage.removeItem(currentStorageKey.value)
+                        db.clear()
                         savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
                         if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
                         localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
@@ -1539,7 +1643,6 @@
                         selectedChartNumColId.value = defaultNum ? defaultNum.id : null
                     }
                 }
-                initChartColumns()
 
                 const toggleChart = () => {
                     isChartOpen.value = !isChartOpen.value
@@ -1785,9 +1888,11 @@
                 }
 
                 onMounted(async () => {
+                    await loadData()
                     await nextTick()
                     updateChart()
                     updateTitle()
+                    initChartColumns()
 
                     const savedScroll = localStorage.getItem('ledger_scroll_pos')
                     if (savedScroll && tableContainer.value) {
@@ -1797,8 +1902,7 @@
                     const lastFocus = localStorage.getItem('lastFocused')
                     const currentFocus = JSON.parse(lastFocus || '{}')
                     if (currentFocus.rowId && currentFocus.colId) {
-                        const targetKey = `${currentFocus.rowId}-${currentFocus.colId}`
-                        const targetInput = inputRefs.value[targetKey]
+                        const targetInput = inputRefs.value[`${currentFocus.rowId}-${currentFocus.colId}`]
 
                         if (targetInput) {
                             targetInput.focus()
