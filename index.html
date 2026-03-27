@@ -967,7 +967,7 @@
                     window.removeEventListener('pointercancel', onPointerUp)
                 }
 
-                const gererateId = (lastId) => lastId.replace(/(\d+$)/, n => parseInt(n) + 1);
+                const gererateId = (prefix) => `${prefix}_${Date.now()}`;
 
                 const addColumn = () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
@@ -976,8 +976,7 @@
                         if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const nextIndex = columns.value.length + 1
-                    const newColId = gererateId(columns.value[nextIndex]?.id || 'col_1')
+                    const newColId = gererateId('col')
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply') { newColData.opA = formulaA.value; newColData.opB = formulaB.value }
 
@@ -1009,8 +1008,7 @@
 
                 const addRow = async () => {
                     try {
-                    const lastRowIndex = rows.value.length || 1
-                    const newRowId = gererateId(rows.value[lastRowIndex - 1].id)
+                    const newRowId = gererateId('row')
                     const newRow = { id: newRowId, remark: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
@@ -1176,8 +1174,7 @@
                     const originalRow = rows.value[rowIndex]
                     if (!originalRow) return
 
-                    const lastRowIndex = rows.value.length || 1
-                    const newRowId = gererateId(rows.value[lastRowIndex - 1].id)
+                    const newRowId = gererateId('row')
 
                     const clonedRow = {
                         ...originalRow,
