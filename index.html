@@ -226,7 +226,7 @@
                 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
             >
         </div>
-        <div class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
+        <div ref="tableContainer" @scroll="saveScrollPosition" class="max-h-[80vh] overflow-y-auto overflow-x-auto mb-2 border border-gray-300 rounded shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0" style="-webkit-overflow-scrolling: touch">
             <table class="w-full border-collapse relative print:w-full">
                 <thead class="bg-gray-100 print:bg-gray-100">
                     <tr>
@@ -310,7 +310,8 @@
                                         'text-blue-700 font-medium': col.type === 'category'
                                     }"
                                     @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                    @focus="col.type === 'category' && $event.target.select()"
+                                    @focus="onFocusInput(row.id, col.id); col.type === 'category' && $event.target.select()"
+                                    @blur="onFocusInput(null, null, 1)"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
 
@@ -596,6 +597,9 @@
                     {value: 'category', label: translate('Category')},
                     {value: 'multiply', label: translate('Multiply (A × B)')},
                 ])
+                const tableContainer = ref(null)
+                const lastFocused = ref({ rowId: null, colId: null })
+
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
 
                 let isInitializing = true
@@ -630,6 +634,20 @@
                     if (rows.value.length === 0) return false
                     return rows.value.every(row => row.isExpanded)
                 })
+
+                const debounce = (func, delay) => {
+                    let timer = null
+                    return (...args) => {
+                        clearTimeout(timer)
+                        timer = setTimeout(() => {
+                            func(...args)
+                        }, delay)
+                    }
+                }
+
+                const saveScrollPosition = debounce((e) => {
+                    localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
+                }, 300)
 
                 const loadChartCols = () => {
                     selectedChartCatColId.value = localStorage.getItem(`${currentStorageKey.value}_chartCatColId`)
@@ -830,7 +848,7 @@
                         ]
                         rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
                     }
-                    hasDateColumn.value = columns.value.some(column => column.type === 'date');
+                    hasDateColumn.value = columns.value.some(column => column.type === 'date')
 
                     tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
 
@@ -1122,11 +1140,11 @@
                         for (const column of columns.value) {
                             switch (column.type) {
                                 case 'date':
-                                    clonedRow[column.id] = todayDate;
-                                    break;
+                                    clonedRow[column.id] = todayDate
+                                    break
                                 case 'time':
-                                    clonedRow[column.id] = currentTime;
-                                    break;
+                                    clonedRow[column.id] = currentTime
+                                    break
                             }
                         }
                         rows.value.push(clonedRow)
@@ -1695,10 +1713,36 @@
                     confirmModal.value.isOpen = false
                 }
 
+                const onFocusInput = (rowId, colId, onBlur = false) => {
+                    lastFocused.value = {
+                        rowId: rowId,
+                        colId: colId
+                    }
+
+                    onBlur ? localStorage.removeItem('lastFocused') : localStorage.setItem('lastFocused', JSON.stringify(lastFocused.value))
+                }
+
                 onMounted(async () => {
                     await nextTick()
                     updateChart()
                     updateTitle()
+
+                    const savedScroll = localStorage.getItem('ledger_scroll_pos')
+                    if (savedScroll && tableContainer.value) {
+                        tableContainer.value.scrollTop = Number(savedScroll)
+                    }
+
+                    const lastFocus = localStorage.getItem('lastFocused')
+                    const currentFocus = JSON.parse(lastFocus || '{}')
+                    if (currentFocus.rowId && currentFocus.colId) {
+                        const targetKey = `${currentFocus.rowId}-${currentFocus.colId}`
+                        const targetInput = inputRefs.value[targetKey]
+
+                        if (targetInput) {
+                            targetInput.focus()
+                        }
+                    }
+
                     isInitializing = false
                 })
 
@@ -1772,6 +1816,9 @@
                     showConfirm,
                     onConfirmOk,
                     onConfirmCancel,
+                    tableContainer,
+                    saveScrollPosition,
+                    onFocusInput,
                     formatNumber
                 }
             }
