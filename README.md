@@ -52,7 +52,7 @@
 * **核心框架**: [Vue.js 3](https://vuejs.org/) (Composition API, CDN)
 * **UI 樣式**: [Tailwind CSS](https://tailwindcss.com/) (CDN)
 * **QR Code 生成**: [qrcode.js](https://github.com/soldair/node-qrcode) (CDN)
-* **資料儲存**: Browser LocalStorage & URL Hash (無後端架構)
+* **資料儲存**: Browser IndexedDB & URL Hash (無後端架構)
 
 ## ⚠️ 注意事項
 
