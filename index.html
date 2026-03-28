@@ -272,7 +272,7 @@
                     </tr>
                 </thead>
 
-                <tbody v-for="(row, index) in rows" :key="row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative">
+                <tbody v-for="(row, index) in filteredRows" :key="row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative">
                     <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-index="index">
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="onPointerDown(index, $event)">
@@ -352,8 +352,8 @@
                                         (row.remark && row.remark.trim() !== '') ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
                                     ]"
                                     class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.remark && row.remark.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                                <button @click="copyRow(index); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
-                                <button v-if="hasDateColumn" @click="copyRow(index, 1); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
+                                <button @click="copyRow(rows.indexOf(row)); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
                                 <button @click="removeRow(row.id); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
@@ -780,6 +780,30 @@
                     return rows.value.every(row => row.isExpanded)
                 })
 
+                const filteredRows = computed(() => {
+                    if (!selectedChartCatColId.value || !customLegendItems.value.length) return rows.value
+                    const hiddenCategories = new Set(
+                        customLegendItems.value
+                            .filter(item => item.hidden)
+                            .map(item => item.text)
+                    )
+                    if (hiddenCategories.size === 0) return rows.value
+                    return rows.value.filter(row => {
+                        const catValue = row[selectedChartCatColId.value]?.trim() || translate('Uncategorized')
+                        return !hiddenCategories.has(catValue)
+                    })
+                })
+
+                const columnTotals = computed(() => {
+                    const totals = {}
+                    columns.value.forEach(col => {
+                        if (col.type === 'number') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (parseFloat(row[col.id]) || 0), 0)
+                        else if (col.type === 'multiply') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)), 0)
+                        else totals[col.id] = '-'
+                    })
+                    return totals
+                })
+
                 const saveScrollPosition = debounce((e) => {
                     localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
                 }, 300)
@@ -1081,7 +1105,7 @@
                     window.removeEventListener('pointercancel', onPointerUp)
                 }
 
-                const gererateId = (prefix) => `${prefix}_${Date.now()}`;
+                const gererateId = (prefix) => `${prefix}_${Date.now()}`
 
                 const addColumn = () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
@@ -1321,16 +1345,6 @@
                 }
 
                 const removeRow = (idToRemove) => { rows.value = rows.value.filter(row => row.id !== idToRemove) }
-
-                const columnTotals = computed(() => {
-                    const totals = {}
-                    columns.value.forEach(col => {
-                        if (col.type === 'number') totals[col.id] = rows.value.reduce((sum, row) => sum + (parseFloat(row[col.id]) || 0), 0)
-                        else if (col.type === 'multiply') totals[col.id] = rows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)), 0)
-                        else totals[col.id] = '-'
-                    })
-                    return totals
-                })
 
                 const compressToBase64 = async (text) => {
                     const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
@@ -1776,6 +1790,7 @@
                     if (expenseChart.value) {
                         expenseChart.value.toggleDataVisibility(index)
                         expenseChart.value.update()
+                        rows.value[selectedChartCatColId.value]
                     }
                 }
 
@@ -1993,7 +2008,8 @@
                     scrollToPosition,
                     isAtTop,
                     isAtBottom,
-                    handleTableScroll
+                    handleTableScroll,
+                    filteredRows
                 }
             }
         })
