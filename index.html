@@ -1350,7 +1350,9 @@
                     }
                 }
 
-                const removeRow = (idToRemove) => { rows.value = rows.value.filter(row => row.id !== idToRemove) }
+                const removeRow = (idToRemove) => {
+                    rows.value = rows.value.filter(row => row.id !== idToRemove).map(row => toRaw(row))
+                }
 
                 const compressToBase64 = async (text) => {
                     const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
