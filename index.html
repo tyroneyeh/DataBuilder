@@ -494,7 +494,7 @@
         </footer>
     </div>
     <script type="module">
-        import { createApp, ref, shallowRef, computed, watch, nextTick, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, shallowRef, computed, watch, nextTick, toRaw, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
         const translations = {
             "zh-TW": {
@@ -754,7 +754,7 @@
 
                 const debouncedSave = debounce(() => {
                     // localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
-                    db.set(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)})
                     localStorage.setItem('lang', currentLanguage.value)
                     nextTick(() => updateChart())
                 }, 500)
@@ -957,18 +957,21 @@
                 }
 
                 const loadData = async () => {
-                    let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
 
-                    let savedStr = await db.get(currentStorageKey.value)
-                    if (!savedStr) {
-                        savedStr = localStorage.getItem(currentStorageKey.value)
-                        savedStr && db.set(currentStorageKey.value, savedStr)
-                        localStorage.removeItem(currentStorageKey.value)
-                    }
-
-                    if (savedStr) {
-                        try { localData = JSON.parse(savedStr) } catch (e) { console.error('Local error', e) }
+                    let localData = await db.get(currentStorageKey.value)
+                    if (localData) {
+                        if (typeof localData === 'string') {
+                            try {
+                                localData = JSON.parse(localData)
+                                db.set(currentStorageKey.value, localData)
+                            } catch (e) {
+                                localData = { title: '', columns: [], rows: [] }
+                                console.error('Local data error', e)
+                            }
+                        }
+                    } else {
+                        localData = { title: '', columns: [], rows: [] }
                     }
 
                     const hashStr = window.location.hash.slice(1)
@@ -1303,7 +1306,7 @@
                         return alert(translate("Cannot delete! Other 'Calculate' columns depend on this."))
                     }
                     if (!await showConfirm(translate("Are you sure you want to delete this column?"))) return
-                    columns.value = columns.value.filter(col => col.id !== idToRemove)
+                    columns.value = columns.value.filter(col => col.id !== idToRemove).map(col => toRaw(col))
                     rows.value.forEach(row => delete row[idToRemove])
                 }
 
