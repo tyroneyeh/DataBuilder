@@ -289,6 +289,7 @@
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     type="checkbox"
                                     v-model="row[col.id]"
+                                    @change="onCellEdited"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                     class="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer print:hidden transition-all active:scale-90"
                                 >
@@ -311,7 +312,7 @@
                                         'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
                                         'text-blue-700 font-medium': col.type === 'category'
                                     }"
-                                    @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
+                                    @input="onCellEdited(); ['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
                                     @focus="onFocusInput(row.id, col.id); col.type === 'category' && $event.target.select()"
                                     @blur="onFocusInput(null, null, 1)"
                                     @keydown="focusNextInput($event, row.id, col.id)"
@@ -366,6 +367,7 @@
                             <div class="flex flex-col">
                                 <textarea
                                     v-model="row.remark"
+                                    @input="onCellEdited"
                                     rows="1"
                                     class="w-full border-gray-300 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white print:bg-transparent print:text-sm print:text-gray-700 print:border-0 print:resize-none print:p-0 [field-sizing:content] "
                                     :placeholder="translate('Enter details here...')"
@@ -494,7 +496,8 @@
         </footer>
     </div>
     <script type="module">
-        import { createApp, ref, shallowRef, computed, watch, nextTick, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { createApp, ref, shallowRef, triggerRef, computed, watch, nextTick, toRaw, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { get, set, del, createStore } from 'https://cdn.jsdelivr.net/npm/idb-keyval@6/+esm'
 
         const translations = {
             "zh-TW": {
@@ -590,115 +593,19 @@
             }
         }
 
-        class SimpleDB {
-            constructor(storeName = 'ty-db', dbName = 'ty-db') {
-                this.dbName = dbName
-                this.storeName = storeName
-                this.db = null
-            }
-
-            async _openDB(version) {
-                return new Promise((resolve, reject) => {
-                    const req = indexedDB.open(this.dbName, version)
-
-                    req.onupgradeneeded = () => {
-                        const db = req.result
-                        if (!db.objectStoreNames.contains(this.storeName)) {
-                            db.createObjectStore(this.storeName, {keyPath: 'key'})
-                        }
-                    }
-
-                    req.onsuccess = () => resolve(req.result)
-                    req.onerror = () => reject(req.error)
-                })
-            }
-
-            async init() {
-                if (this.db) return this.db
-
-                let version = 1
-                try {
-                    const tmp = await this._openDB()
-                    version = tmp.version
-                    const hasStore = tmp.objectStoreNames.contains(this.storeName)
-                    tmp.close()
-                    if (!hasStore) version += 1
-                } catch {}
-
-                this.db = await this._openDB(version)
-                return this.db
-            }
-
-            async get(key) {
-                const db = await this.init()
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(this.storeName, 'readwrite')
-                    const store = tx.objectStore(this.storeName)
-                    const req = store.get(key)
-
-                    req.onsuccess = () => {
-                        const item = req.result
-                        if (!item) return resolve(null)
-                        resolve(item.value)
-                    }
-
-                    req.onerror = () => reject(req.error)
-                })
-            }
-
-            async set(key, value) {
-                const db = await this.init()
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(this.storeName, 'readwrite')
-                    const store = tx.objectStore(this.storeName)
-
-                    const req = store.put({
-                        key,
-                        value
-                    })
-
-                    req.onsuccess = () => resolve(true)
-                    req.onerror = () => reject(req.error)
-                })
-            }
-
-            async remove(key) {
-                const db = await this.init()
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(this.storeName, 'readwrite')
-                    const store = tx.objectStore(this.storeName)
-                    const req = store.delete(key)
-
-                    req.onsuccess = () => resolve(true)
-                    req.onerror = () => reject(req.error)
-                })
-            }
-
-            async clear() {
-                const db = await this.init()
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(this.storeName, 'readwrite')
-                    const store = tx.objectStore(this.storeName)
-                    const req = store.clear()
-
-                    req.onsuccess = () => resolve()
-                    req.onerror = () => reject(req.error)
-                })
-            }
-        }
-
         const app = createApp({
             setup() {
                 const window = globalThis
 
-                const db = new SimpleDB()
+                const tyDbStore = createStore('tydb', 'workspace')
+
                 const currentStorageKey = ref('')
                 const savedKeysList = ref([])
                 const tempKey = ref('')
 
                 const tableTitle = ref('')
                 const columns = ref([])
-                const rows = ref([])
+                const rows = shallowRef([])
                 const inputRefs = ref({})
                 const hasDateColumn = ref(false)
 
@@ -752,14 +659,14 @@
                 let draggingIndex = -1
                 let dragRowElement = null
 
-                const debouncedSave = debounce(() => {
+                const debouncedSave = debounce(async () => {
                     // localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
-                    db.set(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
+                    await set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)}, tyDbStore)
                     localStorage.setItem('lang', currentLanguage.value)
                     nextTick(() => updateChart())
                 }, 500)
 
-                watch([currentLanguage, tableTitle, columns, rows], () => {
+                watch([currentLanguage, tableTitle, columns], () => {
                     if (isInitializing) return
                     debouncedSave()
                     shareLink.value = ''
@@ -957,19 +864,35 @@
                 }
 
                 const loadData = async () => {
-                    let localData = { title: '', columns: [], rows: [] }
                     let hashData = null
 
-                    let savedStr = await db.get(currentStorageKey.value)
-                    if (!savedStr) {
-                        savedStr = localStorage.getItem(currentStorageKey.value)
-                        savedStr && db.set(currentStorageKey.value, savedStr)
-                        localStorage.removeItem(currentStorageKey.value)
-                    }
+                    document.body.style.cursor = 'wait'
+                    document.body.style.pointerEvents = 'none'
+                    await new Promise(resolve => setTimeout(resolve, 10))
 
-                    if (savedStr) {
-                        try { localData = JSON.parse(savedStr) } catch (e) { console.error('Local error', e) }
-                    }
+                    let localData = await get(currentStorageKey.value, tyDbStore)
+                    try {
+                        if (!localData) {
+                            // old indexeDB compatibility
+                            const oldDb = await createStore('ty-db', currentStorageKey.value)
+                            if (oldDb) {
+                                const oldData = await get(currentStorageKey.value, oldDb)
+                                if (oldData) {
+                                    if (typeof oldData.value === 'string') {
+                                        oldData.value = JSON.parse(oldData.value)
+                                    }
+                                    await set(currentStorageKey.value, oldData.value, tyDbStore)
+                                    await del(currentStorageKey.value, oldDb)
+                                }
+                                window.indexedDB.deleteDatabase('ty-db')
+                            } else {
+                                localData = {title: '', columns: [], rows: []}
+                            }
+                        } else if (typeof localData !== 'object') {
+                            localData = JSON.parse(localData)
+                            debouncedSave()
+                        }
+                    } catch (e) {}
 
                     const hashStr = window.location.hash.slice(1)
                     if (hashStr) {
@@ -1019,6 +942,9 @@
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
 
                     tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
+
+                    document.body.style.cursor = ''
+                    document.body.style.pointerEvents = ''
 
                 }
 
@@ -1160,9 +1086,9 @@
                     })
 
                     rows.value.push(newRow)
+                    onCellEdited()
 
                     if (!isMobile) {
-                        await nextTick()
                         setTimeout(() => {
                             const firstInputCol = columns.value.find(col => col.type === 'text')
                             if (firstInputCol) {
@@ -1335,6 +1261,8 @@
                         rows.value.splice(rowIndex + 1, 0, clonedRow)
                     }
 
+                    onCellEdited()
+
                     await nextTick()
 
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
@@ -1347,7 +1275,10 @@
                     }
                 }
 
-                const removeRow = (idToRemove) => { rows.value = rows.value.filter(row => row.id !== idToRemove) }
+                const removeRow = (idToRemove) => {
+                    rows.value = rows.value.filter(row => row.id !== idToRemove)
+                    onCellEdited()
+                }
 
                 const compressToBase64 = async (text) => {
                     const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
@@ -1480,7 +1411,9 @@
                 const clearStorage = async () => {
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
                         // localStorage.removeItem(currentStorageKey.value)
-                        db.clear()
+                        isChartOpen.value = false
+                        localStorage.removeItem('isExpenseChartOpen')
+                        await del(currentStorageKey.value, tyDbStore)
                         savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
                         if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
                         localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
@@ -1627,7 +1560,10 @@
                         addCount++
                     })
 
-                    if (addCount > 0) alert(`${translate('Imported items successfully!')} (${addCount})`)
+                    if (addCount > 0) {
+                        debouncedSave()
+                        alert(`${translate('Imported items successfully!')} (${addCount})`)
+                    }
                 }
 
                 const triggerFileUpload = () => {
@@ -1793,7 +1729,6 @@
                     if (expenseChart.value) {
                         expenseChart.value.toggleDataVisibility(index)
                         expenseChart.value.update()
-                        rows.value[selectedChartCatColId.value]
                     }
                 }
 
@@ -1934,6 +1869,11 @@
                     isInitializing = false
                 })
 
+                const onCellEdited = () => {
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+
                 return {
                     currentLanguage,
                     translate,
@@ -2012,7 +1952,8 @@
                     isAtTop,
                     isAtBottom,
                     handleTableScroll,
-                    filteredRows
+                    filteredRows,
+                    onCellEdited
                 }
             }
         })
