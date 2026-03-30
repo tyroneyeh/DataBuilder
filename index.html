@@ -318,8 +318,8 @@
                                         'text-blue-700 font-medium': col.type === 'category'
                                     }"
                                     @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                    @focus="onFocusInput(row.id, col.id); col.type === 'category' && $event.target.select()"
-                                    @blur="onFocusInput(null, null, 1)"
+                                    @focus="col.type === 'category' && $event.target.select()"
+                                    @blur="onDataEdited"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
 
@@ -1956,20 +1956,6 @@
                     confirmModal.value.isOpen = false
                 }
 
-                const onFocusInput = (rowId, colId, onBlur = false) => {
-                    lastFocused.value = {
-                        rowId: rowId,
-                        colId: colId
-                    }
-
-                    if (onBlur) {
-                        localStorage.removeItem('lastFocused')
-                        onDataEdited()
-                    } else {
-                        localStorage.setItem('lastFocused', JSON.stringify(lastFocused.value))
-                    }
-                }
-
                 const checkScrollState = () => {
                     if (!tableContainer.value) return
                     const { scrollTop, scrollHeight, clientHeight } = tableContainer.value
@@ -2103,7 +2089,6 @@
                     onConfirmCancel,
                     tableContainer,
                     saveScrollPosition,
-                    onFocusInput,
                     formatNumber,
                     scrollToPosition,
                     isAtTop,
