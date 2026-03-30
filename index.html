@@ -272,12 +272,12 @@
                     </tr>
                 </thead>
                 <tbody v-if="windowStart > 0" class="print:hidden block sm:table-row-group">
-                    <tr :style="{ height: `${windowStart * 56}px` }" class="block sm:table-row">
+                    <tr :style="{ height: `${topPaddingHeight}px` }" class="block sm:table-row">
                         <td :colspan="columns.length + 1" class="p-0 border-none bg-transparent"></td>
                     </tr>
                 </tbody>
 
-                <tbody v-for="(row, index) in visibleRows" :key="row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative" >
+                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative" >
                     <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="onPointerDown(row.id, $event)">
@@ -385,7 +385,7 @@
                 </tbody>
 
                 <tbody v-if="windowEnd < filteredRows.length" class="print:hidden block sm:table-row-group">
-                    <tr :style="{ height: `${(filteredRows.length - windowEnd) * 56}px` }" class="block sm:table-row">
+                    <tr :style="{ height: `${bottomPaddingHeight}px` }" class="block sm:table-row">
                         <td :colspan="columns.length + 1" class="p-0 border-none bg-transparent"></td>
                     </tr>
                 </tbody>
@@ -742,7 +742,6 @@
                     {value: 'multiply', label: translate('Multiply (A × B)')},
                 ])
                 const tableContainer = ref(null)
-                const lastFocused = ref({ rowId: null, colId: null })
                 const isAtTop = ref(true)
                 const isAtBottom = ref(false)
                 const expenseChart = shallowRef(null)
@@ -750,8 +749,9 @@
                 const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
                 const windowStart = ref(0)
                 const windowEnd = ref(50)
-                const ROW_HEIGHT = 56
                 const bottomSentinel = ref(null)
+                const defaultItemHeight = 80
+                const heightCache = ref({})
 
                 let isInitializing = true
                 let draggingColIndex = -1
@@ -760,9 +760,9 @@
                 let dragRowElement = null
                 let targetHoverId = null
                 let isSwapping = false
+                let resizeObserver = null
 
                 const debouncedSave = debounce(() => {
-                    // localStorage.setItem(currentStorageKey.value, JSON.stringify({ title: tableTitle.value, columns: columns.value, rows: rows.value }))
                     if (!currentStorageKey.value) return
                     db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)})
                     localStorage.setItem('lang', currentLanguage.value)
@@ -784,6 +784,39 @@
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
                     nextTick(() => updateChart())
+                })
+
+                const setupObserver = (rowId, el) => {
+                    if (el) {
+                        const initialHeight = el.getBoundingClientRect().height
+                        if (heightCache.value[rowId] !== initialHeight) {
+                            heightCache.value[rowId] = initialHeight
+                        }
+                        if (resizeObserver) {
+                            resizeObserver.observe(el)
+                        }
+                    }
+                }
+
+
+                const topPaddingHeight = computed(() => {
+                    let sum = 0
+                    const maxIdx = Math.min(windowStart.value, filteredRows.value.length)
+                    for (let i = 0; i < maxIdx; i++) {
+                        const row = filteredRows.value[i]
+                        if (row) sum += heightCache.value[row.id] || defaultItemHeight
+                    }
+                    return sum
+                })
+
+                const bottomPaddingHeight = computed(() => {
+                    let sum = 0
+                    const total = filteredRows.value.length
+                    for (let i = windowEnd.value; i < total; i++) {
+                        const row = filteredRows.value[i]
+                        if (row) sum += heightCache.value[row.id] || defaultItemHeight
+                    }
+                    return sum
                 })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
@@ -1194,14 +1227,20 @@
 
                 const scrollToPosition = async(direction) => {
                     if (!tableContainer.value) return
-                    let targetTop = 0
                     if (direction === 'bottom') {
-                        targetTop = tableContainer.value.scrollHeight
+                        const total = filteredRows.value.length
+                        windowStart.value = Math.max(0, total - 20)
+                        windowEnd.value = total
+                        await nextTick()
+                        tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                        setTimeout(() => {
+                            if (tableContainer.value) {
+                                tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                            }
+                        }, 50)
+                    } else {
+                        tableContainer.value.scrollTop = 0
                     }
-
-                    tableContainer.value.scrollTo({
-                        top: targetTop
-                    })
                 }
 
                 const addRow = async () => {
@@ -1548,7 +1587,6 @@
 
                 const clearStorage = async () => {
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
-                        // localStorage.removeItem(currentStorageKey.value)
                         await db.remove(currentStorageKey.value)
                         savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
                         if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
@@ -1966,6 +2004,7 @@
                 const handleTableScroll = (e) => {
                     checkScrollState()
                     saveScrollPosition(e)
+
                     const total = filteredRows.value.length
                     if (total <= 50) {
                         windowStart.value = 0
@@ -1975,15 +2014,32 @@
 
                     const scrollTop = e.target.scrollTop
                     const clientHeight = e.target.clientHeight
-                    const visibleCount = Math.ceil(clientHeight / ROW_HEIGHT)
-                    const buffer = 15
-                    let start = Math.floor(scrollTop / ROW_HEIGHT) - buffer
-                    if (start < 0) start = 0
+                    const buffer = 5
 
-                    let end = start + visibleCount + (buffer * 2)
-                    if (end > total) end = total
-                    windowStart.value = start
-                    windowEnd.value = end
+                    let currentY = 0
+                    let start = total > 0 ? total - 1 : 0
+                    for (let i = 0; i < total; i++) {
+                        const rowId = filteredRows.value[i].id
+                        const h = heightCache.value[rowId] || defaultItemHeight
+                        if (currentY + h > scrollTop) {
+                            start = i
+                            break
+                        }
+                        currentY += h
+                    }
+
+                    let end = start
+                    let visibleHeight = 0
+                    for (let i = start; i < total; i++) {
+                        const rowId = filteredRows.value[i].id
+                        const h = heightCache.value[rowId] || defaultItemHeight
+                        visibleHeight += h
+                        end = i + 1
+                        if (visibleHeight > clientHeight) break
+                    }
+
+                    windowStart.value = Math.max(0, start - buffer)
+                    windowEnd.value = Math.min(total, end + buffer * 2)
                 }
 
                 const autoHeight = (target) => {
@@ -1992,6 +2048,19 @@
                 }
 
                 onMounted(async() => {
+                    resizeObserver = new ResizeObserver((entries) => {
+                        for (let entry of entries) {
+                            const targetElement = entry.target
+                            const rowId = targetElement.dataset.rowId
+                            if (rowId) {
+                                const newHeight = entry.borderBoxSize ? entry.borderBoxSize[0].blockSize : targetElement.getBoundingClientRect().height
+                                if (heightCache.value[rowId] !== newHeight) {
+                                    heightCache.value[rowId] = newHeight
+                                }
+                            }
+                        }
+                    })
+
                     await loadData()
                     await nextTick()
                     updateChart()
@@ -2000,18 +2069,14 @@
 
                     const savedScroll = localStorage.getItem('ledger_scroll_pos')
                     if (savedScroll && tableContainer.value) {
-                        tableContainer.value.scrollTop = Number(savedScroll)
+                        setTimeout(() => {
+                            if (tableContainer.value) {
+                                tableContainer.value.scrollTop = Number(savedScroll)
+                                handleTableScroll({target: tableContainer.value})
+                            }
+                        }, 50)
                     }
 
-                    const lastFocus = localStorage.getItem('lastFocused')
-                    const currentFocus = JSON.parse(lastFocus || '{}')
-                    if (currentFocus.rowId && currentFocus.colId) {
-                        const targetInput = inputRefs.value[`${currentFocus.rowId}-${currentFocus.colId}`]
-
-                        if (targetInput) {
-                            targetInput.focus()
-                        }
-                    }
                     checkScrollState()
 
                     isInitializing = false
@@ -2101,7 +2166,10 @@
                     windowEnd,
                     onDataEdited,
                     ExpandNote,
-                    autoHeight
+                    autoHeight,
+                    topPaddingHeight,
+                    bottomPaddingHeight,
+                    setupObserver
                 }
             }
         })
