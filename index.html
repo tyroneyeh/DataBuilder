@@ -239,7 +239,7 @@
                                 'select-none [-webkit-touch-callout:none] touch-none',
                                 'active:scale-[0.98] active:bg-gray-200 active:shadow-inner active:cursor-grabbing',
                                 editingColId === col.id ? 'cursor-text active:cursor-text' : ''
-                            ]" @pointerdown.stop.prevent="onColPointerDown(index, $event)">
+                            ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
 
                             <span v-if="!isPrinting" class="text-gray-400 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing">⋮</span>
 
@@ -280,7 +280,7 @@
                 <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative" >
                     <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
-                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="onPointerDown(row.id, $event)">
+                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="startDragging('rows', row.id, $event)">
                             <span v-if="!isPrinting" class="text-gray-400 mr-2 sm:mr-1 text-xs">⋮</span>
                             <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
                         </td>
@@ -769,11 +769,7 @@
                 const isPrinting = ref(false)
 
                 let isInitializing = true
-                let draggingColIndex = -1
-                let dragColElement = null
-                let draggingRowId = null
-                let dragRowElement = null
-                let targetHoverId = null
+                let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
                 let resizeObserver = null
 
@@ -1116,102 +1112,68 @@
 
                 }
 
-                const onColPointerDown = (index, event) => {
-                    draggingColIndex = index
-                    document.body.classList.add('select-none', 'cursor-col-resize')
-                    dragColElement = event.target.closest('th')
-                    if (dragColElement) {
-                        dragColElement.classList.add('opacity-50', 'bg-indigo-50')
+                const startDragging = (type, identifier, event) => {
+                    const isCol = type === 'columns'
+                    dragSource = {
+                        id: isCol ? null : identifier,
+                        index: isCol ? identifier : -1,
+                        element: event.target.closest(isCol ? 'th' : 'tr'),
+                        type
                     }
-                    window.addEventListener('pointermove', onColPointerMove, { passive: false })
-                    window.addEventListener('pointerup', onColPointerUp)
-                    window.addEventListener('pointercancel', onColPointerUp)
-                }
-
-                const onColPointerMove = (event) => {
-                    if (draggingColIndex === -1) return
-                    event.preventDefault()
-                    const targetElement = document.elementFromPoint(event.clientX, event.clientY)
-                    if (!targetElement) return
-                    const targetTh = targetElement.closest('th[data-col-index]')
-                    if (targetTh) {
-                        const targetIndex = parseInt(targetTh.dataset.colIndex, 10)
-                        if (!isNaN(targetIndex) && targetIndex !== draggingColIndex) {
-                            const newCols = [...columns.value]
-                            const movedCol = newCols.splice(draggingColIndex, 1)[0]
-                            newCols.splice(targetIndex, 0, movedCol)
-                            columns.value = newCols
-                            draggingColIndex = targetIndex
-                            onDataEdited('columns')
-                        }
-                    }
-                }
-
-                const onColPointerUp = () => {
-                    if (dragColElement) {
-                        dragColElement.classList.remove('opacity-50', 'bg-indigo-50')
-                    }
-                    draggingColIndex = -1
-                    dragColElement = null
-
-                    document.body.classList.remove('select-none', 'cursor-col-resize')
-
-                    window.removeEventListener('pointermove', onColPointerMove)
-                    window.removeEventListener('pointerup', onColPointerUp)
-                    window.removeEventListener('pointercancel', onColPointerUp)
-                }
-
-                const onPointerDown = (rowId, event) => {
-                    draggingRowId = rowId
                     document.body.classList.add('select-none')
-                    dragRowElement = event.target.closest('tr')
-                    if (dragRowElement) {
-                        dragRowElement.classList.add('opacity-50', 'bg-indigo-50', 'shadow-lg')
+                    if (isCol) document.body.classList.add('cursor-col-resize')
+                    if (dragSource.element) {
+                        dragSource.element.classList.add('opacity-50', 'bg-indigo-50')
+                        if (!isCol) dragSource.element.classList.add('shadow-lg')
                     }
-
-                    window.addEventListener('pointermove', onPointerMove, { passive: false })
-                    window.addEventListener('pointerup', onPointerUp)
-                    window.addEventListener('pointercancel', onPointerUp)
+                    window.addEventListener('pointermove', handleDragging, { passive: false })
+                    window.addEventListener('pointerup', stopDragging)
+                    window.addEventListener('pointercancel', stopDragging)
                 }
 
-                const onPointerMove = async (event) => {
-                    if (!draggingRowId || isSwapping) return
-                    event.preventDefault()
-                    const targetElement = document.elementFromPoint(event.clientX, event.clientY)
-                    if (!targetElement) return
-                    const targetRow = targetElement.closest('tr[data-id]')
-                    if (targetRow) {
-                        const targetRowId = targetRow.dataset.id
-                        if (targetRowId && targetRowId !== draggingRowId) {
-                            const dragIdx = rows.value.findIndex(r => r.id === draggingRowId)
-                            const targetIdx = rows.value.findIndex(r => r.id === targetRowId)
+                const handleDragging = async (event) => {
+                    const { type, id, index } = dragSource
+                    if ((type === 'rows' ? !id : index === -1) || isSwapping) return
 
-                            if (dragIdx !== -1 && targetIdx !== -1) {
-                                isSwapping = true
-                                const newRows = [...rows.value]
-                                const movedItem = newRows.splice(dragIdx, 1)[0]
-                                newRows.splice(targetIdx, 0, movedItem)
-                                rows.value = newRows
-                                onDataEdited('rows')
-                                await nextTick()
-                                isSwapping = false
-                            }
+                    event.preventDefault()
+                    const target = document.elementFromPoint(event.clientX, event.clientY)
+                    if (!target) return
+
+                    const isCol = type === 'columns'
+                    const targetContainer = target.closest(isCol ? 'th[data-col-index]' : 'tr[data-id]')
+                    if (!targetContainer) return
+
+                    const targetId = isCol ? parseInt(targetContainer.dataset.colIndex, 10) : targetContainer.dataset.id
+                    const sourceId = isCol ? dragSource.index : dragSource.id
+
+                    if (targetId !== undefined && targetId !== sourceId) {
+                        const dataList = type === 'rows' ? rows : columns
+                        const sourceIdx = isCol ? dragSource.index : dataList.value.findIndex(r => r.id === sourceId)
+                        const targetIdx = isCol ? targetId : dataList.value.findIndex(r => r.id === targetId)
+                        if (sourceIdx !== -1 && targetIdx !== -1) {
+                            isSwapping = true
+                            const newList = [...dataList.value]
+                            const [movedItem] = newList.splice(sourceIdx, 1)
+                            newList.splice(targetIdx, 0, movedItem)
+                            dataList.value = newList
+                            if (isCol) dragSource.index = targetIdx
+                            onDataEdited(type)
+                            await nextTick()
+                            isSwapping = false
                         }
                     }
                 }
 
-                const onPointerUp = () => {
-                    if (dragRowElement) {
-                        dragRowElement.classList.remove('opacity-50', 'bg-indigo-50', 'shadow-lg')
+                const stopDragging = () => {
+                    if (dragSource.element) {
+                        dragSource.element.classList.remove('opacity-50', 'bg-indigo-50', 'shadow-lg')
                     }
-                    draggingRowId = null
-                    dragRowElement = null
+                    document.body.classList.remove('select-none', 'cursor-col-resize')
+                    window.removeEventListener('pointermove', handleDragging)
+                    window.removeEventListener('pointerup', stopDragging)
+                    window.removeEventListener('pointercancel', stopDragging)
+                    dragSource = { id: null, index: -1, element: null, type: null }
                     isSwapping = false
-
-                    document.body.classList.remove('select-none')
-                    window.removeEventListener('pointermove', onPointerMove)
-                    window.removeEventListener('pointerup', onPointerUp)
-                    window.removeEventListener('pointercancel', onPointerUp)
                 }
 
                 const generateId = (prefix) => `${prefix}_${Date.now()}`
@@ -2145,12 +2107,7 @@
                     qrCodeUrl,
                     columnTotals,
                     areAllExpanded,
-                    onColPointerDown,
-                    onColPointerMove,
-                    onColPointerUp,
-                    onPointerDown,
-                    onPointerMove,
-                    onPointerUp,
+                    startDragging,
                     addColumn,
                     addRow,
                     removeColumn,
