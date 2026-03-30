@@ -882,7 +882,7 @@
                 }
 
                 const saveScrollPosition = debounce((e) => {
-                    localStorage.setItem('ledger_scroll_pos', e.target.scrollTop)
+                    e.target.scrollTop ? localStorage.setItem('ledger_scroll_pos', e.target.scrollTop) : localStorage.removeItem('ledger_scroll_pos')
                 }, 300)
 
                 const loadChartCols = () => {
