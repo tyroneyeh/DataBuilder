@@ -972,6 +972,7 @@
                     rows.value.forEach(row => {
                         row.isExpanded = newState
                     })
+                    onDataEdited()
                 }
 
                 const mergeDuplicates = (silent = false) => {
