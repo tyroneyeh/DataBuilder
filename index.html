@@ -1796,8 +1796,10 @@
                     const colId = type === 'date' ? selectedChartDateColId.value : selectedChartCatColId.value
                     if (!colId) return null
 
+                    const data = type === 'date' ? filteredRows.value : rows.value
+
                     const totals = {}
-                    rows.value.forEach(row => {
+                    data.forEach(row => {
                         const rawVal = row[colId]
                         if (!rawVal) return
 
@@ -1915,6 +1917,7 @@
                         expenseChart.value.toggleDataVisibility(index)
                         expenseChart.value.update()
                     }
+                    nextTick(() => updateChart())
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
