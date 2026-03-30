@@ -332,8 +332,8 @@
                             <div class="flex items-center justify-center space-x-2">
                                 <button
                                     @click.stop="toggleActionMenu(row.id)"
-                                    class="text-gray-400 hover:text-indigo-600 active:bg-indigo-100 px-3 py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none z-50 relative"
-                                    :class="{'text-indigo-600': row.remark && row.remark.trim() !== '' && !row.isExpanded}"
+                                    class="text-gray-400 hover:text-indigo-600 active:bg-indigo-100 px-3 py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
+                                    :class="{'text-indigo-600': row.note && row.note.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
                             <div
@@ -346,15 +346,15 @@
                                 v-show="activeMenuRowId === row.id"
                                 class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
                             >
-                                <button @click="row.isExpanded = !row.isExpanded; closeActionMenu()"
+                                <button @click="ExpandNote(row)"
                                     :class="[
                                         row.isExpanded ? 'text-blue-700 bg-blue-100' :
-                                        (row.remark && row.remark.trim() !== '') ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
+                                        row.note && row.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
                                     ]"
-                                    class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.remark && row.remark.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                                <button @click="copyRow(rows.indexOf(row)); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
-                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
-                                <button @click="removeRow(row.id); closeActionMenu()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
+                                    class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.note && row.note.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
+                                <button @click="copyRow(rows.indexOf(row))" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
+                                <button @click="removeRow(row.id)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
                     </tr>
@@ -365,7 +365,7 @@
                         <td :colspan="columns.length + 1" class="block sm:table-cell print:table-cell border-t sm:border print:border border-gray-200 sm:border-gray-300 px-4 py-3 sm:py-2 shadow-inner">
                             <div class="flex flex-col">
                                 <textarea
-                                    v-model="row.remark"
+                                    v-model="row.note"
                                     rows="1"
                                     class="w-full border-gray-300 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white print:bg-transparent print:text-sm print:text-gray-700 print:border-0 print:resize-none print:p-0 [field-sizing:content] "
                                     :placeholder="translate('Enter details here...')"
@@ -866,6 +866,11 @@
                     activeMenuRowId.value = null
                 }
 
+                const ExpandNote = (row) => {
+                    row.isExpanded = !row.isExpanded
+                    closeActionMenu()
+                }
+
                 const onKeyFocus = () => {
                     tempKey.value = currentStorageKey.value
                     currentStorageKey.value = ''
@@ -914,13 +919,13 @@
                                 }
                             })
 
-                            const currentRemark = (existingRow.remark || '').trim()
-                            const incomingRemark = (row.remark || '').trim()
+                            const currentRemark = (existingRow.note || '').trim()
+                            const incomingRemark = (row.note || '').trim()
                             if (incomingRemark !== '') {
                                 if (currentRemark === '') {
-                                    existingRow.remark = incomingRemark
+                                    existingRow.note = incomingRemark
                                 } else {
-                                    existingRow.remark = currentRemark + ' ' + incomingRemark
+                                    existingRow.note = currentRemark + ' ' + incomingRemark
                                 }
                                 existingRow.isExpanded = true
                             }
@@ -1017,7 +1022,7 @@
                             { id: 'col_3', label: translate('Quantity'), type: 'number' },
                             { id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3' }
                         ]
-                        rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, remark: '', isExpanded: false }]
+                        rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, note: '', isExpanded: false }]
                     }
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
 
@@ -1152,7 +1157,7 @@
 
                 const addRow = async () => {
                     const newRowId = gererateId('row')
-                    const newRow = { id: newRowId, remark: '', isExpanded: false }
+                    const newRow = { id: newRowId, note: '', isExpanded: false }
                     const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
@@ -1311,6 +1316,8 @@
                 }
 
                 const copyRow = async (rowIndex, ignoreDate = 0) => {
+                    closeActionMenu()
+
                     const originalRow = rows.value[rowIndex]
                     if (!originalRow) return
 
@@ -1352,6 +1359,7 @@
 
                 const removeRow = (idToRemove) => {
                     rows.value = rows.value.filter(row => row.id !== idToRemove).map(row => toRaw(row))
+                    closeActionMenu()
                 }
 
                 const compressToBase64 = async (text) => {
@@ -1415,7 +1423,7 @@
                             cleanRow[col.label] = row[col.id] || ''
                         }
                     })
-                    cleanRow[translate('Note')] = row.remark?.trim() || ''
+                    cleanRow[translate('Note')] = row.note?.trim() || ''
                     return cleanRow
                 })
 
@@ -1467,7 +1475,7 @@
                                 rowData.push(row[col.id] || '')
                             }
                         })
-                        rowData.push(row.remark || '')
+                        rowData.push(row.note || '')
                         csvContent += rowData.map(escapeCsv).join(',') + '\n'
                     })
 
@@ -2017,7 +2025,8 @@
                     isAtTop,
                     isAtBottom,
                     handleTableScroll,
-                    filteredRows
+                    filteredRows,
+                    ExpandNote
                 }
             }
         })
