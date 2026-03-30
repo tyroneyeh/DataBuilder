@@ -530,7 +530,7 @@
                 "Columns": "欄位",
                 "Workspace": "切換存檔",
                 "Select or create a workspace": "選擇或創建工作區",
-                "My Dynamic Table": "我的動態資料表",
+                "My Data Sheets": "我的資料表",
                 "Enter title...": "請輸入標題...",
                 "Column Name": "欄位名稱",
                 "e.g., Discount": "例如：折扣",
@@ -887,7 +887,7 @@
                 }
 
                 const updateTitle = () => {
-                    document.title = (tableTitle.value || translate('My Dynamic Table')) + ` - ${translate("TY's Data Builder")}`
+                    document.title = (tableTitle.value || translate('My Data Sheets')) + ` - ${translate("TY's Data Builder")}`
                 }
 
                 const initStorageKeys = () => {
@@ -1108,7 +1108,7 @@
                     }
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
 
-                    tableTitle.value = hashData?.title || localData.title || translate('My Dynamic Table')
+                    tableTitle.value = hashData?.title || localData.title || translate('My Data Sheetss')
 
                 }
 
