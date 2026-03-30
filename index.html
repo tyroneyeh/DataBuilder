@@ -201,27 +201,30 @@
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
-                    <div v-if="!isPrinting" class="w-full max-w-md flex justify-between items-center mx-auto mt-6 bg-gray-50 p-2 rounded-lg text-sm border border-gray-100">
-                        <div class="flex items-center space-x-2 pr-2 border-r border-gray-200">
+                    <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 gap-3 sm:gap-0">
+
+                        <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 sm:pr-4">
                             <span class="text-gray-500 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
-                            <select v-model="selectedChartCatColId" class="w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <select v-model="selectedChartCatColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
                             </select>
                         </div>
-                        <div v-if="hasDateColumn" class="flex items-center space-x-2 pl-2">
+
+                        <div v-if="hasDateColumn" class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 sm:px-4">
                             <span class="text-gray-500 font-medium whitespace-nowrap">📈 {{ translate('Timeline') }}:</span>
-                            <select v-model="selectedChartDateColId" class="bg-white border border-gray-200 rounded px-2 py-1 outline-none">
+                            <select v-model="selectedChartDateColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none">
                                 <option value="">{{ translate('None') }}</option>
                                 <option v-for="col in columns.filter(c => c.type === 'date')" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
                             </select>
                         </div>
-                        <div class="flex items-center space-x-2 pl-2">
+
+                        <div class="flex items-center justify-between w-full sm:w-auto sm:pl-4">
                             <span class="text-gray-500 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
-                            <select v-model="selectedChartNumColId" class="w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['number', 'multiply'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
@@ -348,7 +351,7 @@
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
 
-                                    <div v-if="!isPrinting && col.type === 'number'" class="absolute right-0 gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex">
+                                    <div v-if="!isPrinting && col.type === 'number'" class="sm:absolute sm:right-0 gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex">
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                     </div>
