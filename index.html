@@ -282,7 +282,7 @@
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="onPointerDown(row.id, $event)">
                             <span class="text-gray-400 mr-2 sm:mr-1 text-xs print:hidden">⋮</span>
-                            <span class="sm:hidden print:hidden mr-1 text-gray-400">#</span>{{ windowStart + index + 1 }}
+                            <span class="sm:hidden print:hidden mr-1 text-gray-400">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
                         </td>
 
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 px-4 py-2 sm:py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
@@ -290,7 +290,7 @@
                             <span class="sm:hidden print:hidden text-gray-500 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0">{{ col.label }}</span>
 
                             <div v-if="col.type === 'checkbox'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1">
-                                <input
+                                <input v-if="!isPrinting"
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     type="checkbox"
                                     v-model="row[col.id]"
@@ -302,35 +302,46 @@
                                     {{ row[col.id] ? '☑' : '☐' }}
                                 </span>
                             </div>
-                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">{{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}</div>
+
+                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
+                                {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}
+                            </div>
+
                             <div v-else class="flex items-center w-full relative justify-end sm:justify-start print:justify-start">
-                                <input
-                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
-                                    v-model="row[col.id]"
-                                    :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
-                                    :inputmode="col.type === 'number' ? 'decimal' : 'text'"
-                                    :list="col.type === 'category' ? 'datalist-' + col.id : null"
-                                    :title="row[col.id]"
-                                    :placeholder="col.type === 'number' ? '0' : '...'"
-                                    class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
-                                    :class="{
-                                        'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
-                                        'text-blue-700 font-medium': col.type === 'category'
-                                    }"
-                                    @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                    @focus="col.type === 'category' && $event.target.select()"
-                                    @blur="onDataEdited"
-                                    @keydown="focusNextInput($event, row.id, col.id)"
-                                >
 
-                                <div v-if="col.type === 'number'" class="gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0 flex">
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
-                                    <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
-                                </div>
+                                <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap">
+                                    {{ row[col.id] }}
+                                </span>
 
-                                <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
-                                    <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
-                                </datalist>
+                                <template v-else>
+                                    <input
+                                        :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                        v-model="row[col.id]"
+                                        :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
+                                        :inputmode="col.type === 'number' ? 'decimal' : 'text'"
+                                        :list="col.type === 'category' ? 'datalist-' + col.id : null"
+                                        :title="row[col.id]"
+                                        :placeholder="col.type === 'number' ? '0' : '...'"
+                                        class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
+                                        :class="{
+                                            'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
+                                            'text-blue-700 font-medium': col.type === 'category'
+                                        }"
+                                        @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
+                                        @focus="col.type === 'category' && $event.target.select()"
+                                        @blur="onDataEdited"
+                                        @keydown="focusNextInput($event, row.id, col.id)"
+                                    >
+
+                                    <div v-if="col.type === 'number'" class="gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity print:hidden shrink-0 flex">
+                                        <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                        <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                    </div>
+
+                                    <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
+                                        <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
+                                    </datalist>
+                                </template>
                             </div>
                         </td>
 
@@ -365,16 +376,20 @@
                         </td>
                     </tr>
 
-                    <tr :class="row.isExpanded ? 'block sm:table-row print:table-row' : 'hidden'"
+                    <tr :class="[(row.isExpanded || (isPrinting && row.note)) ? 'block sm:table-row print:table-row' : 'hidden']"
                         class="bg-blue-50/30 print:bg-transparent rounded-b-lg sm:rounded-none">
                         <td class="hidden sm:table-cell print:table-cell sm:sticky left-0 z-10 print:static bg-blue-50/80 print:bg-transparent border sm:border print:border border-gray-300"></td>
                         <td :colspan="columns.length + 1" class="block sm:table-cell print:table-cell border-t sm:border print:border border-gray-200 sm:border-gray-300 px-4 py-3 sm:py-2 shadow-inner">
                             <div class="flex flex-col">
+                                <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                    {{ row.note }}
+                                </div>
                                 <textarea
+                                    v-else
                                     :id="'note-' + row.id"
                                     v-model="row.note"
                                     rows="1"
-                                    class="w-full border-gray-300 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white print:bg-transparent print:text-sm print:text-gray-700 print:border-0 print:resize-none print:p-0 [field-sizing:content] "
+                                    class="w-full border-gray-300 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white [field-sizing:content]"
                                     :placeholder="translate('Enter details here...')"
                                     @input="autoHeight($event.target)"
                                     @change="onDataEdited"
@@ -438,7 +453,7 @@
                 <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
-                <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
+                <button @click="triggerPrint" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
             </div>
 
             <div v-if="shareLink" class="bg-indigo-50 p-4 sm:p-6 rounded-lg border border-indigo-200 shadow-inner flex flex-col items-center gap-4 mt-2">
@@ -752,6 +767,7 @@
                 const bottomSentinel = ref(null)
                 const defaultItemHeight = 80
                 const heightCache = ref({})
+                const isPrinting = ref(false)
 
                 let isInitializing = true
                 let draggingColIndex = -1
@@ -787,6 +803,7 @@
                 })
 
                 const setupObserver = (rowId, el) => {
+                    if (isPrinting.value) return
                     if (el) {
                         const initialHeight = el.getBoundingClientRect().height
                         if (heightCache.value[rowId] !== initialHeight) {
@@ -841,6 +858,7 @@
                 })
 
                 const visibleRows = computed(() => {
+                    if (isPrinting.value) return filteredRows.value 
                     return filteredRows.value.slice(windowStart.value, windowEnd.value)
                 })
 
@@ -1735,7 +1753,10 @@
                         addCount++
                     })
 
-                    if (addCount > 0) alert(`${translate('Imported items successfully!')} (${addCount})`)
+                    if (addCount > 0) {
+                        onDataEdited('both')
+                        alert(`${translate('Imported items successfully!')} (${addCount})`)
+                    }
                 }
 
                 const triggerFileUpload = () => {
@@ -2047,7 +2068,20 @@
                     target.style.height = target.scrollHeight + 'px'
                 }
 
+                const triggerPrint = () => {
+                    setTimeout(async () => {
+                        isPrinting.value = true
+                        await nextTick()
+                        setTimeout(() => {
+                            window.print()
+                            isPrinting.value = false
+                        }, 800) 
+                    }, 50)
+                }
+
                 onMounted(async() => {
+                    window.addEventListener('beforeprint', () => { isPrinting.value = true })
+                    window.addEventListener('afterprint', () => { isPrinting.value = false })
                     resizeObserver = new ResizeObserver((entries) => {
                         for (let entry of entries) {
                             const targetElement = entry.target
@@ -2169,7 +2203,9 @@
                     autoHeight,
                     topPaddingHeight,
                     bottomPaddingHeight,
-                    setupObserver
+                    setupObserver,
+                    isPrinting,
+                    triggerPrint
                 }
             }
         })
