@@ -1,12 +1,39 @@
-- name: ⚙️ 設定 Node.js 環境
+name: Update Website Thumbnail
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  # 消除 Node.js 20 淘汰的系統警告
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  update-thumbnail:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 檢出程式碼
+        uses: actions/checkout@v4
+
+      - name: ⚙️ 設定 Node.js 環境
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
       - name: 📸 使用 Playwright CLI 截圖
         run: |
-          # 1. 安裝 Playwright 與其依賴的瀏覽器 (比 Puppeteer 穩定很多)
+          # 1. 安裝 Playwright 與其依賴的瀏覽器
           npx -y playwright@latest install --with-deps chromium
 
-          # 2. 一行指令直接截圖，不需自己寫腳本去控制無頭瀏覽器
+          # 2. 執行截圖，設定解析度為 1280x720
           npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png --viewport-size="1280,720"
+
+      - name: 💾 自動 Commit 並 Push 回儲存庫
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: 自動更新網站縮圖 [skip ci]"
+          file_pattern: databuilder.png
