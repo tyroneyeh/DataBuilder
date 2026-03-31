@@ -201,7 +201,7 @@
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
-                    <div v-if="hasDateColumn" class="w-full bg-white p-3 rounded-xl border border-gray-50 shadow-sm flex flex-wrap gap-2 items-center justify-center sm:justify-start">
+                    <div v-if="hasDateColumn" class="w-full bg-white p-3 rounded-xl border border-gray-50 shadow-sm flex flex-wrap gap-2 items-center justify-center">
                         <span class="text-gray-500 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
                         <button
                             v-for="m in monthFilters" :key="m.month"
