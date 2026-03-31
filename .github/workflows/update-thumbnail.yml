@@ -5,7 +5,6 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch:
 
-# 💡 解法就在這裡：設定全域環境變數，強制 Actions 底層套件提早使用 Node.js 24
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -22,15 +21,45 @@ jobs:
       - name: ⚙️ 設定 Node.js 環境
         uses: actions/setup-node@v4
         with:
-          # 💡 順便把我們執行截圖工具的 Node.js 版本也升級到 24 (LTS)
           node-version: '24'
 
-      - name: 📸 抓取 ty-db.pages.dev 網頁縮圖
+      - name: 📦 安裝 Puppeteer
         run: |
-          npx pageres-cli https://ty-db.pages.dev 1280x720 --crop --overwrite --filename=databuilder.png
+          npm init -y
+          npm install puppeteer
+
+      - name: 📸 執行自訂截圖腳本
+        run: |
+          # 透過 Bash Heredoc 直接建立並執行 Node.js 腳本
+          cat << 'EOF' > screenshot.js
+          const puppeteer = require('puppeteer');
+
+          (async () => {
+            // 啟動瀏覽器，關鍵點在於加入 --no-sandbox 參數以繞過 Linux 容器限制
+            const browser = await puppeteer.launch({
+              args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+            const page = await browser.newPage();
+
+            // 設定解析度
+            await page.setViewport({ width: 1280, height: 720 });
+
+            // 前往目標網站，等待網路請求靜止 (networkidle2 確保動態內容載入完畢)
+            await page.goto('https://ty-db.pages.dev', { waitUntil: 'networkidle2' });
+
+            // 截圖並存檔
+            await page.screenshot({ path: 'databuilder.png' });
+
+            await browser.close();
+          })();
+          EOF
+
+          # 執行腳本
+          node screenshot.js
 
       - name: 💾 自動 Commit 並 Push 回儲存庫
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: 自動更新網站縮圖 [skip ci]"
+          # 這裡設定 file_pattern 非常重要，它確保剛才安裝的 node_modules 不會被 Commit 進去
           file_pattern: databuilder.png
