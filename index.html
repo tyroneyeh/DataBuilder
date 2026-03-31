@@ -205,11 +205,22 @@
                         <span class="text-gray-500 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
                         <button
                             v-for="m in monthFilters" :key="m.month"
-                            @click="toggleMonth(m.month)"
+                            @click="toggleFilter('month', m.month)"
                             class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
                             :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 opacity-50 grayscale'"
                         >
                             {{ m.month }}
+                        </button>
+                    </div>
+                    <div v-if="hasDateColumn && yearFilters.length > 1" class="w-full bg-white p-3 rounded-xl border border-gray-50 shadow-sm flex flex-wrap gap-2 items-center justify-center mb-2">
+                        <span class="text-gray-500 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
+                        <button
+                            v-for="y in yearFilters" :key="y.year"
+                            @click="toggleFilter('year', y.year)"
+                            class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
+                            :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 opacity-50 grayscale'"
+                        >
+                            {{ y.year }}
                         </button>
                     </div>
                     <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 gap-3 sm:gap-0">
@@ -627,7 +638,8 @@
                 "Trend": "趨勢",
                 "Timeline": "時間軸",
                 "None": "無",
-                "Month": "月份"
+                "Month": "月份",
+                "Year": "年份"
             }
         }
 
@@ -775,6 +787,7 @@
                 const selectedChartNumColId = ref(null)
                 const selectedChartDateColId = ref('')
                 const hasTrendData = ref(false)
+                const yearFilters = ref([])
                 const monthFilters = ref(Array.from({ length: 12 }, (_, i) => ({ month: i + 1, active: true })))
 
                 const confirmModal = ref({
@@ -826,6 +839,7 @@
                     shareLink.value = ''
                     qrCodeUrl.value = ''
                     updateTitle()
+                    refreshYearFilters()
                 }, { deep: true })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
@@ -1825,6 +1839,10 @@
                                 const m = dateObj.getMonth() + 1
                                 const mFilter = monthFilters.value.find(x => x.month === m)
                                 if (mFilter && !mFilter.active) return
+
+                                const y = dateObj.getFullYear()
+                                const yFilter = yearFilters.value.find(x => x.year === y)
+                                if (yFilter && !yFilter.active) return
                             }
                         }
 
@@ -2071,13 +2089,35 @@
                     }
                 }
 
-                const toggleMonth = async(m) => {
-                    const item = monthFilters.value.find(x => x.month === m)
+                const toggleFilter = async(type, value) => {
+                    const targetArray = type === 'month' ? monthFilters.value : yearFilters.value
+                    const matchKey = type === 'month' ? 'month' : 'year'
+                    const item = targetArray.find(x => x[matchKey] === value)
                     if (item) {
                         item.active = !item.active
                     }
                     await nextTick()
                     updateChart()
+                }
+
+                const refreshYearFilters = () => {
+                    const yearsInData = new Set()
+                    const dateCols = columns.value.filter(c => c.type === 'date')
+                    rows.value.forEach(row => {
+                        dateCols.forEach(col => {
+                            if (row[col.id]) {
+                                const d = new Date(row[col.id])
+                                if (!isNaN(d.getTime())) {
+                                    yearsInData.add(d.getFullYear())
+                                }
+                            }
+                        })
+                    })
+                    const sortedYears = Array.from(yearsInData).sort((a, b) => b - a)
+                    yearFilters.value = sortedYears.map(y => {
+                        const existing = yearFilters.value.find(f => f.year === y)
+                        return { year: y, active: existing ? existing.active : true }
+                    })
                 }
 
                 const toggleMenu = () => {
@@ -2198,6 +2238,7 @@
                     updateChart()
                     updateTitle()
                     initChartColumns()
+                    refreshYearFilters()
 
                     const savedScroll = localStorage.getItem('ledger_scroll_pos')
                     if (savedScroll && tableContainer.value) {
@@ -2275,7 +2316,8 @@
                     selectedChartDateColId,
                     hasTrendData,
                     monthFilters,
-                    toggleMonth,
+                    yearFilters,
+                    toggleFilter,
                     toggleMenu,
                     isMenuOpen,
                     confirmModal,
