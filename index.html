@@ -825,7 +825,7 @@
                 let isSwapping = false
                 let resizeObserver = null
 
-                const debouncedSave = debounce(async() => {
+                const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
                     db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)})
                     localStorage.setItem('lang', currentLanguage.value)
@@ -844,7 +844,7 @@
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
                 })
-                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], async() => {
+                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], async () => {
                     if (isInitializing) return
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
@@ -993,7 +993,7 @@
                     activeMenuRowId.value = null
                 }
 
-                const ExpandNote = async(row) => {
+                const ExpandNote = async (row) => {
                     row.isExpanded = !row.isExpanded
                     closeActionMenu()
                     onDataEdited()
@@ -1156,7 +1156,7 @@
                         rows.value = localData.rows
                     } else {
                         columns.value = [
-                            { id: 'col_1', label: translate('Item'), type: 'text' },
+                            { id: 'col_1', label: translate('Item'), type: 'category' },
                             { id: 'col_2', label: translate('Price'), type: 'number' },
                             { id: 'col_3', label: translate('Quantity'), type: 'number' },
                             { id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3' }
@@ -1262,7 +1262,7 @@
                     return {todayDate: localDate.toISOString().slice(0, 10), currentTime: localDate.toISOString().slice(11, 16)}
                 }
 
-                const scrollToPosition = async(direction) => {
+                const scrollToPosition = async (direction) => {
                     if (!tableContainer.value) return
                     if (direction === 'bottom') {
                         const total = filteredRows.value.length
@@ -1812,7 +1812,7 @@
                     }
                 }
 
-                const toggleChart = async() => {
+                const toggleChart = async () => {
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
@@ -1958,7 +1958,7 @@
                     }
                 }
 
-                const toggleLegend = async(index) => {
+                const toggleLegend = async (index) => {
                     if (expenseChart.value) {
                         expenseChart.value.toggleDataVisibility(index)
                         expenseChart.value.update()
@@ -2054,7 +2054,7 @@
                     }
                 }
 
-                const updateChart = async() => {
+                const updateChart = async () => {
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
 
@@ -2089,7 +2089,7 @@
                     }
                 }
 
-                const toggleFilter = async(type, value) => {
+                const toggleFilter = async (type, value) => {
                     const targetArray = type === 'month' ? monthFilters.value : yearFilters.value
                     const matchKey = type === 'month' ? 'month' : 'year'
                     const item = targetArray.find(x => x[matchKey] === value)
@@ -2125,7 +2125,7 @@
                 }
 
                 const showConfirm = (message) => {
-                    return new Promise(async(resolve) => {
+                    return new Promise(async (resolve) => {
                         confirmModal.value = {
                             isOpen: true,
                             message: message,
@@ -2217,7 +2217,7 @@
                     }, 50)
                 }
 
-                onMounted(async() => {
+                onMounted(async () => {
                     window.addEventListener('beforeprint', () => { isPrinting.value = true })
                     window.addEventListener('afterprint', () => { isPrinting.value = false })
                     resizeObserver = new ResizeObserver((entries) => {
