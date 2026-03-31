@@ -62,9 +62,9 @@
                 <button
                     @click="toggleDarkMode"
                     class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none"
-                    :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                    :title="isDark ? translate('Switch to Light Mode') : translate('Switch to Dark Mode')"
                 >
-                    {{ isDark ? '🌙' : '🌞' }}
+                    {{ isDark ? '🌞' : '🌙' }}
                 </button>
                 <select v-model="currentLanguage" class="border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700">
                     <option value="en">English</option>
@@ -676,7 +676,9 @@
                 "None": "無",
                 "Month": "月份",
                 "Year": "年份",
-                "price": "價"
+                "price": "價",
+                "Switch to Dark Mode": "切換到深色模式",
+                "Switch to Light Mode": "切換到亮色模式"
             },
             "zh-CN": {
                 "TY's Data Builder": "TY的数据表计算器",
@@ -753,7 +755,9 @@
                 "None": "无",
                 "Month": "月份",
                 "Year": "年份",
-                "price": "价"
+                "price": "价",
+                "Switch to Dark Mode": "切换到深色模式",
+                "Switch to Light Mode": "切换到浅色模式"
             },
             "ja": {
                 "TY's Data Builder": "TYのデータ計算ツール",
@@ -830,7 +834,9 @@
                 "None": "なし",
                 "Month": "月",
                 "Year": "年",
-                "price": "価"
+                "price": "価",
+                "Switch to Dark Mode": "ダークモードに切り替え",
+                "Switch to Light Mode": "ライトモードに切り替え"
             },
             "ko": {
                 "TY's Data Builder": "TY 데이터 빌더",
@@ -907,7 +913,9 @@
                 "None": "없음",
                 "Month": "월",
                 "Year": "연도",
-                "price": "가"
+                "price": "가",
+                "Switch to Dark Mode": "다크 모드로 전환",
+                "Switch to Light Mode": "라이트 모드로 전환"
             },
             "fr": {
                 "TY's Data Builder": "Générateur de Données TY",
@@ -984,7 +992,9 @@
                 "None": "Aucun",
                 "Month": "Mois",
                 "Year": "Année",
-                "price": "prix"
+                "price": "prix",
+                "Switch to Dark Mode": "Passer au mode sombre",
+                "Switch to Light Mode": "Passer au mode clair"
             },
             "de": {
                 "TY's Data Builder": "TYs Daten-Builder",
@@ -1061,7 +1071,9 @@
                 "None": "Keine",
                 "Month": "Monat",
                 "Year": "Jahr",
-                "price": "preis"
+                "price": "preis",
+                "Switch to Dark Mode": "In den dunklen Modus wechseln",
+                "Switch to Light Mode": "In den hellen Modus wechseln"
             },
             "nl": {
                 "TY's Data Builder": "TY's Gegevensbouwer",
@@ -1138,7 +1150,9 @@
                 "None": "Geen",
                 "Month": "Maand",
                 "Year": "Jaar",
-                "price": "prijs"
+                "price": "prijs",
+                "Switch to Dark Mode": "Overschakelen naar donkere modus",
+                "Switch to Light Mode": "Overschakelen naar lichte modus"
             },
             "hi": {
                 "TY's Data Builder": "टीवाई का डेटा बिल्डर",
@@ -1215,7 +1229,9 @@
                 "None": "कोई नहीं",
                 "Month": "महीना",
                 "Year": "वर्ष",
-                "price": "मूल्य"
+                "price": "मूल्य",
+                "Switch to Dark Mode": "डार्क मोड पर स्विच करें",
+                "Switch to Light Mode": "लाइट मोड पर स्विच करें"
             },
             "tl": {
                 "TY's Data Builder": "Data Builder ng TY",
@@ -1292,7 +1308,9 @@
                 "None": "Wala",
                 "Month": "Buwan",
                 "Year": "Taon",
-                "price": "presyo"
+                "price": "presyo",
+                "Switch to Dark Mode": "Lumipat sa Dark Mode",
+                "Switch to Light Mode": "Lumipat sa Light Mode"
             },
             "vi": {
                 "TY's Data Builder": "Trình Xây Dựng Dữ Liệu TY",
@@ -1369,7 +1387,9 @@
                 "None": "Không có",
                 "Month": "Tháng",
                 "Year": "Năm",
-                "price": "giá"
+                "price": "giá",
+                "Switch to Dark Mode": "Chuyển sang chế độ tối",
+                "Switch to Light Mode": "Chuyển sang chế độ sáng"
             },
             "th": {
                 "TY's Data Builder": "เครื่องมือสร้างข้อมูล TY",
@@ -1446,7 +1466,9 @@
                 "None": "ไม่มี",
                 "Month": "เดือน",
                 "Year": "ปี",
-                "price": "ราคา"
+                "price": "ราคา",
+                "Switch to Dark Mode": "เปลี่ยนเป็นโหมดมืด",
+                "Switch to Light Mode": "เปลี่ยนเป็นโหมดสว่าง"
             },
             "id": {
                 "TY's Data Builder": "Pembuat Data TY",
@@ -1523,7 +1545,9 @@
                 "None": "Tidak ada",
                 "Month": "Bulan",
                 "Year": "Tahun",
-                "price": "harga"
+                "price": "harga",
+                "Switch to Dark Mode": "Beralih ke Mode Gelap",
+                "Switch to Light Mode": "Beralih ke Mode Terang"
             },
             "ms": {
                 "TY's Data Builder": "Pembina Data TY",
@@ -1600,7 +1624,9 @@
                 "None": "Tiada",
                 "Month": "Bulan",
                 "Year": "Tahun",
-                "price": "harga"
+                "price": "harga",
+                "Switch to Dark Mode": "Tukar ke Mod Gelap",
+                "Switch to Light Mode": "Tukar ke Mod Cerah"
             },
             "ru": {
                 "TY's Data Builder": "Конструктор данных TY",
@@ -1677,7 +1703,9 @@
                 "None": "Нет",
                 "Month": "Месяц",
                 "Year": "Год",
-                "price": "цена"
+                "price": "цена",
+                "Switch to Dark Mode": "Переключиться на темный режим",
+                "Switch to Light Mode": "Переключиться на светлый режим"
             },
             "pt-BR": {
                 "TY's Data Builder": "Construtor de Dados TY",
@@ -1754,7 +1782,9 @@
                 "None": "Nenhum",
                 "Month": "Mês",
                 "Year": "Ano",
-                "price": "preço"
+                "price": "preço",
+                "Switch to Dark Mode": "Mudar para o Modo Escuro",
+                "Switch to Light Mode": "Mudar para o Modo Claro"
             },
             "es": {
                 "TY's Data Builder": "Constructor de Datos TY",
@@ -1831,7 +1861,9 @@
                 "None": "Ninguno",
                 "Month": "Mes",
                 "Year": "Año",
-                "price": "precio"
+                "price": "precio",
+                "Switch to Dark Mode": "Cambiar al modo oscuro",
+                "Switch to Light Mode": "Cambiar al modo claro"
             },
             "it": {
                 "TY's Data Builder": "Costruttore di Dati TY",
@@ -1908,7 +1940,9 @@
                 "None": "Nessuno",
                 "Month": "Mese",
                 "Year": "Anno",
-                "price": "prezzo"
+                "price": "prezzo",
+                "Switch to Dark Mode": "Passa alla modalità scura",
+                "Switch to Light Mode": "Passa alla modalità chiara"
             },
             "pl": {
                 "TY's Data Builder": "Kreator Danych TY",
@@ -1985,7 +2019,9 @@
                 "None": "Brak",
                 "Month": "Miesiąc",
                 "Year": "Rok",
-                "price": "cena"
+                "price": "cena",
+                "Switch to Dark Mode": "Przełącz na tryb ciemny",
+                "Switch to Light Mode": "Przełącz na tryb jasny"
             },
             "tr": {
                 "TY's Data Builder": "TY Veri Oluşturucu",
@@ -2062,7 +2098,9 @@
                 "None": "Yok",
                 "Month": "Ay",
                 "Year": "Yıl",
-                "price": "fiyat"
+                "price": "fiyat",
+                "Switch to Dark Mode": "Karanlık Moda Geç",
+                "Switch to Light Mode": "Aydınlık Moda Geç"
             },
             "sv": {
                 "TY's Data Builder": "TY:s Databyggare",
@@ -2139,7 +2177,9 @@
                 "None": "Ingen",
                 "Month": "Månad",
                 "Year": "År",
-                "price": "pris"
+                "price": "pris",
+                "Switch to Dark Mode": "Byt till mörkt läge",
+                "Switch to Light Mode": "Byt till ljust läge"
             },
             "cs": {
                 "TY's Data Builder": "Tvůrce Dat TY",
@@ -2216,12 +2256,25 @@
                 "None": "Žádný",
                 "Month": "Měsíc",
                 "Year": "Rok",
-                "price": "cena"
+                "price": "cena",
+                "Switch to Dark Mode": "Přepnout na tmavý režim",
+                "Switch to Light Mode": "Přepnout na světlý režim"
             }
         }
 
         const browserLang = navigator.language || navigator.userLanguage
-        const initialLang = browserLang.toLowerCase().includes('zh') ? 'zh-TW' : 'en'
+        const lowerLang = browserLang.toLowerCase()
+
+        let initialLang = 'en'
+
+        const exactMatch = Object.keys(translations).find(key => key.toLowerCase() === lowerLang)
+        const fuzzyMatch = Object.keys(translations).find(key => lowerLang.startsWith(key.toLowerCase().split('-')[0]))
+
+        if (exactMatch) {
+            initialLang = exactMatch
+        } else if (fuzzyMatch) {
+            initialLang = fuzzyMatch
+        }
 
         const currentLanguage = ref(localStorage.getItem('lang') || initialLang)
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
