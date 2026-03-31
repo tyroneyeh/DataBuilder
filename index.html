@@ -40,29 +40,42 @@
         input:hover::-webkit-calendar-picker-indicator {
             opacity: 1;
         }
+        .dark input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
         @media print {
             input::-webkit-calendar-picker-indicator {
                 display: none !important;
             }
         }
     </style>
+    <style type="text/tailwindcss">
+        @custom-variant dark (&:is(.dark *));
+    </style>
 </head>
-<body class="bg-gray-100 p-2 text-gray-800 print:bg-white print:p-0">
-    <div id="app" class="mx-auto bg-white rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full" v-cloak>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 print:bg-white print:p-0 transition-colors duration-300">
+    <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300" v-cloak>
         <div class="relative">
-            <div v-if="!isPrinting" class="absolute top-0 right-0 z-10">
-                <select v-model="currentLanguage" class="border border-gray-300 px-2 py-1 rounded text-sm text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+            <div v-if="!isPrinting" class="absolute top-0 right-0 z-10 flex items-center gap-2 p-2">
+                <button
+                    @click="toggleDarkMode"
+                    class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none"
+                    :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                >
+                    {{ isDark ? '🌙' : '🌞' }}
+                </button>
+                <select v-model="currentLanguage" class="border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700">
                     <option value="en">English</option>
                     <option value="zh-TW">繁體中文</option>
                     <option value="zh-CN">简体中文</option>
                     <option value="ja">日本語</option>
-                    <option value="ko">한국어</option>
-                    <option value="fr">Français</option>
+                    <option value="ko">한국어</option>
+                    <option value="fr">Français</option>
                     <option value="de">Deutsch</option>
                     <option value="nl">Nederlands</option>
                     <option value="hi">हिन्दी</option>
                     <option value="tl">Tagalog</option>
-                    <option value="vi">Tiếng Việt</option>
+                    <option value="vi">Tiếng Việt</option>
                     <option value="th">ภาษาไทย</option>
                     <option value="id">Bahasa Indonesia</option>
                     <option value="ms">Bahasa Melayu</option>
@@ -76,14 +89,13 @@
                     <option value="cs">Czech</option>
                 </select>
             </div>
-
         </div>
 
-        <div v-if="!isPrinting" class="flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 rounded-md border border-gray-200 gap-4">
+        <div v-if="!isPrinting" class="flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700 gap-4 transition-colors duration-300">
             <div class="flex sm:flex-row flex-wrap items-start sm:items-end gap-4">
                 <div
                     @click="toggleMenu"
-                    class="p-2 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-50 transition-colors"
+                    class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                     <span class="flex items-center">☰ {{ translate('Columns') }}</span>
                     <span
@@ -92,28 +104,28 @@
                     >▼</span>
                 </div>
                 <div
-                    class="flex"
+                    class="flex flex-wrap gap-4"
                     :class="{'hidden': !isMenuOpen}"
                 >
                     <div class="flex flex-col">
-                        <span class="text-sm text-gray-600 mb-1">{{ translate('Column Name') }}</span>
-                        <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Column Name') }}</span>
+                        <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400">
                     </div>
 
                     <div class="flex flex-col">
-                        <span class="text-sm text-gray-600 mb-1">{{ translate('Data Type') }}</span>
-                        <select v-model="newColType" class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full sm:w-auto text-base">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Data Type') }}</span>
+                        <select v-model="newColType" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white w-full sm:w-auto text-base">
                             <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                         </select>
                     </div>
 
-                    <div v-if="newColType === 'multiply'" class="flex items-center gap-2 bg-blue-50 p-2 rounded border border-blue-200 w-full sm:w-auto">
-                        <select v-model="formulaA" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
+                    <div v-if="newColType === 'multiply'" class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 p-2 rounded border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
+                        <select v-model="formulaA" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
                             <option value="" disabled>{{ translate('Column A') }}</option>
                             <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
                         </select>
-                        <span class="text-gray-500 font-bold">×</span>
-                        <select v-model="formulaB" class="border border-gray-300 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-base w-full sm:w-32">
+                        <span class="text-gray-500 dark:text-gray-400 font-bold">×</span>
+                        <select v-model="formulaB" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
                             <option value="" disabled>{{ translate('Column B') }}</option>
                             <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
                         </select>
@@ -126,7 +138,7 @@
                     </div>
                 </div>
                 <div class="flex flex-col w-full sm:w-auto">
-                    <span class="text-sm text-gray-600 mb-1">{{ translate('Workspace') }}</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Workspace') }}</span>
                     <input
                         type="text"
                         v-model="currentStorageKey"
@@ -134,7 +146,7 @@
                         @change="changeStorageKey"
                         @focus="onKeyFocus" @blur="onKeyBlur"
                         :placeholder="translate('Select or create a workspace')"
-                        class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base"
+                        class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     >
                     <datalist id="storage-key-options">
                         <option v-for="key in savedKeysList" :key="key" :value="key"></option>
@@ -143,22 +155,22 @@
             </div>
 
             <div class="w-full sm:w-auto text-right sm:text-left flex flex-wrap justify-end sm:justify-start gap-1">
-                <button @click="mergeDuplicates" class="text-sm text-emerald-600 hover:text-emerald-800 underline transition-colors p-2 whitespace-nowrap">
+                <button @click="mergeDuplicates" class="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline transition-colors p-2 whitespace-nowrap">
                     {{ translate('Merge Duplicates') }}
                 </button>
-                <button @click="toggleAllNotes" class="text-sm text-blue-500 hover:text-blue-700 underline transition-colors p-2 whitespace-nowrap">
+                <button @click="toggleAllNotes" class="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors p-2 whitespace-nowrap">
                     {{ areAllExpanded ? translate('Collapse All Notes') : translate('Expand All Notes') }}
                 </button>
-                <button @click="clearStorage" class="text-sm text-gray-400 hover:text-red-500 underline transition-colors p-2 whitespace-nowrap">
+                <button @click="clearStorage" class="text-sm text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 underline transition-colors p-2 whitespace-nowrap">
                     {{ translate('Clear Data') }}
                 </button>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden" :class="{'print:hidden': !isChartOpen}">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}">
             <div
                 @click="toggleChart"
-                class="p-2 text-lg font-bold text-gray-700 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors"
+                class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
                 <span class="flex items-center">📊 {{ translate('Summary') }}</span>
                 <span
@@ -184,7 +196,7 @@
                                 v-for="item in customLegendItems"
                                 :key="item.index"
                                 @click="toggleLegend(item.index)"
-                                class="flex items-center justify-between rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200"
+                                class="flex items-center justify-between rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
                                 :class="{ 'opacity-40 grayscale': item.hidden }"
                             >
                                 <div class="flex items-center space-x-3 overflow-hidden w-full">
@@ -194,8 +206,8 @@
                                     ></span>
 
                                     <span
-                                        class="text-gray-700 font-medium truncate w-full md:w-[180px]"
-                                        :class="{ 'line-through text-gray-400': item.hidden }"
+                                        class="text-gray-700 dark:text-gray-200 font-medium truncate w-full md:w-[180px]"
+                                        :class="{ 'line-through text-gray-400 dark:text-gray-500': item.hidden }"
                                         :title="item.text"
                                     >
                                         {{ item.text }}
@@ -203,10 +215,10 @@
                                 </div>
 
                                 <div class="text-right pl-4">
-                                    <div class="text-gray-900 font-bold tracking-tight text-nowrap" :title="item.value.toLocaleString()">
+                                    <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :title="item.value.toLocaleString()">
                                         {{ formatNumber(item.value) }}
                                     </div>
-                                    <div class="text-xs text-gray-400 font-medium">
+                                    <div class="text-xs text-gray-400 dark:text-gray-500 font-medium">
                                         {{ item.percentage }}%
                                     </div>
                                 </div>
@@ -215,48 +227,48 @@
                         </div>
 
                     </div>
-                    <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white p-6 rounded-xl border border-gray-50 shadow-sm">
-                        <h4 class="text-gray-500 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
+                    <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
+                        <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
                         <div class="relative h-64 w-full">
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
-                    <div v-if="hasDateColumn" class="w-full bg-white p-3 rounded-xl border border-gray-50 shadow-sm flex flex-wrap gap-2 items-center justify-center">
-                        <span class="text-gray-500 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
+                    <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mt-2">
+                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
                         <button
                             v-for="m in monthFilters" :key="m.month"
                             @click="toggleFilter('month', m.month)"
                             class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                            :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 opacity-50 grayscale'"
+                            :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
                         >
                             {{ m.month }}
                         </button>
                     </div>
-                    <div v-if="hasDateColumn && yearFilters.length > 1" class="w-full bg-white p-3 rounded-xl border border-gray-50 shadow-sm flex flex-wrap gap-2 items-center justify-center mb-2">
-                        <span class="text-gray-500 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
+                    <div v-if="hasDateColumn && yearFilters.length > 1" class="w-full bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mb-2 mt-2">
+                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
                         <button
                             v-for="y in yearFilters" :key="y.year"
                             @click="toggleFilter('year', y.year)"
                             class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                            :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 opacity-50 grayscale'"
+                            :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
                         >
                             {{ y.year }}
                         </button>
                     </div>
-                    <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 gap-3 sm:gap-0">
+                    <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 dark:bg-gray-700/30 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 dark:border-gray-700 gap-3 sm:gap-0">
 
-                        <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 sm:pr-4">
-                            <span class="text-gray-500 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
-                            <select v-model="selectedChartCatColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                        <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:pr-4">
+                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
+                            <select v-model="selectedChartCatColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
                             </select>
                         </div>
 
-                        <div v-if="hasDateColumn" class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 sm:px-4">
-                            <span class="text-gray-500 font-medium whitespace-nowrap">📈 {{ translate('Timeline') }}:</span>
-                            <select v-model="selectedChartDateColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none">
+                        <div v-if="hasDateColumn" class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:px-4">
+                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">📈 {{ translate('Timeline') }}:</span>
+                            <select v-model="selectedChartDateColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option value="">{{ translate('None') }}</option>
                                 <option v-for="col in columns.filter(c => c.type === 'date')" :key="col.id" :value="col.id">
                                     {{ col.label }}
@@ -265,8 +277,8 @@
                         </div>
 
                         <div class="flex items-center justify-between w-full sm:w-auto sm:pl-4">
-                            <span class="text-gray-500 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
-                            <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white border border-gray-200 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
+                            <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
                                 <option v-for="col in columns.filter(c => ['number', 'multiply'].includes(c.type))" :key="col.id" :value="col.id">
                                     {{ col.label }}
                                 </option>
@@ -278,34 +290,34 @@
 
         </div>
 
-        <div class="flex justify-center print:pt-0">
+        <div class="flex justify-center print:pt-0 mt-4">
             <input
                 v-model="tableTitle"
                 type="text"
                 :placeholder="translate('Enter title...')"
-                class="text-2xl sm:text-3xl font-bold text-center text-gray-800 bg-transparent border-b-2 border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none"
+                class="text-2xl sm:text-3xl font-bold text-center text-gray-800 dark:text-white bg-transparent border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none dark:placeholder-gray-500"
             >
         </div>
-        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 sm:rounded shadow-none sm:shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 sm:bg-transparent" style="-webkit-overflow-scrolling: touch">
+        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm hide-scrollbar print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch">
 
             <table class="w-full border-collapse relative print:w-full block sm:table print:table">
-                <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 print:bg-gray-100">
+                <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
-                        <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 print:bg-gray-100 border border-gray-300 px-4 py-3 w-20 text-center text-gray-600 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12">#</th>
+                        <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12">#</th>
                         <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index"
                             :class="[
-                                'group pr-8 sticky top-0 z-10 print:static border border-gray-300 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 print:min-w-0 print:bg-gray-100',
+                                'group pr-8 sticky top-0 z-10 print:static border border-gray-300 dark:border-gray-600 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100',
                                 ['number', 'date', 'time', 'multiply', 'category'].includes(col.type) ? 'w-[140px] min-w-[140px] max-w-[140px]' : col.type === 'checkbox' ? 'w-[100px] min-w-[100px] max-w-[100px]' : 'min-w-[200px]',
                                 'select-none [-webkit-touch-callout:none] touch-none',
-                                'active:scale-[0.98] active:bg-gray-200 active:shadow-inner active:cursor-grabbing',
+                                'active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing',
                                 editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                             ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
 
-                            <span v-if="!isPrinting" class="text-gray-400 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 active:rounded transition-all text-gray-400 text-xs cursor-grab active:cursor-grabbing">⋮</span>
+                            <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 dark:active:bg-gray-600 active:rounded transition-all cursor-grab active:cursor-grabbing">⋮</span>
 
                             <span v-if="editingColId !== col.id"
                                 @click="startEditingCol(col.id)"
-                                class="cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 transition-colors"
+                                class="cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                 title="Click to rename">
                                 {{ col.label }}
                             </span>
@@ -316,19 +328,19 @@
                                 type="text"
                                 @blur="stopEditingCol"
                                 @keyup.enter="stopEditingCol"
-                                class="w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 bg-white border border-blue-400 rounded outline-none shadow-inner"
+                                class="w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                             >
 
-                            <span v-if="!isPrinting && col.type === 'multiply'" class="text-xs text-blue-500 font-normal ml-1 select-none whitespace-nowrap">{{ translate('(Calc)') }}</span>
-                            <span v-else-if="!isPrinting && col.type === 'date'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Date') }}</span>
-                            <span v-else-if="!isPrinting && col.type === 'time'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Time') }}</span>
-                            <span v-else-if="!isPrinting && col.type === 'checkbox'" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Checkbox') }}</span>
-                            <span v-else-if="!isPrinting && col.type === 'category'" class="text-xs text-blue-400 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Category') }})</span>
-                            <span v-else-if="!isPrinting" class="text-xs text-gray-400 font-normal ml-1 select-none whitespace-nowrap">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
+                            <span v-if="!isPrinting && col.type === 'multiply'" class="text-xs text-blue-500 dark:text-blue-400 font-normal ml-1 select-none whitespace-nowrap">{{ translate('(Calc)') }}</span>
+                            <span v-else-if="!isPrinting && col.type === 'date'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Date') }}</span>
+                            <span v-else-if="!isPrinting && col.type === 'time'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Time') }}</span>
+                            <span v-else-if="!isPrinting && col.type === 'checkbox'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">{{ translate('Checkbox') }}</span>
+                            <span v-else-if="!isPrinting && col.type === 'category'" class="text-xs text-blue-400 dark:text-blue-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Category') }})</span>
+                            <span v-else-if="!isPrinting" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
-                            <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Delete Column">✖</button>
+                            <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Delete Column">✖</button>
                         </th>
-                        <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 border border-gray-300 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 font-semibold">{{ translate('Action') }}</th>
+                        <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody v-if="!isPrinting && windowStart > 0" class="block sm:table-row-group">
@@ -337,17 +349,17 @@
                     </tr>
                 </tbody>
 
-                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 sm:border-none print:border-none relative" >
-                    <tr class="hover:bg-gray-50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
+                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative" >
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
-                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="startDragging('rows', row.id, $event)">
-                            <span v-if="!isPrinting" class="text-gray-400 mr-2 sm:mr-1 text-xs">⋮</span>
-                            <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
+                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab active:scale-90 active:bg-gray-200 dark:active:bg-gray-600 active:rounded transition-all active:cursor-grabbing print:cursor-auto select-none [-webkit-touch-callout:none] touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" @pointerdown.stop.prevent="startDragging('rows', row.id, $event)">
+                            <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-2 sm:mr-1 text-xs">⋮</span>
+                            <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400 dark:text-gray-500">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
                         </td>
 
-                        <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 px-4 py-2 sm:py-2 bg-white print:bg-transparent group-hover:bg-gray-50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
+                        <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 py-2 sm:py-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
-                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0">{{ col.label }}</span>
+                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0">{{ col.label }}</span>
 
                             <div v-if="col.type === 'checkbox'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1">
                                 <input v-if="!isPrinting"
@@ -356,14 +368,14 @@
                                     v-model="row[col.id]"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                     @change="onDataEdited"
-                                    class="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer transition-all active:scale-90"
+                                    class="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer transition-all active:scale-90"
                                 >
                                 <span class="hidden print:inline-block text-xl leading-none text-gray-800">
                                     {{ row[col.id] ? '☑' : '☐' }}
                                 </span>
                             </div>
 
-                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 print:text-black font-semibold bg-blue-50/50 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
+                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :title="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}
                             </div>
 
@@ -382,10 +394,10 @@
                                         :list="col.type === 'category' ? 'datalist-' + col.id : null"
                                         :title="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
-                                        class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm"
+                                        class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
                                         :class="{
-                                            'text-gray-700 cursor-pointer': ['date', 'time'].includes(col.type),
-                                            'text-blue-700 font-medium': col.type === 'category'
+                                            'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
+                                            'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
                                         @focus="col.type === 'category' && $event.target.select()"
@@ -394,8 +406,8 @@
                                     >
 
                                     <div v-if="!isPrinting && col.type === 'number'" class="sm:absolute sm:right-0 gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex">
-                                        <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
-                                        <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                        <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                        <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                     </div>
 
                                     <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
@@ -405,12 +417,12 @@
                             </div>
                         </td>
 
-                        <td v-if="!isPrinting" class="absolute sm:relative top-1 sm:top-auto right-1 sm:right-auto sm:border border-gray-300 px-2 py-2 text-center bg-transparent sm:bg-white transition-colors block sm:table-cell">
+                        <td v-if="!isPrinting" class="absolute sm:relative top-1 sm:top-auto right-1 sm:right-auto sm:border border-gray-300 dark:border-gray-700 px-2 py-2 text-center bg-transparent sm:bg-white dark:sm:bg-gray-800 transition-colors block sm:table-cell">
                             <div class="flex items-center justify-center space-x-2">
                                 <button
-                                    @click.stop="toggleActionMenu(row.id)"
-                                    class="text-gray-400 hover:text-indigo-600 active:bg-indigo-100 px-3 py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
-                                    :class="{'text-indigo-600': row.note && row.note.trim() !== '' && !row.isExpanded}"
+                                    @click="toggleActionMenu(row.id)"
+                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
+                                    :class="{'text-indigo-600 dark:text-indigo-400': row.note && row.note.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
                             <div
@@ -421,24 +433,24 @@
                             ></div>
                             <div
                                 v-show="activeMenuRowId === row.id"
-                                class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white border border-gray-200 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+                                class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
                             >
                                 <button @click="ExpandNote(row)"
                                     :class="[
-                                        row.isExpanded ? 'text-blue-700 bg-blue-100' :
-                                        row.note && row.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 shadow-sm' : 'text-blue-500 hover:bg-blue-50'
+                                        row.isExpanded ? 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-gray-700' :
+                                        row.note && row.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-sm' : 'text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700'
                                     ]"
                                     class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.note && row.note.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                                <button @click="copyRow(rows.indexOf(row))" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
-                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left hover:bg-gray-100 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
-                                <button @click="removeRow(row.id)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 hover:bg-red-50 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
+                                <button @click="copyRow(rows.indexOf(row))" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
+                                <button @click="removeRow(row.id)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
                             </div>
                         </td>
                     </tr>
 
-                    <tr v-if="(isPrinting && row.isExpanded && row.note) || (!isPrinting && row.isExpanded)" class="block sm:table-row print:table-row bg-blue-50/30 print:bg-transparent rounded-b-lg sm:rounded-none">
-                        <td class="hidden sm:table-cell print:table-cell sm:sticky left-0 z-10 print:static bg-blue-50/80 print:bg-transparent border sm:border print:border border-gray-300"></td>
-                        <td :colspan="columns.length + 1" class="block sm:table-cell print:table-cell border-t sm:border print:border border-gray-200 sm:border-gray-300 px-4 py-3 sm:py-2 shadow-inner">
+                    <tr v-if="(isPrinting && row.isExpanded && row.note) || (!isPrinting && row.isExpanded)" class="block sm:table-row print:table-row bg-blue-50/30 dark:bg-indigo-900/20 print:bg-transparent rounded-b-lg sm:rounded-none">
+                        <td class="hidden sm:table-cell print:table-cell sm:sticky left-0 z-10 print:static bg-blue-50/80 dark:bg-indigo-900/40 print:bg-transparent border sm:border print:border border-gray-300 dark:border-gray-700"></td>
+                        <td :colspan="columns.length + 1" class="block sm:table-cell print:table-cell border-t sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 py-3 sm:py-2 shadow-inner dark:shadow-none">
                             <div class="flex flex-col">
                                 <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
                                     {{ row.note }}
@@ -448,7 +460,7 @@
                                     :id="'note-' + row.id"
                                     v-model="row.note"
                                     rows="1"
-                                    class="w-full border-gray-300 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white [field-sizing:content]"
+                                    class="w-full border-gray-300 dark:border-gray-600 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 [field-sizing:content]"
                                     :placeholder="translate('Enter details here...')"
                                     @input="autoHeight($event.target)"
                                     @change="onDataEdited"
@@ -465,40 +477,40 @@
                 </tbody>
 
                 <tbody v-if="!isPrinting" class="block sm:table-row-group">
-                    <tr class="flex sm:table-row bg-white sm:bg-transparent border border-gray-200 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
-                        <td @click="addRow" class="sm:sticky left-0 sm:border-0 border-gray-300 p-0 text-center cursor-pointer bg-green-50 hover:bg-green-100 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
+                    <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
+                        <td @click="addRow" class="sm:sticky left-0 sm:border-0 border-gray-300 dark:border-gray-700 p-0 text-center cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
                             <button class="w-full h-full min-h-[60px] sm:min-h-[50px] flex items-center justify-center focus:outline-none outline-none">
-                                <span class="text-green-600 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
+                                <span class="text-green-600 dark:text-green-500 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
                             </button>
                         </td>
-                        <td :colspan="columns.length + 1" class="border-l sm:border-l-0 border-b-0 sm:border-b border-gray-200 sm:border-gray-300 bg-gray-50 p-0 flex-grow flex items-center sm:table-cell">
+                        <td :colspan="columns.length + 1" class="border-l sm:border-l-0 border-b-0 sm:border-b border-gray-200 sm:border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-0 flex-grow flex items-center sm:table-cell">
                             <button @click="addRow" class="w-full h-full min-h-[60px] sm:min-h-[50px] text-left pl-4 focus:outline-none outline-none">
-                                <span class="text-base sm:text-sm text-gray-500 font-medium hover:text-gray-700 transition-colors">{{ translate('← Click to add a row') }}</span>
+                                <span class="text-base sm:text-sm text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-200 transition-colors">{{ translate('← Click to add a row') }}</span>
                             </button>
                         </td>
                     </tr>
                 </tbody>
 
-                <tfoot class="font-semibold text-gray-700 print:bg-gray-100 print:border-t-2 print:border-gray-800 block sm:table-footer-group print:table-row-group mt-4 sm:mt-0 print:mt-0 bg-white sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0">
+                <tfoot class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 block sm:table-footer-group print:table-row-group mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0">
                     <tr class="block sm:table-row print:table-row">
-                        <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :title="rows.length">{{ translate('Total') }}</td>
+                        <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :title="rows.length">{{ translate('Total') }}</td>
 
                         <td v-for="col in columns" :key="'total-' + col.id"
-                            class="sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 px-4 py-3 bg-white sm:bg-gray-100 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
+                            class="sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
                             :class="[
                                 ['number', 'multiply'].includes(col.type) ? 'flex' : 'hidden',
                                 col.type === 'multiply' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'
                             ]">
 
-                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 font-bold text-sm mr-4">{{ col.label }}</span>
+                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4">{{ col.label }}</span>
 
                             <div class="text-right print:w-full" :class="col.type === 'multiply' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'">
-                                <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 print:text-black text-lg print:text-base font-bold" :title="columnTotals[col.id].toLocaleString()">{{ formatNumber(columnTotals[col.id]) }}</span>
-                                <span v-else class="text-gray-400 print:text-gray-500"></span>
+                                <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :title="columnTotals[col.id].toLocaleString()">{{ formatNumber(columnTotals[col.id]) }}</span>
+                                <span v-else class="text-gray-400 dark:text-gray-500 print:text-gray-500"></span>
                             </div>
                         </td>
 
-                        <td v-if="!isPrinting" class="hidden sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 px-4 py-3 bg-gray-100"></td>
+                        <td v-if="!isPrinting" class="hidden sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800"></td>
                     </tr>
                 </tfoot>
             </table>
@@ -509,42 +521,44 @@
                 <input type="file" ref="fileInput" accept=".json,.csv" class="hidden" @change="handleFileUpload">
 
                 <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">📂 {{ translate('Upload (JSON/CSV)') }}</button>
-                <button @click="exportJson" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
+                <button @click="exportJson" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
-                <button @click="triggerPrint" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
+                <button @click="triggerPrint" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
             </div>
 
-            <div v-if="shareLink" class="bg-indigo-50 p-4 sm:p-6 rounded-lg border border-indigo-200 shadow-inner flex flex-col items-center gap-4 mt-2">
-                <div class="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 text-center">
-                    <span class="text-sm text-gray-500 mb-3 font-semibold" v-html="translate('Scan the QRCode below to load data<br>(Ideal for mobile)')"></span>
-                    <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class="pointer-events-none">
+            <div v-if="shareLink" class="bg-indigo-50 dark:bg-indigo-900/20 p-4 sm:p-6 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-inner flex flex-col items-center gap-4 mt-2">
+                <div class="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-center">
+                    <span class="text-sm text-gray-500 dark:text-gray-400 mb-3 font-semibold" v-html="translate('Scan the QRCode below to load data<br>(Ideal for mobile)')"></span>
+                    <div class="bg-white p-2 rounded">
+                        <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="Share QR Code" class="pointer-events-none">
+                    </div>
                 </div>
-                <div class="text-indigo-700 text-xs sm:text-sm break-all w-full bg-white p-3 rounded shadow-sm border border-indigo-100">
+                <div class="text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm break-all w-full bg-white dark:bg-gray-800 p-3 rounded shadow-sm border border-indigo-100 dark:border-indigo-800">
                     <span class="font-bold mr-1 block sm:inline mb-1 sm:mb-0">{{ translate('Share Link:') }}</span>
-                    <div class="w-full bg-indigo-50/50 border border-indigo-100 rounded p-2 text-gray-600 select-all cursor-text leading-relaxed">{{ shareLink }}</div>
+                    <div class="w-full bg-indigo-50/50 dark:bg-gray-900 border border-indigo-100 dark:border-gray-700 rounded p-2 text-gray-600 dark:text-gray-400 select-all cursor-text leading-relaxed">{{ shareLink }}</div>
                 </div>
             </div>
 
             <div v-if="outputToScreen" class="h-64 bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
                 <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
             </div>
-            <button v-if="outputToScreen" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
+            <button v-if="outputToScreen" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
         </div>
         <div v-if="confirmModal.isOpen"
             class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             @click.self="onConfirmCancel">
-            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all">
-                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 flex items-center">
                     <span class="mr-2 text-indigo-500">💡</span> {{ translate('Tips') }}
                 </h3>
-                <p class="text-sm text-gray-500 mb-6 whitespace-pre-line">{{ confirmModal.message }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-300 mb-6 whitespace-pre-line">{{ confirmModal.message }}</p>
                 <div class="flex justify-end space-x-3">
                     <button
                         ref="confirmCancelBtnRef"
                         @click="onConfirmCancel"
                         accesskey="n"
-                        class="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-gray-200 transition-colors"
+                        class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-gray-200 transition-colors"
                     >{{ translate('Cancel') }}</button>
                     <button
                         @click="onConfirmOk"
@@ -558,7 +572,7 @@
             <button
                 v-show="!isAtTop"
                 @click="scrollToPosition('top')"
-                class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
+                class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :title="translate('Scroll to Top')"
             >
                 <span class="text-xl leading-none">▲</span>
@@ -567,16 +581,16 @@
             <button
                 v-show="!isAtBottom"
                 @click="scrollToPosition('bottom')"
-                class="w-10 h-10 bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
+                class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :title="translate('Scroll to Bottom')"
             >
                 <span class="text-xl leading-none">▼</span>
             </button>
         </div>
-        <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 mt-4 mb-4">
-            &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
+        <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4 transition-colors">
+            &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
             <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex justify-end" target="_blank">
-                <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" />
+                <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" class="dark:invert"/>
                 <img src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" />
             </a>
         </footer>
@@ -2381,6 +2395,10 @@
                 const heightCache = ref({})
                 const rowElementsCache = new Map()
                 const isPrinting = ref(false)
+                const isDark = ref(
+                    localStorage.getItem('theme') === 'dark' ||
+                    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                )
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -2414,6 +2432,24 @@
                     await nextTick()
                     updateChart()
                 })
+
+                watch(isDark, (val) => {
+                    if (val) {
+                        document.documentElement.classList.add('dark')
+                        localStorage.setItem('theme', 'dark')
+                    } else {
+                        document.documentElement.classList.remove('dark')
+                        localStorage.setItem('theme', 'light')
+                    }
+                    nextTick(() => {
+                        if (expenseChart.value) expenseChart.value.update()
+                        if (trendChart.value) trendChart.value.update()
+                    })
+                }, { immediate: true })
+
+                const toggleDarkMode = () => {
+                    isDark.value = !isDark.value
+                }
 
                 const setupObserver = (rowId, el) => {
                     if (isPrinting.value) return
@@ -3457,14 +3493,16 @@
                         const centerX = (left + right) / 2
                         const centerY = (top + bottom) / 2
 
+                        const isDarkMode = isDark.value
+
                         const labelFontSize = (height / 240).toFixed(2)
                         ctx.font = `500 ${labelFontSize}em sans-serif`
-                        ctx.fillStyle = '#9ca3af'
-                        const labelText = columns.value.find(c => c.id === selectedChartNumColId.value).label
+                        ctx.fillStyle = isDarkMode ? '#d1d5db' : '#9ca3af'
+                        const labelText = columns.value.find(c => c.id === selectedChartNumColId.value)?.label || ''
                         ctx.fillText(labelText, centerX, centerY - 20)
                         const fontSize = (height / 110).toFixed(2)
                         ctx.font = `bold ${fontSize}em sans-serif`
-                        ctx.fillStyle = '#1f2937'
+                        ctx.fillStyle = isDarkMode ? '#f3f4f6' : '#1f2937'
                         ctx.fillText(formatNumber(total), centerX, centerY + 15)
                         ctx.restore()
                     }
@@ -3553,7 +3591,7 @@
                                     data: values,
                                     backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'],
                                     borderWidth: 2,
-                                    borderColor: '#ffffff'
+                                    borderColor: isDark.value ? '#1f2937' : '#ffffff'
                                 }]
                             },
                             options: {
@@ -3591,6 +3629,11 @@
                     if (trendChart.value) {
                         trendChart.value.data.labels = trendLabels
                         trendChart.value.data.datasets[0].data = trendValues
+
+                        trendChart.value.options.scales.y.ticks.color = isDark.value ? '#9ca3af' : '#6b7280'
+                        trendChart.value.options.scales.y.grid.color = isDark.value ? '#374151' : '#e5e7eb'
+                        trendChart.value.options.scales.x.ticks.color = isDark.value ? '#9ca3af' : '#6b7280'
+
                         trendChart.value.update()
                     } else {
                         trendChart.value = new Chart(ctx, {
@@ -3614,8 +3657,22 @@
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: {
-                                    y: { beginAtZero: true, ticks: { callback: (v) => formatNumber(v) } },
-                                    x: { grid: { display: false } }
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: (v) => formatNumber(v),
+                                            color: isDark.value ? '#9ca3af' : '#6b7280'
+                                        },
+                                        grid: {
+                                            color: isDark.value ? '#374151' : '#e5e7eb'
+                                        }
+                                    },
+                                    x: {
+                                        ticks: {
+                                            color: isDark.value ? '#9ca3af' : '#6b7280'
+                                        },
+                                        grid: { display: false }
+                                    }
                                 },
                                 plugins: {
                                     legend: { display: false },
@@ -3916,7 +3973,9 @@
                     bottomPaddingHeight,
                     setupObserver,
                     isPrinting,
-                    triggerPrint
+                    triggerPrint,
+                    isDark,
+                    toggleDarkMode
                 }
             }
         }).mount('#app')
