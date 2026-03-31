@@ -43,11 +43,6 @@
         .dark input::-webkit-calendar-picker-indicator {
             filter: invert(1);
         }
-        @media print {
-            input::-webkit-calendar-picker-indicator {
-                display: none !important;
-            }
-        }
     </style>
     <style type="text/tailwindcss">
         @custom-variant dark (&:is(.dark *));
@@ -3845,17 +3840,25 @@
                 const triggerPrint = () => {
                     setTimeout(async () => {
                         isPrinting.value = true
+                        document.documentElement.classList.remove('dark')
                         await nextTick()
                         setTimeout(() => {
                             window.print()
                             isPrinting.value = false
+                            if (isDark.value) document.documentElement.classList.add('dark')
                         }, 800)
                     }, 50)
                 }
 
                 onMounted(async () => {
-                    window.addEventListener('beforeprint', () => { isPrinting.value = true })
-                    window.addEventListener('afterprint', () => { isPrinting.value = false })
+                    window.addEventListener('beforeprint', () => { 
+                        isPrinting.value = true 
+                        document.documentElement.classList.remove('dark')
+                    })
+                    window.addEventListener('afterprint', () => { 
+                        isPrinting.value = false 
+                        if (isDark.value) document.documentElement.classList.add('dark')
+                    })
                     resizeObserver = new ResizeObserver((entries) => {
                         for (let entry of entries) {
                             const targetElement = entry.target
