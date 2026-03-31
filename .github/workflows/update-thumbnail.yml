@@ -1,65 +1,12 @@
-name: Update Website Thumbnail
-
-on:
-  schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-jobs:
-  update-thumbnail:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: 📥 檢出程式碼
-        uses: actions/checkout@v4
-
-      - name: ⚙️ 設定 Node.js 環境
+- name: ⚙️ 設定 Node.js 環境
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: 📦 安裝 Puppeteer
+      - name: 📸 使用 Playwright CLI 截圖
         run: |
-          npm init -y
-          npm install puppeteer
+          # 1. 安裝 Playwright 與其依賴的瀏覽器 (比 Puppeteer 穩定很多)
+          npx -y playwright@latest install --with-deps chromium
 
-      - name: 📸 執行自訂截圖腳本
-        run: |
-          # 透過 Bash Heredoc 直接建立並執行 Node.js 腳本
-          cat << 'EOF' > screenshot.js
-          const puppeteer = require('puppeteer');
-
-          (async () => {
-            // 啟動瀏覽器，關鍵點在於加入 --no-sandbox 參數以繞過 Linux 容器限制
-            const browser = await puppeteer.launch({
-              args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-            const page = await browser.newPage();
-
-            // 設定解析度
-            await page.setViewport({ width: 1280, height: 720 });
-
-            // 前往目標網站，等待網路請求靜止 (networkidle2 確保動態內容載入完畢)
-            await page.goto('https://ty-db.pages.dev', { waitUntil: 'networkidle2' });
-
-            // 截圖並存檔
-            await page.screenshot({ path: 'databuilder.png' });
-
-            await browser.close();
-          })();
-          EOF
-
-          # 執行腳本
-          node screenshot.js
-
-      - name: 💾 自動 Commit 並 Push 回儲存庫
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: 自動更新網站縮圖 [skip ci]"
-          # 這裡設定 file_pattern 非常重要，它確保剛才安裝的 node_modules 不會被 Commit 進去
-          file_pattern: databuilder.png
+          # 2. 一行指令直接截圖，不需自己寫腳本去控制無頭瀏覽器
+          npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png --viewport-size="1280,720"
