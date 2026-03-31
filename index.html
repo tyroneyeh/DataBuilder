@@ -812,11 +812,12 @@
                 let isSwapping = false
                 let resizeObserver = null
 
-                const debouncedSave = debounce(() => {
+                const debouncedSave = debounce(async() => {
                     if (!currentStorageKey.value) return
                     db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)})
                     localStorage.setItem('lang', currentLanguage.value)
-                    nextTick(() => updateChart())
+                    await nextTick()
+                    updateChart()
                 }, 500)
 
                 watch([currentLanguage, tableTitle, columns, rows], () => {
@@ -829,12 +830,13 @@
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
                 })
-                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
+                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], async() => {
                     if (isInitializing) return
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
                     selectedChartDateColId.value ? localStorage.setItem(`${currentStorageKey.value}_chartDateColId`, selectedChartDateColId.value) : localStorage.removeItem(`${currentStorageKey.value}_chartDateColId`)
-                    nextTick(() => updateChart())
+                    await nextTick()
+                    updateChart()
                 })
 
                 const setupObserver = (rowId, el) => {
@@ -1796,13 +1798,12 @@
                     }
                 }
 
-                const toggleChart = () => {
+                const toggleChart = async() => {
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
-                        nextTick(() => {
-                            if (expenseChart.value) expenseChart.value.resize()
-                        })
+                        await nextTick()
+                        if (expenseChart.value) expenseChart.value.resize()
                     }
                 }
 
@@ -1823,7 +1824,7 @@
                             if (!isNaN(dateObj.getTime())) {
                                 const m = dateObj.getMonth() + 1
                                 const mFilter = monthFilters.value.find(x => x.month === m)
-                                if (mFilter && !mFilter.active) return 
+                                if (mFilter && !mFilter.active) return
                             }
                         }
 
@@ -1939,12 +1940,13 @@
                     }
                 }
 
-                const toggleLegend = (index) => {
+                const toggleLegend = async(index) => {
                     if (expenseChart.value) {
                         expenseChart.value.toggleDataVisibility(index)
                         expenseChart.value.update()
                     }
-                    nextTick(() => updateChart())
+                    await nextTick()
+                    updateChart()
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
@@ -2034,7 +2036,7 @@
                     }
                 }
 
-                const updateChart = () => {
+                const updateChart = async() => {
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
 
@@ -2055,7 +2057,8 @@
                             hasTrendData.value = true
                             const sortedLabels = validLabels.sort((a, b) => new Date(a) - new Date(b))
                             const sortedValues = sortedLabels.map(label => dateData[label])
-                            nextTick(() => updateTrend(ctxLine, sortedLabels, sortedValues))
+                            await nextTick()
+                            updateTrend(ctxLine, sortedLabels, sortedValues)
                         } else {
                             hasTrendData.value = false
                         }
@@ -2068,14 +2071,13 @@
                     }
                 }
 
-                const toggleMonth = (m) => {
+                const toggleMonth = async(m) => {
                     const item = monthFilters.value.find(x => x.month === m)
                     if (item) {
                         item.active = !item.active
                     }
-                    nextTick(() => {
-                        updateChart()
-                    })
+                    await nextTick()
+                    updateChart()
                 }
 
                 const toggleMenu = () => {
@@ -2083,18 +2085,17 @@
                 }
 
                 const showConfirm = (message) => {
-                    return new Promise((resolve) => {
+                    return new Promise(async(resolve) => {
                         confirmModal.value = {
                             isOpen: true,
                             message: message,
                             resolvePromise: resolve
                         }
 
-                        nextTick(() => {
-                            if (confirmCancelBtnRef.value) {
-                                confirmCancelBtnRef.value.focus()
-                            }
-                        })
+                        await nextTick()
+                        if (confirmCancelBtnRef.value) {
+                            confirmCancelBtnRef.value.focus()
+                        }
                     })
                 }
 
