@@ -2557,15 +2557,29 @@
                     return rows.value.every(row => row.isExpanded)
                 })
 
-                const filteredRows = computed(() => {
-                    if (!selectedChartCatColId.value || !customLegendItems.value.length) return rows.value
-                    const hiddenCategories = new Set(
-                        customLegendItems.value
-                            .filter(item => item.hidden)
-                            .map(item => item.text)
-                    )
-                    if (hiddenCategories.size === 0) return [...rows.value]
+                const dateFilteredRows = computed(() => {
+                    if (!selectedChartDateColId.value) return rows.value
+                    const inactiveMonths = new Set(monthFilters.value.filter(m => !m.active).map(m => m.month))
+                    const inactiveYears = new Set(yearFilters.value.filter(y => !y.active).map(y => y.year))
+                    if (inactiveMonths.size === 0 && inactiveYears.size === 0) return rows.value
                     return rows.value.filter(row => {
+                        const dateVal = row[selectedChartDateColId.value]
+                        if (!dateVal) return true
+                        const dateObj = new Date(dateVal)
+                        if (isNaN(dateObj.getTime())) return true
+                        if (inactiveMonths.has(dateObj.getMonth() + 1)) return false
+                        if (inactiveYears.has(dateObj.getFullYear())) return false
+                        return true
+                    })
+                })
+
+                const filteredRows = computed(() => {
+                    if (!selectedChartCatColId.value || !customLegendItems.value.length) return dateFilteredRows.value
+                    const hiddenCategories = new Set(
+                        customLegendItems.value.filter(item => item.hidden).map(item => item.text)
+                    )
+                    if (hiddenCategories.size === 0) return dateFilteredRows.value
+                    return dateFilteredRows.value.filter(row => {
                         const catValue = row[selectedChartCatColId.value]?.trim() || translate('Uncategorized')
                         return !hiddenCategories.has(catValue)
                     })
