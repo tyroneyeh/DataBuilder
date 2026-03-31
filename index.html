@@ -3851,12 +3851,12 @@
                 }
 
                 onMounted(async () => {
-                    window.addEventListener('beforeprint', () => { 
-                        isPrinting.value = true 
+                    window.addEventListener('beforeprint', () => {
+                        isPrinting.value = true
                         document.documentElement.classList.remove('dark')
                     })
-                    window.addEventListener('afterprint', () => { 
-                        isPrinting.value = false 
+                    window.addEventListener('afterprint', () => {
+                        isPrinting.value = false
                         if (isDark.value) document.documentElement.classList.add('dark')
                     })
                     resizeObserver = new ResizeObserver((entries) => {
