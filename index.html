@@ -423,7 +423,7 @@
                             <div class="flex items-center justify-center space-x-2">
                                 <button
                                     @click="toggleActionMenu(row.id)"
-                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
+                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
                                     :class="{'text-indigo-600 dark:text-indigo-400': row.note && row.note.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
