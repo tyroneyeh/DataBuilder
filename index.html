@@ -495,7 +495,7 @@
 
                 <tfoot class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 block sm:table-footer-group print:table-row-group mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0">
                     <tr class="block sm:table-row print:table-row">
-                        <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :title="rows.length">{{ translate('Total') }}</td>
+                        <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :title="filteredRows.length">{{ translate('Total') }}</td>
 
                         <td v-for="col in columns" :key="'total-' + col.id"
                             class="sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
@@ -512,7 +512,7 @@
                             </div>
                         </td>
 
-                        <td v-if="!isPrinting" class="hidden sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800"></td>
+                        <td v-if="!isPrinting" class="hidden text-center sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800">{{ filteredRows.length }}</td>
                     </tr>
                 </tfoot>
             </table>
