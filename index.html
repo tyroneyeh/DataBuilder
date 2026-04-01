@@ -320,7 +320,7 @@
                             <span v-if="editingColId !== col.id"
                                 @click="startEditingCol(col.id)"
                                 class="cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                title="Click to rename">
+                                :title="translate('Click to rename')">
                                 {{ col.label }}
                             </span>
 
@@ -340,7 +340,7 @@
                             <span v-else-if="!isPrinting && col.type === 'category'" class="text-xs text-blue-400 dark:text-blue-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Category') }})</span>
                             <span v-else-if="!isPrinting" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
-                            <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Delete Column">✖</button>
+                            <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :title="translate('Remove column')">✖</button>
                         </th>
                         <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
                     </tr>
@@ -678,7 +678,9 @@
                 "Year": "年份",
                 "price": "價",
                 "Switch to Dark Mode": "切換到深色模式",
-                "Switch to Light Mode": "切換到亮色模式"
+                "Switch to Light Mode": "切換到亮色模式",
+                "Click to rename": "點擊以重新命名",
+                "Remove column": "刪除欄位"
             },
             "zh-CN": {
                 "TY's Data Builder": "TY的数据表计算器",
@@ -757,7 +759,9 @@
                 "Year": "年份",
                 "price": "价",
                 "Switch to Dark Mode": "切换到深色模式",
-                "Switch to Light Mode": "切换到浅色模式"
+                "Switch to Light Mode": "切换到浅色模式",
+                "Click to rename": "点击重新命名",
+                "Remove column": "删除字段"
             },
             "ja": {
                 "TY's Data Builder": "TYのデータ計算ツール",
@@ -836,7 +840,9 @@
                 "Year": "年",
                 "price": "価",
                 "Switch to Dark Mode": "ダークモードに切り替え",
-                "Switch to Light Mode": "ライトモードに切り替え"
+                "Switch to Light Mode": "ライトモードに切り替え",
+                "Click to rename": "クリックして名前を変更",
+                "Remove column": "列を削除"
             },
             "ko": {
                 "TY's Data Builder": "TY 데이터 빌더",
@@ -915,7 +921,9 @@
                 "Year": "연도",
                 "price": "가",
                 "Switch to Dark Mode": "다크 모드로 전환",
-                "Switch to Light Mode": "라이트 모드로 전환"
+                "Switch to Light Mode": "라이트 모드로 전환",
+                "Click to rename": "클릭하여 이름 바꾸기",
+                "Remove column": "열 삭제"
             },
             "fr": {
                 "TY's Data Builder": "Générateur de Données TY",
@@ -994,7 +1002,9 @@
                 "Year": "Année",
                 "price": "prix",
                 "Switch to Dark Mode": "Passer au mode sombre",
-                "Switch to Light Mode": "Passer au mode clair"
+                "Switch to Light Mode": "Passer au mode clair",
+                "Click to rename": "Cliquez pour renommer",
+                "Remove column": "Supprimer la colonne"
             },
             "de": {
                 "TY's Data Builder": "TYs Daten-Builder",
@@ -1073,7 +1083,9 @@
                 "Year": "Jahr",
                 "price": "preis",
                 "Switch to Dark Mode": "In den dunklen Modus wechseln",
-                "Switch to Light Mode": "In den hellen Modus wechseln"
+                "Switch to Light Mode": "In den hellen Modus wechseln",
+                "Click to rename": "Zum Umbenennen klicken",
+                "Remove column": "Spalte entfernen"
             },
             "nl": {
                 "TY's Data Builder": "TY's Gegevensbouwer",
@@ -1152,7 +1164,9 @@
                 "Year": "Jaar",
                 "price": "prijs",
                 "Switch to Dark Mode": "Overschakelen naar donkere modus",
-                "Switch to Light Mode": "Overschakelen naar lichte modus"
+                "Switch to Light Mode": "Overschakelen naar lichte modus",
+                "Click to rename": "Klik om te hernoemen",
+                "Remove column": "Kolom verwijderen"
             },
             "hi": {
                 "TY's Data Builder": "टीवाई का डेटा बिल्डर",
@@ -1231,7 +1245,9 @@
                 "Year": "वर्ष",
                 "price": "मूल्य",
                 "Switch to Dark Mode": "डार्क मोड पर स्विच करें",
-                "Switch to Light Mode": "लाइट मोड पर स्विच करें"
+                "Switch to Light Mode": "लाइट मोड पर स्विच करें",
+                "Click to rename": "नाम बदलने के लिए क्लिक करें",
+                "Remove column": "कॉलम निकालें"
             },
             "tl": {
                 "TY's Data Builder": "Data Builder ng TY",
@@ -1310,7 +1326,9 @@
                 "Year": "Taon",
                 "price": "presyo",
                 "Switch to Dark Mode": "Lumipat sa Dark Mode",
-                "Switch to Light Mode": "Lumipat sa Light Mode"
+                "Switch to Light Mode": "Lumipat sa Light Mode",
+                "Click to rename": "I-click para palitan ang pangalan",
+                "Remove column": "Alisin ang kolum"
             },
             "vi": {
                 "TY's Data Builder": "Trình Xây Dựng Dữ Liệu TY",
@@ -1389,7 +1407,9 @@
                 "Year": "Năm",
                 "price": "giá",
                 "Switch to Dark Mode": "Chuyển sang chế độ tối",
-                "Switch to Light Mode": "Chuyển sang chế độ sáng"
+                "Switch to Light Mode": "Chuyển sang chế độ sáng",
+                "Click to rename": "Nhấp để đổi tên",
+                "Remove column": "Xóa cột"
             },
             "th": {
                 "TY's Data Builder": "เครื่องมือสร้างข้อมูล TY",
@@ -1468,7 +1488,9 @@
                 "Year": "ปี",
                 "price": "ราคา",
                 "Switch to Dark Mode": "เปลี่ยนเป็นโหมดมืด",
-                "Switch to Light Mode": "เปลี่ยนเป็นโหมดสว่าง"
+                "Switch to Light Mode": "เปลี่ยนเป็นโหมดสว่าง",
+                "Click to rename": "คลิกเพื่อเปลี่ยนชื่อ",
+                "Remove column": "ลบคอลัมน์"
             },
             "id": {
                 "TY's Data Builder": "Pembuat Data TY",
@@ -1547,7 +1569,9 @@
                 "Year": "Tahun",
                 "price": "harga",
                 "Switch to Dark Mode": "Beralih ke Mode Gelap",
-                "Switch to Light Mode": "Beralih ke Mode Terang"
+                "Switch to Light Mode": "Beralih ke Mode Terang",
+                "Click to rename": "Klik untuk mengganti nama",
+                "Remove column": "Hapus kolom"
             },
             "ms": {
                 "TY's Data Builder": "Pembina Data TY",
@@ -1626,7 +1650,9 @@
                 "Year": "Tahun",
                 "price": "harga",
                 "Switch to Dark Mode": "Tukar ke Mod Gelap",
-                "Switch to Light Mode": "Tukar ke Mod Cerah"
+                "Switch to Light Mode": "Tukar ke Mod Cerah",
+                "Click to rename": "Klik untuk menamakan semula",
+                "Remove column": "Alih keluar lajur"
             },
             "ru": {
                 "TY's Data Builder": "Конструктор данных TY",
@@ -1705,7 +1731,9 @@
                 "Year": "Год",
                 "price": "цена",
                 "Switch to Dark Mode": "Переключиться на темный режим",
-                "Switch to Light Mode": "Переключиться на светлый режим"
+                "Switch to Light Mode": "Переключиться на светлый режим",
+                "Click to rename": "Нажмите, чтобы переименовать",
+                "Remove column": "Удалить столбец"
             },
             "pt-BR": {
                 "TY's Data Builder": "Construtor de Dados TY",
@@ -1784,7 +1812,9 @@
                 "Year": "Ano",
                 "price": "preço",
                 "Switch to Dark Mode": "Mudar para o Modo Escuro",
-                "Switch to Light Mode": "Mudar para o Modo Claro"
+                "Switch to Light Mode": "Mudar para o Modo Claro",
+                "Click to rename": "Clique para renomear",
+                "Remove column": "Remover coluna"
             },
             "es": {
                 "TY's Data Builder": "Constructor de Datos TY",
@@ -1863,7 +1893,9 @@
                 "Year": "Año",
                 "price": "precio",
                 "Switch to Dark Mode": "Cambiar al modo oscuro",
-                "Switch to Light Mode": "Cambiar al modo claro"
+                "Switch to Light Mode": "Cambiar al modo claro",
+                "Click to rename": "Haz clic para renombrar",
+                "Remove column": "Eliminar columna"
             },
             "it": {
                 "TY's Data Builder": "Costruttore di Dati TY",
@@ -1942,7 +1974,9 @@
                 "Year": "Anno",
                 "price": "prezzo",
                 "Switch to Dark Mode": "Passa alla modalità scura",
-                "Switch to Light Mode": "Passa alla modalità chiara"
+                "Switch to Light Mode": "Passa alla modalità chiara",
+                "Click to rename": "Fai clic per rinominare",
+                "Remove column": "Rimuovi colonna"
             },
             "pl": {
                 "TY's Data Builder": "Kreator Danych TY",
@@ -2021,7 +2055,9 @@
                 "Year": "Rok",
                 "price": "cena",
                 "Switch to Dark Mode": "Przełącz na tryb ciemny",
-                "Switch to Light Mode": "Przełącz na tryb jasny"
+                "Switch to Light Mode": "Przełącz na tryb jasny",
+                "Click to rename": "Kliknij, aby zmienić nazwę",
+                "Remove column": "Usuń kolumnę"
             },
             "tr": {
                 "TY's Data Builder": "TY Veri Oluşturucu",
@@ -2100,7 +2136,9 @@
                 "Year": "Yıl",
                 "price": "fiyat",
                 "Switch to Dark Mode": "Karanlık Moda Geç",
-                "Switch to Light Mode": "Aydınlık Moda Geç"
+                "Switch to Light Mode": "Aydınlık Moda Geç",
+                "Click to rename": "Yeniden adlandırmak için tıklayın",
+                "Remove column": "Sütunu kaldır"
             },
             "sv": {
                 "TY's Data Builder": "TY:s Databyggare",
@@ -2179,7 +2217,9 @@
                 "Year": "År",
                 "price": "pris",
                 "Switch to Dark Mode": "Byt till mörkt läge",
-                "Switch to Light Mode": "Byt till ljust läge"
+                "Switch to Light Mode": "Byt till ljust läge",
+                "Click to rename": "Klicka för att byta namn",
+                "Remove column": "Ta bort kolumn"
             },
             "cs": {
                 "TY's Data Builder": "Tvůrce Dat TY",
@@ -2258,7 +2298,9 @@
                 "Year": "Rok",
                 "price": "cena",
                 "Switch to Dark Mode": "Přepnout na tmavý režim",
-                "Switch to Light Mode": "Přepnout na světlý režim"
+                "Switch to Light Mode": "Přepnout na světlý režim",
+                "Click to rename": "Kliknutím přejmenujete",
+                "Remove column": "Odstranit sloupec"
             }
         }
 
