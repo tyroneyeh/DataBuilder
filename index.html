@@ -531,9 +531,9 @@
                 <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm text-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
 
                 <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
-                    <div class="flex items-center justify-between">
+                    <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between">
                         <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync') }}</h3>
-                        <button @click="isGistSettingsOpen = !isGistSettingsOpen" class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</button>
+                        <span class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</span>
                     </div>
 
                     <div class="grid transition-all duration-500 ease-in-out" :class="isGistSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
@@ -541,21 +541,22 @@
                             <div class="p-3 bg-gray-900/50 rounded-md border border-gray-700">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                                     <div class="flex flex-col">
-                                        <span class="text-xs text-gray-400 mb-1">GitHub Personal Access Token (PAT)</span>
+                                        <span class="text-xs text-gray-400 mb-1">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
                                         <input ref="githubTokenInput" v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-xs text-gray-400 mb-1">Gist ID (Leave blank to create new)</span>
+                                        <span class="text-xs text-gray-400 mb-1">{{ translate('Gist ID (Leave blank to create new)') }}</span>
                                         <input ref="gistIdInput" v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
                                     </div>
                                 </div>
-                                <div class="text-xs text-gray-500 mt-2 space-y-1">
+                                <div class="text-gray-100 mt-2 space-y-1">
                                     <p>💡 <strong>{{ translate('How to get a Token?') }}</strong></p>
                                     <ol class="list-decimal ml-4 pl-1">
                                         <li>{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</li>
                                         <li>{{ translate('Click "Generate new token (classic)".') }}</li>
                                         <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
                                         <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
+                                        <li>{{ translate('If this is your first time using it, please leave the Gist ID blank.') }}</li>
                                     </ol>
                                 </div>
                             </div>
@@ -715,7 +716,18 @@
                 "Switch to Dark Mode": "切換到深色模式",
                 "Switch to Light Mode": "切換到亮色模式",
                 "Click to rename": "點擊以重新命名",
-                "Remove column": "刪除欄位"
+                "Remove column": "刪除欄位",
+                "Backup to Cloud": "備份至雲端",
+                "Restore from Cloud": "從雲端還原",
+                "GitHub Gist Sync": "GitHub Gist 同步",
+                "GitHub Personal Access Token (PAT)": "GitHub 個人存取權杖 (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (初次建立請留白)",
+                "How to get a Token?": "如何獲取 Token？",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "前往 GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic)。",
+                "Click \"Generate new token (classic)\".": "點擊「Generate new token (classic)」。",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "將 Expiration 設為「No expiration」(以防未來備份失敗)。",
+                "Under Scopes, make sure to check \"gist\".": "在 Scopes 區塊，請務必勾選「gist」。",
+                "If this is your first time using it, please leave the Gist ID blank.": "如果您是第一次使用，請將 Gist ID 留白。"
             },
             "zh-CN": {
                 "TY's Data Builder": "TY的数据表计算器",
@@ -796,7 +808,18 @@
                 "Switch to Dark Mode": "切换到深色模式",
                 "Switch to Light Mode": "切换到浅色模式",
                 "Click to rename": "点击重新命名",
-                "Remove column": "删除字段"
+                "Remove column": "删除字段",
+                "Backup to Cloud": "备份至云端",
+                "Restore from Cloud": "从云端还原",
+                "GitHub Gist Sync": "GitHub Gist 同步",
+                "GitHub Personal Access Token (PAT)": "GitHub 个人访问令牌 (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (首次创建请留空)",
+                "How to get a Token?": "如何获取 Token？",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "前往 GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic)。",
+                "Click \"Generate new token (classic)\".": "点击“Generate new token (classic)”。",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "将 Expiration 设为“No expiration”(以防未来备份失败)。",
+                "Under Scopes, make sure to check \"gist\".": "在 Scopes 区块，请务必勾选“gist”。",
+                "If this is your first time using it, please leave the Gist ID blank.": "如果您是第一次使用，请将 Gist ID 留空。"
             },
             "ja": {
                 "TY's Data Builder": "TYのデータ計算ツール",
@@ -877,7 +900,18 @@
                 "Switch to Dark Mode": "ダークモードに切り替え",
                 "Switch to Light Mode": "ライトモードに切り替え",
                 "Click to rename": "クリックして名前を変更",
-                "Remove column": "列を削除"
+                "Remove column": "列を削除",
+                "Backup to Cloud": "クラウドへバックアップ",
+                "Restore from Cloud": "クラウドから復元",
+                "GitHub Gist Sync": "GitHub Gist 同期",
+                "GitHub Personal Access Token (PAT)": "GitHub パーソナルアクセストークン (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (新規作成の場合は空白)",
+                "How to get a Token?": "トークンの取得方法は？",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic) に移動します。",
+                "Click \"Generate new token (classic)\".": "「Generate new token (classic)」をクリックします。",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Expiration を「No expiration」に設定します（将来的なバックアップの失敗を防ぐため）。",
+                "Under Scopes, make sure to check \"gist\".": "Scopes の下にある「gist」に必ずチェックを入れてください。",
+                "If this is your first time using it, please leave the Gist ID blank.": "初めて使用する場合は、Gist IDを空白のままにしてください。"
             },
             "ko": {
                 "TY's Data Builder": "TY 데이터 빌더",
@@ -958,7 +992,18 @@
                 "Switch to Dark Mode": "다크 모드로 전환",
                 "Switch to Light Mode": "라이트 모드로 전환",
                 "Click to rename": "클릭하여 이름 바꾸기",
-                "Remove column": "열 삭제"
+                "Remove column": "열 삭제",
+                "Backup to Cloud": "클라우드에 백업",
+                "Restore from Cloud": "클라우드에서 복원",
+                "GitHub Gist Sync": "GitHub Gist 동기화",
+                "GitHub Personal Access Token (PAT)": "GitHub 개인 액세스 토큰 (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (새로 만들려면 비워두세요)",
+                "How to get a Token?": "토큰을 얻는 방법은?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic)으로 이동합니다.",
+                "Click \"Generate new token (classic)\".": "\"Generate new token (classic)\"을 클릭합니다.",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Expiration을 \"No expiration\"으로 설정합니다 (나중에 백업이 실패하지 않도록).",
+                "Under Scopes, make sure to check \"gist\".": "Scopes 아래의 \"gist\"를 반드시 선택하세요.",
+                "If this is your first time using it, please leave the Gist ID blank.": "처음 사용하는 경우 Gist ID를 비워두세요."
             },
             "fr": {
                 "TY's Data Builder": "Générateur de Données TY",
@@ -1039,7 +1084,18 @@
                 "Switch to Dark Mode": "Passer au mode sombre",
                 "Switch to Light Mode": "Passer au mode clair",
                 "Click to rename": "Cliquez pour renommer",
-                "Remove column": "Supprimer la colonne"
+                "Remove column": "Supprimer la colonne",
+                "Backup to Cloud": "Sauvegarder dans le cloud",
+                "Restore from Cloud": "Restaurer depuis le cloud",
+                "GitHub Gist Sync": "Synchronisation GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Jeton d'accès personnel GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Laisser vide pour en créer un nouveau)",
+                "How to get a Token?": "Comment obtenir un jeton ?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Allez sur GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Cliquez sur \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Réglez Expiration sur \"No expiration\" (pour éviter les échecs de sauvegarde à l'avenir).",
+                "Under Scopes, make sure to check \"gist\".": "Sous Scopes, assurez-vous de cocher \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "S'il s'agit de votre première utilisation, veuillez laisser l'ID Gist vide."
             },
             "de": {
                 "TY's Data Builder": "TYs Daten-Builder",
@@ -1120,7 +1176,17 @@
                 "Switch to Dark Mode": "In den dunklen Modus wechseln",
                 "Switch to Light Mode": "In den hellen Modus wechseln",
                 "Click to rename": "Zum Umbenennen klicken",
-                "Remove column": "Spalte entfernen"
+                "Backup to Cloud": "In der Cloud sichern",
+                "Restore from Cloud": "Aus der Cloud wiederherstellen",
+                "GitHub Gist Sync": "GitHub Gist Synchronisation",
+                "GitHub Personal Access Token (PAT)": "Persönliches GitHub-Zugriffstoken (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist-ID (Für neu leer lassen)",
+                "How to get a Token?": "Wie erhalte ich ein Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Gehen Sie zu GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klicken Sie auf \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Stellen Sie Expiration auf \"No expiration\" ein (um zukünftige Sicherungsfehler zu vermeiden).",
+                "Under Scopes, make sure to check \"gist\".": "Stellen Sie unter Scopes sicher, dass \"gist\" aktiviert ist.",
+                "If this is your first time using it, please leave the Gist ID blank.": "Wenn Sie dies zum ersten Mal verwenden, lassen Sie die Gist-ID bitte leer."
             },
             "nl": {
                 "TY's Data Builder": "TY's Gegevensbouwer",
@@ -1201,7 +1267,18 @@
                 "Switch to Dark Mode": "Overschakelen naar donkere modus",
                 "Switch to Light Mode": "Overschakelen naar lichte modus",
                 "Click to rename": "Klik om te hernoemen",
-                "Remove column": "Kolom verwijderen"
+                "Remove column": "Kolom verwijderen",
+                "Backup to Cloud": "Back-up naar de cloud",
+                "Restore from Cloud": "Herstellen vanuit de cloud",
+                "GitHub Gist Sync": "GitHub Gist-synchronisatie",
+                "GitHub Personal Access Token (PAT)": "Persoonlijk toegangstoken voor GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist-ID (leeg laten om een nieuwe te maken)",
+                "How to get a Token?": "Hoe krijg ik een token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Ga naar GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klik op \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Stel Expiration in op \"No expiration\" (om toekomstige back-upfouten te voorkomen).",
+                "Under Scopes, make sure to check \"gist\".": "Zorg ervoor dat u \"gist\" aanvinkt onder Scopes.",
+                "If this is your first time using it, please leave the Gist ID blank.": "Als dit uw eerste keer is, laat dan de Gist-ID leeg."
             },
             "hi": {
                 "TY's Data Builder": "टीवाई का डेटा बिल्डर",
@@ -1282,7 +1359,18 @@
                 "Switch to Dark Mode": "डार्क मोड पर स्विच करें",
                 "Switch to Light Mode": "लाइट मोड पर स्विच करें",
                 "Click to rename": "नाम बदलने के लिए क्लिक करें",
-                "Remove column": "कॉलम निकालें"
+                "Remove column": "कॉलम निकालें",
+                "Backup to Cloud": "क्लाउड पर बैकअप लें",
+                "Restore from Cloud": "क्लाउड से पुनर्स्थापित करें",
+                "GitHub Gist Sync": "GitHub Gist सिंक",
+                "GitHub Personal Access Token (PAT)": "GitHub पर्सनल एक्सेस टोकन (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (नया बनाने के लिए खाली छोड़ दें)",
+                "How to get a Token?": "टोकन कैसे प्राप्त करें?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic) पर जाएं।",
+                "Click \"Generate new token (classic)\".": "\"Generate new token (classic)\" पर क्लिक करें।",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Expiration को \"No expiration\" पर सेट करें (भविष्य में बैकअप विफलता से बचने के लिए)।",
+                "Under Scopes, make sure to check \"gist\".": "Scopes के अंतर्गत, सुनिश्चित करें कि \"gist\" चेक किया गया है।",
+                "If this is your first time using it, please leave the Gist ID blank.": "यदि आप पहली बार इसका उपयोग कर रहे हैं, तो कृपया Gist ID को खाली छोड़ दें।"
             },
             "tl": {
                 "TY's Data Builder": "Data Builder ng TY",
@@ -1363,7 +1451,18 @@
                 "Switch to Dark Mode": "Lumipat sa Dark Mode",
                 "Switch to Light Mode": "Lumipat sa Light Mode",
                 "Click to rename": "I-click para palitan ang pangalan",
-                "Remove column": "Alisin ang kolum"
+                "Remove column": "Alisin ang kolum",
+                "Backup to Cloud": "I-backup sa Cloud",
+                "Restore from Cloud": "I-restore mula sa Cloud",
+                "GitHub Gist Sync": "GitHub Gist Sync",
+                "GitHub Personal Access Token (PAT)": "GitHub Personal Access Token (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (Iwanang blangko para gumawa ng bago)",
+                "How to get a Token?": "Paano kumuha ng Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Pumunta sa GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "I-click ang \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Itakda ang Expiration sa \"No expiration\" (para maiwasan ang mga pagkabigo sa backup sa hinaharap).",
+                "Under Scopes, make sure to check \"gist\".": "Sa ilalim ng Scopes, siguraduhing i-check ang \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Kung ito ang iyong unang pagkakataon na gamitin ito, mangyaring iwanang blangko ang Gist ID."
             },
             "vi": {
                 "TY's Data Builder": "Trình Xây Dựng Dữ Liệu TY",
@@ -1444,7 +1543,18 @@
                 "Switch to Dark Mode": "Chuyển sang chế độ tối",
                 "Switch to Light Mode": "Chuyển sang chế độ sáng",
                 "Click to rename": "Nhấp để đổi tên",
-                "Remove column": "Xóa cột"
+                "Remove column": "Xóa cột",
+                "Backup to Cloud": "Sao lưu lên đám mây",
+                "Restore from Cloud": "Khôi phục từ đám mây",
+                "GitHub Gist Sync": "Đồng bộ GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Mã thông báo truy cập cá nhân GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Để trống để tạo mới)",
+                "How to get a Token?": "Làm cách nào để lấy Mã thông báo?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Đi tới GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Nhấp vào \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent lỗi sao lưu trong tương lai).": "Đặt Expiration thành \"No expiration\" (để ngăn lỗi sao lưu trong tương lai).",
+                "Under Scopes, make sure to check \"gist\".": "Trong Scopes, hãy đảm bảo chọn \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Nếu đây là lần đầu tiên bạn sử dụng, vui lòng để trống ID Gist."
             },
             "th": {
                 "TY's Data Builder": "เครื่องมือสร้างข้อมูล TY",
@@ -1525,7 +1635,18 @@
                 "Switch to Dark Mode": "เปลี่ยนเป็นโหมดมืด",
                 "Switch to Light Mode": "เปลี่ยนเป็นโหมดสว่าง",
                 "Click to rename": "คลิกเพื่อเปลี่ยนชื่อ",
-                "Remove column": "ลบคอลัมน์"
+                "Remove column": "ลบคอลัมน์",
+                "Backup to Cloud": "สำรองข้อมูลไปยังคลาวด์",
+                "Restore from Cloud": "กู้คืนจากคลาวด์",
+                "GitHub Gist Sync": "การซิงค์ GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "โทเค็นการเข้าถึงส่วนบุคคลของ GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (เว้นว่างไว้เพื่อสร้างใหม่)",
+                "How to get a Token?": "จะรับโทเค็นได้อย่างไร?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "ไปที่ GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "คลิก \"Generate new token (classic)\"",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "ตั้งค่า Expiration เป็น \"No expiration\" (เพื่อป้องกันปัญหาการสำรองข้อมูลในอนาคต)",
+                "Under Scopes, make sure to check \"gist\".": "ในส่วน Scopes ตรวจสอบให้แน่ใจว่าได้เลือก \"gist\"",
+                "If this is your first time using it, please leave the Gist ID blank.": "หากเป็นการใช้งานครั้งแรก โปรดเว้นช่อง Gist ID ไว้"
             },
             "id": {
                 "TY's Data Builder": "Pembuat Data TY",
@@ -1606,7 +1727,18 @@
                 "Switch to Dark Mode": "Beralih ke Mode Gelap",
                 "Switch to Light Mode": "Beralih ke Mode Terang",
                 "Click to rename": "Klik untuk mengganti nama",
-                "Remove column": "Hapus kolom"
+                "Remove column": "Hapus kolom",
+                "Backup to Cloud": "Cadangkan ke Cloud",
+                "Restore from Cloud": "Pulihkan dari Cloud",
+                "GitHub Gist Sync": "Sinkronisasi GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Token Akses Pribadi GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Biarkan kosong untuk membuat baru)",
+                "How to get a Token?": "Bagaimana cara mendapatkan Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Buka GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klik \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Atur Expiration ke \"No expiration\" (untuk mencegah kegagalan pencadangan di masa depan).",
+                "Under Scopes, make sure to check \"gist\".": "Di bawah Scopes, pastikan untuk mencentang \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Jika ini baru pertama kali digunakan, kosongkan ID Gist."
             },
             "ms": {
                 "TY's Data Builder": "Pembina Data TY",
@@ -1687,7 +1819,18 @@
                 "Switch to Dark Mode": "Tukar ke Mod Gelap",
                 "Switch to Light Mode": "Tukar ke Mod Cerah",
                 "Click to rename": "Klik untuk menamakan semula",
-                "Remove column": "Alih keluar lajur"
+                "Remove column": "Alih keluar lajur",
+                "Backup to Cloud": "Sandarkan ke Awan",
+                "Restore from Cloud": "Pulihkan dari Awan",
+                "GitHub Gist Sync": "Segerak GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Token Akses Peribadi GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Biarkan kosong untuk cipta baharu)",
+                "How to get a Token?": "Bagaimana untuk mendapatkan Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Pergi ke GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klik \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Tetapkan Expiration kepada \"No expiration\" (untuk mengelakkan kegagalan sandaran masa hadapan).",
+                "Under Scopes, make sure to check \"gist\".": "Di bawah Scopes, pastikan anda menandakan \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Jika ini kali pertama anda menggunakannya, sila biarkan ID Gist kosong."
             },
             "ru": {
                 "TY's Data Builder": "Конструктор данных TY",
@@ -1768,7 +1911,18 @@
                 "Switch to Dark Mode": "Переключиться на темный режим",
                 "Switch to Light Mode": "Переключиться на светлый режим",
                 "Click to rename": "Нажмите, чтобы переименовать",
-                "Remove column": "Удалить столбец"
+                "Remove column": "Удалить столбец",
+                "Backup to Cloud": "Резервное копирование в облако",
+                "Restore from Cloud": "Восстановить из облака",
+                "GitHub Gist Sync": "Синхронизация GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Персональный токен доступа GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist ID (оставьте пустым для создания нового)",
+                "How to get a Token?": "Как получить токен?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Перейдите в GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Нажмите \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Установите Expiration на \"No expiration\" (чтобы избежать ошибок резервного копирования в будущем).",
+                "Under Scopes, make sure to check \"gist\".": "В разделе Scopes обязательно отметьте \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Если вы используете это впервые, оставьте Gist ID пустым."
             },
             "pt-BR": {
                 "TY's Data Builder": "Construtor de Dados TY",
@@ -1849,7 +2003,18 @@
                 "Switch to Dark Mode": "Mudar para o Modo Escuro",
                 "Switch to Light Mode": "Mudar para o Modo Claro",
                 "Click to rename": "Clique para renomear",
-                "Remove column": "Remover coluna"
+                "Remove column": "Remover coluna",
+                "Backup to Cloud": "Fazer backup para a Nuvem",
+                "Restore from Cloud": "Restaurar da Nuvem",
+                "GitHub Gist Sync": "Sincronização GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Token de Acesso Pessoal do GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID do Gist (Deixe em branco para criar um novo)",
+                "How to get a Token?": "Como obter um Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Acesse GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Clique em \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Defina Expiration como \"No expiration\" (para evitar falhas de backup no futuro).",
+                "Under Scopes, make sure to check \"gist\".": "Em Scopes, certifique-se de marcar \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Se esta for a primeira vez que você o usa, deixe o ID do Gist em branco."
             },
             "es": {
                 "TY's Data Builder": "Constructor de Datos TY",
@@ -1930,7 +2095,18 @@
                 "Switch to Dark Mode": "Cambiar al modo oscuro",
                 "Switch to Light Mode": "Cambiar al modo claro",
                 "Click to rename": "Haz clic para renombrar",
-                "Remove column": "Eliminar columna"
+                "Remove column": "Eliminar columna",
+                "Backup to Cloud": "Copia de seguridad en la nube",
+                "Restore from Cloud": "Restaurar desde la nube",
+                "GitHub Gist Sync": "Sincronización de GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Token de acceso personal de GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID de Gist (Dejar en blanco para crear uno nuevo)",
+                "How to get a Token?": "¿Cómo obtener un token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Ve a GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Haz clic en \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Establece Expiration en \"No expiration\" (para evitar fallos de copia de seguridad en el futuro).",
+                "Under Scopes, make sure to check \"gist\".": "En Scopes, asegúrate de marcar \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Si es la primera vez que lo usas, deja el ID de Gist en blanco."
             },
             "it": {
                 "TY's Data Builder": "Costruttore di Dati TY",
@@ -2011,7 +2187,18 @@
                 "Switch to Dark Mode": "Passa alla modalità scura",
                 "Switch to Light Mode": "Passa alla modalità chiara",
                 "Click to rename": "Fai clic per rinominare",
-                "Remove column": "Rimuovi colonna"
+                "Remove column": "Rimuovi colonna",
+                "Backup to Cloud": "Esegui backup sul Cloud",
+                "Restore from Cloud": "Ripristina dal Cloud",
+                "GitHub Gist Sync": "Sincronizzazione GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Token di accesso personale GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Lascia vuoto per crearne uno nuovo)",
+                "How to get a Token?": "Come ottenere un Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Vai su GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Clicca su \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Imposta Expiration su \"No expiration\" (per prevenire futuri errori di backup).",
+                "Under Scopes, make sure to check \"gist\".": "Sotto Scopes, assicurati di spuntare \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Se è la prima volta che lo usi, lascia vuoto l'ID Gist."
             },
             "pl": {
                 "TY's Data Builder": "Kreator Danych TY",
@@ -2092,7 +2279,18 @@
                 "Switch to Dark Mode": "Przełącz na tryb ciemny",
                 "Switch to Light Mode": "Przełącz na tryb jasny",
                 "Click to rename": "Kliknij, aby zmienić nazwę",
-                "Remove column": "Usuń kolumnę"
+                "Remove column": "Usuń kolumnę",
+                "Backup to Cloud": "Kopia zapasowa w chmurze",
+                "Restore from Cloud": "Przywróć z chmury",
+                "GitHub Gist Sync": "Synchronizacja GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Osobisty token dostępu GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Pozostaw puste, aby utworzyć nowy)",
+                "How to get a Token?": "Jak zdobyć token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Przejdź do GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Kliknij \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Ustaw Expiration na \"No expiration\" (aby zapobiec przyszłym błędom kopii zapasowej).",
+                "Under Scopes, make sure to check \"gist\".": "W sekcji Scopes upewnij się, że zaznaczyłeś \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Jeśli używasz tego po raz pierwszy, pozostaw pole ID Gist puste."
             },
             "tr": {
                 "TY's Data Builder": "TY Veri Oluşturucu",
@@ -2173,7 +2371,18 @@
                 "Switch to Dark Mode": "Karanlık Moda Geç",
                 "Switch to Light Mode": "Aydınlık Moda Geç",
                 "Click to rename": "Yeniden adlandırmak için tıklayın",
-                "Remove column": "Sütunu kaldır"
+                "Remove column": "Sütunu kaldır",
+                "Backup to Cloud": "Buluta Yedekle",
+                "Restore from Cloud": "Buluttan Geri Yükle",
+                "GitHub Gist Sync": "GitHub Gist Senkronizasyonu",
+                "GitHub Personal Access Token (PAT)": "GitHub Kişisel Erişim Belirteci (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist Kimliği (Yeni oluşturmak için boş bırakın)",
+                "How to get a Token?": "Token nasıl alınır?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic) bölümüne gidin.",
+                "Click \"Generate new token (classic)\".": "\"Generate new token (classic)\" seçeneğine tıklayın.",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Expiration ayarını \"No expiration\" olarak belirleyin (gelecekteki yedekleme hatalarını önlemek için).",
+                "Under Scopes, make sure to check \"gist\".": "Scopes altında \"gist\" seçeneğini işaretlediğinizden emin olun.",
+                "If this is your first time using it, please leave the Gist ID blank.": "Eğer bu ilk kullanımınızsa, lütfen Gist ID'yi boş bırakın."
             },
             "sv": {
                 "TY's Data Builder": "TY:s Databyggare",
@@ -2254,7 +2463,18 @@
                 "Switch to Dark Mode": "Byt till mörkt läge",
                 "Switch to Light Mode": "Byt till ljust läge",
                 "Click to rename": "Klicka för att byta namn",
-                "Remove column": "Ta bort kolumn"
+                "Remove column": "Ta bort kolumn",
+                "Backup to Cloud": "Säkerhetskopiera till molnet",
+                "Restore from Cloud": "Återställ från molnet",
+                "GitHub Gist Sync": "GitHub Gist-synkronisering",
+                "GitHub Personal Access Token (PAT)": "Personlig åtkomsttoken för GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "Gist-ID (Lämna tomt för att skapa nytt)",
+                "How to get a Token?": "Hur får man en token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Gå till GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klicka på \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Ställ in Expiration till \"No expiration\" (för att förhindra framtida säkerhetskopieringsfel).",
+                "Under Scopes, make sure to check \"gist\".": "Under Scopes, se till att kryssa i \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Om detta är första gången du använder detta, vänligen lämna Gist-ID:t tomt."
             },
             "cs": {
                 "TY's Data Builder": "Tvůrce Dat TY",
@@ -2335,7 +2555,18 @@
                 "Switch to Dark Mode": "Přepnout na tmavý režim",
                 "Switch to Light Mode": "Přepnout na světlý režim",
                 "Click to rename": "Kliknutím přejmenujete",
-                "Remove column": "Odstranit sloupec"
+                "Remove column": "Odstranit sloupec",
+                "Backup to Cloud": "Zálohovat do cloudu",
+                "Restore from Cloud": "Obnovit z cloudu",
+                "GitHub Gist Sync": "Synchronizace GitHub Gist",
+                "GitHub Personal Access Token (PAT)": "Osobní přístupový token GitHub (PAT)",
+                "Gist ID (Leave blank to create new)": "ID Gist (Ponechte prázdné pro vytvoření nového)",
+                "How to get a Token?": "Jak získat Token?",
+                "Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).": "Přejděte na GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).",
+                "Click \"Generate new token (classic)\".": "Klikněte na \"Generate new token (classic)\".",
+                "Set Expiration to \"No expiration\" (to prevent future backup failures).": "Nastavte Expiration na \"No expiration\" (abyste zabránili budoucím chybám zálohování).",
+                "Under Scopes, make sure to check \"gist\".": "V sekci Scopes nezapomeňte zaškrtnout \"gist\".",
+                "If this is your first time using it, please leave the Gist ID blank.": "Pokud to používáte poprvé, ponechte ID Gist prázdné."
             }
         }
 
