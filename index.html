@@ -507,7 +507,7 @@
                             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4">{{ col.label }}</span>
 
                             <div class="text-right print:w-full" :class="col.type === 'multiply' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'">
-                                <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :title="columnTotals[col.id].toLocaleString()">{{ formatNumber(columnTotals[col.id]) }}</span>
+                                <span v-if="['number', 'multiply'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :title="(columnTotals[col.id] || 0).toLocaleString()">{{ formatNumber(columnTotals[col.id] || 0) }}</span>
                                 <span v-else class="text-gray-400 dark:text-gray-500 print:text-gray-500"></span>
                             </div>
                         </td>
@@ -2682,11 +2682,11 @@
                 })
 
                 const columnTotals = computed(() => {
+                    JSON.stringify(rows.value)
                     const totals = {}
                     columns.value.forEach(col => {
                         if (col.type === 'number') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (parseFloat(row[col.id]) || 0), 0)
                         else if (col.type === 'multiply') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)), 0)
-                        else totals[col.id] = '-'
                     })
                     return totals
                 })
