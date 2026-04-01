@@ -556,7 +556,7 @@
                 <button @click="exportJson" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
-                <button @click="triggerPrint" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
+                <button @click="triggerPrint" :disabled="isProcessing" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
             </div>
 
             <div v-if="shareLink" class="bg-indigo-50 dark:bg-indigo-900/20 p-4 sm:p-6 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-inner flex flex-col items-center gap-4 mt-2">
@@ -579,8 +579,8 @@
 
             <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
                 <div class="flex flex-wrap w-full sm:w-auto justify-center gap-4">
-                    <button @click="backupToGist" v-if="githubToken.trim()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
-                    <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
+                    <button @click="backupToGist" v-if="githubToken.trim()" :disabled="isProcessing" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
+                    <button @click="restoreFromGist" v-if="gistId.trim()" :disabled="isProcessing" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
                 </div>
                 <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between mt-4">
                     <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
@@ -2936,6 +2936,7 @@
             setup() {
                 const window = globalThis
 
+                const isProcessing = ref(false)
                 const db = new SimpleDB()
                 const currentStorageKey = ref('')
                 const savedKeysList = ref([])
@@ -4555,6 +4556,7 @@
                 }
 
                 const triggerPrint = () => {
+                    isProcessing.value = true
                     setTimeout(async () => {
                         isPrinting.value = true
                         document.documentElement.classList.remove('dark')
@@ -4563,6 +4565,7 @@
                             window.print()
                             isPrinting.value = false
                             if (isDark.value) document.documentElement.classList.add('dark')
+                            isProcessing.value = false
                         }, 800)
                     }, 50)
                 }
@@ -4599,7 +4602,7 @@
                 }
 
                 const backupToGist = async () => {
-
+                    isProcessing.value = true
                     const payload = {
                         title: tableTitle.value,
                         columns: toRaw(columns.value),
@@ -4629,6 +4632,7 @@
                         }
                     }
 
+                    isProcessing.value = false
                     if (result) alert(translate('Backed up to GitHub Gist successfully!'))
                 }
 
@@ -4636,6 +4640,7 @@
                     const cleanGistId = gistId.value.trim()
 
                     if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
+                    isProcessing.value = true
 
                     const result = await fetchGistAPI('GET', `/${cleanGistId}`)
                     if (!result || !result.files) return
@@ -4680,6 +4685,7 @@
                     } else {
                         alert(translate('No matching data found in this Gist. Invalid JSON.'))
                     }
+                    isProcessing.value = false
                 }
 
                 const getDateGroupKey = (dateStr, unit) => {
@@ -4753,6 +4759,7 @@
                 })
 
                 return {
+                    isProcessing,
                     currentLanguage,
                     translate,
                     currentStorageKey,
