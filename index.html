@@ -280,13 +280,6 @@
                         </div>
 
                     </div>
-                    <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
-                        <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
-                        <div class="relative h-64 w-full">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-
                     <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 dark:bg-gray-700/30 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 dark:border-gray-700 gap-3 sm:gap-0">
 
                         <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:pr-4">
@@ -315,6 +308,12 @@
                                     {{ col.label }}
                                 </option>
                             </select>
+                        </div>
+                    </div>
+                    <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
+                        <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
+                        <div class="relative h-64 w-full">
+                            <canvas id="trendChart"></canvas>
                         </div>
                     </div>
                 </div>
