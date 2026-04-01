@@ -527,44 +527,6 @@
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
                 <button @click="triggerPrint" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
-
-                <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
-                    <div class="flex flex-wrap w-full sm:w-auto justify-center gap-4">
-                        <button @click="backupToGist" v-if="githubToken.trim()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
-                        <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
-                    </div>
-                    <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between mt-4">
-                        <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
-                        <span class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</span>
-                    </div>
-
-                    <div class="grid transition-all duration-500 ease-in-out" :class="isGistSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
-                        <div class="overflow-hidden">
-                            <div class="p-3 bg-gray-900/50 rounded-md border border-gray-700">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs text-gray-400 mb-1">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
-                                        <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-xs text-gray-400 mb-1">{{ translate('Gist ID (Leave blank to create new)') }}</span>
-                                        <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
-                                    </div>
-                                </div>
-                                <div class="text-gray-100 mt-2 space-y-1">
-                                    <p>💡 <strong>{{ translate('How to get a Token?') }}</strong></p>
-                                    <ol class="list-decimal ml-4 pl-1">
-                                        <li><a href="https://github.com/settings/tokens" class="text-blue-200 hover:text-blue-300 underline" target="_blank">{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</a></li>
-                                        <li>{{ translate('Click "Generate new token (classic)".') }}</li>
-                                        <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
-                                        <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
-                                        <li>{{ translate('If this is your first time using it, please leave the Gist ID blank.') }}</li>
-                                    </ol>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div v-if="shareLink" class="bg-indigo-50 dark:bg-indigo-900/20 p-4 sm:p-6 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-inner flex flex-col items-center gap-4 mt-2">
@@ -584,6 +546,44 @@
                 <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
             </div>
             <button v-if="outputToScreen" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
+
+            <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
+                <div class="flex flex-wrap w-full sm:w-auto justify-center gap-4">
+                    <button @click="backupToGist" v-if="githubToken.trim()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
+                    <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
+                </div>
+                <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between mt-4">
+                    <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
+                    <span class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</span>
+                </div>
+
+                <div class="grid transition-all duration-500 ease-in-out" :class="isGistSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
+                    <div class="overflow-hidden">
+                        <div class="p-3 bg-gray-900/50 rounded-md border border-gray-700">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-400 mb-1">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
+                                    <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-400 mb-1">{{ translate('Gist ID (Leave blank to create new)') }}</span>
+                                    <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                </div>
+                            </div>
+                            <div class="text-gray-100 mt-2 space-y-1">
+                                <p>💡 <strong>{{ translate('How to get a Token?') }}</strong></p>
+                                <ol class="list-decimal ml-4 pl-1">
+                                    <li><a href="https://github.com/settings/tokens" class="text-blue-200 hover:text-blue-300 underline" target="_blank">{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</a></li>
+                                    <li>{{ translate('Click "Generate new token (classic)".') }}</li>
+                                    <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
+                                    <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
+                                    <li>{{ translate('If this is your first time using it, please leave the Gist ID blank.') }}</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div v-if="confirmModal.isOpen"
             class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -3235,6 +3235,8 @@
                                 window.history.replaceState(null, null, window.location.pathname)
                             } else if (hashStr.startsWith('gist:')) {
                                 gistId.value = hashStr.slice(5)
+                                restoreFromGist()
+                                return
                             }
                         } catch (e) {
                             console.info('Hash error', e)
@@ -3614,11 +3616,16 @@
 
                 const generateShareLink = async () => {
                     try {
-                        const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value }
-                        const jsonString = JSON.stringify(payload)
-                        const compressedBase64 = await compressToBase64(jsonString)
-                        const encoded = encodeURIComponent(compressedBase64)
-                        shareLink.value = `${window.location.origin}${window.location.pathname}#data:${encoded}`
+                        const gistValue = gistId.value.trim()
+                        if (gistValue) {
+                            shareLink.value = `${window.location.origin}${window.location.pathname}#gist:${gistValue}`
+                        } else {
+                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value }
+                            const jsonString = JSON.stringify(payload)
+                            const compressedBase64 = await compressToBase64(jsonString)
+                            const encoded = encodeURIComponent(compressedBase64)
+                            shareLink.value = `${window.location.origin}${window.location.pathname}#data:${encoded}`
+                        }
 
                         QRCode.toDataURL(shareLink.value, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                             if (!err) qrCodeUrl.value = url
