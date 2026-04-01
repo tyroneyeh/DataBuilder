@@ -527,6 +527,41 @@
                 <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
                 <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
                 <button @click="triggerPrint" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
+                <button @click="backupToGist" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm text-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
+                <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm text-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
+
+                <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync') }}</h3>
+                        <button @click="isGistSettingsOpen = !isGistSettingsOpen" class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</button>
+                    </div>
+
+                    <div class="grid transition-all duration-500 ease-in-out" :class="isGistSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
+                        <div class="overflow-hidden">
+                            <div class="p-3 bg-gray-900/50 rounded-md border border-gray-700">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-400 mb-1">GitHub Personal Access Token (PAT)</span>
+                                        <input ref="githubTokenInput" v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs text-gray-400 mb-1">Gist ID (Leave blank to create new)</span>
+                                        <input ref="gistIdInput" v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2 space-y-1">
+                                    <p>💡 <strong>{{ translate('How to get a Token?') }}</strong></p>
+                                    <ol class="list-decimal ml-4 pl-1">
+                                        <li>{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</li>
+                                        <li>{{ translate('Click "Generate new token (classic)".') }}</li>
+                                        <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
+                                        <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div v-if="shareLink" class="bg-indigo-50 dark:bg-indigo-900/20 p-4 sm:p-6 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-inner flex flex-col items-center gap-4 mt-2">
@@ -2496,6 +2531,11 @@
                     localStorage.getItem('theme') === 'dark' ||
                     (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
                 )
+                const githubToken = ref(localStorage.getItem('ty_github_token') || '')
+                const gistId = ref(localStorage.getItem('ty_gist_id') || '')
+                const isGistSettingsOpen = ref(false)
+                const githubTokenInput = ref(null)
+                const gistIdInput = ref(null)
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -2515,6 +2555,10 @@
                     updateChart()
                 }, 500)
 
+                watch([githubToken, gistId], () => {
+                    localStorage.setItem('ty_github_token', githubToken.value)
+                    localStorage.setItem('ty_gist_id', gistId.value)
+                })
                 watch([currentLanguage, tableTitle, columns, rows], () => {
                     if (isInitializing) return
                     debouncedSave()
@@ -4030,6 +4074,107 @@
                     }, 50)
                 }
 
+                const fetchGistAPI = async (method, urlExt = '', body = null) => {
+                    if (!githubToken.value.trim()) {
+                        alert(translate('Please enter your GitHub Token first!'))
+                        return null
+                    }
+
+                    const options = {
+                        method,
+                        headers: {
+                            'Accept': 'application/vnd.github+json',
+                            'Authorization': `Bearer ${githubToken.value.trim()}`,
+                            'X-GitHub-Api-Version': '2022-11-28'
+                        }
+                    }
+                    if (body) options.body = JSON.stringify(body)
+
+                    try {
+                        const response = await fetch(`https://api.github.com/gists${urlExt}`, options)
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+                        return await response.json()
+                    } catch (e) {
+                        if (e.id === 404) {
+                            alert(translate('GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.'))
+                        } else {
+                            console.error('GitHub API Error:', e)
+                            alert(`GitHub API Error: ${e.message}`)
+                        }
+                        return null
+                    }
+                }
+
+                const backupToGist = async () => {
+                    if (!githubToken.value.trim()) {
+                        isGistSettingsOpen.value = true
+                        await nextTick()
+                        if (githubTokenInput.value) githubTokenInput.value.focus()
+                        alert(translate('Please enter your GitHub Token first!'))
+                        return
+                    }
+
+                    const payload = {
+                        title: tableTitle.value,
+                        columns: toRaw(columns.value),
+                        rows: toRaw(rows.value)
+                    }
+
+                    const gistBody = {
+                        description: `TY's Data Builder Backup - ${currentStorageKey.value}`,
+                        public: false,
+                        files: {
+                            [`${currentStorageKey.value}.json`]: {
+                                content: JSON.stringify(payload, null, 2)
+                            }
+                        }
+                    }
+
+                    let result
+                    if (gistId.value.trim()) {
+                        result = await fetchGistAPI('PATCH', `/${gistId.value.trim()}`, gistBody)
+                    } else {
+                        result = await fetchGistAPI('POST', '', gistBody)
+                        if (result && result.id) {
+                            gistId.value = result.id
+                        }
+                    }
+
+                    if (result) alert(translate('Backed up to GitHub Gist successfully!'))
+                }
+
+                const restoreFromGist = async () => {
+                    if (!gistId.value.trim()) {
+                        return alert(translate('Please enter a Gist ID to restore from.'))
+                    }
+
+                    if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
+
+                    const result = await fetchGistAPI('GET', `/${gistId.value.trim()}`)
+                    if (!result) return
+
+                    const fileName = `${currentStorageKey.value}.json`
+                    const fileObj = result.files[fileName] || Object.values(result.files)[0]
+
+                    if (fileObj && fileObj.content) {
+                        try {
+                            const data = JSON.parse(fileObj.content)
+                            tableTitle.value = data.title || ''
+                            columns.value = data.columns || []
+                            rows.value = data.rows || []
+
+                            onDataEdited('both')
+                            await nextTick()
+                            updateChart()
+                            alert(translate('Restored from GitHub Gist successfully!'))
+                        } catch (e) {
+                            alert(translate('Failed to parse Gist content. Invalid JSON.'))
+                        }
+                    } else {
+                        alert(translate('No matching data found in this Gist.'))
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -4165,7 +4310,14 @@
                     isPrinting,
                     triggerPrint,
                     isDark,
-                    toggleDarkMode
+                    toggleDarkMode,
+                    githubToken,
+                    gistId,
+                    backupToGist,
+                    restoreFromGist,
+                    isGistSettingsOpen,
+                    githubTokenInput,
+                    gistIdInput
                 }
             }
         }).mount('#app')
