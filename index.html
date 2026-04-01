@@ -3204,7 +3204,7 @@
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.codePointAt(i)
                     }
-                    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
+                    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'))
                     const decompressedBlob = await new Response(stream).blob()
                     return await decompressedBlob.text()
                 }
@@ -3598,7 +3598,7 @@
                 }
 
                 const compressToBase64 = async (text) => {
-                    const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'))
+                    const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('deflate'))
                     const compressedBlob = await new Response(stream).blob()
                     return new Promise((resolve) => {
                         const reader = new FileReader()
