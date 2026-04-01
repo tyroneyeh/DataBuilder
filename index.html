@@ -186,6 +186,57 @@
                 :class="isChartOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
             >
                 <div class="overflow-hidden">
+                    <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mt-2">
+                        <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mb-2 mt-2">
+                            <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
+                            <button
+                                v-for="y in yearFilters" :key="y.year"
+                                @click="toggleFilter('year', y.year)"
+                                class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
+                                :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
+                            >
+                                {{ y.year }}
+                            </button>
+                        </div>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
+                        <button
+                            v-for="m in monthFilters" :key="m.month"
+                            @click="toggleFilter('month', m.month)"
+                            class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
+                            :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
+                        >
+                            {{ m.month }}
+                        </button>
+
+                        <div class="flex justify-end space-x-1">
+                            <button @click="timeUnit = 'day'; updateChart()"
+                                    :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Daily') }}
+                            </button>
+                            <button @click="timeUnit = 'week'; updateChart()"
+                                    :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Weekly') }}
+                            </button>
+                            <button @click="timeUnit = 'month'; updateChart()"
+                                    :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Monthly') }}
+                            </button>
+                            <button @click="timeUnit = 'quarter'; updateChart()"
+                                    :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Quarterly') }}
+                            </button>
+                            <button v-if="yearFilters.length > 1" @click="timeUnit = 'year'; updateChart()"
+                                    :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Yearly') }}
+                            </button>
+                        </div>
+
+                    </div>
                     <div class="flex flex-col md:flex-row items-center w-full max-w-2xl mx-auto">
 
                         <div class="relative h-64 w-full md:w-1/2 flex justify-center items-center">
@@ -235,28 +286,7 @@
                             <canvas id="trendChart"></canvas>
                         </div>
                     </div>
-                    <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mt-2">
-                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
-                        <button
-                            v-for="m in monthFilters" :key="m.month"
-                            @click="toggleFilter('month', m.month)"
-                            class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                            :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
-                        >
-                            {{ m.month }}
-                        </button>
-                    </div>
-                    <div v-if="hasDateColumn && yearFilters.length > 1" class="w-full bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center mb-2 mt-2">
-                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
-                        <button
-                            v-for="y in yearFilters" :key="y.year"
-                            @click="toggleFilter('year', y.year)"
-                            class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                            :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
-                        >
-                            {{ y.year }}
-                        </button>
-                    </div>
+
                     <div v-if="!isPrinting" class="max-w-3xl w-full flex flex-col sm:flex-row justify-between items-center mx-auto mt-6 bg-gray-50 dark:bg-gray-700/30 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 dark:border-gray-700 gap-3 sm:gap-0">
 
                         <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:pr-4">
@@ -734,7 +764,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "找不到 GitHub Gist！請檢查您的 Gist ID。如果您是第一次使用，請將 Gist ID 留白。",
                 "Backed up to GitHub Gist successfully!": "成功備份至 GitHub Gist！",
                 "Restored from GitHub Gist successfully!": "成功從 GitHub Gist 還原！",
-                "No matching data found in this Gist. Invalid JSON.": "在此 Gist 中找不到符合的資料。無效的 JSON。"
+                "No matching data found in this Gist. Invalid JSON.": "在此 Gist 中找不到符合的資料。無效的 JSON。",
+                "Daily": "Daily",
+                "Weekly": "Weekly",
+                "Monthly": "Monthly",
+                "Quarterly": "Quarterly",
+                "Yearly": "Yearly"
             },
             "zh-CN": {
                 "TY's Data Builder": "TY的数据表计算器",
@@ -831,7 +866,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "找不到 GitHub Gist！请检查您的 Gist ID。如果您是第一次使用，请将 Gist ID 留空。",
                 "Backed up to GitHub Gist successfully!": "成功备份至 GitHub Gist！",
                 "Restored from GitHub Gist successfully!": "成功从 GitHub Gist 还原！",
-                "No matching data found in this Gist. Invalid JSON.": "在此 Gist 中找不到匹配的数据。无效的 JSON。"
+                "No matching data found in this Gist. Invalid JSON.": "在此 Gist 中找不到匹配的数据。无效的 JSON。",
+                "Daily": "每日",
+                "Weekly": "每周",
+                "Monthly": "每月",
+                "Quarterly": "每季",
+                "Yearly": "每年"
             },
             "ja": {
                 "TY's Data Builder": "TYのデータ計算ツール",
@@ -928,7 +968,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist が見つかりません！Gist ID を確認してください。初めて使用する場合は、Gist ID を空白のままにしてください。",
                 "Backed up to GitHub Gist successfully!": "GitHub Gist へのバックアップが成功しました！",
                 "Restored from GitHub Gist successfully!": "GitHub Gist からの復元が成功しました！",
-                "No matching data found in this Gist. Invalid JSON.": "この Gist に一致するデータが見つかりません。無効な JSON です。"
+                "No matching data found in this Gist. Invalid JSON.": "この Gist に一致するデータが見つかりません。無効な JSON です。",
+                "Daily": "日別",
+                "Weekly": "週別",
+                "Monthly": "月別",
+                "Quarterly": "四半期",
+                "Yearly": "年別"
             },
             "ko": {
                 "TY's Data Builder": "TY 데이터 빌더",
@@ -1025,7 +1070,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist를 찾을 수 없습니다! Gist ID를 확인하세요. 처음 사용하는 경우 Gist ID를 비워두세요.",
                 "Backed up to GitHub Gist successfully!": "GitHub Gist에 성공적으로 백업되었습니다!",
                 "Restored from GitHub Gist successfully!": "GitHub Gist에서 성공적으로 복원되었습니다!",
-                "No matching data found in this Gist. Invalid JSON.": "이 Gist에서 일치하는 데이터를 찾을 수 없습니다. 잘못된 JSON입니다."
+                "No matching data found in this Gist. Invalid JSON.": "이 Gist에서 일치하는 데이터를 찾을 수 없습니다. 잘못된 JSON입니다.",
+                "Daily": "일별",
+                "Weekly": "주별",
+                "Monthly": "월별",
+                "Quarterly": "분기별",
+                "Yearly": "연별"
             },
             "fr": {
                 "TY's Data Builder": "Générateur de Données TY",
@@ -1122,7 +1172,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist introuvable ! Veuillez vérifier votre ID Gist. S'il s'agit de votre première utilisation, veuillez laisser l'ID Gist vide.",
                 "Backed up to GitHub Gist successfully!": "Sauvegarde sur GitHub Gist réussie !",
                 "Restored from GitHub Gist successfully!": "Restauration depuis GitHub Gist réussie !",
-                "No matching data found in this Gist. Invalid JSON.": "Aucune donnée correspondante trouvée dans ce Gist. JSON invalide."
+                "No matching data found in this Gist. Invalid JSON.": "Aucune donnée correspondante trouvée dans ce Gist. JSON invalide.",
+                "Daily": "Quotidien",
+                "Weekly": "Hebdomadaire",
+                "Monthly": "Mensuel",
+                "Quarterly": "Trimestriel",
+                "Yearly": "Annuel"
             },
             "de": {
                 "TY's Data Builder": "TYs Daten-Builder",
@@ -1218,7 +1273,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist nicht gefunden! Bitte überprüfen Sie Ihre Gist-ID. Wenn Sie dies zum ersten Mal verwenden, lassen Sie die Gist-ID bitte leer.",
                 "Backed up to GitHub Gist successfully!": "Erfolgreich in GitHub Gist gesichert!",
                 "Restored from GitHub Gist successfully!": "Erfolgreich aus GitHub Gist wiederhergestellt!",
-                "No matching data found in this Gist. Invalid JSON.": "Keine passenden Daten in diesem Gist gefunden. Ungültiges JSON."
+                "No matching data found in this Gist. Invalid JSON.": "Keine passenden Daten in diesem Gist gefunden. Ungültiges JSON.",
+                "Daily": "Täglich",
+                "Weekly": "Wöchentlich",
+                "Monthly": "Monatlich",
+                "Quarterly": "Vierteljährlich",
+                "Yearly": "Jährlich"
             },
             "nl": {
                 "TY's Data Builder": "TY's Gegevensbouwer",
@@ -1315,7 +1375,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist niet gevonden! Controleer uw Gist-ID. Als dit uw eerste keer is, laat dan de Gist-ID leeg.",
                 "Backed up to GitHub Gist successfully!": "Succesvol een back-up gemaakt naar GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Succesvol hersteld vanuit GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Geen overeenkomende gegevens gevonden in deze Gist. Ongeldige JSON."
+                "No matching data found in this Gist. Invalid JSON.": "Geen overeenkomende gegevens gevonden in deze Gist. Ongeldige JSON.",
+                "Daily": "Dagelijks",
+                "Weekly": "Wekelijks",
+                "Monthly": "Maandelijks",
+                "Quarterly": "Per kwartaal",
+                "Yearly": "Jaarlijks"
             },
             "hi": {
                 "TY's Data Builder": "टीवाई का डेटा बिल्डर",
@@ -1412,7 +1477,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist नहीं मिला! कृपया अपना Gist ID जांचें। यदि आप पहली बार इसका उपयोग कर रहे हैं, तो कृपया Gist ID को खाली छोड़ दें।",
                 "Backed up to GitHub Gist successfully!": "GitHub Gist पर सफलतापूर्वक बैकअप लिया गया!",
                 "Restored from GitHub Gist successfully!": "GitHub Gist से सफलतापूर्वक पुनर्स्थापित किया गया!",
-                "No matching data found in this Gist. Invalid JSON.": "इस Gist में कोई मिलान डेटा नहीं मिला। अमान्य JSON।"
+                "No matching data found in this Gist. Invalid JSON.": "इस Gist में कोई मिलान डेटा नहीं मिला। अमान्य JSON।",
+                "Daily": "दैनिक",
+                "Weekly": "साप्ताहिक",
+                "Monthly": "मासिक",
+                "Quarterly": "त्रैमासिक",
+                "Yearly": "वार्षिक"
             },
             "tl": {
                 "TY's Data Builder": "Data Builder ng TY",
@@ -1509,7 +1579,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "Hindi nahanap ang GitHub Gist! Pakisuri ang iyong Gist ID. Kung ito ang iyong unang pagkakataon na gamitin ito, mangyaring iwanang blangko ang Gist ID.",
                 "Backed up to GitHub Gist successfully!": "Matagumpay na nai-backup sa GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Matagumpay na na-restore mula sa GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Walang natagpuang katugmang data sa Gist na ito. Imbalidong JSON."
+                "No matching data found in this Gist. Invalid JSON.": "Walang natagpuang katugmang data sa Gist na ito. Imbalidong JSON.",
+                "Daily": "Araw-araw",
+                "Weekly": "Lingguhan",
+                "Monthly": "Buwanan",
+                "Quarterly": "Kada Quarter",
+                "Yearly": "Taunan"
             },
             "vi": {
                 "TY's Data Builder": "Trình Xây Dựng Dữ Liệu TY",
@@ -1606,7 +1681,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "Không tìm thấy GitHub Gist! Vui lòng kiểm tra ID Gist của bạn. Nếu đây là lần đầu tiên bạn sử dụng, vui lòng để trống ID Gist.",
                 "Backed up to GitHub Gist successfully!": "Đã sao lưu thành công lên GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Đã khôi phục thành công từ GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Không tìm thấy dữ liệu phù hợp trong Gist này. JSON không hợp lệ."
+                "No matching data found in this Gist. Invalid JSON.": "Không tìm thấy dữ liệu phù hợp trong Gist này. JSON không hợp lệ.",
+                "Daily": "Hàng ngày",
+                "Weekly": "Hàng tuần",
+                "Monthly": "Hàng tháng",
+                "Quarterly": "Hàng quý",
+                "Yearly": "Hàng năm"
             },
             "th": {
                 "TY's Data Builder": "เครื่องมือสร้างข้อมูล TY",
@@ -1703,7 +1783,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "ไม่พบ GitHub Gist! โปรดตรวจสอบ Gist ID ของคุณ หากเป็นการใช้งานครั้งแรก โปรดเว้นช่อง Gist ID ไว้",
                 "Backed up to GitHub Gist successfully!": "สำรองข้อมูลไปยัง GitHub Gist สำเร็จแล้ว!",
                 "Restored from GitHub Gist successfully!": "กู้คืนจาก GitHub Gist สำเร็จแล้ว!",
-                "No matching data found in this Gist. Invalid JSON.": "ไม่พบข้อมูลที่ตรงกันใน Gist นี้ JSON ไม่ถูกต้อง"
+                "No matching data found in this Gist. Invalid JSON.": "ไม่พบข้อมูลที่ตรงกันใน Gist นี้ JSON ไม่ถูกต้อง",
+                "Daily": "รายวัน",
+                "Weekly": "รายสัปดาห์",
+                "Monthly": "รายเดือน",
+                "Quarterly": "รายไตรมาส",
+                "Yearly": "รายปี"
             },
             "id": {
                 "TY's Data Builder": "Pembuat Data TY",
@@ -1800,7 +1885,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist tidak ditemukan! Harap periksa ID Gist Anda. Jika ini baru pertama kali digunakan, kosongkan ID Gist.",
                 "Backed up to GitHub Gist successfully!": "Berhasil dicadangkan ke GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Berhasil dipulihkan dari GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Tidak ada data yang cocok ditemukan di Gist ini. JSON tidak valid."
+                "No matching data found in this Gist. Invalid JSON.": "Tidak ada data yang cocok ditemukan di Gist ini. JSON tidak valid.",
+                "Daily": "Harian",
+                "Weekly": "Mingguan",
+                "Monthly": "Bulanan",
+                "Quarterly": "Kuartalan",
+                "Yearly": "Tahunan"
             },
             "ms": {
                 "TY's Data Builder": "Pembina Data TY",
@@ -1897,7 +1987,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist tidak ditemui! Sila semak ID Gist anda. Jika ini kali pertama anda menggunakannya, sila biarkan ID Gist kosong.",
                 "Backed up to GitHub Gist successfully!": "Berjaya disandarkan ke GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Berjaya dipulihkan dari GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Tiada data yang sepadan ditemui dalam Gist ini. JSON tidak sah."
+                "No matching data found in this Gist. Invalid JSON.": "Tiada data yang sepadan ditemui dalam Gist ini. JSON tidak sah.",
+                "Daily": "Harian",
+                "Weekly": "Mingguan",
+                "Monthly": "Bulanan",
+                "Quarterly": "Suku Tahunan",
+                "Yearly": "Tahunan"
             },
             "ru": {
                 "TY's Data Builder": "Конструктор данных TY",
@@ -1994,7 +2089,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist не найден! Пожалуйста, проверьте ваш Gist ID. Если вы используете это впервые, оставьте Gist ID пустым.",
                 "Backed up to GitHub Gist successfully!": "Успешно выполнено резервное копирование в GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Успешно восстановлено из GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "В этом Gist не найдено подходящих данных. Неверный JSON."
+                "No matching data found in this Gist. Invalid JSON.": "В этом Gist не найдено подходящих данных. Неверный JSON.",
+                "Daily": "Ежедневно",
+                "Weekly": "Еженедельно",
+                "Monthly": "Ежемесячно",
+                "Quarterly": "Ежеквартально",
+                "Yearly": "Ежегодно"
             },
             "pt": {
                 "TY's Data Builder": "Construtor de Dados TY",
@@ -2091,7 +2191,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist não encontrado! Verifique seu ID do Gist. Se esta for a primeira vez que você o usa, deixe o ID do Gist em branco.",
                 "Backed up to GitHub Gist successfully!": "Backup feito no GitHub Gist com sucesso!",
                 "Restored from GitHub Gist successfully!": "Restaurado do GitHub Gist com sucesso!",
-                "No matching data found in this Gist. Invalid JSON.": "Nenhum dado correspondente encontrado neste Gist. JSON inválido."
+                "No matching data found in this Gist. Invalid JSON.": "Nenhum dado correspondente encontrado neste Gist. JSON inválido.",
+                "Daily": "Diário",
+                "Weekly": "Semanal",
+                "Monthly": "Mensal",
+                "Quarterly": "Trimestral",
+                "Yearly": "Anual"
             },
             "es": {
                 "TY's Data Builder": "Constructor de Datos TY",
@@ -2188,7 +2293,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "¡No se encontró GitHub Gist! Comprueba tu ID de Gist. Si es la primera vez que lo usas, deja el ID de Gist en blanco.",
                 "Backed up to GitHub Gist successfully!": "¡Copia de seguridad en GitHub Gist realizada con éxito!",
                 "Restored from GitHub Gist successfully!": "¡Restaurado desde GitHub Gist con éxito!",
-                "No matching data found in this Gist. Invalid JSON.": "No se encontraron datos coincidentes en este Gist. JSON no válido."
+                "No matching data found in this Gist. Invalid JSON.": "No se encontraron datos coincidentes en este Gist. JSON no válido.",
+                "Daily": "Diario",
+                "Weekly": "Semanal",
+                "Monthly": "Mensual",
+                "Quarterly": "Trimestral",
+                "Yearly": "Anual"
             },
             "it": {
                 "TY's Data Builder": "Costruttore di Dati TY",
@@ -2285,7 +2395,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist non trovato! Controlla il tuo ID Gist. Se è la prima volta che lo usi, lascia vuoto l'ID Gist.",
                 "Backed up to GitHub Gist successfully!": "Backup su GitHub Gist completato con successo!",
                 "Restored from GitHub Gist successfully!": "Ripristinato da GitHub Gist con successo!",
-                "No matching data found in this Gist. Invalid JSON.": "Nessun dato corrispondente trovato in questo Gist. JSON non valido."
+                "No matching data found in this Gist. Invalid JSON.": "Nessun dato corrispondente trovato in questo Gist. JSON non valido.",
+                "Daily": "Giornaliero",
+                "Weekly": "Settimanale",
+                "Monthly": "Mensile",
+                "Quarterly": "Trimestrale",
+                "Yearly": "Annuale"
             },
             "pl": {
                 "TY's Data Builder": "Kreator Danych TY",
@@ -2382,7 +2497,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "Nie znaleziono GitHub Gist! Sprawdź swój ID Gist. Jeśli używasz tego po raz pierwszy, pozostaw pole ID Gist puste.",
                 "Backed up to GitHub Gist successfully!": "Pomyślnie utworzono kopię zapasową w GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Pomyślnie przywrócono z GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "W tym Gist nie znaleziono pasujących danych. Nieprawidłowy JSON."
+                "No matching data found in this Gist. Invalid JSON.": "W tym Gist nie znaleziono pasujących danych. Nieprawidłowy JSON.",
+                "Daily": "Dzienne",
+                "Weekly": "Tygodniowe",
+                "Monthly": "Miesięczne",
+                "Quarterly": "Kwartalne",
+                "Yearly": "Roczne"
             },
             "tr": {
                 "TY's Data Builder": "TY Veri Oluşturucu",
@@ -2479,7 +2599,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist bulunamadı! Lütfen Gist Kimliğinizi kontrol edin. Eğer bu ilk kullanımınızsa, lütfen Gist ID'yi boş bırakın.",
                 "Backed up to GitHub Gist successfully!": "GitHub Gist'e başarıyla yedeklendi!",
                 "Restored from GitHub Gist successfully!": "GitHub Gist'ten başarıyla geri yüklendi!",
-                "No matching data found in this Gist. Invalid JSON.": "Bu Gist'te eşleşen veri bulunamadı. Geçersiz JSON."
+                "No matching data found in this Gist. Invalid JSON.": "Bu Gist'te eşleşen veri bulunamadı. Geçersiz JSON.",
+                "Daily": "Günlük",
+                "Weekly": "Haftalık",
+                "Monthly": "Aylık",
+                "Quarterly": "Üç Aylık",
+                "Yearly": "Yıllık"
             },
             "sv": {
                 "TY's Data Builder": "TY:s Databyggare",
@@ -2576,7 +2701,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist hittades inte! Kontrollera ditt Gist-ID. Om detta är första gången du använder detta, vänligen lämna Gist-ID:t tomt.",
                 "Backed up to GitHub Gist successfully!": "Säkerhetskopierades till GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Återställdes från GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "Ingen matchande data hittades i denna Gist. Ogiltig JSON."
+                "No matching data found in this Gist. Invalid JSON.": "Ingen matchande data hittades i denna Gist. Ogiltig JSON.",
+                "Daily": "Dagligen",
+                "Weekly": "Veckovis",
+                "Monthly": "Månatligen",
+                "Quarterly": "Kvartalsvis",
+                "Yearly": "Årligen"
             },
             "cs": {
                 "TY's Data Builder": "Tvůrce Dat TY",
@@ -2673,7 +2803,12 @@
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "GitHub Gist nebyl nalezen! Zkontrolujte prosím své ID Gist. Pokud to používáte poprvé, ponechte ID Gist prázdné.",
                 "Backed up to GitHub Gist successfully!": "Úspěšně zálohováno do GitHub Gist!",
                 "Restored from GitHub Gist successfully!": "Úspěšně obnoveno z GitHub Gist!",
-                "No matching data found in this Gist. Invalid JSON.": "V tomto Gist nebyla nalezena žádná odpovídající data. Neplatný JSON."
+                "No matching data found in this Gist. Invalid JSON.": "V tomto Gist nebyla nalezena žádná odpovídající data. Neplatný JSON.",
+                "Daily": "Denně",
+                "Weekly": "Týdně",
+                "Monthly": "Měsíčně",
+                "Quarterly": "Čtvrtletně",
+                "Yearly": "Ročně"
             }
         }
 
@@ -2872,6 +3007,7 @@
                 const githubToken = ref(localStorage.getItem('ty_github_token') || '')
                 const gistId = ref(localStorage.getItem('ty_gist_id') || '')
                 const isGistSettingsOpen = ref(false)
+                const timeUnit = ref('day')
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -3962,7 +4098,10 @@
                         const rawVal = row[colId]
                         if (!rawVal) return
 
-                        let label = String(rawVal).trim()
+                        let label = type === 'date'
+                            ? getDateGroupKey(rawVal, timeUnit.value)
+                            : String(rawVal).trim()
+
                         let val = parseFloat(row[numCol.id]) || 0
                         if (numCol.type === 'multiply') val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
 
@@ -4162,7 +4301,7 @@
 
                 const updateTrend = (ctx, labels, values) => {
                     const sortedData = labels.map((l, i) => ({ label: l, value: values[i] }))
-                        .sort((a, b) => new Date(a.label) - new Date(b.label))
+                        .sort((a, b) => a.label.localeCompare(b.label))
 
                     const trendLabels = sortedData.map(d => d.label)
                     const trendValues = sortedData.map(d => d.value)
@@ -4240,10 +4379,10 @@
 
                     const dateData = getChartData('date')
                     if (dateData && Object.keys(dateData).length > 0 && selectedChartDateColId.value) {
-                        const validLabels = Object.keys(dateData).filter(d => !isNaN(new Date(d).getTime()))
+                        const validLabels = Object.keys(dateData)
                         if (validLabels.length > 0) {
                             hasTrendData.value = true
-                            const sortedLabels = validLabels.sort((a, b) => new Date(a) - new Date(b))
+                            const sortedLabels = validLabels.sort((a, b) => a.localeCompare(b))
                             const sortedValues = sortedLabels.map(label => dateData[label])
                             await nextTick()
                             updateTrend(ctxLine, sortedLabels, sortedValues)
@@ -4534,6 +4673,32 @@
                     }
                 }
 
+                const getDateGroupKey = (dateStr, unit) => {
+                    if (!dateStr) return translate('Unknown')
+                    const d = new Date(dateStr)
+                    if (isNaN(d.getTime())) return dateStr
+
+                    const y = d.getFullYear()
+                    const m = String(d.getMonth() + 1).padStart(2, '0')
+                    const day = String(d.getDate()).padStart(2, '0')
+
+                    if (unit === 'month') {
+                        return `${y}-${m}`
+                    } else if (unit === 'quarter') {
+                        const q = Math.ceil((d.getMonth() + 1) / 3)
+                        return `${y}-Q${q}`
+                    } else if (unit === 'week') {
+                        const firstDayOfYear = new Date(y, 0, 1)
+                        const pastDaysOfYear = (d - firstDayOfYear) / 86400000
+                        const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
+                        return `${y}-W${String(weekNum).padStart(2, '0')}`
+                    } else if (unit === 'year') {
+                        return `${y}`
+                    }
+
+                    return `${y}-${m}-${day}`
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -4674,7 +4839,8 @@
                     gistId,
                     backupToGist,
                     restoreFromGist,
-                    isGistSettingsOpen
+                    isGistSettingsOpen,
+                    timeUnit
                 }
             }
         }).mount('#app')
