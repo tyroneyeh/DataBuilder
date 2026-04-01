@@ -1,41 +1,42 @@
-# 📊 TY's Data Builder (TY的資料表計算器) https://ty-db.pages.dev
+# 📊 TY's Data Builder (TY的資料表計算器)
 
-一個強大、輕量且**完全無需後端**的單頁式動態表格應用。
-只需一個 HTML 檔案，點開瀏覽器即可開始使用！完美解決臨時資料收集、團購統計、快速報價單生成等需求。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange.svg)](https://en.wikipedia.org/wiki/Progressive_web_app)
+[![No Backend](https://img.shields.io/badge/Backend-None-blue.svg)](https://en.wikipedia.org/wiki/Serverless_computing)
 
-![TY's Data Builder - TY的資料表計算器](https://ty-db.pages.dev/databuilder.png)
+一個強大、輕量且**完全無需後端**的單頁式動態表格應用。只需一個 HTML 檔案，點開瀏覽器即可開始使用！完美解決臨時資料收集、團購統計、快速報價單生成等需求。
+
+**🔗 立即使用 (Live Demo): [https://ty-db.pages.dev](https://ty-db.pages.dev)**
+
+---
 
 ## ✨ 核心特色 (Features)
 
-* **⚡ 零依賴 & 免安裝**：拋棄繁瑣的 `npm install` 與依賴地獄，採用 Vue 3 (CDN) + Tailwind CSS 構建，下載單一 HTML 檔即可離線運行。
+* **⚡ 零依賴 & 免安裝**：採用 Vue 3 (CDN) + Tailwind CSS 構建，下載單一 HTML 檔即可離線運行，無須 `npm install`。
+* **📶 PWA 離線支援**：支援 Service Worker 技術，一次開啟後即可在無網路環境下作為桌面/手機 App 使用。
 * **🛠️ 動態自訂欄位**：
-    * 支援新增「文字 (Text)」、「數字 (Number)」欄位。
+    * 支援「文字 (Text)」、「數字 (Number)」欄位。
     * 支援「乘法計算 (A × B)」欄位，自動即時算出小計。
+* **🐙 GitHub Gist 雲端同步 (BYOD)**：
+    * **Bring Your Own Database**：使用者可設定自己的 GitHub Token，將資料加密備份至個人 Gist。
+    * 支援跨裝置還原與版本紀錄，完全隱私且免費。
+* **📈 即時動態圖表**：內建 Chart.js，根據表格分類自動生成圓餅圖與歷史趨勢圖，支援雙擊圖例「孤立顯示」的高級互動。
 * **⌨️ 類 Excel 的極致鍵盤體驗**：
     * **方向鍵導航**：支援 `↑` `↓` `←` `→` 在儲存格間無縫穿梭。
-    * **快速新增**：在最後一格按下 `Enter` 自動新增下一列並聚焦。
-    * **智慧刪除**：在空白列的第一格按下 `Backspace` 即可快速刪除該列。
-* **🔗 雲端無伺服器分享**：
-    * 將表格資料 Base64 編碼後打包進 URL Hash 中，**無需資料庫即可產生「分享連結」與「QR Code」**。
-    * 接收者點擊連結，資料會自動與本地端表格進行「智慧合併」。
-* **🧩 智慧品項合併 (Merge Duplicates)**：
-    * 一鍵將同名品項合併，自動加總數字欄位（自動避開單價），並串接備註內容，團購對帳超方便。
-* **📝 階層式備註系統**：每筆資料皆可獨立展開/隱藏備註，支援一鍵全部展開。
-* **🖨️ 所見即所得列印**：專屬的 `@media print` 樣式，點擊列印自動隱藏操作按鈕、消除陰影與框線，輸出完美報表。
-* **📥 多元匯出格式**：支援一鍵匯出 JSON 與 CSV (Excel 相容) 格式。
-* **🌐 雙語系支援 (i18n)**：內建繁體中文與英文，自動偵測瀏覽器語言，亦可手動切換。
+    * **快速新增/刪除**：最後一格 `Enter` 自動新增；空白列首格 `Backspace` 自動刪除。
+* **🔗 無伺服器分享**：資料透過 Base64 編碼打包進 URL Hash，直接產生分享連結或 QR Code，實現「無資料庫」資料交換。
+* **🧩 智慧品項合併**：一鍵將同名品項合併，自動加總數量並串接備註，團購對帳神器。
+* **🖨️ 專業列印模式**：專屬 `@media print` 樣式，一鍵輸出乾淨、無按鈕干擾的 PDF 報表。
 
-## 🚀 快速開始 (Quick Start)
-
-1. 下載本專案的 `index.html`。
-2. 雙擊該檔案，使用任何現代瀏覽器 (Chrome, Edge, Firefox, Safari) 開啟。
-3. 開始建立你的動態表格！
+---
 
 ## 💡 適用情境 (Use Cases)
 
-* **辦公室團購 / 訂便當**：建立好品項與價格欄位，產生 QR Code 讓同事掃描填寫，最後使用「合併相同品項」一鍵算出總量。
-* **臨時報價單**：快速設定「品項、單價、數量、小計(乘法)」，填寫完畢後直接 `Ctrl+P` 列印成 PDF 交給客戶。
-* **個人記帳 / 庫存盤點**：利用 IndexedDB 大容量自動存檔的特性，做為無須後端卻極度高效的進銷存追蹤工具。
+* **團購/便當統計**：產生 QR Code 讓同事填寫，最後用「合併相同品項」一鍵算出總量。
+* **快速報價單**：設定品項、單價、數量，填寫完畢後直接 `Ctrl+P` 輸出報表。
+* **個人記帳/盤點**：利用 IndexedDB 與 GitHub Gist 同步，打造私有、高效的進銷存追蹤工具。
+
+---
 
 ## ⌨️ 快捷鍵指南 (Keyboard Shortcuts)
 
@@ -47,17 +48,47 @@
 | `Enter` | 表格的最後一格 | **自動新增一列**，並將游標跳至新列的第一格 |
 | `Backspace` | 空白列的第一格 | **自動刪除該列**，並將游標退回上一列 |
 
+---
+
 ## 🛠️ 技術架構 (Tech Stack)
 
-* **核心框架**: [Vue.js 3](https://vuejs.org/) (Composition API, CDN)
-* **UI 樣式**: [Tailwind CSS](https://tailwindcss.com/) (CDN)
-* **QR Code 生成**: [qrcode.js](https://github.com/soldair/node-qrcode) (CDN)
-* **資料儲存**: Browser IndexedDB & URL Hash (無後端架構)
+* **Framework**: [Vue.js 3](https://vuejs.org/) (Composition API via CDN)
+* **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+* **Charts**: [Chart.js](https://www.chartjs.org/)
+* **Storage**: IndexedDB (Local) & GitHub Gist API (Cloud)
+* **Utilities**: [qrcode.js](https://github.com/soldair/node-qrcode), Service Worker (PWA)
 
-## ⚠️ 注意事項
+---
 
-* 因為本工具採用 URL Hash 來傳遞分享資料，若表格資料過於龐大（例如數百筆資料），產生的分享連結可能會超過某些舊版瀏覽器的 URL 長度限制。建議大量資料請善用 JSON 或 CSV 匯出功能。
-* 匯出 CSV 時預設包含 BOM (Byte Order Mark)，確保用 Microsoft Excel 開啟時不會出現中文亂碼。
+# 📊 TY's Data Builder (English Version)
+
+A powerful, lightweight, **backend-less** single-page dynamic table application. Just one HTML file, open it in your browser and start building! Perfect for temporary data collection, group buying statistics, and rapid invoice generation.
+
+## ✨ Key Features
+
+* **⚡ Zero Dependencies**: Built with Vue 3 and Tailwind CSS via CDN. No `npm install` required. Download the HTML file and run it anywhere.
+* **📶 PWA Support**: Offline-ready via Service Workers. Install it as a desktop or mobile app.
+* **🐙 GitHub Gist Sync (BYOD)**:
+    * **Bring Your Own Database**: Backup and sync your data using your own GitHub Token and Gist.
+    * Fully private, free, and supports cross-device restoration.
+* **📈 Dynamic Charts**: Real-time Pie and Trend charts powered by Chart.js. Supports advanced interactions like "Double-click to Isolate" legends.
+* **⌨️ Excel-like Experience**:
+    * **Arrow Key Navigation**: Seamlessly move between cells using `↑` `↓` `←` `→`.
+    * **Smart Add/Delete**: `Enter` on the last cell to add a row; `Backspace` on an empty first cell to delete.
+* **🔗 Serverless Sharing**: Encode data into the URL Hash to generate sharing links or QR Codes without a database.
+* **🧩 Smart Merge**: One-click to merge duplicate items, summing up numeric fields while concatenating notes.
+* **🖨️ Print-Ready**: Optimized print styles. Generate clean PDF reports with a single click.
+
+## 🚀 Quick Start
+
+1. Download `index.html` from this repository.
+2. Open it with any modern browser (Chrome, Edge, Firefox, Safari).
+3. Start building your table!
+
+## ⚠️ Important Notes
+
+* **URL Length**: Sharing large datasets via URL Hash might exceed limits in older browsers. For large tables, use the **GitHub Gist Sync** or **JSON/CSV Export** features.
+* **CSV Encoding**: Exports include a BOM (Byte Order Mark) to ensure compatibility with Microsoft Excel (no messy characters).
 
 ---
 *Built with ❤️ via Vue 3 & Tailwind.*
