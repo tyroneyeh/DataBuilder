@@ -154,10 +154,6 @@
                         <option v-for="key in savedKeysList" :key="key" :value="key"></option>
                     </datalist>
                 </div>
-                <div class="flex flex-wrap w-full sm:w-auto justify-between">
-                    <button @click="backupToGist" v-if="githubToken.trim()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
-                    <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
-                </div>
             </div>
 
             <div class="w-full sm:w-auto text-right sm:text-left flex flex-wrap justify-end sm:justify-start gap-1">
@@ -533,7 +529,11 @@
                 <button @click="triggerPrint" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
 
                 <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
-                    <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between">
+                    <div class="flex flex-wrap w-full sm:w-auto justify-center gap-4">
+                        <button @click="backupToGist" v-if="githubToken.trim()" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
+                        <button @click="restoreFromGist" v-if="gistId.trim()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
+                    </div>
+                    <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between mt-4">
                         <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
                         <span class="text-gray-400 hover:text-white transition-colors focus:outline-none" title="Settings">⚙️</span>
                     </div>
