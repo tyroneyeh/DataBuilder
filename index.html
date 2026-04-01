@@ -668,6 +668,7 @@
     <script type="module">
         import { createApp, ref, shallowRef, triggerRef, computed, watch, nextTick, toRaw, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
 
+// #region Translations
         const translations = {
             "zh-TW": {
                 "TY's Data Builder": "TY的資料表計算器",
@@ -2811,6 +2812,7 @@
                 "Yearly": "Ročně"
             }
         }
+// #endregion
 
         const browserLang = navigator.language || navigator.userLanguage
         const lowerLang = browserLang.toLowerCase()
