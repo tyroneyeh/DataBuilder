@@ -214,17 +214,17 @@
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Daily') }}
                             </button>
-                            <button @click="timeUnit = 'week'; updateChart()"
+                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'week'; updateChart()"
                                     :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Weekly') }}
                             </button>
-                            <button @click="timeUnit = 'month'; updateChart()"
+                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'month'; updateChart()"
                                     :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Monthly') }}
                             </button>
-                            <button @click="timeUnit = 'quarter'; updateChart()"
+                            <button v-if="monthFilters.length > 6" @click="timeUnit = 'quarter'; updateChart()"
                                     :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Quarterly') }}
@@ -2968,7 +2968,7 @@
                 const selectedChartDateColId = ref('')
                 const hasTrendData = ref(false)
                 const yearFilters = ref([])
-                const monthFilters = ref(Array.from({ length: 12 }, (_, i) => ({ month: i + 1, active: true })))
+                const monthFilters = ref([])
 
                 const confirmModal = ref({
                     isOpen: false,
@@ -4441,6 +4441,7 @@
 
                 const refreshYearFilters = () => {
                     const yearsInData = new Set()
+                    const monthsInData = new Set()
                     const dateCols = columns.value.filter(c => c.type === 'date')
                     rows.value.forEach(row => {
                         dateCols.forEach(col => {
@@ -4448,14 +4449,19 @@
                                 const d = new Date(row[col.id])
                                 if (!isNaN(d.getTime())) {
                                     yearsInData.add(d.getFullYear())
+                                    monthsInData.add(d.getMonth() + 1)
                                 }
                             }
                         })
                     })
-                    const sortedYears = Array.from(yearsInData).sort((a, b) => b - a)
+                    const sortedYears = Array.from(yearsInData).sort((a, b) => a - b)
                     yearFilters.value = sortedYears.map(y => {
                         const existing = yearFilters.value.find(f => f.year === y)
                         return { year: y, active: existing ? existing.active : true }
+                    })
+                    monthFilters.value = Array.from(monthsInData).map(m => {
+                        const existing = monthFilters.value.find(f => f.month === m)
+                        return { month: m, active: existing ? existing.active : true }
                     })
                 }
 
