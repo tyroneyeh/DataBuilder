@@ -3228,20 +3228,14 @@
                     }
 
                     const hashStr = window.location.hash.slice(1)
-                    if (hashStr) {
+                    if (hashStr && hashStr.startsWith('data:')) {
                         try {
-                            const safeBase64 = decodeURIComponent(hashStr)
+                            const safeBase64 = decodeURIComponent(hashStr.slice(5))
                             const jsonString = await decompressFromBase64(safeBase64)
                             hashData = JSON.parse(jsonString)
                             window.history.replaceState(null, null, window.location.pathname)
                         } catch (e) {
-                            try {
-                                console.info('Hash error', e)
-                                hashData = JSON.parse(decodeURIComponent(atob(hashStr)))
-                                window.history.replaceState(null, null, window.location.pathname)
-                            } catch (error_) {
-                                console.error('Hash error', error_)
-                            }
+                            console.info('Hash error', e)
                         }
                     }
 
@@ -3621,7 +3615,7 @@
                         const jsonString = JSON.stringify(payload)
                         const compressedBase64 = await compressToBase64(jsonString)
                         const encoded = encodeURIComponent(compressedBase64)
-                        shareLink.value = `${window.location.origin}${window.location.pathname}#${encoded}`
+                        shareLink.value = `${window.location.origin}${window.location.pathname}#data:${encoded}`
 
                         QRCode.toDataURL(shareLink.value, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                             if (!err) qrCodeUrl.value = url
