@@ -241,6 +241,13 @@
 
                         <div class="relative h-64 w-full md:w-1/2 flex justify-center items-center">
                             <canvas id="expenseChart" class="z-10"></canvas>
+                            <div id="centerTooltip"
+                                class="absolute pointer-events-none opacity-0 z-10"
+                                style="left: 0; top: 0; transition: opacity 0.2s ease, transform 0.1s ease-out; will-change: transform, opacity">
+                                <div class="bg-[rgba(0,0,0,0.7)] text-white text-xs rounded px-3 py-2 font-sans shadow-lg">
+                                    <div class="text-sm font-bold mt-1" id="centerTooltipValue">0</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="w-full flex flex-col px-5">
@@ -3021,6 +3028,7 @@
                 let filterClickTimer = null
                 let filterClickCount = 0
                 let lastFilterClick = null
+                let isCenterTooltipVisible = false
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -4153,6 +4161,49 @@
                         ctx.fillStyle = isDarkMode ? '#f3f4f6' : '#1f2937'
                         ctx.fillText(formatNumber(total), centerX, centerY + 15)
                         ctx.restore()
+                    },
+                    afterEvent(chart, args) {
+                        const event = args.event;
+                        const tooltipEl = document.getElementById('centerTooltip')
+
+                        if (!tooltipEl) return;
+
+                        if (event.type === 'mouseout') {
+                            tooltipEl.style.opacity = '0'
+                            isCenterTooltipVisible = false
+                            return;
+                        }
+
+                        if (event.type === 'mousemove') {
+                            const meta = chart.getDatasetMeta(0)
+                            if (!meta.data || meta.data.length === 0) return
+
+                            const firstSlice = meta.data[0]
+                            const centerX = firstSlice.x
+                            const centerY = firstSlice.y
+                            const innerRadius = firstSlice.innerRadius
+                            const distance = Math.sqrt(Math.pow(event.x - centerX, 2) + Math.pow(event.y - centerY, 2))
+
+                            if (distance < innerRadius) {
+                                chart.canvas.style.cursor = 'pointer'
+                                if (!isCenterTooltipVisible) {
+                                    const totalSum = chart.data.datasets[0].data.reduce((a, b) => a + b, 0)
+                                    document.getElementById('centerTooltipValue').textContent = totalSum.toLocaleString()
+                                    tooltipEl.style.opacity = '1'
+                                    isCenterTooltipVisible = true
+                                }
+                                requestAnimationFrame(() => {
+                                    tooltipEl.style.transform = `translate3d(calc(-50% + ${event.x}px), calc(-100% + ${event.y - 10}px), 0)`
+                                })
+
+                            } else {
+                                chart.canvas.style.cursor = 'default'
+                                if (isCenterTooltipVisible) {
+                                    tooltipEl.style.opacity = '0'
+                                    isCenterTooltipVisible = false
+                                }
+                            }
+                        }
                     }
                 }
 
