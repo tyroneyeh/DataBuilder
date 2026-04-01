@@ -3029,6 +3029,7 @@
                 let filterClickCount = 0
                 let lastFilterClick = null
                 let isCenterTooltipVisible = false
+                let cachedTotalSum = 0
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -4143,7 +4144,13 @@
                             ctx.restore()
                             return
                         }
-                        const total = dataset.data.reduce((sum, val) => sum + val, 0)
+
+                        cachedTotalSum = 0
+                        dataset.data.forEach((val, index) => {
+                            if (chart.getDataVisibility(index)) {
+                                cachedTotalSum += val
+                            }
+                        })
                         ctx.textBaseline = 'middle'
                         ctx.textAlign = 'center'
                         const centerX = (left + right) / 2
@@ -4159,7 +4166,7 @@
                         const fontSize = (height / 110).toFixed(2)
                         ctx.font = `bold ${fontSize}em sans-serif`
                         ctx.fillStyle = isDarkMode ? '#f3f4f6' : '#1f2937'
-                        ctx.fillText(formatNumber(total), centerX, centerY + 15)
+                        ctx.fillText(formatNumber(cachedTotalSum), centerX, centerY + 15)
                         ctx.restore()
                     },
                     afterEvent(chart, args) {
@@ -4187,8 +4194,7 @@
                             if (distance < innerRadius) {
                                 chart.canvas.style.cursor = 'pointer'
                                 if (!isCenterTooltipVisible) {
-                                    const totalSum = chart.data.datasets[0].data.reduce((a, b) => a + b, 0)
-                                    document.getElementById('centerTooltipValue').textContent = totalSum.toLocaleString()
+                                    document.getElementById('centerTooltipValue').textContent = cachedTotalSum.toLocaleString()
                                     tooltipEl.style.opacity = '1'
                                     isCenterTooltipVisible = true
                                 }
