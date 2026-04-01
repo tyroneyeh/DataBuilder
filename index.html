@@ -2459,6 +2459,11 @@
                 let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
                 let resizeObserver = null
+                let legendClickTimer = null
+                let legendClickCount = 0
+                let filterClickTimer = null
+                let filterClickCount = 0
+                let lastFilterClick = null
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -3638,12 +3643,48 @@
                 }
 
                 const toggleLegend = async (index) => {
-                    if (expenseChart.value) {
-                        expenseChart.value.toggleDataVisibility(index)
-                        expenseChart.value.update()
+                    legendClickCount++
+                    if (legendClickCount === 1) {
+                        legendClickTimer = setTimeout(async () => {
+                            legendClickCount = 0
+                            if (expenseChart.value) {
+                                expenseChart.value.toggleDataVisibility(index)
+                                expenseChart.value.update()
+                            }
+                            await nextTick()
+                            updateChart()
+                        }, 250)
+                    } else if (legendClickCount === 2) {
+                        clearTimeout(legendClickTimer)
+                        legendClickCount = 0
+                        if (expenseChart.value) {
+                            const chart = expenseChart.value
+                            const totalItems = chart.data.labels.length
+                            let isAlreadyIsolated = true
+                            for (let i = 0; i < totalItems; i++) {
+                                const currentVisible = chart.getDataVisibility(i)
+                                if (i === index && !currentVisible) isAlreadyIsolated = false
+                                if (i !== index && currentVisible) isAlreadyIsolated = false
+                            }
+                            for (let i = 0; i < totalItems; i++) {
+                                const currentVisible = chart.getDataVisibility(i)
+                                let targetVisibility
+                                if (isAlreadyIsolated) {
+                                    targetVisibility = true
+                                } else {
+                                    targetVisibility = (i === index)
+                                }
+
+                                if (currentVisible !== targetVisibility) {
+                                    chart.toggleDataVisibility(i)
+                                }
+                            }
+                            chart.update()
+                        }
+
+                        await nextTick()
+                        updateChart()
                     }
-                    await nextTick()
-                    updateChart()
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
@@ -3788,14 +3829,44 @@
                 }
 
                 const toggleFilter = async (type, value) => {
+                    const currentClick = `${type}-${value}`
+                    if (lastFilterClick !== currentClick) {
+                        clearTimeout(filterClickTimer)
+                        filterClickCount = 0
+                        lastFilterClick = currentClick
+                    }
+                    filterClickCount++
                     const targetArray = type === 'month' ? monthFilters.value : yearFilters.value
                     const matchKey = type === 'month' ? 'month' : 'year'
-                    const item = targetArray.find(x => x[matchKey] === value)
-                    if (item) {
-                        item.active = !item.active
+                    if (filterClickCount === 1) {
+                        filterClickTimer = setTimeout(async () => {
+                            filterClickCount = 0
+                            lastFilterClick = null
+                            const item = targetArray.find(x => x[matchKey] === value)
+                            if (item) {
+                                item.active = !item.active
+                            }
+                            await nextTick()
+                            updateChart()
+                        }, 250)
+                    } else if (filterClickCount === 2) {
+                        clearTimeout(filterClickTimer)
+                        filterClickCount = 0
+                        lastFilterClick = null
+                        const isAlreadyIsolated = targetArray.every(x => {
+                            if (x[matchKey] === value) return x.active === true
+                            else return x.active === false
+                        })
+                        targetArray.forEach(x => {
+                            if (isAlreadyIsolated) {
+                                x.active = true
+                            } else {
+                                x.active = (x[matchKey] === value)
+                            }
+                        })
+                        await nextTick()
+                        updateChart()
                     }
-                    await nextTick()
-                    updateChart()
                 }
 
                 const refreshYearFilters = () => {
