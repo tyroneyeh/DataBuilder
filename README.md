@@ -8,6 +8,8 @@
 
 **🔗 立即使用 (Live Demo): [https://ty-db.pages.dev](https://ty-db.pages.dev)**
 
+![TY's Data Builder - TY的資料表計算器](https://ty-db.pages.dev/databuilder.png)
+
 ---
 
 ## ✨ 核心特色 (Features)
