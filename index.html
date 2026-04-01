@@ -544,11 +544,11 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                                     <div class="flex flex-col">
                                         <span class="text-xs text-gray-400 mb-1">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
-                                        <input ref="githubTokenInput" v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                        <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="text-xs text-gray-400 mb-1">{{ translate('Gist ID (Leave blank to create new)') }}</span>
-                                        <input ref="gistIdInput" v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                        <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
                                     </div>
                                 </div>
                                 <div class="text-gray-100 mt-2 space-y-1">
@@ -2872,8 +2872,6 @@
                 const githubToken = ref(localStorage.getItem('ty_github_token') || '')
                 const gistId = ref(localStorage.getItem('ty_gist_id') || '')
                 const isGistSettingsOpen = ref(false)
-                const githubTokenInput = ref(null)
-                const gistIdInput = ref(null)
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -3228,14 +3226,19 @@
                     }
 
                     const hashStr = window.location.hash.slice(1)
-                    if (hashStr && hashStr.startsWith('data:')) {
+                    if (hashStr) {
                         try {
-                            const safeBase64 = decodeURIComponent(hashStr.slice(5))
-                            const jsonString = await decompressFromBase64(safeBase64)
-                            hashData = JSON.parse(jsonString)
-                            window.history.replaceState(null, null, window.location.pathname)
+                            if (hashStr.startsWith('data:')) {
+                                const safeBase64 = decodeURIComponent(hashStr.slice(5))
+                                const jsonString = await decompressFromBase64(safeBase64)
+                                hashData = JSON.parse(jsonString)
+                                window.history.replaceState(null, null, window.location.pathname)
+                            } else if (hashStr.startsWith('gist:')) {
+                                gistId.value = hashStr.slice(5)
+                            }
                         } catch (e) {
                             console.info('Hash error', e)
+                            return
                         }
                     }
 
@@ -4664,9 +4667,7 @@
                     gistId,
                     backupToGist,
                     restoreFromGist,
-                    isGistSettingsOpen,
-                    githubTokenInput,
-                    gistIdInput
+                    isGistSettingsOpen
                 }
             }
         }).mount('#app')
