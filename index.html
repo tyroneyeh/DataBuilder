@@ -1605,6 +1605,7 @@
 
                 const scrollToPosition = async (direction) => {
                     if (!tableContainer.value) return
+                    tableContainer.value.scrollIntoView()
                     if (direction === 'bottom') {
                         const total = filteredRows.value.length
                         windowStart.value = Math.max(0, total - 20)
