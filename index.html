@@ -397,7 +397,6 @@
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 py-2 sm:py-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
-                                :for="`input-${row.id}-${col.id}`"
                                 @click.stop.prevent="col.type === 'category' && openCategory(inputRefs[`${row.id}-${col.id}`])"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
@@ -435,7 +434,6 @@
 
                                 <template v-else>
                                     <input
-                                        :id="'input-' + row.id + '-' + col.id"
                                         :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                         v-model="row[col.id]"
                                         :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
