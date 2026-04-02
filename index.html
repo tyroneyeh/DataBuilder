@@ -891,6 +891,7 @@
         }
 
         const currentLanguage = ref(localStorage.getItem('lang') || initialLang)
+        document.documentElement.lang = currentLanguage.value
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         const translate = (key) => {
