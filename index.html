@@ -390,7 +390,14 @@
 
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 py-2 sm:py-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
-                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0">{{ col.label }}</span>
+                            <label v-if="!isPrinting" 
+                                @click.prevent="col.type === 'category' ? openDatalistWithoutKeyboard('mobile-input-' + row.id + '-' + col.id) : null"
+                                class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
+                                :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
+                                :data-tooltip="col.type === 'category' ? (translate('Click to open list') || '點擊展開選單') : null">
+                                {{ col.label }}
+                                <span v-if="col.type === 'category'" class="text-xs ml-1 opacity-50">▼</span>
+                            </label>
 
                             <div v-if="col.type === 'checkbox'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1">
                                 <input v-if="!isPrinting"
@@ -418,7 +425,7 @@
 
                                 <template v-else>
                                     <input
-                                        :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                        :id="'mobile-input-' + row.id + '-' + col.id" :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                         v-model="row[col.id]"
                                         :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
                                         :inputmode="col.type === 'number' ? 'decimal' : 'text'"
@@ -4842,6 +4849,25 @@
                     isInitializing = false
                 })
 
+                const openDatalistWithoutKeyboard = (inputId) => {
+                    const inputEl = document.getElementById(inputId)
+                    if (!inputEl) return
+                    inputEl.setAttribute('inputmode', 'none')
+                    inputEl.focus()
+                    if (typeof inputEl.showPicker === 'function') {
+                        try {
+                            inputEl.showPicker()
+                        } catch (e) {
+                            console.warn('showPicker error', e)
+                        }
+                    }
+                    const restoreKeyboard = () => {
+                        inputEl.removeAttribute('inputmode')
+                        inputEl.removeEventListener('blur', restoreKeyboard)
+                    }
+                    inputEl.addEventListener('blur', restoreKeyboard)
+                }
+
                 return {
                     isProcessing,
                     currentLanguage,
@@ -4940,7 +4966,8 @@
                     backupToGist,
                     restoreFromGist,
                     isGistSettingsOpen,
-                    timeUnit
+                    timeUnit,
+                    openDatalistWithoutKeyboard
                 }
             }
         }).mount('#app')
