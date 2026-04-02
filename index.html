@@ -390,7 +390,7 @@
 
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 py-2 sm:py-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
-                            <label v-if="!isPrinting" 
+                            <label v-if="!isPrinting"
                                 @click.prevent="col.type === 'category' ? openDatalistWithoutKeyboard('mobile-input-' + row.id + '-' + col.id) : null"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
@@ -3025,6 +3025,7 @@
                 const gistId = ref(localStorage.getItem('ty_gist_id') || '')
                 const isGistSettingsOpen = ref(false)
                 const timeUnit = ref('day')
+                const selectedChartDate = ref(null)
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -3159,13 +3160,24 @@
                 })
 
                 const filteredRows = computed(() => {
-                    if (!selectedChartCatColId.value || !customLegendItems.value.length) return dateFilteredRows.value
+                    const chartDate = selectedChartDate.value
+                    const catColId = selectedChartCatColId.value
+                    const legendItems = customLegendItems.value
+                    let result = dateFilteredRows.value
+                    if (chartDate) {
+                        result = result.filter(row => row[selectedChartDateColId.value] === chartDate)
+                    }
+                    if (!catColId || !legendItems.length) {
+                        return result
+                    }
                     const hiddenCategories = new Set(
-                        customLegendItems.value.filter(item => item.hidden).map(item => item.text)
+                        legendItems.filter(item => item.hidden).map(item => item.text)
                     )
-                    if (hiddenCategories.size === 0) return dateFilteredRows.value
-                    return dateFilteredRows.value.filter(row => {
-                        const catValue = row[selectedChartCatColId.value]?.trim() || translate('Uncategorized')
+                    if (hiddenCategories.size === 0) {
+                        return result
+                    }
+                    return result.filter(row => {
+                        const catValue = row[catColId]?.trim() || translate('Uncategorized')
                         return !hiddenCategories.has(catValue)
                     })
                 })
@@ -4395,13 +4407,39 @@
                                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
                                     fill: true,
                                     tension: 0.4,
-                                    pointBackgroundColor: '#fff',
-                                    pointBorderColor: '#6366f1',
-                                    pointBorderWidth: 2,
-                                    pointRadius: 4
+                                    pointBackgroundColor: (context) => {
+                                        const label = context.chart.data.labels[context.dataIndex]
+                                        return label === selectedChartDate.value ? '#ef4444' : '#fff'
+                                    },
+                                    pointBorderColor: (context) => {
+                                        const label = context.chart.data.labels[context.dataIndex]
+                                        return label === selectedChartDate.value ? '#ef4444' : '#6366f1'
+                                    },
+                                    pointBorderWidth: (context) => {
+                                        const label = context.chart.data.labels[context.dataIndex]
+                                        return label === selectedChartDate.value ? 3 : 2
+                                    },
+                                    pointRadius: (context) => {
+                                        const label = context.chart.data.labels[context.dataIndex]
+                                        return label === selectedChartDate.value ? 8 : 4
+                                    }
                                 }]
                             },
                             options: {
+                                onClick: (e, elements, chart) => {
+                                    if (elements.length > 0) {
+                                        const clickedLabel = chart.data.labels[elements[0].index]
+                                        if (selectedChartDate.value === clickedLabel) {
+                                            selectedChartDate.value = null
+                                        } else {
+                                            selectedChartDate.value = clickedLabel
+                                        }
+                                        chart.update()
+                                    }
+                                },
+                                onHover: (e, elements) => {
+                                    e.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default'
+                                },
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: {
@@ -4969,7 +5007,8 @@
                     restoreFromGist,
                     isGistSettingsOpen,
                     timeUnit,
-                    openDatalistWithoutKeyboard
+                    openDatalistWithoutKeyboard,
+                    selectedChartDate
                 }
             }
         }).mount('#app')
