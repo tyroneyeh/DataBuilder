@@ -447,7 +447,7 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                        @focus="col.type === 'category' && $event.target.select()"
+                                        @click="col.type === 'category' && openCategory(inputRefs[`${row.id}-${col.id}`])"
                                         @blur="onDataEdited && closeCategory(inputRefs[`${row.id}-${col.id}`])"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
@@ -2951,9 +2951,10 @@
                 }
 
                 const closeCategory = (inputEl) => {
-                    if (!inputEl) return
+                    if (!inputEl || !tempKey.value) return
                     inputEl.removeAttribute('inputmode')
                     inputEl.value = tempKey.value
+                    tempKey.value = ''
                 }
 
                 onMounted(async () => {
