@@ -4128,11 +4128,16 @@
                         }
 
                         const rawVal = row[colId]
-                        if (!rawVal) return
 
-                        let label = type === 'date'
-                            ? getDateGroupKey(rawVal, timeUnit.value)
-                            : String(rawVal).trim()
+                        let label
+                        if (type === 'date') {
+                            if (!rawVal) return
+                            label = getDateGroupKey(rawVal, timeUnit.value)
+                        } else {
+                            label = rawVal && String(rawVal).trim() !== ''
+                                ? String(rawVal).trim()
+                                : translate('Uncategorized')
+                        }
 
                         let val = parseFloat(row[numCol.id]) || 0
                         if (numCol.type === 'multiply') val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
