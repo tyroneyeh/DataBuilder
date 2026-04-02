@@ -1646,10 +1646,15 @@
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
-                            targetInput?.focus()
+                            if (targetInput) {
+                                targetInput.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                })
+                                targetInput.focus()
+                            }
                         }
                     }, 50)
-                    scrollToPosition('bottom')
 
                 }
 
