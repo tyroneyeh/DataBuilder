@@ -21,6 +21,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js"></script>
     <style>
         [v-cloak] { display: none; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -456,6 +457,17 @@
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                     </div>
+                                    <button
+                                        @click.stop="openScanner(row, col)"
+                                        type="button"
+                                        class="absolute inset-y-0 flex items-center text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors duration-200 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
+                                        :class="col.type === 'number' ? 'right-6 mr-8' : 'right-0'"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
                                 </template>
                             </div>
                         </td>
@@ -562,6 +574,20 @@
                     <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
                 </datalist>
             </template>
+        </div>
+        <div v-if="isScannerOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden relative">
+                <div class="bg-indigo-600 px-4 py-3 flex justify-between items-center text-white">
+                    <h3 class="font-bold">連續掃描模式</h3>
+                    <button @click="closeScanner" class="text-white hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="reader" class="w-full bg-black" style="min-height: 300px"></div>
+                <div class="p-4 text-center text-sm text-gray-500 font-bold">
+                    掃描成功後將自動填入並【自動新增下一行】
+                </div>
+            </div>
         </div>
         <div class="mt-6 border-t p-4" v-if="!isPrinting || isPrinting && globalNotes">
             <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
@@ -1076,6 +1102,9 @@
                 const timeUnit = ref('day')
                 const selectedChartDate = ref(null)
                 const globalNotes = ref('')
+                const isScannerOpen = ref(false)
+                const scanningTarget = ref(null)
+                const lastScannedText = ref('')
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -1088,6 +1117,7 @@
                 let lastFilterClick = null
                 let isCenterTooltipVisible = false
                 let cachedTotalSum = 0
+                let html5QrCode = null
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -2967,6 +2997,84 @@
                     tempKey.value = ''
                 }
 
+                const openScanner = async (row, col) => {
+                    scanningTarget.value = { row, col }
+                    isScannerOpen.value = true
+                    lastScannedText.value = ''
+
+                    await nextTick()
+
+                    html5QrCode = new window.Html5Qrcode("reader")
+
+                    const config = {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 },
+                        aspectRatio: 1.0
+                    }
+
+                    html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        async (decodedText) => {
+                            if (decodedText === lastScannedText.value) return
+                            lastScannedText.value = decodedText
+
+                            playBeepSound()
+
+                            if (scanningTarget.value) {
+                                const { row, col } = scanningTarget.value
+                                row[col.id] = decodedText
+                                onDataEdited()
+                                const currentIndex = rows.value.findIndex(r => r.id === row.id)
+                                if (currentIndex !== -1) {
+                                    await copyRow(currentIndex)
+                                    scanningTarget.value = {
+                                        row: rows.value[currentIndex + 1],
+                                        col: col
+                                    }
+                                }
+                            }
+
+                            setTimeout(() => { lastScannedText.value = ''; }, 2000)
+                        },
+                        (errorMessage) => { }
+                    ).catch(err => {
+                        console.error("相機啟動失敗:", err)
+                        alert("無法啟動相機，請確認已給予瀏覽器相機權限！")
+                        closeScanner()
+                    })
+                }
+
+                const closeScanner = () => {
+                    if (html5QrCode) {
+                        html5QrCode.stop().then(() => {
+                            html5QrCode.clear()
+                            html5QrCode = null
+                            isScannerOpen.value = false
+                            scanningTarget.value = null
+                        }).catch(err => {
+                            console.error("關閉相機失敗:", err)
+                            isScannerOpen.value = false
+                        })
+                    } else {
+                        isScannerOpen.value = false
+                    }
+                }
+
+                const playBeepSound = () => {
+                    try {
+                        const context = new (window.AudioContext || window.webkitAudioContext)()
+                        const oscillator = context.createOscillator()
+                        oscillator.type = 'sine'
+                        oscillator.frequency.setValueAtTime(800, context.currentTime)
+                        oscillator.connect(context.destination)
+                        oscillator.start()
+                        oscillator.stop(context.currentTime + 0.1)
+                    } catch (e) {
+                        console.warn("無法播放音效", e)
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -3112,7 +3220,14 @@
                     enterInput,
                     saveInput,
                     selectedChartDate,
-                    globalNotes
+                    globalNotes,
+                    isScannerOpen,
+                    openScanner,
+                    closeScanner,
+                    scanningTarget,
+                    lastScannedText,
+                    playBeepSound
+
                 }
             }
         }).mount('#app')
