@@ -447,10 +447,6 @@
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
                                     </div>
-
-                                    <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
-                                        <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
-                                    </datalist>
                                 </template>
                             </div>
                         </td>
@@ -552,6 +548,11 @@
                     </tr>
                 </tfoot>
             </table>
+            <template v-for="col in columns" :key="'global-list-' + col.id">
+                <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
+                    <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
+                </datalist>
+            </template>
         </div>
 
         <div v-if="!isPrinting" class="flex flex-col p-2 gap-4">
