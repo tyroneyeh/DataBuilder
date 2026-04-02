@@ -1785,10 +1785,10 @@
                     onDataEdited()
                 }
 
-                const copyRow = async (rowIndex, ignoreDate = 0) => {
+                const copyRow = async (index, ignoreDate = 0) => {
                     closeActionMenu()
 
-                    const originalRow = rows.value[rowIndex]
+                    const originalRow = rows.value[index]
                     if (!originalRow) return
 
                     const newRowId = generateId('row')
@@ -1811,8 +1811,10 @@
                             }
                         }
                         rows.value.push(clonedRow)
+                        scrollToPosition('bottom')
                     } else {
-                        rows.value.splice(rowIndex + 1, 0, clonedRow)
+                        rows.value.splice(index + 1, 0, clonedRow)
+                        scrollToPosition(1)
                     }
 
                     onDataEdited()
@@ -1820,11 +1822,13 @@
 
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
-                        const targetInput = inputRefs.value[`${newRowId}-${firstEditableCol.id}`]
-                        if (targetInput) {
-                            targetInput.focus()
-                            targetInput.select()
-                        }
+                        setTimeout(() => {
+                            const targetInput = inputRefs.value[`${newRowId}-${firstEditableCol.id}`]
+                            if (targetInput) {
+                                targetInput.focus()
+                                targetInput.select()
+                            }
+                        }, 50)
                     }
                 }
 
