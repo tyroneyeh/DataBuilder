@@ -355,7 +355,7 @@
                             <span v-if="editingColId !== col.id"
                                 @click="startEditingCol(col.id)"
                                 class="cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                :data-tooltip="translate('Click to rename')">
+                                :data-tooltip="col.label">
                                 {{ col.label }}
                             </span>
 
