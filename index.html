@@ -394,7 +394,7 @@
                                 @click.prevent="col.type === 'category' ? openDatalistWithoutKeyboard('mobile-input-' + row.id + '-' + col.id) : null"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
-                                :data-tooltip="col.type === 'category' ? (translate('Click to open list') || '點擊展開選單') : null">
+                                :data-tooltip="col.type === 'category' ? translate('Click to open list') : null">
                                 {{ col.label }}
                                 <span v-if="col.type === 'category'" class="text-xs ml-1 opacity-50">▼</span>
                             </label>
@@ -3165,7 +3165,7 @@
                     const legendItems = customLegendItems.value
                     let result = dateFilteredRows.value
                     if (chartDate) {
-                        result = result.filter(row => row[selectedChartDateColId.value] === chartDate)
+                        result = result.filter(row => getDateGroupKey(row[selectedChartDateColId.value], timeUnit.value) === chartDate)
                     }
                     if (!catColId || !legendItems.length) {
                         return result
