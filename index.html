@@ -1575,7 +1575,7 @@
 
                 const addColumn = () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
-                    if (newColType.value.includes('multiply')) {
+                    if (newColType.value.startsWith('multiply')) {
                         if (newColType.value === 'multiply3' && !formulaC.value) return alert(translate('Please select columns A, B and C!'))
                         else if (!formulaA.value || !formulaB.value) return alert(translate('Please select columns A and B!'))
                         if (newColType.value === 'multiply3' && formulaA.value === formulaB.value || formulaA.value === formulaC.value || formulaB.value === formulaC.value) return alert(translate('Source columns cannot be the same!'))
@@ -1616,6 +1616,8 @@
                                 tableContainer.value.scrollTop = tableContainer.value.scrollHeight
                             }
                         }, 50)
+                    } else if (typeof direction === 'number') {
+                        tableContainer.value.scrollTop += 1
                     } else {
                         tableContainer.value.scrollTop = 0
                     }
@@ -1633,20 +1635,21 @@
                     })
 
                     rows.value = [...rows.value, newRow]
+                    scrollToPosition(1)
                     onDataEdited()
                     if (windowEnd.value < rows.value.length) {
                         windowEnd.value = rows.value.length
                     }
 
-                    if (!isMobile) {
-                        await nextTick()
+                    await nextTick()
+                    setTimeout(() => {
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                             targetInput?.focus()
                         }
-                        scrollToPosition('bottom')
-                    }
+                    }, 50)
+                    scrollToPosition('bottom')
 
                 }
 
@@ -1811,7 +1814,7 @@
                             }
                         }
                         rows.value.push(clonedRow)
-                        scrollToPosition('bottom')
+                        scrollToPosition(1)
                     } else {
                         rows.value.splice(index + 1, 0, clonedRow)
                         scrollToPosition(1)
@@ -1825,6 +1828,10 @@
                         setTimeout(() => {
                             const targetInput = inputRefs.value[`${newRowId}-${firstEditableCol.id}`]
                             if (targetInput) {
+                                targetInput.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'center'
+                                })
                                 targetInput.focus()
                                 targetInput.select()
                             }
@@ -2075,7 +2082,7 @@
 
                         let existingCol = columns.value.find(c => c.label === key)
                         if (!existingCol) {
-                            let targetType, targetOpA = null, targetOpB = null
+                            let targetType, targetOpA = null, targetOpB = null, targetOpC = null
 
                             if (parsedColumnMeta[key]) {
                                 const metaStr = parsedColumnMeta[key].type
@@ -2100,7 +2107,8 @@
                                 label: key,
                                 type: targetType,
                                 opA: targetOpA,
-                                opB: targetOpB
+                                opB: targetOpB,
+                                opC: targetOpC
                             })
                         }
                     })
