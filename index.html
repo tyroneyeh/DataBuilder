@@ -437,8 +437,8 @@
                                         :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                         v-model="row[col.id]"
                                         :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
-                                        :inputmode="col.type === 'number' ? 'decimal' : 'text'"
-                                        :list="col.type === 'category' ? 'datalist-' + col.id : null"
+                                        :inputmode="col.type === 'number' && 'decimal'"
+                                        :list="col.type === 'category' && 'datalist-' + col.id"
                                         :data-tooltip="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
                                         class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
@@ -557,7 +557,7 @@
                     </tr>
                 </tfoot>
             </table>
-            <template v-for="col in columns" :key="'global-list-' + col.id">
+            <template v-for="col in columns">
                 <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
                     <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
                 </datalist>
