@@ -3023,6 +3023,7 @@
                         qrbox: (viewfinderWidth, viewfinderHeight) => ({ width: viewfinderWidth * 0.8, height: 200 }),
                         aspectRatio: 1.0,
                         videoConstraints: {
+                            facingMode: "environment",
                             width: { min: 1280, ideal: 1920 },
                             height: { min: 720, ideal: 1080 },
                             advanced: [{ focusMode: "continuous" }]
