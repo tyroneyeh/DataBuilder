@@ -437,8 +437,8 @@
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
-                                        @click="col.type === 'category' && $event.target.setAttribute('inputmode', 'text')"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
+                                        @click="col.type === 'category' && $event.target.setAttribute('inputmode', 'text')"
                                         @focus="col.type === 'category' && $event.target.select()"
                                         @blur="onDataEdited"
                                         @keydown="focusNextInput($event, row.id, col.id)"
