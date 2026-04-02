@@ -1831,7 +1831,7 @@
                         if (gistValue) {
                             shareLink.value = `${window.location.origin}${window.location.pathname}#gist:${gistValue}`
                         } else {
-                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value, note: tableNote.value }
+                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value, note: globalNotes.value }
                             const jsonString = JSON.stringify(payload)
                             const compressedBase64 = await compressToBase64(jsonString)
                             const encoded = encodeURIComponent(compressedBase64)
@@ -1889,7 +1889,7 @@
                         title: tableTitle.value,
                         columns: columns.value,
                         rows: getCleanData(),
-                        note: tableNote.value
+                        note: globalNotes.value
                     }
 
                     outputToScreen.value = JSON.stringify(payload, null, 2)
