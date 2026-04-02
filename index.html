@@ -207,35 +207,6 @@
                         >
                             {{ m.month }}
                         </button>
-
-                        <div class="flex justify-end space-x-1">
-                            <button @click="timeUnit = 'day'; updateChart()"
-                                    :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Daily') }}
-                            </button>
-                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'week'; updateChart()"
-                                    :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Weekly') }}
-                            </button>
-                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'month'; updateChart()"
-                                    :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Monthly') }}
-                            </button>
-                            <button v-if="monthFilters.length > 6" @click="timeUnit = 'quarter'; updateChart()"
-                                    :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Quarterly') }}
-                            </button>
-                            <button v-if="yearFilters.length > 1" @click="timeUnit = 'year'; updateChart()"
-                                    :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Yearly') }}
-                            </button>
-                        </div>
-
                     </div>
                     <div class="flex flex-col md:flex-row items-center w-full max-w-2xl mx-auto">
 
@@ -308,6 +279,34 @@
                                     {{ col.label }}
                                 </option>
                             </select>
+                        </div>
+
+                        <div class="flex justify-end space-x-1">
+                            <button @click="timeUnit = 'day'; updateChart()"
+                                    :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Daily') }}
+                            </button>
+                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'week'; updateChart()"
+                                    :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Weekly') }}
+                            </button>
+                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'month'; updateChart()"
+                                    :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Monthly') }}
+                            </button>
+                            <button v-if="monthFilters.length > 6" @click="timeUnit = 'quarter'; updateChart()"
+                                    :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Quarterly') }}
+                            </button>
+                            <button v-if="yearFilters.length > 1" @click="timeUnit = 'year'; updateChart()"
+                                    :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                    class="px-3 py-1 text-xs rounded-md transition-colors">
+                                {{ translate('Yearly') }}
+                            </button>
                         </div>
                     </div>
                     <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
