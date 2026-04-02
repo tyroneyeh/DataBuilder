@@ -400,7 +400,7 @@
                                 @click.stop.prevent="col.type === 'category' && openCategory(inputRefs[`${row.id}-${col.id}`])"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
-                                :data-tooltip="col.type === 'category' ? translate('Click to open list') : null">
+                            >
                                 {{ col.label }}
                                 <span v-if="col.type === 'category'" class="text-xs ml-1 opacity-50">▼</span>
                             </label>
@@ -447,9 +447,8 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                        @click="col.type === 'category' && $event.target.setAttribute('inputmode', 'text')"
                                         @focus="col.type === 'category' && $event.target.select()"
-                                        @blur="onDataEdited"
+                                        @blur="onDataEdited && closeCategory(inputRefs[`${row.id}-${col.id}`])"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
 
@@ -2939,7 +2938,9 @@
                 const openCategory = (inputEl) => {
                     if (!inputEl) return
                     inputEl.setAttribute('inputmode', 'none')
+                    tempKey.value = inputEl.value
                     inputEl.value = ''
+                    inputEl.focus()
                     if (typeof inputEl.showPicker === 'function') {
                         try {
                             inputEl.showPicker()
@@ -2947,6 +2948,12 @@
                             console.warn('showPicker error', e)
                         }
                     }
+                }
+
+                const closeCategory = (inputEl) => {
+                    if (!inputEl) return
+                    inputEl.removeAttribute('inputmode')
+                    inputEl.value = tempKey.value
                 }
 
                 onMounted(async () => {
@@ -3092,6 +3099,7 @@
                     isGistSettingsOpen,
                     timeUnit,
                     openCategory,
+                    closeCategory,
                     selectedChartDate,
                     globalNotes
                 }
