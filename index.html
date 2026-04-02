@@ -554,6 +554,21 @@
                 </datalist>
             </template>
         </div>
+        <div class="mt-6 border-t p-4" v-if="!isPrinting || isPrinting && globalNotes">
+            <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                {{ globalNotes }}
+            </div>
+            <textarea
+                v-else
+                id="global-notes"
+                v-model="globalNotes"
+                rows="1"
+                class="w-full border-gray-300 dark:border-gray-600 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 [field-sizing:content]"
+                :placeholder="translate('Enter details here...')"
+                @input="autoHeight($event.target)"
+                @input="onDataEdited"
+            ></textarea>
+        </div>
 
         <div v-if="!isPrinting" class="flex flex-col p-2 gap-4">
             <div class="flex flex-wrap gap-3">
@@ -1048,6 +1063,7 @@
                 const isGistSettingsOpen = ref(false)
                 const timeUnit = ref('day')
                 const selectedChartDate = ref(null)
+                const globalNotes = ref('')
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -1063,7 +1079,7 @@
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
-                    db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value)})
+                    db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value})
                     localStorage.setItem('lang', currentLanguage.value)
                     await nextTick()
                     updateChart()
@@ -1076,7 +1092,7 @@
                     }
                     localStorage.setItem('ty_gist_id', gistId.value.trim())
                 })
-                watch([currentLanguage, tableTitle, columns, rows], () => {
+                watch([currentLanguage, tableTitle, columns, rows, globalNotes], () => {
                     if (isInitializing) return
                     debouncedSave()
                     shareLink.value = ''
@@ -1408,12 +1424,12 @@
                                 localData = JSON.parse(localData)
                                 db.set(currentStorageKey.value, localData)
                             } catch (e) {
-                                localData = { title: '', columns: [], rows: [] }
+                                localData = { title: '', columns: [], rows: [], note: '' }
                                 console.error('Local data error', e)
                             }
                         }
                     } else {
-                        localData = { title: '', columns: [], rows: [] }
+                        localData = { title: '', columns: [], rows: [], note: '' }
                     }
 
                     const hashStr = window.location.hash.slice(1)
@@ -1466,7 +1482,10 @@
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
 
                     tableTitle.value = hashData?.title || localData.title || translate('My Data Sheets')
-
+                    globalNotes.value = hashData?.note || localData.note || ''
+                    await nextTick()
+                    updateChart()
+                    updateTitle()
                 }
 
                 const startDragging = (type, identifier, event) => {
@@ -1812,7 +1831,7 @@
                         if (gistValue) {
                             shareLink.value = `${window.location.origin}${window.location.pathname}#gist:${gistValue}`
                         } else {
-                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value }
+                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value, note: tableNote.value }
                             const jsonString = JSON.stringify(payload)
                             const compressedBase64 = await compressToBase64(jsonString)
                             const encoded = encodeURIComponent(compressedBase64)
@@ -1869,7 +1888,8 @@
                     const payload = {
                         title: tableTitle.value,
                         columns: columns.value,
-                        rows: getCleanData()
+                        rows: getCleanData(),
+                        note: tableNote.value
                     }
 
                     outputToScreen.value = JSON.stringify(payload, null, 2)
@@ -2737,7 +2757,8 @@
                     const payload = {
                         title: tableTitle.value,
                         columns: toRaw(columns.value),
-                        rows: toRaw(rows.value)
+                        rows: toRaw(rows.value),
+                        note: globalNotes.value
                     }
 
                     const storageKey = currentStorageKey.value || tempKey.value || 'ty-db'
@@ -2808,6 +2829,8 @@
                             tableTitle.value = data.title || ''
                             columns.value = data.columns || []
                             rows.value = data.rows || []
+                            globalNotes.value = data.note || ''
+                            hasDateColumn.value = columns.value.some(column => column.type === 'date')
                         }
                         onDataEdited('both')
                         await nextTick()
@@ -2896,9 +2919,6 @@
                     })
 
                     await loadData()
-                    await nextTick()
-                    updateChart()
-                    updateTitle()
                     initChartColumns()
                     refreshYearFilters()
 
@@ -3037,7 +3057,8 @@
                     isGistSettingsOpen,
                     timeUnit,
                     openDatalistWithoutKeyboard,
-                    selectedChartDate
+                    selectedChartDate,
+                    globalNotes
                 }
             }
         }).mount('#app')
