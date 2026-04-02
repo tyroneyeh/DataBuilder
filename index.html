@@ -447,8 +447,8 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                        @click="col.type === 'category' && openCategory(inputRefs[`${row.id}-${col.id}`], $event)"
-                                        @blur="onDataEdited && closeCategory(inputRefs[`${row.id}-${col.id}`])"
+                                        @click="openCategory(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
+                                        @blur="closeCategory(inputRefs[`${row.id}-${col.id}`])"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
 
@@ -2942,22 +2942,25 @@
                     })
                 }
 
-                const openCategory = (inputEl, event) => {
+                const openCategory = (inputEl, category, event) => {
                     if (!inputEl) return
-                    if (event.target !== inputEl) inputEl.setAttribute('inputmode', 'none')
                     tempKey.value = inputEl.value
-                    inputEl.value = ''
-                    inputEl.focus()
-                    if (typeof inputEl.showPicker === 'function') {
-                        try {
-                            inputEl.showPicker()
-                        } catch (e) {
-                            console.warn('showPicker error', e)
+                    if (category === 'category' && event.target !== inputEl) {
+                        inputEl.setAttribute('inputmode', 'none')
+                        inputEl.value = ''
+                        inputEl.focus()
+                        if (typeof inputEl.showPicker === 'function') {
+                            try {
+                                inputEl.showPicker()
+                            } catch (e) {
+                                console.warn('showPicker error', e)
+                            }
                         }
                     }
                 }
 
                 const closeCategory = (inputEl) => {
+                    if (inputEl?.value !== tempKey.value) onDataEdited()
                     if (!inputEl || !tempKey.value) return
                     inputEl.removeAttribute('inputmode')
                     inputEl.value = tempKey.value
