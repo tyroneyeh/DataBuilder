@@ -447,8 +447,8 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
-                                        @click="openCategory(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
-                                        @blur="closeCategory(inputRefs[`${row.id}-${col.id}`])"
+                                        @click="enterInput(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
+                                        @blur="saveInput(inputRefs[`${row.id}-${col.id}`])"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
 
@@ -2942,7 +2942,7 @@
                     })
                 }
 
-                const openCategory = (inputEl, category, event) => {
+                const enterInput = (inputEl, category, event) => {
                     if (!inputEl) return
                     tempKey.value = inputEl.value
                     if (category === 'category' && event.target !== inputEl) {
@@ -2959,7 +2959,7 @@
                     }
                 }
 
-                const closeCategory = (inputEl) => {
+                const saveInput = (inputEl) => {
                     if (inputEl?.value !== tempKey.value) onDataEdited()
                     if (!inputEl || !tempKey.value) return
                     inputEl.removeAttribute('inputmode')
@@ -3109,8 +3109,8 @@
                     restoreFromGist,
                     isGistSettingsOpen,
                     timeUnit,
-                    openCategory,
-                    closeCategory,
+                    enterInput,
+                    saveInput,
                     selectedChartDate,
                     globalNotes
                 }
