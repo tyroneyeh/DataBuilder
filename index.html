@@ -577,11 +577,6 @@
         </div>
         <div v-if="isScannerOpen" class="fixed bottom-0 left-0 z-50 w-full bg-white rounded-t-2xl shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.2)] overflow-hidden border-t border-gray-300">
             <div class="bg-slate-800 px-4 py-3 flex justify-between items-center text-white text-sm">
-                <div class="flex items-center space-x-2">
-                    <span class="animate-pulse w-2.5 h-2.5 bg-red-500 rounded-full"></span>
-                    <span class="font-bold tracking-wider text-base">連續掃描中</span>
-                </div>
-
                 <button @click="closeScanner" class="text-white hover:text-red-400 bg-slate-700 hover:bg-slate-600 rounded-full p-1 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -589,9 +584,6 @@
 
             <div id="reader" class="w-full bg-black relative" style="max-height: 40vh; overflow: hidden;"></div>
 
-            <div class="bg-gray-100 text-center py-2 text-xs text-gray-500 font-medium">
-                將條碼置於紅框內，掃描成功將自動新增一筆
-            </div>
         </div>
         <div class="mt-6 border-t p-4" v-if="!isPrinting || isPrinting && globalNotes">
             <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
@@ -1122,6 +1114,7 @@
                 let isCenterTooltipVisible = false
                 let cachedTotalSum = 0
                 let html5QrCode = null
+                let audioContext = null
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -1841,7 +1834,7 @@
                         id: newRowId,
                         isExpanded: false
                     }
-                    if (ignoreDate) {
+                    if (ignoreDate || !columns.value.some(col => col.type === 'date')) {
                         const {todayDate, currentTime} = getDate()
                         for (const column of columns.value) {
                             switch (column.type) {
@@ -1853,10 +1846,10 @@
                                     break
                             }
                         }
-                        rows.value.push(clonedRow)
+                        rows.value = [...rows.value, clonedRow]
                         scrollToPosition(1)
                     } else {
-                        rows.value.splice(index + 1, 0, clonedRow)
+                        rows.value = [...rows.value.slice(0, index + 1), clonedRow, ...rows.value.slice(index + 1)]
                         scrollToPosition(1)
                     }
 
@@ -3001,7 +2994,43 @@
                     tempKey.value = ''
                 }
 
+                const unlockAudioForIOS = () => {
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)()
+                    }
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume()
+                    }
+                    const oscillator = audioContext.createOscillator()
+                    const gainNode = audioContext.createGain()
+                    gainNode.gain.value = 0
+                    oscillator.connect(gainNode)
+                    gainNode.connect(audioContext.destination)
+                    oscillator.start(0)
+                    oscillator.stop(audioContext.currentTime + 0.001)
+                }
+
+                const playBeepSound = () => {
+                    if (!audioContext) return
+                    try {
+                        if (audioContext.state === 'suspended') {
+                            audioContext.resume()
+                        }
+
+                        const oscillator = audioContext.createOscillator()
+                        oscillator.type = 'sine'
+                        oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
+
+                        oscillator.connect(audioContext.destination)
+                        oscillator.start()
+                        oscillator.stop(audioContext.currentTime + 0.1)
+                    } catch (e) {
+                        console.warn("playBeepSound error", e)
+                    }
+                }
+
                 const openScanner = async (row, col) => {
+                    unlockAudioForIOS()
                     scanningTarget.value = { row, col }
                     isScannerOpen.value = true
                     lastScannedText.value = ''
@@ -3046,7 +3075,8 @@
                                 onDataEdited()
                                 const currentIndex = rows.value.findIndex(r => r.id === row.id)
                                 if (currentIndex !== -1) {
-                                    await copyRow(currentIndex)
+                                    await copyRow(currentIndex, 1)
+                                    scrollToPosition(1)
                                     scanningTarget.value = {
                                         row: rows.value[currentIndex + 1],
                                         col: col
@@ -3054,12 +3084,12 @@
                                 }
                             }
 
-                            setTimeout(() => { lastScannedText.value = '' }, 2000)
+                            setTimeout(() => { lastScannedText.value = '' }, 3000)
                         },
                         (errorMessage) => { }
                     ).catch(err => {
-                        console.error("相機啟動失敗:", err)
-                        alert("無法啟動相機，請確認已給予瀏覽器相機權限！")
+                        console.error("start scanner error:", err)
+                        alert("Scanner error: " + err)
                         closeScanner()
                     })
                 }
@@ -3072,25 +3102,11 @@
                             isScannerOpen.value = false
                             scanningTarget.value = null
                         }).catch(err => {
-                            console.error("關閉相機失敗:", err)
+                            console.error("close scanner error", err)
                             isScannerOpen.value = false
                         })
                     } else {
                         isScannerOpen.value = false
-                    }
-                }
-
-                const playBeepSound = () => {
-                    try {
-                        const context = new (window.AudioContext || window.webkitAudioContext)()
-                        const oscillator = context.createOscillator()
-                        oscillator.type = 'sine'
-                        oscillator.frequency.setValueAtTime(800, context.currentTime)
-                        oscillator.connect(context.destination)
-                        oscillator.start()
-                        oscillator.stop(context.currentTime + 0.1)
-                    } catch (e) {
-                        console.warn("無法播放音效", e)
                     }
                 }
 
