@@ -1186,18 +1186,20 @@
                 const beepAudioRef = ref(null)
 
                 let isInitializing = true
-                let scrollRAF = null
+                let scrollRAF
                 let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
-                let resizeObserver = null
-                let legendClickTimer = null
+                let resizeObserver
+                let legendClickTimer
                 let legendClickCount = 0
-                let filterClickTimer = null
+                let filterClickTimer
                 let filterClickCount = 0
-                let lastFilterClick = null
+                let lastFilterClick
                 let isCenterTooltipVisible = false
                 let cachedTotalSum = 0
-                let html5QrCode = null
+                let html5QrCode
+                let audioCtx
+                let beepAudioBuffer
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -3147,6 +3149,38 @@
                     tempKey.value = ''
                 }
 
+                const initAudioFromRef = async () => {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+                    if (!beepAudioBuffer && !beepAudioRef.value || !beepAudioRef.value.src) return
+
+                    try {
+                        const response = await fetch(beepAudioRef.value.src)
+                        const arrayBuffer = await response.arrayBuffer()
+                        beepAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+                        console.log("Audio converted successfully")
+
+                    } catch (error) {
+                        console.error("Audio conversion error:", error)
+                    }
+                }
+
+                const playBeep = () => {
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume()
+                    }
+
+                    if (beepAudioBuffer) {
+                        const source = audioCtx.createBufferSource()
+                        source.buffer = beepAudioBuffer
+                        source.connect(audioCtx.destination)
+                        source.start(0)
+                    } else if (beepAudioRef.value) {
+                        beepAudioRef.value.pause()
+                        beepAudioRef.value.currentTime = 0
+                        beepAudioRef.value.play().catch(e => console.warn("play audio error:", e))
+                    }
+                }
+
                 const getFormatsToSupport = () => {
                     switch (selectedScanMode.value) {
                         case '1D_PRODUCT':
@@ -3170,17 +3204,10 @@
                 }
 
                 const openScanner = async () => {
-                    if (beepAudioRef.value) {
-                        beepAudioRef.value.volume = 0
-                        beepAudioRef.value.play().then(() => {
-                            beepAudioRef.value.pause()
-                            beepAudioRef.value.currentTime = 0
-                            beepAudioRef.value.volume = 1
-                        }).catch(err => console.log("play audio error:", err))
 
-                        beepAudioRef.value.currentTime = 0
-                        beepAudioRef.value.play().catch(e => console.log("play audio error:", e))
-                    }
+                    initAudioFromRef()
+                    playBeep()
+
                     isScannerOpen.value = true
                     lastScannedText.value = ''
 
@@ -3212,10 +3239,7 @@
                         config,
                         async (decodedText) => {
                             if (decodedText === lastScannedText.value) return
-                            if (beepAudioRef.value) {
-                                beepAudioRef.value.currentTime = 0
-                                beepAudioRef.value.play().catch(e => console.log("play audio error:", e))
-                            }
+                            playBeep()
                             html5QrCode.pause()
                             if (!await showConfirm(decodedText)) return html5QrCode.resume()
                             html5QrCode.resume()
