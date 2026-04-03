@@ -3153,15 +3153,19 @@
                             if (scanningTarget.value) {
                                 const { row, col } = scanningTarget.value
                                 row[col.id] = decodedText
-                                onDataEdited()
                                 const currentIndex = rows.value.findIndex(r => r.id === row.id)
                                 if (currentIndex !== -1) {
-                                    await addRow()
+                                    addRow()
                                     scrollToPosition(1)
-                                    scanningTarget.value = {
-                                        row: rows.value[currentIndex + 1],
-                                        col: col
-                                    }
+                                    onDataEdited()
+                                    await nextTick()
+                                    setTimeout(() => {
+                                        scrollToPosition(currentIndex + 1)
+                                        scanningTarget.value = {
+                                            row: rows.value[currentIndex + 1],
+                                            col: col
+                                        }
+                                    }, 50)
                                 }
                             }
 
