@@ -3112,7 +3112,7 @@
                     if (!inputEl) return
                     tempKey.value = inputEl.value
                     if (category === 'category') {
-                        inputEl.setAttribute('inputmode', 'none')
+                        if (event.target !== inputEl) inputEl.setAttribute('inputmode', 'none')
                         inputEl.value = ''
                         inputEl.focus()
                         if (typeof inputEl.showPicker === 'function') {
