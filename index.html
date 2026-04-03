@@ -454,7 +454,7 @@
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
                                     <button
-                                        @click.stop="scanningTarget = { row, col }; playBeepSound()"
+                                        @click.stop="scanningTarget = { row, col }"
                                         type="button"
                                         class="sm:absolute gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex"
                                         :class="col.type !== 'number' ? 'sm:right-0' : 'sm:right-14'"
@@ -748,6 +748,11 @@
             <div id="sharedTooltipLabel" class="text-sm font-bold mt-1"></div>
         </div>
     </div>
+    <template>
+        <audio ref="beepAudioRef" preload="auto">
+            <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//NIxAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIACwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+AAAAAExhdmM1OS4zNwAAAAAAAAAAAAAAAAAAAAAA//NIxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NIxDYAAANIAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NIxGgAAANIAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" type="audio/mpeg">
+        </audio>
+    </template>
 
     <script type="module">
         import { createApp, ref, shallowRef, triggerRef, computed, watch, nextTick, toRaw, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
@@ -1161,7 +1166,7 @@
                 const selectedScanMode = ref('ALL')
                 const lastScannedText = ref('')
 
-                const scanAudio = new Audio("data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//NIxAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIACwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCw/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+AAAAAExhdmM1OS4zNwAAAAAAAAAAAAAAAAAAAAAA//NIxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NIxDYAAANIAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NIxGgAAANIAAAAAKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
+                const beepAudioRef = ref(null)
 
                 let isInitializing = true
                 let dragSource = { id: null, index: -1, element: null, type: null }
@@ -1564,7 +1569,6 @@
                         })
 
                         if (await showConfirm(translate('Do you want to merge duplicates?'))) mergeDuplicates(true)
-                        await nextTick()
                         alert(translate('Successfully loaded data from the link!'))
 
                     } else if (localData.columns && localData.columns.length > 0) {
@@ -1579,19 +1583,21 @@
                         ]
                         rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, note: '', isExpanded: false }]
                     }
+                    scrollToPosition(1)
+
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
                     tableTitle.value = hashData?.title || localData.title || translate('My Data Sheets')
                     globalNotes.value = hashData?.note || localData.note || ''
 
                     const numberColumnsLength = columns.value.filter(col => col.type === 'number').length
                     if (numberColumnsLength > 1) {
-                        if (!typeOptions.value.find(opt => opt.value === 'multiply')) typeOptions.value.push({value: 'multiply', label: translate('Multiply (A × B)')})
-                        if (numberColumnsLength > 2 && !typeOptions.value.find(opt => opt.value === 'multiply3')) typeOptions.value.push({value: 'multiply3', label: translate('Multiply (A × B x C)')})
+                        if (!typeOptions.value.some(opt => opt.value === 'multiply')) typeOptions.value.push({value: 'multiply', label: translate('Multiply (A × B)')})
+                        if (numberColumnsLength > 2 && !typeOptions.value.some(opt => opt.value === 'multiply3')) typeOptions.value.push({value: 'multiply3', label: translate('Multiply (A × B x C)')})
                     }
 
-                    await nextTick()
-                    updateChart()
                     updateTitle()
+
+                    onDataEdited('both')
                 }
 
                 const startDragging = (type, identifier, event) => {
@@ -1693,7 +1699,10 @@
                 const scrollToPosition = async (direction) => {
                     if (!tableContainer.value) return
                     tableContainer.value.scrollIntoView()
-                    if (direction === 'top') return tableContainer.value.scrollTop = 0
+                    if (direction === 'top') {
+                        tableContainer.value.scrollTop = 0
+                        return
+                    }
                     if (typeof direction === 'number') tableContainer.value.scrollTop += 1
 
                     const total = filteredRows.value.length
@@ -2767,17 +2776,17 @@
                 }
 
                 const showConfirm = (message) => {
-                    return new Promise(async (resolve) => {
+                    return new Promise((resolve) => {
                         confirmModal.value = {
                             isOpen: true,
                             message: message,
                             resolvePromise: resolve
                         }
-
-                        await nextTick()
-                        if (confirmCancelBtnRef.value) {
-                            confirmCancelBtnRef.value.focus()
-                        }
+                        nextTick().then(() => {
+                            if (confirmCancelBtnRef.value) {
+                                confirmCancelBtnRef.value.focus()
+                            }
+                        })
                     })
                 }
 
@@ -3063,20 +3072,6 @@
                     tempKey.value = ''
                 }
 
-                const unlockAudioForIOS = () => {
-                    scanAudio.volume = 0
-                    scanAudio.play().then(() => {
-                        scanAudio.pause()
-                        scanAudio.currentTime = 0
-                        scanAudio.volume = 1
-                    }).catch(err => console.log("iOS Autoplay blocked:", err))
-                }
-
-                const playBeepSound = () => {
-                    scanAudio.currentTime = 0
-                    scanAudio.play().catch(e => console.log("Play failed:", e))
-                }
-
                 const getFormatsToSupport = () => {
                     switch (selectedScanMode.value) {
                         case '1D_PRODUCT':
@@ -3100,7 +3095,14 @@
                 }
 
                 const openScanner = async () => {
-                    unlockAudioForIOS()
+                    if (beepAudioRef.value) {
+                        beepAudioRef.value.volume = 0
+                        beepAudioRef.value.play().then(() => {
+                            beepAudioRef.value.pause()
+                            beepAudioRef.value.currentTime = 0
+                            beepAudioRef.value.volume = 1
+                        }).catch(err => console.log("play audio error:", err))
+                    }
                     isScannerOpen.value = true
                     lastScannedText.value = ''
 
@@ -3117,7 +3119,7 @@
                             const boxHeight = viewfinderHeight * 0.9
                             return { width: boxWidth, height: boxHeight }
                         },
-                        aspectRatio: 1.0,
+                        aspectRatio: 1,
                         videoConstraints: {
                             facingMode: "environment",
                             width: { ideal: 1280 },
@@ -3133,11 +3135,13 @@
                         async (decodedText) => {
                             if (decodedText === lastScannedText.value) return
                             html5QrCode.pause()
+                            if (beepAudioRef.value) {
+                                beepAudioRef.value.currentTime = 0
+                                beepAudioRef.value.play().catch(e => console.log("play audio error:", e))
+                            }
                             if (!await showConfirm(decodedText)) return html5QrCode.resume()
                             html5QrCode.resume()
                             lastScannedText.value = decodedText
-
-                            playBeepSound()
 
                             if (scanningTarget.value) {
                                 const { row, col } = scanningTarget.value
@@ -3334,7 +3338,7 @@
                     closeScanner,
                     scanningTarget,
                     lastScannedText,
-                    playBeepSound,
+                    beepAudioRef,
                     scanModeOptions,
                     selectedScanMode
                 }
