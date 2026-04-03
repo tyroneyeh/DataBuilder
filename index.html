@@ -1175,6 +1175,7 @@
                 const beepAudioRef = ref(null)
 
                 let isInitializing = true
+                let scrollRAF = null
                 let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
                 let resizeObserver = null
@@ -2819,44 +2820,52 @@
                 }
 
                 const handleTableScroll = (e) => {
-                    checkScrollState()
-                    saveScrollPosition(e)
+                    if (scrollRAF) cancelAnimationFrame(scrollRAF);
 
-                    const total = filteredRows.value.length
-                    if (total <= 50) {
-                        windowStart.value = 0
-                        windowEnd.value = total
-                        return
-                    }
+                    scrollRAF = requestAnimationFrame(() => {
+                        checkScrollState()
+                        saveScrollPosition(e)
 
-                    const scrollTop = e.target.scrollTop
-                    const clientHeight = e.target.clientHeight
-                    const buffer = 5
-
-                    let currentY = 0
-                    let start = total > 0 ? total - 1 : 0
-                    for (let i = 0; i < total; i++) {
-                        const rowId = filteredRows.value[i].id
-                        const h = heightCache.value[rowId] || defaultItemHeight
-                        if (currentY + h > scrollTop) {
-                            start = i
-                            break
+                        const total = filteredRows.value.length
+                        if (total <= 50) {
+                            if (windowStart.value !== 0) windowStart.value = 0
+                            if (windowEnd.value !== total) windowEnd.value = total
+                            return
                         }
-                        currentY += h
-                    }
 
-                    let end = start
-                    let visibleHeight = 0
-                    for (let i = start; i < total; i++) {
-                        const rowId = filteredRows.value[i].id
-                        const h = heightCache.value[rowId] || defaultItemHeight
-                        visibleHeight += h
-                        end = i + 1
-                        if (visibleHeight > clientHeight) break
-                    }
+                        const scrollTop = e.target.scrollTop
+                        const clientHeight = e.target.clientHeight
 
-                    windowStart.value = Math.max(0, start - buffer)
-                    windowEnd.value = Math.min(total, end + buffer * 2)
+                        const buffer = 15
+
+                        let currentY = 0
+                        let start = total > 0 ? total - 1 : 0
+                        for (let i = 0; i < total; i++) {
+                            const rowId = filteredRows.value[i].id
+                            const h = heightCache.value[rowId] || defaultItemHeight
+                            if (currentY + h > scrollTop) {
+                                start = i
+                                break
+                            }
+                            currentY += h
+                        }
+
+                        let end = start
+                        let visibleHeight = 0
+                        for (let i = start; i < total; i++) {
+                            const rowId = filteredRows.value[i].id
+                            const h = heightCache.value[rowId] || defaultItemHeight
+                            visibleHeight += h
+                            end = i + 1
+                            if (visibleHeight > clientHeight) break
+                        }
+
+                        const newStart = Math.max(0, start - buffer)
+                        const newEnd = Math.min(total, end + buffer * 2)
+
+                        if (windowStart.value !== newStart) windowStart.value = newStart
+                        if (windowEnd.value !== newEnd) windowEnd.value = newEnd
+                    })
                 }
 
                 const autoHeight = (target) => {
