@@ -2214,6 +2214,10 @@
                                 } else {
                                     targetType = metaStr
                                 }
+                            } else if (key.toLowerCase().includes(translate('Date').toLowerCase())) {
+                                targetType = 'date'
+                            } else if (key.toLowerCase().includes(translate('Time').toLowerCase())) {
+                                targetType = 'time'
                             } else {
                                 let isAllNumbers = dataList.every(item => !item[key] || !isNaN(parseFloat(item[key])))
                                 targetType = isAllNumbers ? 'number' : 'text'
@@ -2242,11 +2246,19 @@
                                     newRow[col.id] = parseFloat(val) || 0
                                 } else if (col.type === 'checkbox') {
                                     newRow[col.id] = !!val
+                                } else if (col.type === 'date') {
+                                    newRow[col.id] = formatDate(val)
+                                } else if (col.type === 'time') {
+                                    newRow[col.id] = formatTime(val)
                                 } else {
                                     newRow[col.id] = String(val)
                                 }
+                            } else if (col.type === 'checkbox') {
+                                newRow[col.id] =  false
+                            } else if (col.type === 'number') {
+                                newRow[col.id] = 0
                             } else {
-                                newRow[col.id] = col.type === 'checkbox' ? false : (col.type === 'number' ? null : '')
+                                newRow[col.id] = ''
                             }
                         })
 
@@ -2359,6 +2371,22 @@
 
                 const formatNumber = (num) => {
                     return num >= 10000 ? compactFormatter.format(num) : num.toLocaleString()
+                }
+
+                const formatDate = (dateStr) => {
+                    if (!dateStr || String(dateStr).length !== 8) return dateStr;
+                    return String(dateStr).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+                }
+
+                const formatTime = (timeStr) => {
+                    const str = String(timeStr || '').trim()
+                    if (str.length === 6) {
+                        return str.replace(/^(\d{2})(\d{2})(\d{2})$/, '$1:$2:$3')
+                    }
+                    if (str.length === 4) {
+                        return str.replace(/^(\d{2})(\d{2})$/, '$1:$2');
+                    }
+                    return str;
                 }
 
                 const centerTextPlugin = {
