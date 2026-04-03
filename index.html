@@ -291,27 +291,27 @@
                         </div>
 
                         <div class="flex justify-end space-x-1">
-                            <button @click="timeUnit = 'day'; updateChart()"
+                            <button @click="updateChart('day')"
                                     :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Daily') }}
                             </button>
-                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'week'; updateChart()"
+                            <button @click="updateChart('week')"
                                     :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Weekly') }}
                             </button>
-                            <button v-if="monthFilters.length > 1" @click="timeUnit = 'month'; updateChart()"
+                            <button v-if="monthFilters.length > 1" @click="updateChart('month')"
                                     :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Monthly') }}
                             </button>
-                            <button v-if="monthFilters.length > 6" @click="timeUnit = 'quarter'; updateChart()"
+                            <button v-if="monthFilters.length > 6" @click="updateChart('quarter')"
                                     :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Quarterly') }}
                             </button>
-                            <button v-if="yearFilters.length > 1" @click="timeUnit = 'year'; updateChart()"
+                            <button v-if="yearFilters.length > 1" @click="updateChart('year')"
                                     :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
                                 {{ translate('Yearly') }}
@@ -2375,7 +2375,7 @@
 
                 const formatDate = (dateStr) => {
                     if (!dateStr || String(dateStr).length !== 8) return dateStr;
-                    return String(dateStr).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+                    return String(dateStr).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3')
                 }
 
                 const formatTime = (timeStr) => {
@@ -2384,7 +2384,7 @@
                         return str.replace(/^(\d{2})(\d{2})(\d{2})$/, '$1:$2:$3')
                     }
                     if (str.length === 4) {
-                        return str.replace(/^(\d{2})(\d{2})$/, '$1:$2');
+                        return str.replace(/^(\d{2})(\d{2})$/, '$1:$2')
                     }
                     return str;
                 }
@@ -2705,7 +2705,8 @@
                     }
                 }
 
-                const updateChart = async () => {
+                const updateChart = async (unit) => {
+                    if (unit) timeUnit.value = unit
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
 
@@ -2848,7 +2849,7 @@
                 }
 
                 const handleTableScroll = (e) => {
-                    if (scrollRAF) cancelAnimationFrame(scrollRAF);
+                    if (scrollRAF) cancelAnimationFrame(scrollRAF)
 
                     scrollRAF = requestAnimationFrame(() => {
                         checkScrollState()
