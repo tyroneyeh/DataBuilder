@@ -578,7 +578,7 @@
         </div>
         <div v-if="scanningTarget" class="fixed bottom-0 left-0 z-50 w-full bg-white dark:bg-gray-800 rounded-t shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.2)] overflow-hidden border-t border-gray-300">
             <div class="flex justify-between items-center py-3">
-                <button @click="closeScanner" class="absolute top-1 right-3 text-gray-100 dark:text-white hover:text-red-200">
+                <button @click="closeScanner" class="absolute top-1 right-3 text-gray-800 dark:text-white hover:text-red-200">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -3111,6 +3111,7 @@
                 }
 
                 const openScanner = async () => {
+                    closeScanner()
                     unlockAudioForIOS()
                     isScannerOpen.value = true
                     lastScannedText.value = ''
