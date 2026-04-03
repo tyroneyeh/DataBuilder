@@ -1175,7 +1175,6 @@
                 let isCenterTooltipVisible = false
                 let cachedTotalSum = 0
                 let html5QrCode = null
-                let audioContext = null
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
@@ -2117,7 +2116,7 @@
                     onDataEdited('columns')
                 }
 
-                const processImportText = (rawText) => {
+                const processImportText = async(rawText) => {
                     let dataList = []
                     let isJSON = false
                     let parsedColumnMeta = {}
@@ -2239,6 +2238,8 @@
                     })
 
                     if (addCount > 0) {
+                        scrollToPosition(1)
+                        await nextTick()
                         onDataEdited('both')
                         alert(`${translate('Imported items successfully!')} (${addCount})`)
                     }
