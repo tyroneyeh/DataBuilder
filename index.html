@@ -3114,10 +3114,6 @@
                     unlockAudioForIOS()
                     isScannerOpen.value = true
                     lastScannedText.value = ''
-                    let dynamicQrbox = (viewfinderWidth, viewfinderHeight) => {
-                        const boxWidth = Math.min(viewfinderWidth * 0.75, 250)
-                        return { width: boxWidth, height: boxWidth * 0.8 }
-                    }
 
                     await nextTick()
 
@@ -3125,21 +3121,13 @@
                         formatsToSupport: getFormatsToSupport()
                     })
 
-                    if (selectedScanMode.value === '2D_QR') {
-                        dynamicQrbox = (viewfinderWidth, viewfinderHeight) => {
-                            const size = Math.min(viewfinderWidth * 0.7, 250)
-                            return { width: size, height: size }
-                        }
-                    } else if (selectedScanMode.value.includes('1D')) {
-                        dynamicQrbox = (viewfinderWidth, viewfinderHeight) => {
-                            const boxWidth = Math.min(viewfinderWidth * 0.85, 300)
-                            return { width: boxWidth, height: boxWidth * 0.4 }
-                        }
-                    }
-
                     const config = {
                         fps: 10,
-                        qrbox: dynamicQrbox,
+                        qrbox: (viewfinderWidth, viewfinderHeight) => {
+                            const boxWidth = viewfinderWidth * 0.95
+                            const boxHeight = selectedScanMode.value.startsWith('1D') ? viewfinderHeight * 0.4 : viewfinderHeight * 0.95
+                            return { width: boxWidth, height: boxHeight }
+                        },
                         aspectRatio: 1.0,
                         videoConstraints: {
                             facingMode: "environment",
