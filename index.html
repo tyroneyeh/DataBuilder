@@ -3156,7 +3156,7 @@
                                 onDataEdited()
                                 const currentIndex = rows.value.findIndex(r => r.id === row.id)
                                 if (currentIndex !== -1) {
-                                    await copyRow(currentIndex, 1)
+                                    await addRow()
                                     scrollToPosition(1)
                                     scanningTarget.value = {
                                         row: rows.value[currentIndex + 1],
