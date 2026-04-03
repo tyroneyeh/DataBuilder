@@ -3139,11 +3139,11 @@
                         config,
                         async (decodedText) => {
                             if (decodedText === lastScannedText.value) return
-                            html5QrCode.pause()
                             if (beepAudioRef.value) {
                                 beepAudioRef.value.currentTime = 0
                                 beepAudioRef.value.play().catch(e => console.log("play audio error:", e))
                             }
+                            html5QrCode.pause()
                             if (!await showConfirm(decodedText)) return html5QrCode.resume()
                             html5QrCode.resume()
                             lastScannedText.value = decodedText
