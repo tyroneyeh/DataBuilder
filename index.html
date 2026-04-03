@@ -728,7 +728,7 @@
 
             <button
                 v-show="!isAtBottom"
-                @click="scrollToPosition('bottom')"
+                @click="scrollToPosition"
                 class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :data-tooltip="translate('Scroll to Bottom')"
             >
@@ -1694,22 +1694,19 @@
                 const scrollToPosition = async (direction) => {
                     if (!tableContainer.value) return
                     tableContainer.value.scrollIntoView()
-                    if (direction === 'bottom') {
-                        const total = filteredRows.value.length
-                        windowStart.value = Math.max(0, total - 20)
-                        windowEnd.value = total
-                        await nextTick()
-                        tableContainer.value.scrollTop = tableContainer.value.scrollHeight
-                        setTimeout(() => {
-                            if (tableContainer.value) {
-                                tableContainer.value.scrollTop = tableContainer.value.scrollHeight
-                            }
-                        }, 50)
-                    } else if (typeof direction === 'number') {
-                        tableContainer.value.scrollTop += 1
-                    } else {
-                        tableContainer.value.scrollTop = 0
-                    }
+                    if (direction === 'top') return tableContainer.value.scrollTop = 0
+                    if (typeof direction === 'number') tableContainer.value.scrollTop += 1
+
+                    const total = filteredRows.value.length
+                    windowStart.value = Math.max(0, total - 20)
+                    windowEnd.value = total
+                    await nextTick()
+                    tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                    setTimeout(() => {
+                        if (tableContainer.value) {
+                            tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                        }
+                    }, 50)
                 }
 
                 const addRow = async () => {
@@ -1738,9 +1735,14 @@
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
-                                    block: 'center'
+                                    block: 'start'
                                 })
                                 targetInput.focus()
+                            } else {
+                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`].scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'end'
+                                })
                             }
                         }
                     }, 50)
@@ -1924,10 +1926,15 @@
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
-                                    block: 'center'
+                                    block: 'start'
                                 })
                                 targetInput.focus()
                                 targetInput.select()
+                            } else {
+                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstEditableCol.id}`].scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'end'
+                                })
                             }
                         }, 50)
                     }
@@ -3138,7 +3145,6 @@
                                     onDataEdited()
                                     await nextTick()
                                     setTimeout(() => {
-                                        scrollToPosition(currentIndex + 1)
                                         scanningTarget.value = {
                                             row: rows.value[currentIndex + 1],
                                             col: col
