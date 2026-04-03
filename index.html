@@ -3130,7 +3130,7 @@
                         { facingMode: "environment" },
                         config,
                         async (decodedText) => {
-                            if (decodedText === lastScannedText.value) return
+                            if (decodedText === lastScannedText.value || !showConfirm(decodedText)) return
                             lastScannedText.value = decodedText
 
                             playBeepSound()
