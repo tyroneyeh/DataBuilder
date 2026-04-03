@@ -866,6 +866,7 @@
                 "Switch to Dark Mode": "切換到深色模式",
                 "Switch to Light Mode": "切換到亮色模式",
                 "Text": "文字",
+                "This column already exists. Do you want to overwrite it?": "此欄位已存在。您要覆蓋嗎？",
                 "This will overwrite your current local data. Continue?": "這將會覆蓋您目前的本地資料。確定要繼續嗎？",
                 "Time": "時間",
                 "Timeline": "時間軸",
@@ -1687,8 +1688,16 @@
 
                 const generateId = (prefix) => `${prefix}_${Date.now()}`
 
-                const addColumn = () => {
+                const addColumn = async () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
+                    const existingCol = columns.value.find(col => col.label.toLowerCase() === newColLabel.value.toLowerCase())
+                    if (existingCol && await showConfirm(translate('This column already exists. Do you want to overwrite it?'))) {
+                        existingCol.type = newColType.value
+                        if (newColType.value === 'multiply') { existingCol.opA = formulaA.value; existingCol.opB = formulaB.value }
+                        else if (newColType.value === 'multiply3') { existingCol.opA = formulaA.value; existingCol.opB = formulaB.value; existingCol.opC = formulaC.value }
+                        onDataEdited()
+                        return
+                    }
                     if (newColType.value.startsWith('multiply')) {
                         if (newColType.value === 'multiply3' && !formulaC.value) return alert(translate('Please select columns A, B and C!'))
                         else if (!formulaA.value || !formulaB.value) return alert(translate('Please select columns A and B!'))
