@@ -3125,7 +3125,7 @@
                         fps: 10,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
                             const boxWidth = viewfinderWidth * 0.95
-                            const boxHeight = selectedScanMode.value.startsWith('1D') ? viewfinderHeight * 0.8 : viewfinderHeight * 0.9
+                            const boxHeight = viewfinderHeight * 0.9
                             return { width: boxWidth, height: boxHeight }
                         },
                         aspectRatio: 1.0,
