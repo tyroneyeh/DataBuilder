@@ -3130,7 +3130,10 @@
                         { facingMode: "environment" },
                         config,
                         async (decodedText) => {
-                            if (decodedText === lastScannedText.value || (decodedText !== lastScannedText.value && !await showConfirm(decodedText))) return
+                            if (decodedText === lastScannedText.value) return
+                            html5QrCode.pause()
+                            if (!await showConfirm(decodedText)) return html5QrCode.resume()
+                            html5QrCode.resume()
                             lastScannedText.value = decodedText
 
                             playBeepSound()
