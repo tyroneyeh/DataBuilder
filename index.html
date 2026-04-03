@@ -2986,7 +2986,7 @@
                         public: false,
                         files: {
                             [`${storageKey}.json`]: {
-                                content: JSON.stringify(payload, null, 2)
+                                content: await compressToBase64(JSON.stringify(payload, null, 2))
                             }
                         }
                     }
@@ -3024,6 +3024,7 @@
                         const storageKey = filename.replace('.json', '')
                         try {
                             const fileObj = result.files[filename]
+                            if (!fileObj.content.startsWith('{')) fileObj.content = await decompressFromBase64(fileObj.content)
                             const data = JSON.parse(fileObj.content)
                             localStorage.setItem(storageKey, JSON.stringify(data))
                             if (!savedKeysList.value.includes(storageKey)) {
