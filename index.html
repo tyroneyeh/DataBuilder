@@ -606,17 +606,33 @@
                         <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :data-tooltip="filteredRows.length">{{ translate('Total') }}</td>
 
                         <td v-for="col in columns" :key="'total-' + col.id"
-                            class="sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
+                            class="flex sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
                             :class="[
-                                ['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'flex' : 'hidden',
                                 col.type.startsWith('multiply') || col.type === 'minus' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'
                             ]">
 
-                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4">{{ col.label }}</span>
+                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 text-nowrap">{{ col.label }}</span>
+                            <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
 
-                            <div class="text-right print:w-full" :class="col.type.startsWith('multiply') || col.type === 'minus' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'">
-                                <span v-if="['number', 'multiply', 'multiply3', 'minus'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">{{ formatNumber(columnTotals[col.id] || 0) }}</span>
-                                <span v-else class="text-gray-400 dark:text-gray-500 print:text-gray-500"></span>
+                                <span v-if="['number', 'multiply', 'minus'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
+                                    {{ formatNumber(columnTotals[col.id] || 0) }}
+                                </span>
+                                <div v-else-if="['text', 'category', 'date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                                    <input
+                                        :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
+                                        v-model="columnFilters[col.id]"
+                                        :list="col.type === 'category' && 'datalist-' + col.id"
+                                        :placeholder="['date', 'time'].includes(col.type) ? '' : '🔍 ' + translate('Filter...')"
+                                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
+                                    >
+                                    <button
+                                        v-show="columnFilters[col.id]"
+                                        @click="columnFilters[col.id] = ''"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                        :title="translate('Clear filter')"
+                                    >✖</button>
+                                </div>
+
                             </div>
                         </td>
 
@@ -1156,6 +1172,7 @@
                 const isProcessing = ref(false)
                 const db = new SimpleDB()
                 const currentStorageKey = ref('')
+                const columnFilters = ref({})
                 const savedKeysList = ref([])
                 const tempKey = ref('')
 
@@ -1402,22 +1419,31 @@
                     const catColId = selectedChartCatColId.value
                     const legendItems = customLegendItems.value
                     let result = dateFilteredRows.value
+                    if (catColId && legendItems.length) {
+                        const hiddenCategories = new Set(
+                            legendItems.filter(item => item.hidden).map(item => item.text)
+                        )
+                        if (hiddenCategories.size > 0) {
+                            result = result.filter(row => {
+                                const catValue = row[catColId]?.trim() || translate('Uncategorized')
+                                return !hiddenCategories.has(catValue)
+                            })
+                        }
+                    }
+                    const activeFilters = Object.entries(columnFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
+                    if (activeFilters.length > 0) {
+                        result = result.filter(row => {
+                            return activeFilters.every(([colId, filterText]) => {
+                                const cellValue = String(row[colId] || '').toLowerCase()
+                                const keyword = String(filterText).toLowerCase().trim()
+                                return cellValue.includes(keyword)
+                            })
+                        })
+                    }
                     if (chartDate) {
                         result = result.filter(row => getDateGroupKey(row[selectedChartDateColId.value], timeUnit.value) === chartDate)
                     }
-                    if (!catColId || !legendItems.length) {
-                        return result
-                    }
-                    const hiddenCategories = new Set(
-                        legendItems.filter(item => item.hidden).map(item => item.text)
-                    )
-                    if (hiddenCategories.size === 0) {
-                        return result
-                    }
-                    return result.filter(row => {
-                        const catValue = row[catColId]?.trim() || translate('Uncategorized')
-                        return !hiddenCategories.has(catValue)
-                    })
+                    return result
                 })
 
                 const visibleRows = computed(() => {
@@ -3647,7 +3673,8 @@
                     photoViewer,
                     viewPhoto,
                     removePhoto,
-                    triggerPhotoUpload
+                    triggerPhotoUpload,
+                    columnFilters
                 }
             }
         }).mount('#app')
