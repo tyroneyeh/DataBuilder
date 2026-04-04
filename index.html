@@ -480,7 +480,7 @@
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
-                                        @input="['text', 'number'].includes(col.type) && formatNumberInput(row, col)"
+                                        @input="formatNumberInput(row, col)"
                                         @click="enterInput(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
                                         @blur="saveInput(inputRefs[`${row.id}-${col.id}`])"
                                         @keydown="focusNextInput($event, row.id, col.id)"
@@ -1852,7 +1852,7 @@
                 const formatNumberInput = (row, col) => {
                     if (col.type === 'number' && row[col.id] != null) {
                         let valStr = String(row[col.id])
-                        row[col.id] = valStr.replaceAll(/[^0-9.-]/g, '')
+                        row[col.id] = valStr.replaceAll(/[^0-9+\-*/.%()^eE]/g, '')
                         triggerRef(rows)
                     }
                 }
@@ -1864,6 +1864,19 @@
                     newVal = Number(newVal.toFixed(4))
                     row[colId] = String(newVal)
                     triggerRef(rows)
+                }
+
+                const calculateInlineMath = (safeString) => {
+                    if (!safeString) return ''
+                    safeString = safeString.replaceAll('^', '**').replaceAll(/%(?![0-9(eE])/g, '/100')
+                    try {
+                        const result = new Function('return ' + safeString)()
+                        if (!isFinite(result)) return rawString
+                        return Number(result.toFixed(6))
+                    } catch (e) {
+                        console.error(e)
+                    }
+                    return rawString
                 }
 
                 const focusNextInput = async (event, rowId, colId) => {
@@ -1905,6 +1918,10 @@
                     } else if (event.key === 'Enter') {
                         isHorizontal = true
                         shouldMove = true
+                        if (columns.value[currentIndex].type === 'number') {
+                            const row = rows.value.find(r => r.id === rowId)
+                            row[colId] = calculateInlineMath(row[colId])
+                        }
                     } else if (event.key === 'ArrowUp') {
                         direction = -1
                         isVertical = true
