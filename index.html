@@ -2495,7 +2495,7 @@
                 }
 
                 const toggleChart = async () => {
-                    if (!customLegendItems.value.length) return
+                    if (!columns.value.length) return
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
