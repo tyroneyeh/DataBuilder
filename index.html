@@ -309,20 +309,27 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex flex-col w-full sm:w-auto mx-2">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Workspace') }}</span>
-                    <input
-                        type="text"
-                        v-model="currentStorageKey"
-                        list="storage-key-options"
-                        @change="changeStorageKey"
-                        @focus="onKeyFocus" @blur="onKeyBlur"
-                        :placeholder="translate('Select or create a workspace')"
-                        class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                    >
-                    <datalist id="storage-key-options">
-                        <option v-for="key in savedKeysList" :key="key" :value="key"></option>
-                    </datalist>
+                <div class="flex w-auto mx-2 w-full sm:w-auto">
+                    <div class="flex flex-col w-full sm:w-auto">
+                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Workspace') }}</span>
+                        <input
+                            type="text"
+                            v-model="currentStorageKey"
+                            list="storage-key-options"
+                            @change="changeStorageKey"
+                            @focus="onKeyFocus" @blur="onKeyBlur"
+                            :placeholder="translate('Select or create a workspace')"
+                            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                        >
+                        <datalist id="storage-key-options">
+                            <option v-for="key in savedKeysList" :key="key" :value="key"></option>
+                        </datalist>
+                    </div>
+                    <div class="flex flex-col justify-end">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white text-nowrap p-2 rounded-md transition-colors font-medium shadow-sm">
+                            {{ translate('OK') }}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -485,8 +492,8 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
                                         }"
                                         @input="formatNumberInput(row, col)"
-                                        @click="enterInput(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
-                                        @blur="saveInput(inputRefs[`${row.id}-${col.id}`])"
+                                        @click="enterInput($event.target, col.type, $event)"
+                                        @blur="saveInput($event.target)"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
                                     <button v-if="!isPrinting && col.type !== 'number'"
@@ -1178,6 +1185,7 @@
                 const tempKey = ref('')
 
                 const tableTitle = ref('')
+                const colCount = ref(0)
                 const columns = shallowRef([])
                 const rows = shallowRef([])
                 const inputRefs = ref({})
@@ -1297,7 +1305,9 @@
 
                 const debouncedSave = debounce(async () => {
                     if (!currentStorageKey.value) return
-                    db.set(currentStorageKey.value, {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value})
+                    const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
+                    if (!data.colCount) data.colCount = columns.value.length
+                    db.set(currentStorageKey.value, data)
                     localStorage.setItem('lang', currentLanguage.value)
                     await nextTick()
                     updateChart()
@@ -1670,6 +1680,7 @@
                                 console.error('Local data error', e)
                             }
                         }
+                        colCount.value = localData.colCount
                     } else {
                         localData = { title: '', columns: [], rows: [], note: '' }
                     }
@@ -1713,12 +1724,12 @@
                         rows.value = localData.rows
                     } else {
                         columns.value = [
-                            { id: 'col_1', label: translate('Item'), type: 'category' },
-                            { id: 'col_2', label: translate('Price'), type: 'number' },
-                            { id: 'col_3', label: translate('Quantity'), type: 'number' },
-                            { id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3' }
+                            {id: 'col_1', label: translate('Item'), type: 'category'},
+                            {id: 'col_2', label: translate('Price'), type: 'number'},
+                            {id: 'col_3', label: translate('Quantity'), type: 'number'},
+                            {id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3'}
                         ]
-                        rows.value = [{ id: 'row_1', col_1: '', col_2: null, col_3: null, note: '', isExpanded: false }]
+                        rows.value = [{id: 'row_1', col_1: '', col_2: null, col_3: null, note: '', isExpanded: false}]
                     }
                     scrollToPosition(1)
 
@@ -1797,8 +1808,6 @@
                     isSwapping = false
                 }
 
-                const generateId = (prefix) => `${prefix}_${Date.now()}`
-
                 const addColumn = async () => {
                     if (!newColLabel.value.trim()) return alert(translate('Please enter a column name!'))
                     const existingCol = columns.value.find(col => col.label.toLowerCase() === newColLabel.value.toLowerCase())
@@ -1823,7 +1832,8 @@
                         else if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
-                    const newColId = generateId('col')
+                    if (!colCount.value) colCount.value = columns.value.length
+                    const newColId = `col_${++colCount.value}`
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply' || newColType.value === 'minus') {
                         newColData.opA = formulaA.value
@@ -1874,8 +1884,8 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = generateId('row')
-                    const newRow = { id: newRowId, note: '', isExpanded: false }
+                    const newRowId = `row_${rows.value.length + 1}`
+                    const newRow = {id: newRowId, note: '', isExpanded: false}
                     const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
@@ -1957,10 +1967,10 @@
                             event.preventDefault()
 
                             if (rows.value.length > 1) {
+                                const currentRowIndex = rows.value.findIndex(row => row.id === rowId)
                                 if (await showConfirm(translate('Are you sure you want to delete this row?'))) removeRow(rowId)
                                 await nextTick()
-                                const lastInput = inputRefs.value[`row_${rows.value.length}-${colId}`]
-                                lastInput?.focus()
+                                inputRefs.value[`row_${currentRowIndex}-${colId}`]?.focus()
                             }
                         }
                         return
@@ -2074,13 +2084,10 @@
                     const originalRow = rows.value[index]
                     if (!originalRow) return
 
-                    const newRowId = generateId('row')
+                    const clonedRow = {...originalRow}
+                    let i = index + 1
+                    clonedRow.id = `row_${++i}`
 
-                    const clonedRow = {
-                        ...originalRow,
-                        id: newRowId,
-                        isExpanded: false
-                    }
                     if (ignoreDate || !columns.value.some(col => col.type === 'date')) {
                         const {todayDate, currentTime} = getDate()
                         for (const column of columns.value) {
@@ -2106,7 +2113,7 @@
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
                         setTimeout(() => {
-                            const targetInput = inputRefs.value[`${newRowId}-${firstEditableCol.id}`]
+                            const targetInput = inputRefs.value[`row_${i}-${firstEditableCol.id}`]
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
@@ -2114,11 +2121,6 @@
                                 })
                                 targetInput.focus()
                                 targetInput.select()
-                            } else {
-                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstEditableCol.id}`].scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'end'
-                                })
                             }
                         }, 50)
                     }
