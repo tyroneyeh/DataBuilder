@@ -1432,6 +1432,7 @@
                         if (col.type === 'number') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (parseFloat(row[col.id]) || 0), 0)
                         else if (col.type === 'multiply') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)), 0)
                         else if (col.type === 'multiply3') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)), 0)
+                        else if (col.type === 'minus') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + ((parseFloat(row[col.opA]) || 0) - (parseFloat(row[col.opB]) || 0)), 0)
                     })
                     return totals
                 })
