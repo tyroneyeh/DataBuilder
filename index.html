@@ -3105,8 +3105,7 @@
                         try {
                             const fileObj = result.files[filename]
                             if (!fileObj.content.startsWith('{')) fileObj.content = await decompressFromBase64(fileObj.content)
-                            const data = JSON.parse(fileObj.content)
-                            localStorage.setItem(storageKey, JSON.stringify(data))
+                            db.set(storageKey, JSON.parse(fileObj.content))
                             if (!savedKeysList.value.includes(storageKey)) {
                                 savedKeysList.value.push(storageKey)
                             }
@@ -3122,9 +3121,8 @@
                         if (!hasCurrentKey && lastImportedKey) {
                             currentStorageKey.value = lastImportedKey
                         }
-                        const activeDataStr = localStorage.getItem(currentStorageKey.value)
-                        if (activeDataStr) {
-                            const data = JSON.parse(activeDataStr)
+                        const data = await db.get(currentStorageKey.value)
+                        if (data) {
                             tableTitle.value = data.title || ''
                             columns.value = data.columns || []
                             rows.value = data.rows || []
@@ -3132,8 +3130,6 @@
                             hasDateColumn.value = columns.value.some(column => column.type === 'date')
                         }
                         onDataEdited('both')
-                        await nextTick()
-                        updateChart()
                         alert(translate('Restored from GitHub Gist successfully!'))
                     } else {
                         alert(translate('No matching data found in this Gist. Invalid JSON.'))
