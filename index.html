@@ -63,10 +63,11 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 print:bg-white print:p-0 transition-colors duration-300">
     <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300" v-cloak>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}"  v-show="customLegendItems.length">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}">
             <div
                 @click="toggleChart"
-                class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                :class="customLegendItems.length && 'cursor-pointer'"
             >
                 <span class="flex items-center">📊 {{ translate('Summary') }}</span>
                 <span
@@ -75,7 +76,7 @@
                 >▼</span>
             </div>
 
-            <div
+            <div v-show="customLegendItems.length"
                 class="grid transition-all duration-500 ease-in-out"
                 :class="isChartOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
             >
@@ -102,13 +103,13 @@
                             {{ m.month }}
                         </button>
                     </div>
-                    <div class="flex flex-col md:flex-row items-center items-start w-full max-w-2xl mx-auto">
+                    <div class="flex flex-col md:flex-row items-center items-start w-full my-2 max-w-[95%] md:max-w-[70%] mx-auto">
 
-                        <div class="relative h-100 w-full md:w-1/2 flex justify-center items-center">
+                        <div class="relative h-100 w-full flex justify-center items-center">
                             <canvas id="expenseChart" class="z-10"></canvas>
                         </div>
 
-                        <div class="w-full overflow-y-auto flex flex-col px-5" :class="{'h-100': customLegendItems.length > 9}">
+                        <div class="w-full overflow-y-auto flex flex-col" :class="{'h-100': customLegendItems.length > 9}">
 
                             <div
                                 v-for="item in customLegendItems"
@@ -124,7 +125,7 @@
                                     ></span>
 
                                     <span
-                                        class="text-gray-700 dark:text-gray-200 font-medium truncate w-full md:w-[180px]"
+                                        class="text-gray-700 dark:text-gray-200 font-medium truncate w-full"
                                         :class="{ 'line-through text-gray-400 dark:text-gray-500': item.hidden }"
                                         :data-tooltip="item.text"
                                     >
@@ -2494,9 +2495,11 @@
                 }
 
                 const toggleChart = async () => {
+                    if (!customLegendItems.value.length) return
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
                     if (isChartOpen.value) {
+                        updateChart()
                         await nextTick()
                         if (expenseChart.value) expenseChart.value.resize()
                     }
@@ -2891,6 +2894,7 @@
                 }
 
                 const updateChart = async (unit) => {
+                    if (!isChartOpen.value) return
                     if (unit) {
                         timeUnit.value = unit
                         selectedChartDate.value = null
