@@ -440,15 +440,22 @@
                             <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0) * (row[col.opC] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'photo'" class="flex items-center justify-end sm:justify-center print:justify-center w-full">
-                                <template v-if="row[col.id]">
-                                    <div class="relative group/photo inline-block">
-                                        <img :src="row[col.id]" @click="viewPhoto(row[col.id])" class="w-10 sm:h-12 sm:w-12 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="Photo" />
-                                        <button v-if="!isPrinting" @click.stop="removePhoto(row, col.id)" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-100 sm:opacity-0 group-hover/photo:opacity-100 transition-opacity shadow z-10">✖</button>
+                            <div v-else-if="col.type === 'photo'" class="flex items-center justify-end sm:justify-start print:justify-start w-full gap-2 overflow-x-auto hide-scrollbar max-w-full">
+
+                                <template v-if="(Array.isArray(row[col.id]) && row[col.id].length > 0) || (typeof row[col.id] === 'string' && row[col.id])">
+
+                                    <div v-for="(imgSrc, idx) in (Array.isArray(row[col.id]) ? row[col.id] : [row[col.id]])" :key="idx" class="relative group/photo inline-block shrink-0">
+                                        <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="w-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="Photo" />
+                                        <button v-if="!isPrinting" @click.stop="removePhoto(row, col.id, idx)" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-100 sm:opacity-0 group-hover/photo:opacity-100 transition-opacity shadow z-10">✖</button>
                                     </div>
+
+                                    <button v-if="!isPrinting" @click="triggerPhotoUpload(row, col.id)" class="shrink-0 w-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-dashed border-gray-300 dark:border-gray-500 rounded text-gray-400 hover:text-indigo-500 transition-colors active:scale-95">
+                                        ➕
+                                    </button>
                                 </template>
+
                                 <template v-else>
-                                    <button v-if="!isPrinting" @click="triggerPhotoUpload(row, col.id)" class="px-3 py-1.5 sm:py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50 rounded-md text-sm transition-colors flex items-center gap-1 shadow-sm active:scale-95">
+                                    <button v-if="!isPrinting" @click="triggerPhotoUpload(row, col.id)" class="px-3 py-1.5 sm:py-1 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700/50 rounded-md text-sm transition-colors flex items-center gap-1 shadow-sm active:scale-95 shrink-0">
                                         📷 <span class="hidden sm:inline">{{ translate('Photo') }}</span>
                                     </button>
                                 </template>
@@ -1807,6 +1814,7 @@
                     columns.value.forEach(col => {
                         if (col.type === 'date') newRow[col.id] = todayDate
                         else if (col.type === 'time') newRow[col.id] = currentTime
+                        else if (col.type === 'photo') newRow[col.id] = []
                         else if (!col.type.startsWith('multiply')) newRow[col.id] = col.type === 'number' ? null : ''
                     })
 
@@ -3357,8 +3365,12 @@
                     photoViewer.value = { isOpen: true, url }
                 }
 
-                const removePhoto = (row, colId) => {
-                    row[colId] = ''
+                const removePhoto = (row, colId, index) => {
+                    if (Array.isArray(row[colId])) {
+                        row[colId].splice(index, 1)
+                    } else {
+                        row[colId] = []
+                    }
                     onDataEdited('rows')
                 }
 
@@ -3397,22 +3409,28 @@
                         sharedFileInput = document.createElement('input')
                         sharedFileInput.type = 'file'
                         sharedFileInput.accept = 'image/*'
+                        sharedFileInput.multiple = true
                         sharedFileInput.style.display = 'none'
                         document.body.appendChild(sharedFileInput)
                     }
-                    sharedFileInput.onchange = async (e) => {
-                        const file = e.target.files[0]
-                        if (!file) return
 
+                    sharedFileInput.onchange = async (e) => {
+                        const files = e.target.files
+                        if (!files || files.length === 0) return
+                        if (!Array.isArray(row[colId])) {
+                            row[colId] = row[colId] ? [row[colId]] : []
+                        }
                         try {
-                            const base64 = await resizeImage(file, 1080)
-                            row[colId] = base64
+                            for (const element of files) {
+                                const base64 = await resizeImage(element, 1080)
+                                row[colId].push(base64)
+                            }
                             onDataEdited('rows')
                         } catch (err) {
                             console.error('Image Error:', err)
                             alert(translate('Failed to process image.'))
                         } finally {
-                            sharedFileInput.value = '' // 清空以確保下次能選同一張
+                            sharedFileInput.value = ''
                         }
                     }
                     sharedFileInput.click()
