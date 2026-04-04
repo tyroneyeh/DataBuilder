@@ -409,7 +409,7 @@
                             <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400 dark:text-gray-500">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
                         </td>
 
-                        <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 py-2 sm:py-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
+                        <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
                                 @click.stop.prevent="enterInput(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
@@ -496,17 +496,17 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                         </svg>
                                     </button>
-                                    <div v-if="!isPrinting && col.type === 'number'" class="sm:absolute sm:right-0 gap-1 ml-2 sm:ml-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex">
+                                    <div v-if="!isPrinting && col.type === 'number'" class="sm:absolute justify-center items-center sm:right-0 gap-2 pl-2 sm:gap-1 opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex">
                                         <button
                                             tabindex="-1"
                                             @click="row[col.id] = (parseFloat(row[col.id]) || 0) * -1; onDataEdited('rows')"
                                             class="w-7 h-7 sm:w-auto sm:px-1.5 sm:h-6 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-600 dark:text-indigo-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none transition-colors"
                                             :data-tooltip="translate('Toggle +/-')"
-                                        >
-                                            +/-
-                                        </button>
-                                        <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
+                                        >+/-</button>
+                                        <div class="flex sm:flex-col border border-gray-200 dark:border-gray-600 rounded overflow-hidden shadow-sm">
+                                        <button tabindex="-1" @click="adjustNumber(row, col.id, 1)" class="w-7 h-7 sm:w-6 sm:h-6 flex top-0 right-0 items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">+</button>
                                         <button tabindex="-1" @click="adjustNumber(row, col.id, -1)" class="w-7 h-7 sm:w-6 sm:h-6 flex items-center justify-center bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded font-bold leading-none select-none shadow-sm focus:outline-none">−</button>
+                                        </div>
                                     </div>
 
                                 </template>
@@ -2495,7 +2495,7 @@
                 })
 
                 const formatNumber = (num) => {
-                    return num >= 10000 ? compactFormatter.format(num) : num.toLocaleString()
+                    return Math.abs(num) >= 10000 ? compactFormatter.format(num) : num.toLocaleString()
                 }
 
                 const formatDate = (dateStr) => {
