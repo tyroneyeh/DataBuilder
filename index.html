@@ -63,7 +63,7 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 print:bg-white print:p-0 transition-colors duration-300">
     <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300" v-cloak>
 
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}"  v-show="customLegendItems.length">
             <div
                 @click="toggleChart"
                 class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -108,19 +108,19 @@
                             <canvas id="expenseChart" class="z-10"></canvas>
                         </div>
 
-                        <div class="w-full h-100 overflow-y-auto flex flex-col px-5">
+                        <div class="w-full overflow-y-auto flex flex-col px-5" :class="{'h-100': customLegendItems.length > 9}">
 
                             <div
                                 v-for="item in customLegendItems"
                                 :key="item.index"
                                 @click="toggleLegend(item.index)"
                                 class="flex items-center justify-between rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                                :class="{ 'opacity-40 grayscale': item.hidden }"
+                                :class="{'opacity-40 grayscale': item.hidden}"
                             >
                                 <div class="flex items-center space-x-3 overflow-hidden w-full">
                                     <span
                                         class="w-4 h-4 rounded-full flex-shrink-0"
-                                        :style="{ backgroundColor: item.color }"
+                                        :style="{backgroundColor: item.color}"
                                     ></span>
 
                                     <span
@@ -175,7 +175,7 @@
                             </select>
                         </div>
 
-                        <div class="flex justify-end ml-2 space-x-1 text-nowrap">
+                        <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
                             <button @click="updateChart('day')"
                                     :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                     class="px-3 py-1 text-xs rounded-md transition-colors">
