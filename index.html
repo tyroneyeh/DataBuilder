@@ -440,7 +440,7 @@
                             <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0) * (row[col.opC] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'photo'" class="flex items-center justify-end sm:justify-start print:justify-start w-full gap-2 overflow-x-auto hide-scrollbar max-w-full">
+                            <div v-else-if="col.type === 'photo'" class="flex items-center justify-end sm:justify-center print:justify-start w-full gap-2 overflow-x-auto hide-scrollbar max-w-full">
 
                                 <template v-if="(Array.isArray(row[col.id]) && row[col.id].length > 0) || (typeof row[col.id] === 'string' && row[col.id])">
 
@@ -537,7 +537,7 @@
                     </tr>
 
                     <tr v-if="(isPrinting && row.isExpanded && row.note) || (!isPrinting && row.isExpanded)" class="block sm:table-row print:table-row bg-blue-50/30 dark:bg-indigo-900/20 print:bg-transparent rounded-b-lg sm:rounded-none">
-                        <td class="hidden sm:table-cell print:table-cell sm:sticky left-0 z-10 print:static bg-blue-50/80 dark:bg-indigo-900/40 print:bg-transparent border sm:border print:border border-gray-300 dark:border-gray-700"></td>
+                        <td class="hidden sm:table-cell print:table-cell sm:sticky left-0 z-10 print:static bg-blue-50/80 dark:bg-indigo-900/40 print:bg-transparent border sm:border print:border border-gray-300 dark:border-gray-700"><input type="text" v-model="row.label" @change="onDataEdited" class="w-full min-w-0 text-right truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 p-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"></td>
                         <td :colspan="columns.length + 1" class="block sm:table-cell print:table-cell border-t sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 py-3 sm:py-2 shadow-inner dark:shadow-none">
                             <div class="flex flex-col">
                                 <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
