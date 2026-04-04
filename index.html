@@ -2771,7 +2771,10 @@
                 }
 
                 const updateChart = async (unit) => {
-                    if (unit) timeUnit.value = unit
+                    if (unit) {
+                        timeUnit.value = unit
+                        selectedChartDate.value = null
+                    }
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
 
