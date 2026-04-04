@@ -780,12 +780,13 @@
 
     <script type="module">
         import { createApp, ref, shallowRef, triggerRef, computed, watch, nextTick, toRaw, onMounted } from 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js'
+        import { Workbox } from 'https://cdn.jsdelivr.net/npm/workbox-window@7/+esm'
 
 // #region Translations
         const translations = {
             "zh-TW": {
-                "Calc": "計算",
                 "← Click to add a row": "← 點擊新增一列",
+                "A new version is available. Do you want to reload?": "有新版本可用，是否重新載入?",
                 "Action": "操作",
                 "Add": "新增",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
@@ -793,6 +794,7 @@
                 "Are you sure you want to delete this row?": "確定要刪除此列嗎?",
                 "Backed up to GitHub Gist successfully!": "成功備份至 GitHub Gist!",
                 "Backup to Cloud": "備份至雲端",
+                "Calc": "計算",
                 "Cancel": "取消",
                 "Cannot delete! Other 'Calculate' columns depend on this.": "無法刪除！有其他的「計算欄位」正在使用此欄位。",
                 "Cannot find a text column to merge by.": "找不到可用於合併的文字欄位。",
@@ -987,6 +989,23 @@
         const translate = (key) => {
             const dict = translations[currentLanguage.value]
             return (dict && dict[key]) ? dict[key] : key
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const wb = new Workbox('./sw.js')
+                wb.addEventListener('waiting', () => {
+                    if (confirm(translate('A new version is available. Do you want to reload?'))) {
+                        wb.messageSkipWaiting()
+                    }
+                })
+                wb.addEventListener('controlling', () => {
+                    globalThis.location.reload()
+                })
+                wb.register()
+                    .then(() => console.log('ServiceWorker registered successfully'))
+                    .catch((err) => console.log('ServiceWorker registration failed:', err))
+            })
         }
 
         const debounce = (func, delay) => {
@@ -3465,17 +3484,6 @@
             }
         }).mount('#app')
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then((registration) => {
-                        console.log('ServiceWorker registration successful')
-                    })
-                    .catch((err) => {
-                        console.log('ServiceWorker registration failed: ', err)
-                    })
-            })
-        }
     </script>
 </body>
 </html>
