@@ -440,11 +440,11 @@
                             <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0) * (row[col.opC] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'photo'" class="flex items-center justify-end sm:justify-center print:justify-start w-full gap-2 overflow-x-auto hide-scrollbar max-w-full">
+                            <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id].length}">
 
-                                <template v-if="(Array.isArray(row[col.id]) && row[col.id].length > 0) || (typeof row[col.id] === 'string' && row[col.id])">
+                                <template v-if="row[col.id].length">
 
-                                    <div v-for="(imgSrc, idx) in (Array.isArray(row[col.id]) ? row[col.id] : [row[col.id]])" :key="idx" class="relative group/photo inline-block shrink-0">
+                                    <div v-for="(imgSrc, idx) in row[col.id]" :key="idx" class="relative group/photo inline-block shrink-0">
                                         <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="Photo" />
                                         <button v-if="!isPrinting" @click.stop="removePhoto(row, col.id, idx)" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-100 sm:opacity-0 group-hover/photo:opacity-100 transition-opacity shadow z-10">✖</button>
                                     </div>
@@ -3368,11 +3368,7 @@
                 }
 
                 const removePhoto = (row, colId, index) => {
-                    if (Array.isArray(row[colId])) {
-                        row[colId].splice(index, 1)
-                    } else {
-                        row[colId] = []
-                    }
+                    row[colId].splice(index, 1)
                     onDataEdited('rows')
                 }
 
