@@ -3459,10 +3459,17 @@
                                 alert(error.message)
                             } finally {
                                 setTimeout(() => {
-                                    html5QrCode.resume()
+                                    try {
+                                        html5QrCode.resume()
+                                    } catch (e) {
+                                        console.error(e)
+                                        alert(e.message)
+                                    }
                                     isProcessing.value = false
                                 }, 300)
-                                setTimeout(() => { lastScannedText.value = '' }, 3000)
+                                setTimeout(() => {
+                                    lastScannedText.value = ''
+                                }, 3000)
                             }
                         },
                         (errorMessage) => { }
