@@ -367,7 +367,7 @@
             <table class="w-full border-collapse relative print:w-full block sm:table print:table">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
-                        <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12">#</th>
+                        <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')" >#{{ filteredRows.length }}</th>
                         <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index"
                             :class="[
                                 'group pr-8 sticky top-0 z-10 print:static border border-gray-300 dark:border-gray-600 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100',
@@ -692,7 +692,7 @@
                             </div>
                         </td>
 
-                        <td v-if="!isPrinting" class="hidden text-center sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800">{{ filteredRows.length }}</td>
+                        <td v-if="!isPrinting" class="hidden text-center sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800"></td>
                     </tr>
                 </tfoot>
             </table>
