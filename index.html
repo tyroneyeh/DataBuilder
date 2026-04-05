@@ -3408,16 +3408,11 @@
                         async (decodedText) => {
                             if (isProcessing.value || decodedText === lastScannedText.value) return
                             isProcessing.value = true
+                            lastScannedText.value = decodedText
                             playBeep()
                             html5QrCode.pause()
                             try {
-                                if (!await showConfirm(decodedText)) {
-                                    html5QrCode.resume()
-                                    return
-                                }
-                                html5QrCode.resume()
-                                lastScannedText.value = decodedText
-
+                                if (!await showConfirm(decodedText)) return
                                 if (scanningTarget.value) {
                                     const { row, col } = scanningTarget.value
                                     row[col.id] = decodedText
@@ -3435,10 +3430,12 @@
                                         }, 50)
                                     }
                                 }
-
                             } finally {
+                                setTimeout(() => {
+                                    html5QrCode.resume()
+                                    isProcessing.value = false
+                                }, 300)
                                 setTimeout(() => { lastScannedText.value = '' }, 3000)
-                                isProcessing.value = false
                             }
                         },
                         (errorMessage) => { }
