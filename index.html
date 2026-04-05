@@ -761,7 +761,7 @@
 
         <div v-if="!isPrinting" class="flex flex-col p-2 gap-4">
             <div class="flex flex-wrap gap-3">
-                <input type="file" ref="fileInput" accept=".json,.csv" class="hidden" @change="handleFileUpload">
+                <input type="file" ref="fileInput" accept=".json,.csv" multiple class="hidden" @change="handleFileUpload">
 
                 <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">📂 {{ translate('Upload (JSON/CSV)') }}</button>
                 <button @click="exportJson" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
@@ -2397,7 +2397,7 @@
                     onDataEdited('columns')
                 }
 
-                const processImportText = async(rawText) => {
+                const processImportText = async(rawText, isBulk = false) => {
                     let dataList = []
                     let isJSON = false
                     let parsedColumnMeta = {}
@@ -2544,12 +2544,13 @@
                         })
                     }
 
-                    if (addCount > 0) {
+                    if (addCount > 0 && !isBulk) {
                         scrollToPosition(1)
                         await nextTick()
                         onDataEdited('both')
                         alert(`${translate('Imported items successfully!')} (${addCount})`)
                     }
+                    return addCount
                 }
 
                 const triggerFileUpload = () => {
@@ -2559,17 +2560,31 @@
                 }
 
                 const handleFileUpload = async (event) => {
-                    const file = event.target.files[0]
-                    if (!file) return
+                    const files = event.target.files
+                    if (!files || !files.length) return
+
+                    let totalImportedCount = 0
+                    isProcessing.value = true
 
                     try {
-                        const text = await file.text()
-                        processImportText(text)
+                        for (const file of files) {
+                            const text = await file.text()
+                            const count = await processImportText(text, true)
+                            if (!count) continue
+                            totalImportedCount += count
+                        }
+                        if (totalImportedCount > 0) {
+                            scrollToPosition(1)
+                            await nextTick()
+                            onDataEdited('both')
+                            alert(`${translate('Imported items successfully!')} (${totalImportedCount})`)
+                        }
                     } catch (error) {
                         console.error(error)
                         alert(translate('Failed to read file.'))
                     } finally {
                         event.target.value = ''
+                        isProcessing.value = false
                     }
                 }
 
