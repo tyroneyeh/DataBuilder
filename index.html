@@ -76,7 +76,7 @@
                 >▼</span>
             </div>
 
-            <div v-show="customLegendItems.length"
+            <div v-show="columns.length"
                 class="grid transition-all duration-500 ease-in-out"
                 :class="isChartOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
             >
@@ -1729,7 +1729,7 @@
                             {id: 'col_3', label: translate('Quantity'), type: 'number'},
                             {id: 'col_4', label: translate('Subtotal'), type: 'multiply', opA: 'col_2', opB: 'col_3'}
                         ]
-                        rows.value = [{id: 'row_1', col_1: '', col_2: null, col_3: null, note: '', isExpanded: false}]
+                        rows.value = [{id: 'row_1', col_1: '', col_2: 0, col_3: 0, note: '', isExpanded: false}]
                     }
                     scrollToPosition(1)
 
@@ -2546,6 +2546,7 @@
 
                         let val = parseFloat(row[numCol.id]) || 0
                         if (numCol.type.startsWith('multiply')) val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
+                        else if (numCol.type === 'minus') val = (parseFloat(row[numCol.opA]) || 0) - (parseFloat(row[numCol.opB]) || 0)
 
                         if (val !== 0) {
                             totals[label] = (totals[label] || 0) + val
