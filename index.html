@@ -888,10 +888,16 @@
                 <img src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" />
             </a>
         </footer>
-    </div>
-    <div id="sharedTooltip" class="fixed pointer-events-none opacity-0 z-[100] transition-opacity duration-200" style="left: 0; top: 0">
-        <div class="bg-[rgba(0,0,0,0.7)] text-white text-xs rounded px-3 py-2 font-sans shadow-lg max-w-xs break-words text-center">
-            <div id="sharedTooltipLabel" class="text-sm font-bold mt-1"></div>
+        <div class="fixed pointer-events-none z-[100] transition-opacity duration-200"
+         :style="{
+             left: '0px',
+             top: '0px',
+             opacity: tooltipState.show ? '1' : '0',
+             transform: `translate3d(calc(-50% + ${tooltipState.x}px), calc(-100% + ${tooltipState.y - 15}px), 0)`
+         }">
+            <div class="bg-[rgba(0,0,0,0.7)] text-white text-xs rounded px-3 py-2 font-sans shadow-lg max-w-xs break-words text-center">
+                <div class="text-sm font-bold mt-1">{{ tooltipState.text }}</div>
+            </div>
         </div>
     </div>
 
@@ -1231,6 +1237,13 @@
         const app = createApp({
             setup() {
                 const window = globalThis
+
+                const tooltipState = ref({
+                    show: false,
+                    text: '',
+                    x: 0,
+                    y: 0
+                })
 
                 const isProcessing = ref(false)
                 const db = new SimpleDB()
@@ -2721,17 +2734,12 @@
                         ctx.restore()
                     },
                     afterEvent(chart, args) {
-                        const event = args.event;
-                        const tooltipEl = document.getElementById('sharedTooltip')
-
-                        if (!tooltipEl) return;
-
+                        const event = args.event
                         if (event.type === 'mouseout') {
-                            tooltipEl.style.opacity = '0'
+                            tooltipState.value.show = false
                             isCenterTooltipVisible = false
-                            return;
+                            return
                         }
-
                         if (event.type === 'mousemove') {
                             const meta = chart.getDatasetMeta(0)
                             if (!meta.data || meta.data.length === 0) return
@@ -2744,19 +2752,15 @@
 
                             if (distance < innerRadius) {
                                 chart.canvas.style.cursor = 'pointer'
-                                if (!isCenterTooltipVisible) {
-                                    document.getElementById('sharedTooltipLabel').textContent = cachedTotalSum.toLocaleString()
-                                    tooltipEl.style.opacity = '1'
-                                    isCenterTooltipVisible = true
-                                }
-                                requestAnimationFrame(() => {
-                                    tooltipEl.style.transform = `translate3d(calc(-50% + ${args.event.native.clientX}px), calc(-100% + ${args.event.native.clientY - 15}px), 0)`
-                                })
-
+                                tooltipState.value.text = cachedTotalSum.toLocaleString()
+                                tooltipState.value.x = args.event.native.clientX
+                                tooltipState.value.y = args.event.native.clientY
+                                tooltipState.value.show = true
+                                isCenterTooltipVisible = true
                             } else {
                                 chart.canvas.style.cursor = 'default'
                                 if (isCenterTooltipVisible) {
-                                    tooltipEl.style.opacity = '0'
+                                    tooltipState.value.show = false
                                     isCenterTooltipVisible = false
                                 }
                             }
@@ -3377,29 +3381,34 @@
                 }
 
                 const initGlobalTooltip = () => {
-                    const tooltipEl = document.getElementById('sharedTooltip')
-                    const tooltipLabel = document.getElementById('sharedTooltipLabel')
+                    let moveTimer = null
 
-                    if (!tooltipEl || !tooltipLabel) return
                     document.addEventListener('mouseover', (e) => {
                         const target = e.target.closest('[data-tooltip]')
                         if (!target) return
                         const text = target.dataset.tooltip
                         if (text) {
-                            tooltipLabel.textContent = text
-                            tooltipEl.style.opacity = '1'
+                            tooltipState.value.x = e.clientX
+                            tooltipState.value.y = e.clientY
+                            tooltipState.value.text = text
+                            tooltipState.value.show = true
                         }
                     })
+
                     document.addEventListener('mousemove', (e) => {
-                        if (tooltipEl.style.opacity === '1' && e.target.closest('[data-tooltip]')) {
-                            requestAnimationFrame(() => {
-                                tooltipEl.style.transform = `translate3d(calc(-50% + ${e.clientX}px), calc(-100% + ${e.clientY - 15}px), 0)`
-                            })
+                        if (tooltipState.value.show && e.target.closest('[data-tooltip]')) {
+                            clearTimeout(moveTimer)
+                            moveTimer = setTimeout(() => {
+                                tooltipState.value.x = e.clientX
+                                tooltipState.value.y = e.clientY
+                            }, 500)
                         }
                     })
+
                     document.addEventListener('mouseout', (e) => {
                         if (e.target.closest('[data-tooltip]')) {
-                            tooltipEl.style.opacity = '0'
+                            tooltipState.value.show = false
+                            clearTimeout(moveTimer)
                         }
                     })
                 }
@@ -3845,7 +3854,8 @@
                     clearDateRange,
                     activeDateFilterCol,
                     toggleTrendChartType,
-                    trendChartType
+                    trendChartType,
+                    tooltipState
                 }
             }
         }).mount('#app')
