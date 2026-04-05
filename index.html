@@ -3433,9 +3433,9 @@
                             if (isProcessing.value || decodedText === lastScannedText.value) return
                             isProcessing.value = true
                             lastScannedText.value = decodedText
-                            playBeep()
-                            html5QrCode.pause()
                             try {
+                                playBeep()
+                                html5QrCode.pause()
                                 if (!await showConfirm(decodedText)) return
                                 if (scanningTarget.value) {
                                     const { row, col } = scanningTarget.value
