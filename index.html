@@ -3379,6 +3379,23 @@
                     }
                 }
 
+                const closeScanner = () => {
+                    scanningTarget.value = null
+                    if (html5QrCode) {
+                        html5QrCode.stop().then(() => {
+                            html5QrCode.clear()
+                            html5QrCode = null
+                            isScannerOpen.value = false
+                        }).catch(err => {
+                            console.error("close scanner error", err)
+                            alert("Scanner error: " + err)
+                            isScannerOpen.value = false
+                        })
+                    } else {
+                        isScannerOpen.value = false
+                    }
+                }
+
                 const openScanner = async () => {
 
                     initAudioFromRef()
@@ -3409,7 +3426,6 @@
                         }
                     }
 
-
                     html5QrCode.start(
                         { facingMode: "environment" },
                         config,
@@ -3438,6 +3454,10 @@
                                         }, 50)
                                     }
                                 }
+                            } catch (error) {
+                                console.error(error)
+                                alert(error.message)
+                            }
                             } finally {
                                 setTimeout(() => {
                                     html5QrCode.resume()
@@ -3452,22 +3472,6 @@
                         alert("Scanner error: " + err)
                         closeScanner()
                     })
-                }
-
-                const closeScanner = () => {
-                    scanningTarget.value = null
-                    if (html5QrCode) {
-                        html5QrCode.stop().then(() => {
-                            html5QrCode.clear()
-                            html5QrCode = null
-                            isScannerOpen.value = false
-                        }).catch(err => {
-                            console.error("close scanner error", err)
-                            isScannerOpen.value = false
-                        })
-                    } else {
-                        isScannerOpen.value = false
-                    }
                 }
 
                 const viewPhoto = (url) => {
