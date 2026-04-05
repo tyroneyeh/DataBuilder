@@ -624,12 +624,12 @@
                                 <span v-if="['number', 'multiply', 'minus'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                                     {{ formatNumber(columnTotals[col.id] || 0) }}
                                 </span>
-                                <div v-else-if="['text', 'category', 'date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                                <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="relative">
                                     <input
-                                        :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
+                                        :type="col.type === 'time' ? 'time' : 'text'"
                                         v-model="columnFilters[col.id]"
                                         :list="col.type === 'category' && 'datalist-' + col.id"
-                                        :placeholder="['date', 'time'].includes(col.type) ? '' : '🔍 ' + translate('Filter...')"
+                                        :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
                                     <button
@@ -638,6 +638,46 @@
                                         class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                         :title="translate('Clear filter')"
                                     >✖</button>
+                                </div>
+                                <div v-else-if="col.type === 'date' && !isPrinting" class="relative">
+
+                                    <div v-if="activeDateFilterCol === col.id"
+                                        @click="activeDateFilterCol = null"
+                                        class="fixed inset-0 z-40 cursor-default"
+                                        style="-webkit-tap-highlight-color: transparent">
+                                    </div>
+
+                                    <div class="relative z-50">
+                                        <input
+                                            type="date"
+                                            :value="dateRangeFilters[col.id]?.start || ''"
+                                            @input="updateDateRange(col.id, 'start', $event.target.value)"
+                                            @click="activeDateFilterCol = col.id"
+                                            class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
+                                        >
+                                        <button
+                                            v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
+                                            @click.stop="clearDateRange(col.id); activeDateFilterCol = null"
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700"
+                                            :title="translate('Clear filter')"
+                                        >✖</button>
+                                    </div>
+
+                                    <div v-if="activeDateFilterCol === col.id"
+                                        class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
+                                    >
+                                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
+                                            {{ translate('To') }}
+                                        </label>
+                                        <input
+                                            type="date"
+                                            :min="dateRangeFilters[col.id]?.start || ''"
+                                            :value="dateRangeFilters[col.id]?.end || ''"
+                                            @input="updateDateRange(col.id, 'end', $event.target.value)"
+                                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner"
+                                        >
+                                    </div>
+
                                 </div>
 
                             </div>
@@ -1284,6 +1324,11 @@
                 const lastScannedText = ref('')
                 const beepAudioRef = ref(null)
                 const photoViewer = ref({ isOpen: false, url: '' })
+                const dateRangeFilters = ref({
+                    start: '',
+                    end: ''
+                })
+                const activeDateFilterCol = ref(null)
 
                 let isInitializing = true
                 let scrollRAF
@@ -1455,6 +1500,19 @@
                                 const cellValue = String(row[colId] || '').toLowerCase()
                                 const keyword = String(filterText).toLowerCase().trim()
                                 return cellValue.includes(keyword)
+                            })
+                        })
+                    }
+                    const activeDateFilters = Object.entries(dateRangeFilters.value).filter(([_, range]) => range.start || range.end)
+                    if (activeDateFilters.length > 0) {
+                        result = result.filter(row => {
+                            return activeDateFilters.every(([colId, range]) => {
+                                const rowDate = row[colId]
+                                if (!rowDate) return false
+                                let isValid = true
+                                if (range.start) isValid = isValid && (rowDate >= range.start)
+                                if (range.end) isValid = isValid && (rowDate <= range.end)
+                                return isValid
                             })
                         })
                     }
@@ -1927,7 +1985,7 @@
                                 })
                                 targetInput.focus()
                             } else {
-                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`].scrollIntoView({
+                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
                                     behavior: 'smooth',
                                     block: 'end'
                                 })
@@ -3544,6 +3602,19 @@
                     sharedFileInput.click()
                 }
 
+                const updateDateRange = (colId, field, value) => {
+                    if (!dateRangeFilters.value[colId]) {
+                        dateRangeFilters.value[colId] = { start: '', end: '' }
+                    }
+                    dateRangeFilters.value[colId][field] = value
+                }
+
+                const clearDateRange = (colId) => {
+                    if (dateRangeFilters.value[colId]) {
+                        dateRangeFilters.value[colId] = { start: '', end: '' }
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -3702,7 +3773,11 @@
                     viewPhoto,
                     removePhoto,
                     triggerPhotoUpload,
-                    columnFilters
+                    columnFilters,
+                    dateRangeFilters,
+                    updateDateRange,
+                    clearDateRange,
+                    activeDateFilterCol
                 }
             }
         }).mount('#app')
