@@ -453,13 +453,13 @@
                                 </span>
                             </div>
 
-                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
+                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
+                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0) * (row[col.opC] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
+                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ formatNumber((parseFloat(row[col.opA]) || 0) - (parseFloat(row[col.opB]) || 0)) }}
                             </div>
                             <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id].length}">
@@ -501,7 +501,6 @@
                                         :class="{
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
-                                            'pr-6': col.type === 'text'
                                         }"
                                         @input="formatNumberInput(row, col)"
                                         @click="enterInput($event.target, col.type, $event)"
