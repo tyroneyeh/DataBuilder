@@ -1303,13 +1303,17 @@
                 let sharedFileInput
 
                 const debouncedSave = debounce(async () => {
-                    if (!currentStorageKey.value) return
-                    const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
-                    if (!data.colCount) data.colCount = columns.value.length
-                    db.set(currentStorageKey.value, data)
-                    localStorage.setItem('lang', currentLanguage.value)
-                    await nextTick()
-                    updateChart()
+                    try {
+                        if (!currentStorageKey.value) return
+                        const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
+                        if (!data.colCount) data.colCount = columns.value.length
+                        db.set(currentStorageKey.value, data)
+                        await nextTick()
+                        updateChart()
+                    } catch (e) {
+                        console.error(e)
+                        alert(e.message)
+                    }
                 }, 500)
 
                 watch([githubToken, gistId], () => {
@@ -1319,7 +1323,7 @@
                     }
                     localStorage.setItem('ty_gist_id', gistId.value.trim())
                 })
-                watch([currentLanguage, tableTitle, columns, rows, globalNotes], () => {
+                watch([tableTitle, columns, rows, globalNotes], () => {
                     if (isInitializing) return
                     debouncedSave()
                     shareLink.value = ''
@@ -1352,6 +1356,10 @@
                         if (trendChart.value) trendChart.value.update()
                     })
                 }, { immediate: true })
+
+                watch(currentLanguage, (newVal) => {
+                    localStorage.setItem('lang', newVal)
+                })
 
                 const toggleDarkMode = () => {
                     isDark.value = !isDark.value
