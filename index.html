@@ -3666,18 +3666,45 @@
                     sharedFileInput.onchange = async (e) => {
                         const file = e.target.files[0]
                         if (!file) return
-                        const tempScanner = new window.Html5Qrcode("reader")
+                        isProcessing.value = true;
+                        let decodedText = null
                         try {
-                            const decodedText = await tempScanner.scanFile(file, false)
-                            await processScannedText(decodedText)
-                            scanningTarget.value = null
-                            isScannerOpen.value = false
-                            tempScanner.clear()
+                            if ('BarcodeDetector' in window) {
+                                try {
+                                    const imageBitmap = await createImageBitmap(file)
+                                    const detector = new window.BarcodeDetector()
+                                    const barcodes = await detector.detect(imageBitmap)
+                                    if (barcodes.length > 0) {
+                                        decodedText = barcodes[0].rawValue
+                                    }
+                                } catch (err) {
+                                    console.warn("Original JS scanner failed:", err)
+                                }
+                            }
+                            if (!decodedText) {
+                                const tempScanner = new window.Html5Qrcode("reader")
+                                try {
+                                    decodedText = await tempScanner.scanFile(file, false)
+                                } catch (err) {
+                                    console.warn("Temp scanner failed:", err)
+                                } finally {
+                                    tempScanner.clear()
+                                }
+                            }
+                            if (decodedText) {
+                                await processScannedText(decodedText)
+                                scanningTarget.value = null
+                                isScannerOpen.value = false
+                            } else {
+                                alert(translate('No QR code found in the image.'))
+                            }
+
                         } catch (err) {
-                            console.warn("QR Code scan error", err)
-                            alert(translate('No QR code found in the image.'))
+                            console.error("QR code processing error:", err)
+                            alert(translate('Failed to process image.'))
                         } finally {
                             sharedFileInput.value = ''
+                            isProcessing.value = false
                         }
                     }
                     sharedFileInput.click()
