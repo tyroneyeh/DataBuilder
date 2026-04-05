@@ -1837,7 +1837,8 @@
                     }
 
                     if (!colCount.value) colCount.value = columns.value.length
-                    const newColId = `col_${++colCount.value}`
+                    colCount.value++
+                    const newColId = `col_${colCount.value}`
                     const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
                     if (newColType.value === 'multiply' || newColType.value === 'minus') {
                         newColData.opA = formulaA.value
@@ -3405,32 +3406,40 @@
                         { facingMode: "environment" },
                         config,
                         async (decodedText) => {
-                            if (decodedText === lastScannedText.value) return
+                            if (isProcessing.value || decodedText === lastScannedText.value) return
+                            isProcessing.value = true
                             playBeep()
                             html5QrCode.pause()
-                            if (!await showConfirm(decodedText)) return html5QrCode.resume()
-                            html5QrCode.resume()
-                            lastScannedText.value = decodedText
-
-                            if (scanningTarget.value) {
-                                const { row, col } = scanningTarget.value
-                                row[col.id] = decodedText
-                                const currentIndex = rows.value.findIndex(r => r.id === row.id)
-                                if (currentIndex !== -1) {
-                                    addRow()
-                                    scrollToPosition(1)
-                                    onDataEdited()
-                                    await nextTick()
-                                    setTimeout(() => {
-                                        scanningTarget.value = {
-                                            row: rows.value[currentIndex + 1],
-                                            col: col
-                                        }
-                                    }, 50)
+                            try {
+                                if (!await showConfirm(decodedText)) {
+                                    html5QrCode.resume()
+                                    return
                                 }
-                            }
+                                html5QrCode.resume()
+                                lastScannedText.value = decodedText
 
-                            setTimeout(() => { lastScannedText.value = '' }, 3000)
+                                if (scanningTarget.value) {
+                                    const { row, col } = scanningTarget.value
+                                    row[col.id] = decodedText
+                                    const currentIndex = rows.value.findIndex(r => r.id === row.id)
+                                    if (currentIndex !== -1) {
+                                        addRow()
+                                        scrollToPosition(1)
+                                        onDataEdited()
+                                        await nextTick()
+                                        setTimeout(() => {
+                                            scanningTarget.value = {
+                                                row: rows.value[currentIndex + 1],
+                                                col: col
+                                            }
+                                        }, 50)
+                                    }
+                                }
+
+                            } finally {
+                                setTimeout(() => { lastScannedText.value = '' }, 3000)
+                                isProcessing.value = false
+                            }
                         },
                         (errorMessage) => { }
                     ).catch(err => {
