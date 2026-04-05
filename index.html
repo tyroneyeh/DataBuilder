@@ -53,7 +53,7 @@
         @custom-variant dark (&:is(.dark *));
     </style>
     <script>
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && globalThis.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark')
         } else {
             document.documentElement.classList.remove('dark')
@@ -455,7 +455,7 @@
                                 <template v-if="row[col.id].length">
 
                                     <div v-for="(imgSrc, idx) in row[col.id]" :key="idx" class="relative group/photo inline-block shrink-0">
-                                        <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="Photo" />
+                                        <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="" />
                                         <button v-if="!isPrinting" @click.stop="removePhoto(row, col.id, idx)" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-100 sm:opacity-0 group-hover/photo:opacity-100 transition-opacity shadow z-10">✖</button>
                                     </div>
 
@@ -804,7 +804,7 @@
         <div v-if="photoViewer.isOpen"
             class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer"
             @click="photoViewer.isOpen = false">
-            <img :src="photoViewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl" />
+            <img :src="photoViewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl" alt="" />
             <button class="absolute top-4 right-4 text-white hover:text-red-400 transition-colors">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
