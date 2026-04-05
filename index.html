@@ -3458,6 +3458,9 @@
                                 alert(error.message)
                             } finally {
                                 setTimeout(() => {
+                                    isProcessing.value = false
+                                }, 300)
+                                setTimeout(() => {
                                     lastScannedText.value = ''
                                 }, 3000)
                             }
