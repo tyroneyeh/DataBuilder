@@ -2681,6 +2681,48 @@
                     return totals
                 }
 
+                const getTrendChartData = () => {
+                    const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
+                    const dateColId = selectedChartDateColId.value
+                    const catColId = selectedChartCatColId.value
+
+                    if (!numCol || !dateColId) return null
+
+                    const trendData = {}
+                    const allCategories = new Set()
+
+                    filteredRows.value.forEach(row => {
+                        const dateVal = row[dateColId]
+                        if (!dateVal) return
+                        const dateObj = new Date(dateVal)
+                        if (!isNaN(dateObj.getTime())) {
+                            const m = dateObj.getMonth() + 1
+                            const mFilter = monthFilters.value.find(x => x.month === m)
+                            if (mFilter && !mFilter.active) return
+
+                            const y = dateObj.getFullYear()
+                            const yFilter = yearFilters.value.find(x => x.year === y)
+                            if (yFilter && !yFilter.active) return
+                        }
+                        const dateLabel = getDateGroupKey(dateVal, timeUnit.value)
+                        let catLabel = translate('Uncategorized')
+                        if (catColId) {
+                            const rawCat = row[catColId]
+                            if (rawCat && String(rawCat).trim() !== '') catLabel = String(rawCat).trim()
+                        }
+                        let val = parseFloat(row[numCol.id]) || 0
+                        if (numCol.type.startsWith('multiply')) val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
+                        else if (numCol.type === 'minus') val = (parseFloat(row[numCol.opA]) || 0) - (parseFloat(row[numCol.opB]) || 0)
+                        if (val !== 0) {
+                            if (!trendData[dateLabel]) trendData[dateLabel] = {}
+                            trendData[dateLabel][catLabel] = (trendData[dateLabel][catLabel] || 0) + val
+                            allCategories.add(catLabel)
+                        }
+                    })
+
+                    return { trendData, categories: Array.from(allCategories) }
+                }
+
                 const compactFormatter = new Intl.NumberFormat(navigator.language || navigator.userLanguage || 'en-US', {
                     notation: 'compact',
                     maximumFractionDigits: 1
@@ -2923,67 +2965,63 @@
                     }
                 }
 
-                const updateTrend = (ctx, labels, values) => {
-                    const sortedData = labels.map((l, i) => ({ label: l, value: values[i] }))
-                        .sort((a, b) => a.label.localeCompare(b.label))
-
-                    const trendLabels = sortedData.map(d => d.label)
-                    const trendValues = sortedData.map(d => d.value)
-
+                const updateTrend = (ctx, labels, trendObj) => {
                     const isLine = trendChartType.value === 'line'
+                    const palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e', '#84cc16']
+                    const datasets = trendObj.categories.map((cat, index) => {
+                        const color = palette[index % palette.length]
+                        const dataValues = labels.map(dateLabel => {
+                            return trendObj.trendData[dateLabel][cat] || 0
+                        })
+                        return {
+                            label: cat,
+                            data: dataValues,
+                            backgroundColor: color,
+                            borderColor: color,
+                            borderWidth: isLine ? 2 : 0,
+                            fill: false,
+                            tension: 0.4,
+                            borderRadius: isLine ? 0 : 4,
+                            pointBackgroundColor: (context) => {
+                                const label = context.chart.data.labels[context.dataIndex]
+                                return label === selectedChartDate.value ? color : '#fff'
+                            },
+                            pointBorderColor: color,
+                            pointBorderWidth: (context) => {
+                                const label = context.chart.data.labels[context.dataIndex]
+                                return label === selectedChartDate.value ? 3 : 2
+                            },
+                            pointRadius: (context) => {
+                                const label = context.chart.data.labels[context.dataIndex]
+                                return label === selectedChartDate.value ? 6 : 3
+                            }
+                        }
+                    })
                     if (trendChart.value && trendChart.value.config.type !== trendChartType.value) {
                         trendChart.value.destroy()
                         trendChart.value = null
                     }
                     if (trendChart.value) {
-                        trendChart.value.data.labels = trendLabels
-                        trendChart.value.data.datasets[0].data = trendValues
-
+                        trendChart.value.data.labels = labels
+                        trendChart.value.data.datasets = datasets
+                        trendChart.value.options.scales.x.stacked = !isLine
+                        trendChart.value.options.scales.y.stacked = !isLine
                         trendChart.value.options.scales.y.ticks.color = isDark.value ? '#9ca3af' : '#6b7280'
                         trendChart.value.options.scales.y.grid.color = isDark.value ? '#374151' : '#e5e7eb'
                         trendChart.value.options.scales.x.ticks.color = isDark.value ? '#9ca3af' : '#6b7280'
-
                         trendChart.value.update()
                     } else {
                         trendChart.value = new Chart(ctx, {
                             type: trendChartType.value,
                             data: {
-                                labels: trendLabels,
-                                datasets: [{
-                                    label: translate('Trend'),
-                                    data: trendValues,
-                                    borderColor: '#6366f1',
-                                    backgroundColor: isLine ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.7)',
-                                    fill: true,
-                                    tension: 0.4,
-                                    borderRadius: isLine ? 0 : 4,
-                                    pointBackgroundColor: (context) => {
-                                        const label = context.chart.data.labels[context.dataIndex]
-                                        return label === selectedChartDate.value ? '#ef4444' : '#fff'
-                                    },
-                                    pointBorderColor: (context) => {
-                                        const label = context.chart.data.labels[context.dataIndex]
-                                        return label === selectedChartDate.value ? '#ef4444' : '#6366f1'
-                                    },
-                                    pointBorderWidth: (context) => {
-                                        const label = context.chart.data.labels[context.dataIndex]
-                                        return label === selectedChartDate.value ? 3 : 2
-                                    },
-                                    pointRadius: (context) => {
-                                        const label = context.chart.data.labels[context.dataIndex]
-                                        return label === selectedChartDate.value ? 8 : 4
-                                    }
-                                }]
+                                labels: labels,
+                                datasets: datasets
                             },
                             options: {
                                 onClick: (e, elements, chart) => {
                                     if (elements.length > 0) {
                                         const clickedLabel = chart.data.labels[elements[0].index]
-                                        if (selectedChartDate.value === clickedLabel) {
-                                            selectedChartDate.value = null
-                                        } else {
-                                            selectedChartDate.value = clickedLabel
-                                        }
+                                        selectedChartDate.value = selectedChartDate.value === clickedLabel ? null : clickedLabel
                                         chart.update()
                                     }
                                 },
@@ -2992,27 +3030,55 @@
                                 },
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false
+                                },
                                 scales: {
+                                    x: {
+                                        stacked: !isLine,
+                                        ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' },
+                                        grid: { display: false }
+                                    },
                                     y: {
+                                        stacked: !isLine,
                                         beginAtZero: true,
                                         ticks: {
                                             callback: (v) => formatNumber(v),
                                             color: isDark.value ? '#9ca3af' : '#6b7280'
                                         },
-                                        grid: {
-                                            color: isDark.value ? '#374151' : '#e5e7eb'
-                                        }
-                                    },
-                                    x: {
-                                        ticks: {
-                                            color: isDark.value ? '#9ca3af' : '#6b7280'
-                                        },
-                                        grid: { display: false }
+                                        grid: { color: isDark.value ? '#374151' : '#e5e7eb' }
                                     }
                                 },
                                 plugins: {
-                                    legend: { display: false },
-                                    tooltip: { mode: 'index', intersect: false }
+                                    legend: {
+                                        display: true,
+                                        position: 'bottom',
+                                        labels: {
+                                            color: isDark.value ? '#9ca3af' : '#6b7280',
+                                            usePointStyle: true,
+                                            boxWidth: 8
+                                        }
+                                    },
+                                    tooltip: {
+                                        filter: (tooltipItem) => {
+                                            return tooltipItem.parsed.y !== 0
+                                        },
+                                        itemSort: (a, b) => b.parsed.y - a.parsed.y,
+                                        footerFont: { size: 13, weight: 'bold' },
+                                        footerMarginTop: 8,
+                                        callbacks: {
+                                            footer: (tooltipItems) => {
+                                                if (tooltipItems.length === 0) return null
+                                                let total = 0
+                                                tooltipItems.forEach(function(tooltipItem) {
+                                                    total += tooltipItem.parsed.y
+                                                })
+
+                                                return translate('Total') +': ' + total.toLocaleString()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         })
@@ -3027,7 +3093,6 @@
                     }
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
-
                     const categoryData = getChartData('category')
                     if (categoryData && ctxDoughnut) {
                         const labels = Object.keys(categoryData)
@@ -3037,19 +3102,12 @@
                         expenseChart.value.destroy()
                         expenseChart.value = null
                     }
-
-                    const dateData = getChartData('date')
-                    if (dateData && Object.keys(dateData).length > 0 && selectedChartDateColId.value) {
-                        const validLabels = Object.keys(dateData)
-                        if (validLabels.length > 0) {
-                            hasTrendData.value = true
-                            const sortedLabels = validLabels.sort((a, b) => a.localeCompare(b))
-                            const sortedValues = sortedLabels.map(label => dateData[label])
-                            await nextTick()
-                            updateTrend(ctxLine, sortedLabels, sortedValues)
-                        } else {
-                            hasTrendData.value = false
-                        }
+                    const trendObj = getTrendChartData()
+                    if (trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value) {
+                        hasTrendData.value = true
+                        const sortedLabels = Object.keys(trendObj.trendData).sort((a, b) => a.localeCompare(b))
+                        await nextTick()
+                        updateTrend(ctxLine, sortedLabels, trendObj)
                     } else {
                         hasTrendData.value = false
                         if (trendChart.value) {
@@ -3617,7 +3675,7 @@
                             tempScanner.clear()
                         } catch (err) {
                             console.warn("QR Code scan error", err)
-                            alert(translate('No QR code found in the image.'));
+                            alert(translate('No QR code found in the image.'))
                         } finally {
                             sharedFileInput.value = ''
                         }
