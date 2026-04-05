@@ -3435,7 +3435,6 @@
                             lastScannedText.value = decodedText
                             try {
                                 playBeep()
-                                html5QrCode.pause()
                                 if (!await showConfirm(decodedText)) return
                                 if (scanningTarget.value) {
                                     const { row, col } = scanningTarget.value
@@ -3458,15 +3457,6 @@
                                 console.error(error)
                                 alert(error.message)
                             } finally {
-                                setTimeout(() => {
-                                    try {
-                                        html5QrCode.resume()
-                                    } catch (e) {
-                                        console.error(e)
-                                        alert(e.message)
-                                    }
-                                    isProcessing.value = false
-                                }, 300)
                                 setTimeout(() => {
                                     lastScannedText.value = ''
                                 }, 3000)
