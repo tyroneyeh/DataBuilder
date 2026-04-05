@@ -42,6 +42,10 @@
             transition: opacity 0.2s ease-in-out;
             cursor: pointer;
         }
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit {
+            justify-content: flex-end;
+        }
         input:hover::-webkit-calendar-picker-indicator {
             opacity: 1;
         }
@@ -417,8 +421,7 @@
                 <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative" >
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
-                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 text-left sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none
-                            block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
+                        <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
                             @pointerdown="startDragging('rows', row.id, $event)">
 
                             <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-2 sm:mr-1 text-xs">⋮</span>
@@ -450,13 +453,13 @@
                                 </span>
                             </div>
 
-                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
+                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full px-2 py-2 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
+                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="((parseFloat(row[col.opA]) || 0) * (parseFloat(row[col.opB]) || 0) * (parseFloat(row[col.opC]) || 0)).toLocaleString()">
                                 {{ formatNumber((row[col.opA] || 0) * (row[col.opB] || 0) * (row[col.opC] || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full px-2 py-2 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
+                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-10 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ formatNumber((parseFloat(row[col.opA]) || 0) - (parseFloat(row[col.opB]) || 0)) }}
                             </div>
                             <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id].length}">
@@ -494,10 +497,11 @@
                                         :list="col.type === 'category' && 'datalist-' + col.id"
                                         :data-tooltip="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
-                                        class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
+                                        class="min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
                                         :class="{
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
-                                            'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category'
+                                            'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
+                                            'pr-6': col.type === 'text'
                                         }"
                                         @input="formatNumberInput(row, col)"
                                         @click="enterInput($event.target, col.type, $event)"
