@@ -1017,6 +1017,7 @@
                 "Note (*)": "備註 (*)",
                 "Number": "數字",
                 "OK": "確定",
+                "Others": "其他",
                 "Photo": "相片",
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B!",
@@ -2670,7 +2671,7 @@
                     return totals
                 }
 
-                const getTrendChartData = () => {
+                const getTrendChartData = (topCategoriesSet) => {
                     const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
                     const dateColId = selectedChartDateColId.value
                     const catColId = selectedChartCatColId.value
@@ -2679,6 +2680,7 @@
 
                     const trendData = {}
                     const allCategories = new Set()
+                    const otherLabel = translate('Others')
 
                     filteredRows.value.forEach(row => {
                         const dateVal = row[dateColId]
@@ -2698,6 +2700,9 @@
                         if (catColId) {
                             const rawCat = row[catColId]
                             if (rawCat && String(rawCat).trim() !== '') catLabel = String(rawCat).trim()
+                        }
+                        if (topCategoriesSet && topCategoriesSet.size > 0 && !topCategoriesSet.has(catLabel)) {
+                            catLabel = otherLabel
                         }
                         let val = parseFloat(row[numCol.id]) || 0
                         if (numCol.type.startsWith('multiply')) val = (parseFloat(row[numCol.opA]) || 0) * (parseFloat(row[numCol.opB]) || 0)
@@ -3083,19 +3088,54 @@
                     if (unit) {
                         timeUnit.value = unit
                         selectedChartDate.value = null
+                    } else if (selectedChartDateColId.value && filteredRows.value.length > 0) {
+                        const dates = filteredRows.value
+                            .map(row => row[selectedChartDateColId.value])
+                            .filter(d => d && !isNaN(new Date(d).getTime()))
+                            .map(d => new Date(d).getTime())
+
+                        if (dates.length > 0) {
+                            const minDate = Math.min(...dates)
+                            const maxDate = Math.max(...dates)
+                            const diffDays = (maxDate - minDate) / (1000 * 60 * 60 * 24)
+
+                            if (diffDays > 90) {
+                                timeUnit.value = 'month'
+                            } else if (diffDays > 30) {
+                                timeUnit.value = 'week'
+                            } else {
+                                timeUnit.value = 'day'
+                            }
+                        }
                     }
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
                     const categoryData = getChartData('category')
+                    let topCategories = new Set()
+                    let labels = []
+                    let values = []
+
                     if (categoryData && ctxDoughnut) {
-                        const labels = Object.keys(categoryData)
-                        const values = Object.values(categoryData)
+                        const sortedEntries = Object.entries(categoryData).sort((a, b) => b[1] - a[1])
+                        const MAX_CAT = 12
+                        const finalData = {}
+                        const otherLabel = translate('Others')
+                        sortedEntries.forEach((item, index) => {
+                            if (index < MAX_CAT) {
+                                finalData[item[0]] = item[1]
+                                topCategories.add(item[0])
+                            } else {
+                                finalData[otherLabel] = (finalData[otherLabel] || 0) + item[1]
+                            }
+                        })
+                        labels = Object.keys(finalData)
+                        values = Object.values(finalData)
                         updateDoughnut(ctxDoughnut, labels, values)
                     } else if (expenseChart.value) {
                         expenseChart.value.destroy()
                         expenseChart.value = null
                     }
-                    const trendObj = getTrendChartData()
+                    const trendObj = getTrendChartData(topCategories)
                     if (trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value) {
                         hasTrendData.value = true
                         const sortedLabels = Object.keys(trendObj.trendData).sort((a, b) => a.localeCompare(b))
