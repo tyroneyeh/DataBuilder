@@ -643,7 +643,7 @@
                                         v-model="columnFilters[col.id]"
                                         :list="col.type === 'category' && 'datalist-' + col.id"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
-                                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
+                                        class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
                                     <button
                                         v-show="columnFilters[col.id]"
@@ -1769,6 +1769,11 @@
 
                 const updateColumns = () => {
                     if (columns.value.length === 0) return
+                    columns.value.forEach(col => {
+                        if (columnFilters.value[col.id] === undefined) {
+                            columnFilters.value[col.id] = ''
+                        }
+                    })
                     const numberColumnsLength = columns.value.filter(col => col.type === 'number').length
                     if (numberColumnsLength > 1) {
                         if (numberColumnsLength > 1 && (!typeOptions.value.some(opt => opt.value === 'multiply') || !typeOptions.value.some(opt => opt.value === 'minus'))) {
