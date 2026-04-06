@@ -179,7 +179,7 @@
                             </select>
                         </div>
 
-                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-32 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" @click="toggleTrendChartType">
+                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-32 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" @click="toggleTrendChartType" v-if="hasDateColumn">
                             <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
                                 :class="trendChartType === 'line' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'"></div>
 
