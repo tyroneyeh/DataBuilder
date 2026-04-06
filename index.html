@@ -3779,6 +3779,12 @@
                         dateRangeFilters.value[colId] = { start: '', end: '' }
                     }
                     dateRangeFilters.value[colId][field] = value
+                    if (field === 'start' && value) {
+                        const currentEnd = dateRangeFilters.value[colId].end
+                        if (!currentEnd || value > currentEnd) {
+                            dateRangeFilters.value[colId].end = value
+                        }
+                    }
                 }
 
                 const clearDateRange = (colId) => {
