@@ -1556,7 +1556,16 @@
                         })
                     }
                     if (chartDate) {
-                        result = result.filter(row => getDateGroupKey(row[selectedChartDateColId.value], timeUnit.value) === chartDate)
+                        result = result.filter(row => {
+                            const rowDate = row[selectedChartDateColId.value]
+                            if (!rowDate) return false
+                            if (chartDate.includes('-Q')) return getDateGroupKey(rowDate, 'quarter') === chartDate
+                            if (chartDate.includes('-H')) return getDateGroupKey(rowDate, 'halfyear') === chartDate
+                            if (chartDate.includes('-W')) return getDateGroupKey(rowDate, 'week') === chartDate
+                            if (chartDate.length === 4) return getDateGroupKey(rowDate, 'year') === chartDate
+                            if (chartDate.length === 7) return getDateGroupKey(rowDate, 'month') === chartDate
+                            return getDateGroupKey(rowDate, 'day') === chartDate
+                        })
                     }
                     return result
                 })
@@ -3019,7 +3028,16 @@
                                 onClick: (e, elements, chart) => {
                                     if (elements.length > 0) {
                                         const clickedLabel = chart.data.labels[elements[0].index]
-                                        selectedChartDate.value = selectedChartDate.value === clickedLabel ? null : clickedLabel
+                                        if (selectedChartDate.value === clickedLabel) {
+                                            selectedChartDate.value = null
+                                        } else {
+                                            selectedChartDate.value = clickedLabel
+                                            if (clickedLabel.length === 4) {
+                                                timeUnit.value = 'month'
+                                            } else if (clickedLabel.length === 7 || clickedLabel.includes('-Q') || clickedLabel.includes('-H') || clickedLabel.includes('-W')) {
+                                                timeUnit.value = 'day'
+                                            }
+                                        }
                                         chart.update()
                                     }
                                 },
