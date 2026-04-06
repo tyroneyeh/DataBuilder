@@ -1744,7 +1744,8 @@
 
                     let mergeCounter = 0
                     rows.value = Array.from(mergedMap.values()).map(r => {
-                        return { ...r, id: `row_${++mergeCounter}` }
+                        mergeCounter++
+                        return { ...r, id: `row_${mergeCounter}` }
                     })
 
                     if (!isSilent) {
@@ -1829,7 +1830,7 @@
                         let mergeCounter = 0
                         rows.value = [...localRows, ...incomingRows].map(row => {
                             mergeCounter++
-                            return { ...row, id: Date.now() + mergeCounter }
+                            return { ...row, id: `row_${mergeCounter}` }
                         })
 
                         if (await showConfirm(translate('Do you want to merge duplicates?'))) mergeDuplicates(true)
@@ -3842,12 +3843,12 @@
                     isProcessing.value = true
 
                     try {
-                        const rowIndex = rows.value.indexOf(row)
-                        const cleanRowData = getCleanData()[rowIndex]
+                        const rawRowData = { ...toRaw(row) }
+                        delete rawRowData.id
 
                         const payload = {
                             columns: toRaw(columns.value),
-                            rows: [cleanRowData]
+                            rows: [rawRowData]
                         }
 
                         const jsonString = JSON.stringify(payload)
@@ -3861,7 +3862,7 @@
                                     isOpen: true,
                                     qrUrl: url,
                                     link: link,
-                                    title: translate('Share Link & QRCode') + ' - (' + (rowIndex + 1) + ')',
+                                    title: translate('Share Link & QRCode') + ' - (' + (rows.value.indexOf(row) + 1) + ')',
                                     desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
                                 }
                             }
