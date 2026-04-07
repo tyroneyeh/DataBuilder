@@ -3802,41 +3802,55 @@
                     sharedFileInput.onchange = async (e) => {
                         const file = e.target.files[0]
                         if (!file) return
-                        isProcessing.value = true;
+                        isProcessing.value = true
                         let decodedText = null
+
                         try {
-                            if ('BarcodeDetector' in window) {
-                                try {
-                                    const imageBitmap = await createImageBitmap(file)
-                                    const detector = new window.BarcodeDetector()
-                                    const barcodes = await detector.detect(imageBitmap)
-                                    if (barcodes.length > 0) {
-                                        decodedText = barcodes[0].rawValue
+                            const isOCRMode = selectedScanMode.value.startsWith('OCR_')
+
+                            if (isOCRMode) {
+                                console.log('📸 進入 OCR 雲端圖片解析模式...')
+                                const base64Image = await new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onload = () => resolve(reader.result)
+                                    reader.onerror = reject
+                                    reader.readAsDataURL(file)
+                                })
+                                decodedText = await processOCR(base64Image);
+                            } else {
+                                console.log('📊 進入本地條碼/QR Code 解析模式...')
+                                if ('BarcodeDetector' in window) {
+                                    try {
+                                        const imageBitmap = await createImageBitmap(file)
+                                        const detector = new window.BarcodeDetector()
+                                        const barcodes = await detector.detect(imageBitmap)
+                                        if (barcodes.length > 0) {
+                                            decodedText = barcodes[0].rawValue
+                                        }
+                                    } catch (err) {
+                                        console.warn("Original JS scanner failed:", err)
                                     }
-                                } catch (err) {
-                                    console.warn("Original JS scanner failed:", err)
                                 }
-                            }
-                            if (!decodedText) {
-                                const tempScanner = new window.Html5Qrcode("reader")
-                                try {
-                                    decodedText = await tempScanner.scanFile(file, false)
-                                } catch (err) {
-                                    console.warn("Temp scanner failed:", err)
-                                } finally {
-                                    tempScanner.clear()
+                                if (!decodedText) {
+                                    const tempScanner = new window.Html5Qrcode("reader")
+                                    try {
+                                        decodedText = await tempScanner.scanFile(file, false)
+                                    } catch (err) {
+                                        console.warn("Temp scanner failed:", err)
+                                    } finally {
+                                        tempScanner.clear()
+                                    }
                                 }
                             }
                             if (decodedText) {
                                 await processScannedText(decodedText)
                                 scanningTarget.value = null
                                 isScannerOpen.value = false
-                            } else {
+                            } else if (!isOCRMode) {
                                 alert(translate('No QR code found in the image.'))
                             }
-
                         } catch (err) {
-                            console.error("QR code processing error:", err)
+                            console.error("Image processing error:", err)
                             alert(translate('Failed to process image.'))
                         } finally {
                             sharedFileInput.value = ''
