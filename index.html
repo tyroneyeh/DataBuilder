@@ -3706,9 +3706,18 @@
                     const config = {
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
-                            const boxWidth = viewfinderWidth * 0.85
-                            const boxHeight = is1D ? viewfinderHeight * 0.3 : viewfinderHeight * 0.85
-                            return { width: boxWidth, height: boxHeight }
+                            if (is1D) {
+                                return {
+                                    width: viewfinderWidth * 0.85,
+                                    height: viewfinderHeight * 0.6
+                                }
+                            } else {
+                                const size = Math.min(viewfinderWidth, viewfinderHeight) * 0.9
+                                return {
+                                    width: size,
+                                    height: size
+                                }
+                            }
                         },
                         aspectRatio: perfectAspectRatio,
                         videoConstraints: {
