@@ -774,8 +774,10 @@
                     </div>
                 </div>
 
-                <div v-show="isScannerOpen" class="w-full rounded-xl bg-black shadow-inner border border-gray-200 dark:border-gray-700 mt-2 relative">
-                    <div id="reader" class="w-full"></div>
+                <div v-show="isScannerOpen" class="relative w-full h-[30vh] rounded-xl overflow-hidden bg-black shadow-inner border border-gray-200 dark:border-gray-700 mt-2">
+                    <div class="absolute top-1/2 left-0 w-full transform -translate-y-1/2">
+                        <div id="reader" class="w-full"></div>
+                    </div>
                     <div v-if="selectedScanMode.startsWith('1D_')" 
                         class="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-red-500 shadow-[0_0_12px_4px_rgba(239,68,68,0.8)] z-50 pointer-events-none animate-pulse transform -translate-y-1/2">
                     </div>
@@ -3699,27 +3701,16 @@
                         formatsToSupport: getFormatsToSupport()
                     })
 
-                    const width = document.getElementById('reader').clientWidth
-                    const idealHeight = window.innerHeight * 0.3
-                    const targetAspectRatio = width / idealHeight
                     const is1D = selectedScanMode.value.startsWith('1D_')
 
                     const config = {
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
-                            if (is1D) {
-                                return {
-                                    width: viewfinderWidth * 0.85,
-                                    height: viewfinderHeight * 0.5
-                                }
-                            }
-                            const size = Math.max(viewfinderWidth, viewfinderHeight) * 0.85
-                            return {
-                                width: size,
-                                height: size
-                            }
+                            const boxWidth = viewfinderWidth * 0.85
+                            const boxHeight = is1D ? viewfinderHeight * 0.4 : viewfinderHeight * 0.85
+                            return { width: boxWidth, height: boxHeight }
                         },
-                        aspectRatio: perfectAspectRatio,
+                        aspectRatio: 1,
                         videoConstraints: {
                             facingMode: "environment",
                             advanced: [{ focusMode: "continuous" }]
