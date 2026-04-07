@@ -3697,7 +3697,7 @@
                     })
 
                     const config = {
-                        fps: 10,
+                        fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
                             const boxWidth = viewfinderWidth * 0.95
                             const boxHeight = viewfinderHeight * 0.9
@@ -3709,6 +3709,9 @@
                             width: { ideal: 1280 },
                             height: { ideal: 720 },
                             advanced: [{ focusMode: "continuous" }]
+                        },
+                        experimentalFeatures: {
+                            useBarCodeDetectorIfSupported: true
                         }
                     }
 
