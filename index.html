@@ -3710,7 +3710,6 @@
                     isProcessing.value = true
                     lastScannedText.value = decodedText
                     try {
-                        playBeep()
                         if (!await showConfirm(decodedText)) return
                         if (scanningTarget.value) {
                             const { row, col } = scanningTarget.value
@@ -4178,6 +4177,8 @@
                         await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd')
 
                         console.log('🎉 邊緣運算 AI 引擎喚醒成功！')
+                        initAudioFromRef()
+                        playBeep()
                     } catch (error) {
                         console.error('AI 模型載入失敗:', error)
                         alert(translate('AI 引擎載入失敗，請確認網路連線！'))
