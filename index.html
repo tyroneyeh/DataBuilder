@@ -2062,7 +2062,9 @@
                 const formatNumberInput = (row, col) => {
                     if (col.type === 'number' && row[col.id] != null) {
                         let valStr = String(row[col.id])
-                        row[col.id] = valStr.replaceAll(/[^0-9+\-*/.%()^eE]/g, '')
+                        const matches = valStr.match(/[0-9+\-*/.%()^]+/g)
+                        if (matches) valStr = matches.join('+')
+                        row[col.id] = valStr.replaceAll(/[^0-9+\-*/.%()^]/g, '')
                         triggerRef(rows)
                     }
                 }
