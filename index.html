@@ -776,6 +776,9 @@
 
                 <div v-show="isScannerOpen" class="relative w-full rounded-xl overflow-hidden bg-black shadow-inner border border-gray-200 dark:border-gray-700 mt-2">
                     <div id="reader" class="w-full relative" style="max-height: 40vh;"></div>
+                    <div v-if="selectedScanMode.startsWith('1D_')"
+                        class="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-red-500/90 shadow-[0_0_12px_4px_rgba(239,68,68,0.6)] z-50 pointer-events-none animate-pulse transform -translate-y-1/2">
+                    </div>
                 </div>
             </div>
         </div>
@@ -3700,7 +3703,8 @@
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
                             const boxWidth = viewfinderWidth * 0.95
-                            const boxHeight = viewfinderHeight * 0.9
+                            const is1D = selectedScanMode.value.startsWith('1D_')
+                            const boxHeight = is1D ? viewfinderHeight * 0.4 : viewfinderHeight * 0.9
                             return { width: boxWidth, height: boxHeight }
                         },
                         aspectRatio: 1,
