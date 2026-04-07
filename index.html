@@ -493,7 +493,7 @@
                                         :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                         v-model="row[col.id]"
                                         :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
-                                        :inputmode="col.type === 'number' && 'decimal'"
+                                        :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
                                         :list="col.type === 'category' && 'datalist-' + col.id"
                                         :data-tooltip="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
