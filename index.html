@@ -795,49 +795,54 @@
             ></textarea>
         </div>
 
-        <div v-if="!isPrinting" class="flex flex-col p-2 gap-4">
+        <div v-if="!isPrinting" class="flex flex-col p-2 gap-6 mt-4">
             <div class="flex flex-wrap gap-3">
                 <input type="file" ref="fileInput" accept=".json,.csv" multiple class="hidden" @change="handleFileUpload">
 
-                <button @click="triggerFileUpload" class="bg-amber-600 hover:bg-amber-700 text-white px-5 py-1 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">📂 {{ translate('Upload (JSON/CSV)') }}</button>
-                <button @click="exportJson" class="bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">{} {{ translate('Export JSON') }}</button>
-                <button @click="exportCsv" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto">⊞ {{ translate('Export CSV') }}</button>
-                <button @click="generateShareLink" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
-                <button @click="triggerPrint" :disabled="isProcessing" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
+                <button @click="triggerFileUpload" class="bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2">📂 {{ translate('Upload (JSON/CSV)') }}</button>
+                <button @click="exportJson" class="bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2">{} {{ translate('Export JSON') }}</button>
+                <button @click="exportCsv" class="bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2">⊞ {{ translate('Export CSV') }}</button>
+                <button @click="generateShareLink" class="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
+                <button @click="triggerPrint" :disabled="isProcessing" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
             </div>
 
-            <div v-if="outputToScreen" class="h-64 bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto shadow-inner mt-2">
-                <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
+            <div v-if="outputToScreen" class="flex flex-col gap-3">
+                <div class="h-64 bg-gray-900 text-green-400 p-4 rounded-xl overflow-x-auto shadow-inner border border-gray-700">
+                    <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
+                </div>
+                <button class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">
+                    📥 {{ translate('Download') }}
+                </button>
             </div>
-            <button v-if="outputToScreen" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2 rounded-md transition-colors font-medium shadow-sm w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">📥 {{ translate('Download') }}</button>
 
-            <div class="w-full bg-gray-800 p-4 rounded-lg border border-gray-700 mt-4 shadow-sm text-gray-200">
-                <div class="flex flex-wrap w-full sm:w-auto justify-center gap-4">
-                    <button @click="backupToGist" v-if="githubToken.trim()" :disabled="isProcessing" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬆️ {{ translate('Backup to Cloud') }}</button>
-                    <button @click="restoreFromGist" v-if="gistId.trim()" :disabled="isProcessing" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">⬇️ {{ translate('Restore from Cloud') }}</button>
+            <div class="w-full bg-white dark:bg-gray-800 p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+                <div class="flex flex-wrap w-full justify-start gap-3 mb-6">
+                    <button @click="backupToGist" v-if="githubToken.trim()" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬆️ {{ translate('Backup to Cloud') }}</button>
+                    <button @click="restoreFromGist" v-if="gistId.trim()" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬇️ {{ translate('Restore from Cloud') }}</button>
                 </div>
-                <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between mt-4">
-                    <h3 class="font-bold flex items-center gap-2 text-white">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
-                    <span class="text-gray-400 hover:text-white transition-colors focus:outline-none" :data-tooltip="translate('Settings')">⚙️</span>
+                <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between cursor-pointer group select-none">
+                    <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
+                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                        <span class="transform transition-transform duration-300" :class="isGistSettingsOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+                    </div>
                 </div>
-
                 <div class="grid transition-all duration-500 ease-in-out" :class="isGistSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
                     <div class="overflow-hidden">
-                        <div class="p-3 bg-gray-900/50 rounded-md border border-gray-700">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+                        <div class="p-4 sm:p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div class="flex flex-col">
-                                    <span class="text-xs text-gray-400 mb-1">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
-                                    <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
+                                    <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-xs text-gray-400 mb-1">{{ translate('Gist ID (Leave blank to create new)') }}</span>
-                                    <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-sm bg-gray-900 text-white placeholder-gray-600">
+                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</span>
+                                    <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
                                 </div>
                             </div>
-                            <div class="text-gray-100 mt-2 space-y-1">
-                                <p>💡 <strong>{{ translate('How to get a Token?') }}</strong></p>
-                                <ol class="list-decimal ml-4 pl-1">
-                                    <li><a href="https://github.com/settings/tokens" class="text-blue-200 hover:text-blue-300 underline" target="_blank">{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</a></li>
+                            <div class="text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-2 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <p class="font-bold text-gray-800 dark:text-gray-200">💡 {{ translate('How to get a Token?') }}</p>
+                                <ol class="list-decimal ml-5 space-y-1.5 marker:text-gray-400">
+                                    <li><a href="https://github.com/settings/tokens" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium underline underline-offset-2 transition-colors" target="_blank">{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</a></li>
                                     <li>{{ translate('Click "Generate new token (classic)".') }}</li>
                                     <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
                                     <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
