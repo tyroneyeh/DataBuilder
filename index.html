@@ -797,17 +797,22 @@
                         <span v-if="!isProcessing">📸 拍照辨識</span>
                         <span v-else>⏳ 辨識中...</span>
                     </button>
-                    <div v-if="isZoomSupported" class="absolute bottom-20 left-[10%] right-[10%] z-50 bg-black/50 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 flex items-center gap-3 shadow-lg">
-                        <span class="text-white text-xs font-bold">🔍 1x</span>
-                        <input
-                            type="range"
-                            v-model.number="currentZoom"
-                            :min="minZoom"
-                            :max="maxZoom"
-                            step="0.1"
-                            class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                        >
-                        <span class="text-white text-xs font-bold">{{ maxZoom }}x</span>
+                    <div
+                        v-if="isZoomSupported"
+                        class="absolute right-4 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-2 bg-black/40 backdrop-blur-sm p-2 rounded-full border border-white/20"
+                    >
+                        <span class="text-white text-[10px] font-bold">{{ maxZoom }}x</span>
+                        <div class="h-24 w-4 relative my-2 flex justify-center">
+                            <input
+                                type="range"
+                                v-model.number="currentZoom"
+                                :min="minZoom"
+                                :max="maxZoom"
+                                step="0.1"
+                                class="w-24 h-1 absolute top-[45%] origin-center -rotate-90 appearance-none bg-gray-300 rounded-lg outline-none accent-indigo-500 cursor-ns-resize"
+                            >
+                        </div>
+                        <span class="text-white text-[10px] font-bold">1x</span>
                     </div>
                 </div>
             </div>
