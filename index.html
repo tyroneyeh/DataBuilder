@@ -4149,9 +4149,17 @@
                 }
 
                 const startAutoCaptureLoop = async () => {
-                    if (!isScannerOpen.value || selectedScanMode.value !== 'OCR_PLATE') return
-                    const videoEl = document.querySelector('#reader video')
-                    if (!videoEl || isProcessing.value) {
+                    if (
+                        !isScannerOpen.value ||
+                        selectedScanMode.value !== 'OCR_PLATE' ||
+                        !isAutoScanEnabled.value
+                    ) {
+                        console.log('🛑 自動偵測迴圈已安全終止');
+                        stopAutoCaptureLoop()
+                        return
+                    }
+                    const videoEl = document.querySelector('#reader video');
+                    if (!videoEl || isProcessing.value || videoEl.readyState !== 4) {
                         detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                         return
                     }
@@ -4173,21 +4181,22 @@
                         }
                     } catch (e) {
                         console.error("邊緣 AI 運算發生錯誤", e)
-                        alert('邊緣 AI 運算發生錯誤！')
                     }
+
                     detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                 }
 
                 const stopAutoCaptureLoop = () => {
                     if (detectionLoopId) {
-                        cancelAnimationFrame(detectionLoopId);
-                        detectionLoopId = null;
-                        stableFrames = 0;
+                        cancelAnimationFrame(detectionLoopId)
+                        detectionLoopId = null
                     }
+                    stableFrames = 0
                 }
 
                 const initEdgeAI = async () => {
                     if (aiModel) {
+                        topAutoCaptureLoop()
                         startAutoCaptureLoop()
                         return
                     }
