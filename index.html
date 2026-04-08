@@ -788,7 +788,7 @@
                         class="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-red-500 shadow-[0_0_12px_4px_rgba(239,68,68,0.8)] z-50 pointer-events-none animate-pulse transform -translate-y-1/2">
                     </div>
                     <button
-                        v-if="googleVisionKey && ['OCR_PLATE', 'OCR_GENERAL'].includes(selectedScanMode)"
+                        v-if="googleVisionKey && selectedScanMode === 'OCR_PLATE'"
                         @click="captureForOCR"
                         :disabled="isProcessing"
                         class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-indigo-600 dark:bg-gray-800/90 dark:text-indigo-400 px-6 py-3 rounded-full font-extrabold shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 z-50 active:scale-95 transition-all backdrop-blur-sm border border-gray-200 dark:border-gray-600 disabled:opacity-50"
@@ -1416,11 +1416,6 @@
                         id: 'OCR_PLATE',
                         label: '🪪 車牌與文字辨識 (OCR)',
                         description: '手動拍照截圖辨識。需設定 Google Vision API Key'
-                    },
-                    {
-                        id: 'OCR_GENERAL',
-                        label: '📄 汎用文字辨識 (全抓)',
-                        description: '手動拍照截圖，擷取畫面中所有文字 (發票/文件/單據)'
                     })
                 }
 
@@ -4246,10 +4241,10 @@
                         document.activeElement.blur()
                     }
                     const canvas = document.createElement('canvas')
-                    canvas.width = videoEl.videoWidth
-                    canvas.height = videoEl.videoHeight
+                    canvas.width = videoEl.videoWidth * 0.85
+                    canvas.height = videoEl.videoHeight * 0.4
                     const ctx = canvas.getContext('2d')
-                    ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
+                    ctx.drawImage(videoEl, (videoEl.videoWidth - canvas.width) / 2, (videoEl.videoHeight - canvas.height) / 2, canvas.width, canvas.height)
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
                     canvas.width = 0
                     canvas.height = 0
