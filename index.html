@@ -4176,6 +4176,8 @@
                         console.log('開始下載物件偵測模型...')
                         await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd')
 
+                        aiModel = await window.cocoSsd.load()
+
                         console.log('🎉 邊緣運算 AI 引擎喚醒成功！')
                         initAudioFromRef()
                         playBeep()
