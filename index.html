@@ -784,6 +784,20 @@
                     <div class="absolute top-1/2 left-0 w-full transform -translate-y-1/2">
                         <div id="reader" class="w-full"></div>
                     </div>
+                    <div v-if="isScannerOpen && isZoomSupported" class="absolute bottom-20 left-[10%] right-[10%] z-50 bg-black/50 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 flex items-center gap-3 shadow-lg">
+                        <span class="text-white text-xs font-bold">🔍 1x</span>
+
+                        <input
+                            type="range"
+                            v-model.number="currentZoom"
+                            :min="minZoom"
+                            :max="maxZoom"
+                            step="0.1"
+                            class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        >
+
+                        <span class="text-white text-xs font-bold">{{ maxZoom }}x</span>
+                    </div>
                     <div v-if="selectedScanMode.startsWith('1D_')"
                         class="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-red-500 shadow-[0_0_12px_4px_rgba(239,68,68,0.8)] z-50 pointer-events-none animate-pulse transform -translate-y-1/2">
                     </div>
@@ -1388,6 +1402,10 @@
                 const scanningTarget = ref(null)
                 const googleVisionKey = ref(localStorage.getItem('ty_google_vision_key') || '')
                 const isAutoScanEnabled = ref(false)
+                const isZoomSupported = ref(false)
+                const minZoom = ref(1)
+                const maxZoom = ref(3)
+                const currentZoom = ref(1)
 
                 const scanModeOptions = [
                     {
@@ -1458,6 +1476,7 @@
                 let stableFrames = 0
                 let emptyFrames = 0
                 let isCarLocked = false
+                let cameraTrack
 
                 const debouncedSave = debounce(async () => {
                     try {
@@ -1532,6 +1551,18 @@
                     if (newMode !== 'OCR_PLATE' || !newIsOpen) {
                         isAutoScanEnabled.value = false
                         stopAutoCaptureLoop()
+                    }
+                })
+
+                watch(currentZoom, async (newZoom) => {
+                    if (cameraTrack && isZoomSupported.value) {
+                        try {
+                            await cameraTrack.applyConstraints({
+                                advanced: [{ zoom: newZoom }]
+                            })
+                        } catch (error) {
+                            console.error('變焦失敗:', error)
+                        }
                     }
                 })
 
@@ -3811,7 +3842,11 @@
                         config,
                         processScannedText,
                         (errorMessage) => { }
-                    ).catch(err => {
+                    ).then(() => {
+                        setTimeout(() => {
+                            checkCameraCapabilities()
+                        }, 500)
+                    }).catch(err => {
                         console.error("start scanner error:", err)
                         alert("Scanner error: " + err)
                         closeScanner()
@@ -4288,6 +4323,26 @@
                                     }
                                 }, 50)
                             }
+                        }
+                    }
+                }
+
+                const checkCameraCapabilities = async () => {
+                    await nextTick()
+                    const videoEl = document.querySelector('#reader video')
+                    if (videoEl && videoEl.srcObject) {
+                        cameraTrack = videoEl.srcObject.getVideoTracks()[0]
+                        const capabilities = cameraTrack.getCapabilities()
+                        const settings = cameraTrack.getSettings()
+                        if (capabilities && 'zoom' in capabilities) {
+                            isZoomSupported.value = true
+                            minZoom.value = capabilities.zoom.min
+                            maxZoom.value = capabilities.zoom.max
+                            currentZoom.value = settings.zoom || capabilities.zoom.min
+                            console.log(`支援變焦！範圍: ${minZoom.value}x - ${maxZoom.value}x`)
+                        } else {
+                            isZoomSupported.value = false
+                            console.warn('此裝置或瀏覽器不支援 Web 變焦 API')
                         }
                     }
                 }
