@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: 📥 檢出程式碼
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙️ 設定 Node.js 環境
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
 
@@ -33,7 +33,7 @@ jobs:
           npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png --viewport-size="1280,720"
 
       - name: 💾 自動 Commit 並 Push 回儲存庫
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "chore: 自動更新網站縮圖 [skip ci]"
+          commit_message: "chore: update thumbnail [skip ci]"
           file_pattern: databuilder.png
