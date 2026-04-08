@@ -4166,21 +4166,25 @@
                         return
                     }
 
-                    if (window.tf && window.cocoSsd) return
-
                     isProcessing.value = true
                     try {
-                        console.log('開始下載 TensorFlow.js 核心...')
-                        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs')
+                        if (!window.tf) {
+                            console.log('開始下載 TensorFlow.js 核心...')
+                            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs')
+                        }
+                        if (!window.cocoSsd) {
+                            console.log('開始下載物件偵測模型...')
+                            await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd')
+                        }
 
-                        console.log('開始下載物件偵測模型...')
-                        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd')
-
+                        console.log('開始將模型載入記憶體...')
                         aiModel = await window.cocoSsd.load()
 
                         console.log('🎉 邊緣運算 AI 引擎喚醒成功！')
                         initAudioFromRef()
                         playBeep()
+                        startAutoCaptureLoop()
+
                     } catch (error) {
                         console.error('AI 模型載入失敗:', error)
                         alert(translate('AI 引擎載入失敗，請確認網路連線！'))
@@ -4195,7 +4199,6 @@
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
                     }
-                    await initEdgeAI()
                     const canvas = document.createElement('canvas')
                     canvas.width = videoEl.videoWidth
                     canvas.height = videoEl.videoHeight
