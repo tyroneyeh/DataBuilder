@@ -3770,6 +3770,7 @@
                     isProcessing.value = true
                     lastScannedText.value = decodedText
                     try {
+                        playBeep()
                         if (!await showConfirm(decodedText)) return
                         if (scanningTarget.value) {
                             const { row, col } = scanningTarget.value
@@ -4171,6 +4172,7 @@
                         if (selectedScanMode.value === 'OCR_PLATE') {
                             const plateRegex = /[A-Z0-9]{2,4}\s*-\s*[A-Z0-9]{2,4}/g
                             const match = fullText.match(plateRegex)
+                            playBeep()
                             if (match) {
                                 return match[0].replaceAll(/\s+/g, '')
                             } else {
@@ -4266,8 +4268,7 @@
                         aiModel = await window.cocoSsd.load()
 
                         console.log('🎉 邊緣運算 AI 引擎喚醒成功！')
-                        initAudioFromRef()
-                        playBeep()
+
                         startAutoCaptureLoop()
 
                     } catch (error) {
