@@ -3694,8 +3694,8 @@
                 }
 
                 const initAudioFromRef = async () => {
+                    if (beepAudioBuffer || !beepAudioRef.value || !beepAudioRef.value.src) return
                     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-                    if (!beepAudioBuffer && !beepAudioRef.value || !beepAudioRef.value.src) return
 
                     try {
                         const response = await fetch(beepAudioRef.value.src)
@@ -4285,6 +4285,8 @@
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
                     }
+                    initAudioFromRef()
+                    playBeep()
                     if (document.activeElement && document.activeElement.tagName === 'INPUT') {
                         document.activeElement.blur()
                     }
