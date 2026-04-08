@@ -24,13 +24,27 @@ jobs:
         with:
           node-version: '24'
 
+      - name: 📦 快取 Playwright 瀏覽器
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('**/*.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-chromium-
+
       - name: 📸 使用 Playwright CLI 截圖
         run: |
           # 1. 安裝 Playwright 與其依賴的瀏覽器
-          npx -y playwright@latest install --with-deps chromium
+          npx -y playwright@latest install chromium
 
           # 2. 執行截圖，設定解析度為 1280x720
-          npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png --viewport-size="1280,720"
+          npx -y playwright@latest screenshot https://ty-db.pages.dev thumbnail.png \
+            --viewport-size="1280,720" \
+            --timeout=15000 \
+            --wait-for-timeout=3000
+
+      - name: 🔄 同步遠端最新狀態
+        run: git pull origin main --rebase --autostash
 
       - name: 💾 自動 Commit 並 Push 回儲存庫
         uses: stefanzweifel/git-auto-commit-action@v7
