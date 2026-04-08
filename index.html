@@ -782,20 +782,7 @@
                 </div>
                 <div v-show="isScannerOpen" class="relative w-full h-[30vh] rounded-xl overflow-hidden bg-black shadow-inner border border-gray-200 dark:border-gray-700 mt-2">
                     <div class="absolute top-1/2 left-0 w-full transform -translate-y-1/2">
-                        <div id="reader" class="w-full">
-                            <div v-if="isZoomSupported" class="absolute bottom-20 left-[10%] right-[10%] z-50 bg-black/50 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 flex items-center gap-3 shadow-lg">
-                                <span class="text-white text-xs font-bold">🔍 1x</span>
-                                <input
-                                    type="range"
-                                    v-model.number="currentZoom"
-                                    :min="minZoom"
-                                    :max="maxZoom"
-                                    step="0.1"
-                                    class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                                >
-                                <span class="text-white text-xs font-bold">{{ maxZoom }}x</span>
-                            </div>
-                        </div>
+                        <div id="reader" class="w-full"></div>
                     </div>
 
                     <div v-if="selectedScanMode.startsWith('1D_')"
@@ -810,6 +797,18 @@
                         <span v-if="!isProcessing">📸 拍照辨識</span>
                         <span v-else>⏳ 辨識中...</span>
                     </button>
+                    <div v-if="isZoomSupported" class="absolute bottom-20 left-[10%] right-[10%] z-50 bg-black/50 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/20 flex items-center gap-3 shadow-lg">
+                        <span class="text-white text-xs font-bold">🔍 1x</span>
+                        <input
+                            type="range"
+                            v-model.number="currentZoom"
+                            :min="minZoom"
+                            :max="maxZoom"
+                            step="0.1"
+                            class="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        >
+                        <span class="text-white text-xs font-bold">{{ maxZoom }}x</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -4524,7 +4523,9 @@
                     captureForOCR,
                     isAutoScanEnabled,
                     isZoomSupported,
-                    currentZoom
+                    currentZoom,
+                    minZoom,
+                    maxZoom
                 }
             }
         }).mount('#app')
