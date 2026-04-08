@@ -732,7 +732,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <div class="px-4 pb-8 pt-2 flex flex-col">
+            <div class="px-0 py-2 flex flex-col">
                 <div v-if="!isScannerOpen" class="w-full flex flex-col gap-1">
                     <button
                         v-for="option in scanModeOptions"
@@ -799,7 +799,7 @@
                     </button>
                     <div
                         v-if="isZoomSupported"
-                        class="absolute right-1 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-2 bg-black/40 backdrop-blur-sm p-2 rounded-full border border-white/20"
+                        class="absolute right-0 top-1/2 transform -translate-y-1/2 z-50 flex flex-col items-center gap-2 bg-black/40 backdrop-blur-sm p-2 rounded-full border border-white/20"
                     >
                         <span class="text-white text-[10px] font-bold">{{ maxZoom }}x</span>
                         <div class="h-24 w-4 relative my-2 flex justify-center">
