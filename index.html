@@ -770,6 +770,16 @@
                     </div>
                 </div>
 
+                <div v-if="isScannerOpen && selectedScanMode === 'OCR_PLATE'" class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-all">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200">🤖 Edge AI 自動抓拍</span>
+                        <span class="text-xs text-gray-500 hidden sm:inline">對準目標停留1秒自動拍照</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" v-model="isAutoScanEnabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
                 <div v-show="isScannerOpen" class="relative w-full h-[30vh] rounded-xl overflow-hidden bg-black shadow-inner border border-gray-200 dark:border-gray-700 mt-2">
                     <div class="absolute top-1/2 left-0 w-full transform -translate-y-1/2">
                         <div id="reader" class="w-full"></div>
@@ -1376,6 +1386,7 @@
                 const isScannerOpen = ref(false)
                 const scanningTarget = ref(null)
                 const googleVisionKey = ref(localStorage.getItem('ty_google_vision_key') || '')
+                const isAutoScanEnabled = ref(false)
 
                 const scanModeOptions = [
                     {
@@ -1509,6 +1520,21 @@
 
                 watch(googleVisionKey, (newVal) => {
                     localStorage.setItem('ty_google_vision_key', newVal.trim())
+                })
+
+                watch(isAutoScanEnabled, async (newVal) => {
+                    if (newVal) {
+                        await initEdgeAI()
+                    } else {
+                        stopAutoCaptureLoop()
+                    }
+                })
+
+                watch([selectedScanMode, isScannerOpen], ([newMode, newIsOpen]) => {
+                    if (newMode !== 'OCR_PLATE' || !newIsOpen) {
+                        isAutoScanEnabled.value = false
+                        stopAutoCaptureLoop()
+                    }
                 })
 
                 const toggleDarkMode = () => {
@@ -4132,10 +4158,9 @@
 
                     try {
                         const predictions = await aiModel.detect(videoEl)
-                        const hasVehicle = predictions.some(p =>
-                            (p.class === 'car' || p.class === 'truck') && p.score > 0.6
-                        )
-                        if (hasVehicle) {
+                        const hasObject = predictions.some(p => p.score > 0.5)
+
+                        if (hasObject) {
                             stableFrames++
                             if (stableFrames >= 15) {
                                 console.log('🚗 目標穩定鎖定！自動觸發拍照！')
@@ -4148,6 +4173,7 @@
                         }
                     } catch (e) {
                         console.error("邊緣 AI 運算發生錯誤", e)
+                        alert('邊緣 AI 運算發生錯誤！')
                     }
                     detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                 }
@@ -4404,7 +4430,8 @@
                     shareRow,
                     copyShareLink,
                     googleVisionKey,
-                    captureForOCR
+                    captureForOCR,
+                    isAutoScanEnabled
                 }
             }
         }).mount('#app')
