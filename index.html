@@ -1346,6 +1346,7 @@
                     isOpen: false,
                     title: '',
                     message: '',
+                    onlyOK: false,
                     resolvePromise: null
                 })
                 const confirmCancelBtnRef = ref(null)
@@ -3345,11 +3346,12 @@
                     isMenuOpen.value = !isMenuOpen.value
                 }
 
-                const showConfirm = (message) => {
+                const showConfirm = (message, onlyOK = false) => {
                     return new Promise((resolve) => {
                         confirmModal.value = {
                             isOpen: true,
                             message: message,
+                            onlyOK,
                             resolvePromise: resolve
                         }
                         nextTick().then(() => {
@@ -4120,7 +4122,7 @@
                         if (result.error) throw new Error(result.error.message)
                         const texts = result.responses[0]?.textAnnotations
                         if (!texts || texts.length === 0) {
-                            showConfirm('找不到任何文字！')
+                            showConfirm('找不到任何文字！', true)
                             return null
                         }
                         const fullText = texts[0].description
@@ -4131,14 +4133,15 @@
                                 return match[0].replaceAll(/\s+/g, '')
                             } else {
                                 console.log("OCR Raw Text:", fullText)
-                                showConfirm('有辨識到文字，但找不到符合車牌的格式: '+ fullText)
+                                if (await showConfirm('有辨識到文字，但找不到符合車牌的格式: '+ fullText))
+                                    return fullText.trim()
                             }
                         } else {
                             return fullText.trim()
                         }
                     } catch (error) {
                         console.error("OCR API Error:", error)
-                        showConfirm('OCR 辨識失敗：' + error.message)
+                        showConfirm('OCR 辨識失敗：' + error.message, true)
                         return null
                     } finally {
                         isProcessing.value = false
