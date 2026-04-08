@@ -4098,10 +4098,6 @@
 
                 const processOCR = async (base64Image) => {
                     const apiKey = googleVisionKey.value.trim()
-                    if (!apiKey) {
-                        alert(translate('請先在設定中填寫 Google Vision API Key！'))
-                        return null
-                    }
                     isProcessing.value = true
                     try {
                         const base64Data = base64Image.split(',')[1]
@@ -4122,7 +4118,7 @@
                         if (result.error) throw new Error(result.error.message)
                         const texts = result.responses[0]?.textAnnotations
                         if (!texts || texts.length === 0) {
-                            alert('找不到任何文字！')
+                            showConfirm('找不到任何文字！')
                             return null
                         }
                         const fullText = texts[0].description
@@ -4133,15 +4129,14 @@
                                 return match[0].replaceAll(/\s+/g, '')
                             } else {
                                 console.log("OCR Raw Text:", fullText)
-                                alert('有辨識到文字，但找不到符合車牌的格式。')
-                                return null
+                                showConfirm('有辨識到文字，但找不到符合車牌的格式。', fullText)
                             }
                         } else {
                             return fullText.trim()
                         }
                     } catch (error) {
                         console.error("OCR API Error:", error)
-                        alert('OCR 辨識失敗：' + error.message)
+                        showConfirm('OCR 辨識失敗：' + error.message)
                         return null
                     } finally {
                         isProcessing.value = false
@@ -4234,12 +4229,17 @@
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
                     }
+                    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+                        document.activeElement.blur()
+                    }
                     const canvas = document.createElement('canvas')
                     canvas.width = videoEl.videoWidth
                     canvas.height = videoEl.videoHeight
                     const ctx = canvas.getContext('2d')
                     ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
+                    canvas.width = 0
+                    canvas.height = 0
                     const recognizedText = await processOCR(base64Image)
                     if (recognizedText) {
                         playBeep()
