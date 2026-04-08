@@ -4241,10 +4241,16 @@
                         document.activeElement.blur()
                     }
                     const canvas = document.createElement('canvas')
-                    canvas.width = videoEl.videoWidth * 0.85
-                    canvas.height = videoEl.videoHeight * 0.4
+                    canvas.width = Math.floor(videoEl.videoWidth * 0.85)
+                    canvas.height = Math.floor(videoEl.videoHeight * 0.4)
+                    const startX = Math.floor((videoEl.videoWidth - canvas.width) / 2)
+                    const startY = Math.floor((videoEl.videoHeight - canvas.height) / 2)
                     const ctx = canvas.getContext('2d')
-                    ctx.drawImage(videoEl, (videoEl.videoWidth - canvas.width) / 2, (videoEl.videoHeight - canvas.height) / 2, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height)
+                    ctx.drawImage(
+                        videoEl,
+                        startX, startY, canvas.width, canvas.height,
+                        0, 0, canvas.width, canvas.height
+                    )
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
                     canvas.width = 0
                     canvas.height = 0
