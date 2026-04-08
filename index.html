@@ -4129,7 +4129,7 @@
                                 return match[0].replaceAll(/\s+/g, '')
                             } else {
                                 console.log("OCR Raw Text:", fullText)
-                                showConfirm('有辨識到文字，但找不到符合車牌的格式。', fullText)
+                                showConfirm('有辨識到文字，但找不到符合車牌的格式: '+ fullText)
                             }
                         } else {
                             return fullText.trim()
