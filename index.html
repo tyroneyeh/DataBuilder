@@ -2199,10 +2199,10 @@
 
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
-                    const firstEditableColIndex = columns.value.findIndex(c => editableTypes.has(c.type))
+                    const firstEditableCol = columns.value.findIndex(c => editableTypes.has(c.type))
 
                     if (event.key === 'Backspace') {
-                        if (currentIndex === firstEditableColIndex && target.value === '') {
+                        if (currentIndex === firstEditableCol && target.value === '') {
                             event.preventDefault()
 
                             if (rows.value.length > 1) {
@@ -2324,7 +2324,7 @@
                     if (!originalRow) return
 
                     const clonedRow = {...originalRow}
-                    clonedRow.id = 'row_${Date.now()}'
+                    clonedRow.id = 'row_' + Date.now()
 
                     if (ignoreDate || !columns.value.some(col => col.type === 'date')) {
                         const {todayDate, currentTime} = getDate()
@@ -2351,7 +2351,7 @@
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
                         setTimeout(() => {
-                            const targetInput = inputRefs.value[`row_${i}-${firstEditableCol.id}`]
+                            const targetInput = inputRefs.value[`${clonedRow.id}-${firstEditableCol.id}`]
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
