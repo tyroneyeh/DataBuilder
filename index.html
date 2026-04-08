@@ -3787,11 +3787,12 @@
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
                             const boxWidth = Math.min(viewfinderWidth * 0.85, 400)
-                            let boxHeight = viewfinderHeight * 0.85
+                            const maxVisibleHeight = (window.innerHeight * 0.3) * 0.8
+                            let boxHeight = boxWidth
                             if (is1D) {
                                 boxHeight = Math.min(viewfinderHeight * 0.4, 150)
-                                boxHeight = boxWidth
                             }
+                            boxHeight = Math.min(boxHeight, maxVisibleHeight)
                             return { width: boxWidth, height: boxHeight }
                         },
                         videoConstraints: {
