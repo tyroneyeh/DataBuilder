@@ -4152,7 +4152,7 @@
                 }
 
                 const startAutoCaptureLoop = async () => {
-                    if (!isScannerOpen.value || selectedScanMode.value !== 'OCR_PLATE' || !isAutoScanEnabled.value) {
+                    if (!isScannerOpen.value || !isAutoScanEnabled.value) {
                         stopAutoCaptureLoop()
                         return
                     }
@@ -4180,7 +4180,7 @@
                                 }
                             }
                         } else {
-                            stableFrames = 0 
+                            stableFrames = 0
                             emptyFrames++
                             if (emptyFrames >= 15) {
                                 if (isCarLocked) {
