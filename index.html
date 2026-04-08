@@ -1460,6 +1460,8 @@
                 let aiModel
                 let detectionLoopId
                 let stableFrames = 0
+                let emptyFrames = 0
+                let isCarLocked = false
 
                 const debouncedSave = debounce(async () => {
                     try {
@@ -4144,16 +4146,12 @@
                 }
 
                 const startAutoCaptureLoop = async () => {
-                    if (
-                        !isScannerOpen.value ||
-                        selectedScanMode.value !== 'OCR_PLATE' ||
-                        !isAutoScanEnabled.value
-                    ) {
-                        console.log('🛑 自動偵測迴圈已安全終止');
+                    if (!isScannerOpen.value || selectedScanMode.value !== 'OCR_PLATE' || !isAutoScanEnabled.value) {
                         stopAutoCaptureLoop()
                         return
                     }
-                    const videoEl = document.querySelector('#reader video');
+
+                    const videoEl = document.querySelector('#reader video')
                     if (!videoEl || isProcessing.value || videoEl.readyState !== 4) {
                         detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                         return
@@ -4161,23 +4159,33 @@
 
                     try {
                         const predictions = await aiModel.detect(videoEl)
-                        const hasObject = predictions.some(p => p.score > 0.5)
+                        const hasVehicle = predictions.some(p => p.score > 0.5)
 
-                        if (hasObject) {
-                            stableFrames++
-                            if (stableFrames >= 15) {
-                                console.log('🚗 目標穩定鎖定！自動觸發拍照！')
-                                stableFrames = 0
-                                await captureForOCR()
-                                await new Promise(resolve => setTimeout(resolve, 2000))
+                        if (hasVehicle) {
+                            emptyFrames = 0
+                            if (!isCarLocked) {
+                                stableFrames++
+                                if (stableFrames >= 15) {
+                                    console.log('🎯 目標穩定鎖定！自動觸發拍照！')
+                                    isCarLocked = true
+                                    stableFrames = 0
+                                    await captureForOCR()
+                                    await new Promise(resolve => setTimeout(resolve, 2000))
+                                }
                             }
                         } else {
-                            stableFrames = 0
+                            stableFrames = 0 
+                            emptyFrames++
+                            if (emptyFrames >= 15) {
+                                if (isCarLocked) {
+                                    console.log('👋 車輛已離開，解除鎖定！')
+                                }
+                                isCarLocked = false // 🔓 解除鎖定
+                            }
                         }
                     } catch (e) {
                         console.error("邊緣 AI 運算發生錯誤", e)
                     }
-
                     detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                 }
 
@@ -4187,6 +4195,8 @@
                         detectionLoopId = null
                     }
                     stableFrames = 0
+                    emptyFrames = 0
+                    isCarLocked = false
                 }
 
                 const initEdgeAI = async () => {
@@ -4242,6 +4252,11 @@
                     canvas.height = 0
                     const recognizedText = await processOCR(base64Image)
                     if (recognizedText) {
+                        if (recognizedText === lastScannedText.value) {
+                            console.warn(`🛡️ 車牌 ${recognizedText} 已存在，防止重複寫入！`)
+                            return
+                        }
+                        lastScannedText.value = recognizedText
                         playBeep()
                         if (scanningTarget.value) {
                             const { row, col } = scanningTarget.value
