@@ -632,7 +632,20 @@
                             <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
 
                                 <span v-if="['number', 'multiply', 'minus'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
-                                    {{ formatNumber(columnTotals[col.id] || 0) }}
+                                    <input
+                                        type="text"
+                                        class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
+                                        :value="(activeFilterCol === col.id || columnFilters[col.id]) ? columnFilters[col.id] : formatNumber(columnTotals[col.id] || 0)"
+                                        @input="columnFilters[col.id] = $event.target.value"
+                                        @focus="activeFilterCol = col.id"
+                                        @blur="activeFilterCol = null"
+                                    >
+                                    <button
+                                        v-show="columnFilters[col.id]"
+                                        @click="columnFilters[col.id] = ''"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                        :title="translate('Clear filter')"
+                                    >✖</button>
                                 </span>
                                 <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="relative">
                                     <input
@@ -1461,6 +1474,8 @@
                     end: ''
                 })
                 const activeDateFilterCol = ref(null)
+                const activeFilterCol = ref(null)
+                const debouncedFilters = ref({})
                 const shareModal = ref({
                     isOpen: false,
                     qrUrl: '',
@@ -1581,6 +1596,14 @@
                     }
                 })
 
+                watch(
+                    columnFilters,
+                    debounce((newFilters) => {
+                        debouncedFilters.value = { ...newFilters }
+                    }, 600),
+                    { deep: true }
+                )
+
                 const toggleDarkMode = () => {
                     isDark.value = !isDark.value
                 }
@@ -1652,11 +1675,24 @@
                     })
                 })
 
+                const parseFilterCondition = (inputText) => {
+                    const text = inputText.trim()
+                    if (!text) return null
+                    const regex = /^([<>]=?|=)?\s*(-?\d+(?:\.\d+)?)$/
+                    const match = text.match(regex)
+                    if (!match) return null
+                    return {
+                        operator: match[1] || '===',
+                        value: parseFloat(match[2])
+                    }
+                }
+
                 const filteredRows = computed(() => {
                     const chartDate = selectedChartDate.value
                     const catColId = selectedChartCatColId.value
                     const legendItems = customLegendItems.value
                     let result = dateFilteredRows.value
+
                     if (catColId && legendItems.length) {
                         const hiddenCategories = new Set(
                             legendItems.filter(item => item.hidden).map(item => item.text)
@@ -1668,23 +1704,7 @@
                             })
                         }
                     }
-                    const activeFilters = Object.entries(columnFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
-                    if (activeFilters.length > 0) {
-                        result = result.filter(row => {
-                            return activeFilters.every(([colId, filterText]) => {
-                                const colDef = columns.value.find(c => c.id === colId)
-                                if (colDef && colDef.type === 'photo') {
-                                    const hasPhoto = Array.isArray(row[colId]) && row[colId].length > 0
-                                    if (filterText === 'has_photo') return hasPhoto
-                                    if (filterText === 'no_photo') return !hasPhoto
-                                    return true
-                                }
-                                const cellValue = String(row[colId] || '').toLowerCase()
-                                const keyword = String(filterText).toLowerCase().trim()
-                                return cellValue.includes(keyword)
-                            })
-                        })
-                    }
+
                     const activeDateFilters = Object.entries(dateRangeFilters.value).filter(([_, range]) => range.start || range.end)
                     if (activeDateFilters.length > 0) {
                         result = result.filter(row => {
@@ -1698,6 +1718,7 @@
                             })
                         })
                     }
+
                     if (chartDate) {
                         result = result.filter(row => {
                             const rowDate = row[selectedChartDateColId.value]
@@ -1710,6 +1731,49 @@
                             return getDateGroupKey(rowDate, 'day') === chartDate
                         })
                     }
+
+                    const activeFilters = Object.entries(debouncedFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
+                    if (activeFilters.length > 0) {
+                        result = result.filter(row => {
+                            return activeFilters.every(([colId, filterText]) => {
+                                const colDef = columns.value.find(c => c.id === colId)
+                                if (!colDef) return true
+
+                                if (colDef.type === 'photo') {
+                                    const hasPhoto = Array.isArray(row[colId]) && row[colId].length > 0
+                                    if (filterText === 'has_photo') return hasPhoto
+                                    if (filterText === 'no_photo') return !hasPhoto
+                                    return true
+                                }
+
+                                if (['number', 'multiply', 'minus'].includes(colDef.type)) {
+                                    const condition = parseFilterCondition(filterText)
+                                    if (condition) {
+                                        const rawValue = row[colId] || columnTotals.value[colId]
+                                        if (rawValue === null || rawValue === undefined || rawValue === '') {
+                                            return false
+                                        }
+                                        const cellValue = parseFloat(rawValue)
+                                        if (isNaN(cellValue)) return false
+                                        switch (condition.operator) {
+                                            case '>':  return cellValue > condition.value
+                                            case '>=': return cellValue >= condition.value
+                                            case '<':  return cellValue < condition.value
+                                            case '<=': return cellValue <= condition.value
+                                            case '=':
+                                            case '===': return cellValue === condition.value
+                                            default: return true
+                                        }
+                                    }
+                                }
+
+                                const cellValue = String(row[colId] || '').toLowerCase()
+                                const keyword = String(filterText).toLowerCase().trim()
+                                return cellValue.includes(keyword)
+                            })
+                        })
+                    }
+
                     return result
                 })
 
