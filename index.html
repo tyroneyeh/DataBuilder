@@ -634,11 +634,13 @@
                                 <span v-if="['number', 'multiply', 'minus'].includes(col.type)" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                                     <input
                                         type="text"
+                                        enterkeyhint="search"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
-                                        :value="(activeFilterCol === col.id || columnFilters[col.id]) ? columnFilters[col.id] : formatNumber(columnTotals[col.id] || 0)"
-                                        @input="columnFilters[col.id] = $event.target.value"
-                                        @focus="activeFilterCol = col.id"
-                                        @blur="activeFilterCol = null"
+                                        :value="activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0))"
+                                        @focus="activeFilterCol = col.id; draftFilterText = columnFilters[col.id] || ''"
+                                        @input="draftFilterText = $event.target.value"
+                                        @keyup.enter="columnFilters[col.id] = draftFilterText; $event.target.blur()"
+                                        @blur="columnFilters[col.id] = $event.target.value; activeFilterCol = null"
                                     >
                                     <button
                                         v-show="columnFilters[col.id]"
@@ -650,6 +652,7 @@
                                 <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="flex relative">
                                     <input
                                         :type="col.type === 'time' ? 'time' : 'text'"
+                                        enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
                                         :list="col.type === 'category' && 'datalist-' + col.id"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
@@ -1486,6 +1489,7 @@
                 })
                 const activeDateFilterCol = ref(null)
                 const activeFilterCol = ref(null)
+                const draftFilterText = ref('')
                 const debouncedFilters = ref({})
                 const shareModal = ref({
                     isOpen: false,
@@ -1606,14 +1610,6 @@
                         }
                     }
                 })
-
-                watch(
-                    columnFilters,
-                    debounce((newFilters) => {
-                        debouncedFilters.value = { ...newFilters }
-                    }, 600),
-                    { deep: true }
-                )
 
                 const toggleDarkMode = () => {
                     isDark.value = !isDark.value
@@ -1743,7 +1739,7 @@
                         })
                     }
 
-                    const activeFilters = Object.entries(debouncedFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
+                    const activeFilters = Object.entries(columnFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
                     if (activeFilters.length > 0) {
                         result = result.filter(row => {
                             return activeFilters.every(([colId, filterText]) => {
@@ -4622,6 +4618,7 @@
                     updateDateRange,
                     clearDateRange,
                     activeDateFilterCol,
+                    draftFilterText,
                     toggleTrendChartType,
                     trendChartType,
                     tooltipState,
