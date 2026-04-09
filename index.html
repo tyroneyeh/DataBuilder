@@ -815,6 +815,15 @@
                         <span class="text-white text-[10px] font-bold">1x</span>
                     </div>
                 </div>
+                <button
+                    v-if="isTorchSupported"
+                    @click="toggleTorch"
+                    type="button"
+                    class="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-md shadow-lg transition-all duration-300 border"
+                    :class="isTorchOn ? 'bg-yellow-400 text-black border-yellow-300 shadow-yellow-500/50' : 'bg-black/50 text-white border-white/20'"
+                >
+                    <span class="text-lg">{{ isTorchOn ? '💡' : '🔦' }}</span>
+                </button>
             </div>
         </div>
         <div v-if="!isPrinting || isPrinting && globalNotes">
@@ -1410,6 +1419,8 @@
                 const minZoom = ref(1)
                 const maxZoom = ref(3)
                 const currentZoom = ref(1)
+                const isTorchSupported = ref(false)
+                const isTorchOn = ref(false)
 
                 const scanModeOptions = [
                     {
@@ -4346,11 +4357,30 @@
                             minZoom.value = capabilities.zoom.min
                             maxZoom.value = capabilities.zoom.max
                             currentZoom.value = settings.zoom || capabilities.zoom.min
-                            console.log(`支援變焦！範圍: ${minZoom.value}x - ${maxZoom.value}x`)
-                        } else {
-                            isZoomSupported.value = false
-                            console.warn('此裝置或瀏覽器不支援 Web 變焦 API')
                         }
+                        if (capabilities && 'torch' in capabilities) {
+                            isTorchSupported.value = true
+                            isTorchOn.value = settings.torch || false
+                            console.log('💡 支援硬體手電筒控制！')
+                        } else {
+                            isTorchSupported.value = false
+                        }
+                    }
+                }
+
+                const toggleTorch = async () => {
+                    if (!cameraTrack || !isTorchSupported.value) return
+
+                    try {
+                        isTorchOn.value = !isTorchOn.value
+                        await cameraTrack.applyConstraints({
+                            advanced: [{ torch: isTorchOn.value }]
+                        })
+                    } catch (error) {
+                        console.error('切換手電筒失敗:', error)
+                        // 如果硬體報錯，把 UI 的燈號切回原本的狀態
+                        isTorchOn.value = !isTorchOn.value
+                        alert(translate('Failed to toggle torch. Please check your device settings.'))
                     }
                 }
 
@@ -4533,7 +4563,10 @@
                     isZoomSupported,
                     currentZoom,
                     minZoom,
-                    maxZoom
+                    maxZoom,
+                    isTorchSupported,
+                    toggleTorch,
+                    isTorchOn
                 }
             }
         }).mount('#app')
