@@ -1522,6 +1522,7 @@
                 let emptyFrames = 0
                 let isCarLocked = false
                 let cameraTrack
+                let scanCooldownTimer
 
                 const debouncedSave = debounce(async () => {
                     try {
@@ -3878,7 +3879,8 @@
                         setTimeout(() => {
                             isProcessing.value = false
                         }, 300)
-                        setTimeout(() => {
+                        if (scanCooldownTimer) clearTimeout(scanCooldownTimer)
+                        scanCooldownTimer = setTimeout(() => {
                             lastScannedText.value = ''
                         }, 3000)
                     }
