@@ -4513,34 +4513,11 @@
                     const ctx = canvas.getContext('2d')
                     ctx.imageSmoothingEnabled = false
 
-                    // =================================================================
-                    // 🚀 6. 裁切與繪製策略 (請先用「模式 A」測試是否解決偏左上問題！)
-                    // =================================================================
-
-                    const USE_40_PERCENT_CROP = true // 👈 開關在這裡！先設為 false 測試
-
-                    if (USE_40_PERCENT_CROP) {
-                        // 【模式 B：縮小 40% 裁切】(你原先的寫法)
-                        const cropScale = 0.4
-                        const cropWidth = safeWidth * cropScale
-                        const cropHeight = safeHeight * cropScale
-                        // 置中魔法
-                        const cropStartX = safeStartX + (safeWidth - cropWidth) / 2
-                        const cropStartY = safeStartY + (safeHeight - cropHeight) / 2
-
-                        ctx.drawImage(
-                            videoEl,
-                            cropStartX, cropStartY, cropWidth, cropHeight, // 來源：只抓中間一點點
-                            0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
-                        )
-                    } else {
-                        // 【模式 A：100% 所見即所得】(推薦！使用者框到哪裡，就剪哪裡)
-                        ctx.drawImage(
-                            videoEl,
-                            safeStartX, safeStartY, safeWidth, safeHeight, // 來源：完整擷取虛線框區域
-                            0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
-                        )
-                    }
+                    ctx.drawImage(
+                        videoEl,
+                        safeStartX, safeStartY, safeWidth, safeHeight, // 來源：完整擷取虛線框區域
+                        0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
+                    )
 
                     // 最後取得影像資料交給後續的二值化處理
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
