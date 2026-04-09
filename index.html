@@ -790,6 +790,10 @@
                     </div>
                 </div>
 
+                <div class="mt-4 border-2 border-red-500 p-2">
+                    <p class="text-red-500 text-xs">🔍 OCR 丟給 Tesseract 的最終圖片：</p>
+                    <img v-if="debugImageUrl" :src="debugImageUrl" class="w-full max-w-sm" />
+                </div>
                 <div v-if="isScannerOpen && selectedScanMode === 'OCR_PLATE'" class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-all">
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-bold text-gray-800 dark:text-gray-200">🤖 Edge AI 自動抓拍</span>
@@ -1522,6 +1526,8 @@
                         description: '手動拍照截圖辨識。可以設定 Google Vision API Key 或用 Tesseract.js'
                     }
                 ]
+
+                const debugImageUrl = ref('')
 
                 const selectedScanMode = ref('ALL')
                 const lastScannedText = ref('')
@@ -4456,6 +4462,7 @@
 
                 const captureForOCR = async () => {
                     const videoEl = document.querySelector('#reader video')
+                    const frameEl = document.getElementById('qr-shaded-region')
                     if (!videoEl) {
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
@@ -4465,30 +4472,106 @@
                     if (document.activeElement && document.activeElement.tagName === 'INPUT') {
                         document.activeElement.blur()
                     }
+                    // 2. 取得 DOM 尺寸
+                    const videoRect = videoEl.getBoundingClientRect()
+                    const frameRect = frameEl.getBoundingClientRect()
+
+                    // 🚀 核心破解：計算 Object-Fit: cover 帶來的「真實渲染尺寸」與「溢出偏移量」
+                    const videoRatio = videoEl.videoWidth / videoEl.videoHeight
+                    const elementRatio = videoRect.width / videoRect.height
+
+                    let renderWidth, renderHeight, offsetX = 0, offsetY = 0
+
+                    if (elementRatio > videoRatio) {
+                        // 螢幕比較寬：影片高度會超出螢幕 (上下被截掉)
+                        renderWidth = videoRect.width
+                        renderHeight = videoRect.width / videoRatio
+                        offsetY = (renderHeight - videoRect.height) / 2
+                    } else {
+                        // 螢幕比較細長：影片寬度會超出螢幕 (左右被截掉)
+                        renderWidth = videoRect.height * videoRatio
+                        offsetX = (renderWidth - videoRect.width) / 2
+                    }
+
+                    // 真實解析度與渲染尺寸的比例
+                    const scale = videoEl.videoWidth / renderWidth
+
+                    // 🚀 完美映射：(螢幕相對座標 + 隱藏的偏移量) * 縮放比例
+                    const frameLeftRelativeToVideo = frameRect.left - videoRect.left
+                    const frameTopRelativeToVideo = frameRect.top - videoRect.top
+
+                    // 這就是你畫面上定義的虛線框，在原始影片中的確切座標與尺寸！
+                    const realStartX = Math.floor((frameLeftRelativeToVideo + offsetX) * scale)
+                    const realStartY = Math.floor((frameTopRelativeToVideo + offsetY) * scale)
+                    const realWidth = Math.floor(frameRect.width * scale)
+                    const realHeight = Math.floor(frameRect.height * scale)
+
+                    // 防呆：確保不超出邊界
+                    const safeStartX = Math.max(0, realStartX)
+                    const safeStartY = Math.max(0, realStartY)
+                    const safeWidth = Math.min(videoEl.videoWidth - safeStartX, realWidth)
+                    const safeHeight = Math.min(videoEl.videoHeight - safeStartY, realHeight)
+
+                    // 3. 建立畫布並執行 ctx.drawImage 裁切
                     const canvas = document.createElement('canvas')
-                    canvas.width = Math.floor(videoEl.videoWidth * 0.85)
-                    canvas.height = Math.floor(videoEl.videoHeight * 0.4)
-                    const startX = Math.floor((videoEl.videoWidth - canvas.width) / 2)
-                    const startY = Math.floor((videoEl.videoHeight - canvas.height) / 2)
+
+                    // 把裁下來的圖放大 2 倍給 OCR 辨識 (解決字太小的問題)
+                    const scaleFactor = 2
+                    canvas.width = safeWidth * scaleFactor
+                    canvas.height = safeHeight * scaleFactor
+
                     const ctx = canvas.getContext('2d')
+                    ctx.imageSmoothingEnabled = false
+
+                    // 4. 執行裁切：完美映射你視覺虛線框的範圍
+                    const cropScale = 0.4
+
+                    // 2. 算出真正要裁切的寬高
+                    const cropWidth = safeWidth * cropScale
+                    const cropHeight = safeHeight * cropScale
+
+                    // 3. 🚀 置中核心魔法：新的起點 = 原起點 + (原寬度 - 新寬度) / 2
+                    const cropStartX = safeStartX + (safeWidth - cropWidth) / 2
+                    const cropStartY = safeStartY + (safeHeight - cropHeight) / 2
+
+                    // 4. 執行裁切
                     ctx.drawImage(
                         videoEl,
-                        startX, startY, canvas.width, canvas.height,
-                        0, 0, canvas.width, canvas.height
+                        cropStartX, cropStartY, cropWidth, cropHeight, // 來源：縮小並置中後的座標
+                        0, 0, canvas.width, canvas.height              // 目標：你的輸出畫布
                     )
+
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
                     const data = imageData.data
+
+                    // 🚀 1. 第一圈：算出整張圖片的「平均亮度」
+                    let totalBrightness = 0
+                    const brightnessArray = new Uint8Array(data.length / 4) // 暫存每個像素的亮度，省效能
+
                     for (let i = 0; i < data.length; i += 4) {
+                        // 計算亮度
                         const brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2]
-                        const threshold = 128
-                        const finalColor = brightness > threshold ? 255 : 0
+                        brightnessArray[i / 4] = brightness
+                        totalBrightness += brightness
+                    }
+
+                    // 動態門檻值 = 平均亮度 (通常可以稍微往下調一點點讓字更黑，例如乘以 0.9)
+                    const averageBrightness = totalBrightness / (canvas.width * canvas.height)
+                    const dynamicThreshold = averageBrightness * 0.9
+
+                    // 🚀 2. 第二圈：使用動態門檻進行非黑即白轉換
+                    for (let i = 0; i < data.length; i += 4) {
+                        const pixelIndex = i / 4
+                        const finalColor = brightnessArray[pixelIndex] > dynamicThreshold ? 255 : 0
 
                         data[i] = finalColor
                         data[i + 1] = finalColor
                         data[i + 2] = finalColor
                     }
+
                     ctx.putImageData(imageData, 0, 0)
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
+                    debugImageUrl.value = base64Image
                     canvas.width = 0
                     canvas.height = 0
                     const recognizedText = await processOCR(base64Image)
@@ -4780,7 +4863,8 @@
                     isVoiceEnabled,
                     voiceSettings,
                     speakFeedback,
-                    playTestSound
+                    playTestSound,
+                    debugImageUrl
                 }
             }
         }).mount('#app')
