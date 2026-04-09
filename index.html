@@ -623,7 +623,7 @@
                         <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :data-tooltip="filteredRows.length">{{ translate('Total') }}</td>
 
                         <td v-for="col in columns" :key="'total-' + col.id"
-                            class="flex sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
+                            class="flex sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center sm:items-start justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
                             :class="[
                                 col.type.startsWith('multiply') || col.type === 'minus' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'
                             ]">
@@ -658,7 +658,7 @@
                                     <button v-if="!isPrinting && col.type !== 'number'"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row: null, col }"
-                                        class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex"
+                                        class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
                                         :class="{'sm:right-8': ['date', 'time'].includes(col.type), 'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3860,7 +3860,7 @@
                         if (scanningTarget.value) {
                             const { row, col } = scanningTarget.value
                             if (!row) {
-                                columnFilters.value[colId] = decodedText
+                                columnFilters.value[col.id] = decodedText
                             } else {
                                 row[col.id] = decodedText
                                 const currentIndex = rows.value.findIndex(r => r.id === row.id)
