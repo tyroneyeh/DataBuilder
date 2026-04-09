@@ -2185,7 +2185,7 @@
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
-                            if (!isScannerOpen.value && targetInput) {
+                            if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
                                     block: 'start'
