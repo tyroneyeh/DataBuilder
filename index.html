@@ -657,7 +657,7 @@
                                     >
                                     <button v-if="!isPrinting && col.type !== 'number'"
                                         tabindex="-1"
-                                        @click.stop="scanningTarget = { row, col }"
+                                        @click.stop="scanningTarget = { 0, col }"
                                         class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex"
                                         :class="{'sm:right-8': ['date', 'time'].includes(col.type), 'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
@@ -3861,18 +3861,18 @@
                             const { row, col } = scanningTarget.value
                             if (!row) {
                                 columnFilters.value[colId] = decodedText
-                                return
-                            }
-                            row[col.id] = decodedText
-                            const currentIndex = rows.value.findIndex(r => r.id === row.id)
-                            if (currentIndex !== -1) {
-                                addRow()
-                                setTimeout(() => {
-                                    scanningTarget.value = {
-                                        row: rows.value[currentIndex + 1],
-                                        col: col
-                                    }
-                                }, 50)
+                            } else {
+                                row[col.id] = decodedText
+                                const currentIndex = rows.value.findIndex(r => r.id === row.id)
+                                if (currentIndex !== -1) {
+                                    addRow()
+                                    setTimeout(() => {
+                                        scanningTarget.value = {
+                                            row: rows.value[currentIndex + 1],
+                                            col: col
+                                        }
+                                    }, 50)
+                                }
                             }
                         }
                     } catch (error) {
