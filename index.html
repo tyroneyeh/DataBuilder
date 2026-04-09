@@ -2162,7 +2162,8 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = `row_${rows.value.length + 1}`
+                    const lastIndex = rows.value.length
+                    const newRowId = `row_${lastIndex + 1}`
                     const newRow = {id: newRowId, note: '', isExpanded: false}
                     const {todayDate, currentTime} = getDate()
 
@@ -2185,21 +2186,20 @@
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
-                            if (targetInput) {
+                            if (!isScannerOpen.value && targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
                                     block: 'start'
                                 })
                                 targetInput.focus()
                             } else {
-                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
+                                inputRefs.value[`${rows.value[lastIndex - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
                                     behavior: 'smooth',
                                     block: 'end'
                                 })
                             }
                         }
                     }, 50)
-
                 }
 
                 const formatNumberInput = (row, col) => {
@@ -3789,9 +3789,6 @@
                             const currentIndex = rows.value.findIndex(r => r.id === row.id)
                             if (currentIndex !== -1) {
                                 addRow()
-                                scrollToPosition(1)
-                                onDataEdited()
-                                await nextTick()
                                 setTimeout(() => {
                                     scanningTarget.value = {
                                         row: rows.value[currentIndex + 1],
@@ -4330,10 +4327,6 @@
                             const currentIndex = rows.value.findIndex(r => r.id === row.id)
                             if (currentIndex !== -1) {
                                 addRow()
-                                scrollToPosition(1)
-                                onDataEdited()
-
-                                await nextTick()
                                 setTimeout(() => {
                                     scanningTarget.value = {
                                         row: rows.value[currentIndex + 1],
