@@ -657,7 +657,7 @@
                                     >
                                     <button v-if="!isPrinting && col.type !== 'number'"
                                         tabindex="-1"
-                                        @click.stop="scanningTarget = { 0, col }"
+                                        @click.stop="scanningTarget = { row: null, col }"
                                         class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex"
                                         :class="{'sm:right-8': ['date', 'time'].includes(col.type), 'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
