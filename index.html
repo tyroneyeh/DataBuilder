@@ -2162,8 +2162,7 @@
                 }
 
                 const addRow = async () => {
-                    const lastIndex = rows.value.length
-                    const newRowId = `row_${lastIndex + 1}`
+                    const newRowId = `row_${rows.value.length + 1}`
                     const newRow = {id: newRowId, note: '', isExpanded: false}
                     const {todayDate, currentTime} = getDate()
 
@@ -2193,7 +2192,7 @@
                                 })
                                 targetInput.focus()
                             } else {
-                                inputRefs.value[`${rows.value[lastIndex - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
+                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
                                     behavior: 'smooth',
                                     block: 'end'
                                 })
