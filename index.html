@@ -4517,13 +4517,20 @@
                     }
                 }
 
+                const formatForSpellOut = (text) => {
+                    const str = String(text).trim()
+                    if (/^\d+$/.test(str)) {
+                        return str.split('').join(' ')
+                    }
+                    return str
+                }
 
                 const speakFeedback = (text, isError = false) => {
                     if (!window.speechSynthesis || !isVoiceEnabled.value || !isVoiceEnabled.value) return
 
                     window.speechSynthesis.cancel()
 
-                    const utterance = new SpeechSynthesisUtterance(text)
+                    const utterance = new SpeechSynthesisUtterance(formatForSpellOut(text))
                     utterance.lang = currentLanguage.value
                     utterance.volume = voiceSettings.volume
 
