@@ -4355,7 +4355,8 @@
                             const match = processOcrResult(fullText)
                             playBeep()
                             if (match) {
-                                return match
+                                if (await showConfirm('有辨識到車牌: '+ match))
+                                    return match
                             } else {
                                 console.log("OCR Raw Text:", fullText)
                                 if (await showConfirm('有辨識到文字，但找不到符合車牌的格式: '+ fullText))
@@ -4463,7 +4464,7 @@
                 const captureForOCR = async () => {
                     const videoEl = document.querySelector('#reader video')
                     const frameEl = document.getElementById('qr-shaded-region')
-                    if (!videoEl) {
+                    if (!videoEl || !frameEl) {
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
                     }
@@ -4472,75 +4473,76 @@
                     if (document.activeElement && document.activeElement.tagName === 'INPUT') {
                         document.activeElement.blur()
                     }
-                    // 2. 取得 DOM 尺寸
+                    // 2. 取得螢幕上的 DOM 尺寸 (確保 video 標籤沒有 padding/border)
                     const videoRect = videoEl.getBoundingClientRect()
                     const frameRect = frameEl.getBoundingClientRect()
 
-                    // 🚀 核心破解：計算 Object-Fit: cover 帶來的「真實渲染尺寸」與「溢出偏移量」
+                    // 3. 🚀 計算 Object-Fit: cover 隱藏的「溢出偏移量」
                     const videoRatio = videoEl.videoWidth / videoEl.videoHeight
                     const elementRatio = videoRect.width / videoRect.height
 
                     let renderWidth, renderHeight, offsetX = 0, offsetY = 0
 
                     if (elementRatio > videoRatio) {
-                        // 螢幕比較寬：影片高度會超出螢幕 (上下被截掉)
+                        // 螢幕較寬：上下被截掉
                         renderWidth = videoRect.width
                         renderHeight = videoRect.width / videoRatio
                         offsetY = (renderHeight - videoRect.height) / 2
                     } else {
-                        // 螢幕比較細長：影片寬度會超出螢幕 (左右被截掉)
+                        // 螢幕較細長：左右被截掉
                         renderWidth = videoRect.height * videoRatio
                         offsetX = (renderWidth - videoRect.width) / 2
                     }
 
-                    // 真實解析度與渲染尺寸的比例
+                    // 算出「真實影片」與「螢幕渲染」的縮放比例
                     const scale = videoEl.videoWidth / renderWidth
 
-                    // 🚀 完美映射：(螢幕相對座標 + 隱藏的偏移量) * 縮放比例
-                    const frameLeftRelativeToVideo = frameRect.left - videoRect.left
-                    const frameTopRelativeToVideo = frameRect.top - videoRect.top
+                    // 4. 完美映射：算出畫面上「視覺虛線框」在「真實影片」中的 100% 區域
+                    const relativeLeft = frameRect.left - videoRect.left
+                    const relativeTop = frameRect.top - videoRect.top
 
-                    // 這就是你畫面上定義的虛線框，在原始影片中的確切座標與尺寸！
-                    const realStartX = Math.floor((frameLeftRelativeToVideo + offsetX) * scale)
-                    const realStartY = Math.floor((frameTopRelativeToVideo + offsetY) * scale)
-                    const realWidth = Math.floor(frameRect.width * scale)
-                    const realHeight = Math.floor(frameRect.height * scale)
+                    const safeStartX = Math.max(0, Math.floor((relativeLeft + offsetX) * scale))
+                    const safeStartY = Math.max(0, Math.floor((relativeTop + offsetY) * scale))
+                    const safeWidth = Math.min(videoEl.videoWidth - safeStartX, Math.floor(frameRect.width * scale))
+                    const safeHeight = Math.min(videoEl.videoHeight - safeStartY, Math.floor(frameRect.height * scale))
 
-                    // 防呆：確保不超出邊界
-                    const safeStartX = Math.max(0, realStartX)
-                    const safeStartY = Math.max(0, realStartY)
-                    const safeWidth = Math.min(videoEl.videoWidth - safeStartX, realWidth)
-                    const safeHeight = Math.min(videoEl.videoHeight - safeStartY, realHeight)
-
-                    // 3. 建立畫布並執行 ctx.drawImage 裁切
+                    // 5. 建立輸出畫布 (固定將畫布放大 2 倍給 OCR，解決字太小的問題)
                     const canvas = document.createElement('canvas')
-
-                    // 把裁下來的圖放大 2 倍給 OCR 辨識 (解決字太小的問題)
-                    const scaleFactor = 2
-                    canvas.width = safeWidth * scaleFactor
-                    canvas.height = safeHeight * scaleFactor
-
+                    canvas.width = safeWidth * 2
+                    canvas.height = safeHeight * 2
                     const ctx = canvas.getContext('2d')
                     ctx.imageSmoothingEnabled = false
 
-                    // 4. 執行裁切：完美映射你視覺虛線框的範圍
-                    const cropScale = 0.4
+                    // =================================================================
+                    // 🚀 6. 裁切與繪製策略 (請先用「模式 A」測試是否解決偏左上問題！)
+                    // =================================================================
 
-                    // 2. 算出真正要裁切的寬高
-                    const cropWidth = safeWidth * cropScale
-                    const cropHeight = safeHeight * cropScale
+                    const USE_40_PERCENT_CROP = true // 👈 開關在這裡！先設為 false 測試
 
-                    // 3. 🚀 置中核心魔法：新的起點 = 原起點 + (原寬度 - 新寬度) / 2
-                    const cropStartX = safeStartX + (safeWidth - cropWidth) / 2
-                    const cropStartY = safeStartY + (safeHeight - cropHeight) / 2
+                    if (USE_40_PERCENT_CROP) {
+                        // 【模式 B：縮小 40% 裁切】(你原先的寫法)
+                        const cropScale = 0.4
+                        const cropWidth = safeWidth * cropScale
+                        const cropHeight = safeHeight * cropScale
+                        // 置中魔法
+                        const cropStartX = safeStartX + (safeWidth - cropWidth) / 2
+                        const cropStartY = safeStartY + (safeHeight - cropHeight) / 2
 
-                    // 4. 執行裁切
-                    ctx.drawImage(
-                        videoEl,
-                        cropStartX, cropStartY, cropWidth, cropHeight, // 來源：縮小並置中後的座標
-                        0, 0, canvas.width, canvas.height              // 目標：你的輸出畫布
-                    )
+                        ctx.drawImage(
+                            videoEl,
+                            cropStartX, cropStartY, cropWidth, cropHeight, // 來源：只抓中間一點點
+                            0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
+                        )
+                    } else {
+                        // 【模式 A：100% 所見即所得】(推薦！使用者框到哪裡，就剪哪裡)
+                        ctx.drawImage(
+                            videoEl,
+                            safeStartX, safeStartY, safeWidth, safeHeight, // 來源：完整擷取虛線框區域
+                            0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
+                        )
+                    }
 
+                    // 最後取得影像資料交給後續的二值化處理
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
                     const data = imageData.data
 
