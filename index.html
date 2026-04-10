@@ -3999,7 +3999,7 @@
                     const config = {
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
-                            const maxVisibleHeight = (window.innerHeight * 0.3) * 0.8
+                            const maxHeight = Math.min(window.innerHeight * 0.24, viewfinderHeight * 0.8)
                             let boxWidth = Math.min(viewfinderWidth * 0.85, 400)
                             let boxHeight = boxWidth
                             if (is1D) {
@@ -4007,7 +4007,7 @@
                             } else if (idPlate) {
                                 boxWidth = viewfinderWidth
                             } else {
-                                boxHeight = Math.min(boxHeight, maxVisibleHeight)
+                                boxHeight = Math.min(boxHeight, maxHeight)
                             }
                             return { width: boxWidth, height: boxHeight }
                         },
@@ -4466,8 +4466,8 @@
                     }
 
                     const canvas = document.createElement('canvas')
-                    canvas.width = videoEl.videoWidth * 0.15
-                    canvas.height = videoEl.videoHeight * 0.15
+                    canvas.width = videoEl.videoWidth
+                    canvas.height = videoEl.videoHeight
                     const ctx = canvas.getContext('2d')
                     ctx.imageSmoothingEnabled = false
 
