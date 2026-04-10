@@ -428,7 +428,7 @@
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
-                                @click.stop.prevent="enterInput(inputRefs[`${row.id}-${col.id}`], col.type, $event)"
+                                @click.stop.prevent="enterInput(row, col, $event)"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
                             >
@@ -500,8 +500,8 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
                                         }"
                                         @input="formatNumberInput(row, col)"
-                                        @click="enterInput($event.target, col.type, $event)"
-                                        @blur="saveInput($event.target)"
+                                        @click="enterInput(row, col, $event)"
+                                        @blur="saveInput(row, col)"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
                                     <button v-if="!isPrinting && col.type !== 'number'"
@@ -3815,28 +3815,37 @@
                     })
                 }
 
-                const enterInput = (inputEl, category, event) => {
+                const enterInput = async (row, col, event) => {
+                    const inputEl = inputRefs.value[`${row.id}-${col.id}`]
                     if (!inputEl) return
                     tempKey.value = inputEl.value
                     speakFeedback(inputEl.value)
-                    if (category === 'category') {
-                        if (event.target !== inputEl) inputEl.setAttribute('inputmode', 'none')
-                        inputEl.value = ''
-                        inputEl.focus()
-                        if (typeof inputEl.showPicker === 'function') {
-                            try {
-                                inputEl.showPicker()
-                            } catch (e) {
-                                console.warn('showPicker error', e)
+                    if (col.type === 'category') {
+                        if (event.target !== inputEl) {
+                            inputEl.setAttribute('inputmode', 'none')
+                            if (typeof inputEl.showPicker === 'function') {
+                                setTimeout(() => {
+                                    inputEl.showPicker()
+                                }, 100)
                             }
                         }
+                        row[col.id] = ''
+                        inputEl.value = ''
+                        inputEl.focus()
                     }
                 }
 
-                const saveInput = (inputEl) => {
-                    if (inputEl?.value !== tempKey.value) onDataEdited()
+                const saveInput = (row, col) => {
+                    const inputEl = inputRefs.value[`${row.id}-${col.id}`]
+                    if (inputEl.value !== tempKey.value) {
+                        if (tempKey.value) {
+                            row[col.id] = tempKey.value
+                        }
+                        onDataEdited()
+                    }
                     if (!inputEl || !tempKey.value) return
                     inputEl.removeAttribute('inputmode')
+                    row[col.id] = tempKey.value
                     inputEl.value = tempKey.value
                     tempKey.value = ''
                 }
