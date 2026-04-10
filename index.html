@@ -65,7 +65,7 @@
     <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300" v-cloak>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300" :class="{'print:hidden': !isChartOpen}">
-            <div
+            <div v-if="hasNumberColumn"
                 @click="toggleChart"
                 class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
@@ -1432,6 +1432,7 @@
                 const rows = shallowRef([])
                 const inputRefs = ref({})
                 const hasDateColumn = ref(false)
+                const hasNumberColumn = ref(false)
 
                 const activeMenuRowId = ref(null)
 
@@ -2083,6 +2084,9 @@
                     } else {
                         typeOptions.value = typeOptions.value.filter(opt => !opt.value.startsWith('multiply') && opt.value !== 'minus')
                     }
+
+                    hasDateColumn.value = columns.value.some(column => column.type === 'date')
+                    hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                 }
 
                 const loadData = async () => {
@@ -2158,6 +2162,7 @@
                     scrollToPosition(1)
 
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
+                    hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                     tableTitle.value = hashData?.title || localData.title || translate('My Data Sheets')
                     globalNotes.value = hashData?.note || localData.note || ''
 
@@ -4637,6 +4642,7 @@
                     rows,
                     inputRefs,
                     hasDateColumn,
+                    hasNumberColumn,
                     newColLabel,
                     newColType,
                     typeOptions,
