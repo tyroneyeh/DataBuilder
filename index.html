@@ -3823,15 +3823,16 @@
                     if (col.type === 'category') {
                         if (event.target !== inputEl) {
                             inputEl.setAttribute('inputmode', 'none')
-                            if (typeof inputEl.showPicker === 'function') {
-                                setTimeout(() => {
-                                    inputEl.showPicker()
-                                }, 100)
-                            }
+                        } else {
+                            inputEl.removeAttribute('inputmode')
                         }
                         row[col.id] = ''
                         inputEl.value = ''
                         inputEl.focus()
+                        if (typeof inputEl.showPicker === 'function') {
+                            await nextTick()
+                            inputEl.showPicker()
+                        }
                     }
                 }
 
