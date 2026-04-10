@@ -3833,10 +3833,10 @@
                     tempKey.value = inputEl.value
                     speakFeedback(inputEl.value)
                     if (col.type === 'category') {
-                        if (event.target !== inputEl) {
-                            inputEl.setAttribute('inputmode', 'none')
-                        } else {
+                        if (event.target === inputEl) {
                             inputEl.removeAttribute('inputmode')
+                        } else {
+                            inputEl.setAttribute('inputmode', 'none')
                         }
                         row[col.id] = ''
                         inputEl.value = ''
@@ -4058,7 +4058,6 @@
                             const isOCRMode = selectedScanMode.value.startsWith('OCR_')
 
                             if (isOCRMode) {
-                                console.log('📸 進入 OCR 雲端圖片解析模式...')
                                 const base64Image = await new Promise((resolve, reject) => {
                                     const reader = new FileReader();
                                     reader.onload = () => resolve(reader.result)
@@ -4067,7 +4066,6 @@
                                 })
                                 decodedText = await processOCR(base64Image);
                             } else {
-                                console.log('📊 進入本地條碼/QR Code 解析模式...')
                                 if ('BarcodeDetector' in window) {
                                     try {
                                         const imageBitmap = await createImageBitmap(file)
@@ -4356,17 +4354,17 @@
                             fullText = result.data.text.trim()
                         }
                         if (!fullText || fullText.length === 0) {
-                            showConfirm('找不到任何文字！', true)
+                            showConfirm(translate('No text detected.'))
                             return
                         }
 
                         playBeep()
                         if (await showConfirm(fullText)) {
-                            return fullText.trim()
+                            return fullText
                         }
                     } catch (error) {
                         console.error("OCR API Error:", error)
-                        showConfirm('OCR 辨識失敗：' + error.message, true)
+                        showConfirm('OCR API Error:' + error.message, true)
                     } finally {
                         isProcessing.value = false
                     }
@@ -4393,7 +4391,7 @@
                             if (!isCarLocked) {
                                 stableFrames++
                                 if (stableFrames >= 15) {
-                                    console.log('🎯 目標穩定鎖定！自動觸發拍照！')
+                                    console.log('🎯 target stable')
                                     isCarLocked = true
                                     stableFrames = 0
                                     await captureForOCR()
@@ -4405,13 +4403,13 @@
                             emptyFrames++
                             if (emptyFrames >= 15) {
                                 if (isCarLocked) {
-                                    console.log('👋 車輛已離開，解除鎖定！')
+                                    console.log('unlocked')
                                 }
-                                isCarLocked = false // 🔓 解除鎖定
+                                isCarLocked = false
                             }
                         }
                     } catch (e) {
-                        console.error("邊緣 AI 運算發生錯誤", e)
+                        console.error("Auto capture loop error:", e)
                     }
                     detectionLoopId = requestAnimationFrame(startAutoCaptureLoop)
                 }
@@ -4436,24 +4434,17 @@
                     isProcessing.value = true
                     try {
                         if (!window.tf) {
-                            console.log('開始下載 TensorFlow.js 核心...')
                             await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs')
                         }
                         if (!window.cocoSsd) {
-                            console.log('開始下載物件偵測模型...')
                             await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd')
                         }
 
-                        console.log('開始將模型載入記憶體...')
                         aiModel = await window.cocoSsd.load()
-
-                        console.log('🎉 邊緣運算 AI 引擎喚醒成功！')
-
                         startAutoCaptureLoop()
 
                     } catch (error) {
-                        console.error('AI 模型載入失敗:', error)
-                        alert(translate('AI 引擎載入失敗，請確認網路連線！'))
+                        alert(translate('AI Model load failed: ' + error.message))
                     } finally {
                         isProcessing.value = false
                     }
@@ -4462,7 +4453,7 @@
                 const captureForOCR = async () => {
                     const videoEl = document.querySelector('#reader video')
                     if (!videoEl) {
-                        alert('找不到相機畫面，請確認相機已開啟！')
+                        alert(translate('No video element found.'))
                         return
                     }
                     playBeep()
@@ -4487,7 +4478,7 @@
                     const recognizedText = await processOCR(base64Image)
                     if (recognizedText) {
                         if (recognizedText === lastScannedText.value) {
-                            console.warn(`🛡️ ${recognizedText} 已存在，防止重複寫入！`)
+                            console.warn(`🛡️ ${recognizedText} already exists`)
                             return
                         }
                         lastScannedText.value = recognizedText
@@ -4526,7 +4517,7 @@
                         if (capabilities && 'torch' in capabilities) {
                             isTorchSupported.value = true
                             isTorchOn.value = settings.torch || false
-                            console.log('💡 支援硬體手電筒控制！')
+                            console.log('Torch support detected: ', isTorchSupported.value)
                         } else {
                             isTorchSupported.value = false
                         }
@@ -4542,7 +4533,7 @@
                             advanced: [{ torch: isTorchOn.value }]
                         })
                     } catch (error) {
-                        console.error('切換手電筒失敗:', error)
+                        console.error("Failed to toggle torch:", error)
                         // 如果硬體報錯，把 UI 的燈號切回原本的狀態
                         isTorchOn.value = !isTorchOn.value
                         alert(translate('Failed to toggle torch. Please check your device settings.'))
