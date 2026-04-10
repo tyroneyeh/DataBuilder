@@ -4465,14 +4465,28 @@
                         document.activeElement.blur()
                     }
 
+                    let cropWidth = 400
+                    let cropHeight = 200
+                    cropWidth = Math.min(cropWidth, videoEl.videoWidth * 0.9)
+                    cropHeight = Math.min(cropHeight, videoEl.videoHeight * 0.9)
+                    const startX = Math.floor((videoEl.videoWidth - cropWidth) / 2)
+                    const startY = Math.floor((videoEl.videoHeight - cropHeight) / 2)
+
                     const canvas = document.createElement('canvas')
-                    canvas.width = videoEl.videoWidth
-                    canvas.height = videoEl.videoHeight
+                    canvas.width = cropWidth
+                    canvas.height = cropHeight
+
                     const ctx = canvas.getContext('2d')
                     ctx.imageSmoothingEnabled = false
 
                     ctx.drawImage(
-                        videoEl, 0, 0, canvas.width, canvas.height
+                        videoEl,
+                        startX,
+                        startY,
+                        cropWidth,
+                        cropHeight,
+                        0, 0,
+                        canvas.width, canvas.height
                     )
 
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
