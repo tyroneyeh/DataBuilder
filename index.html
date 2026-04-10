@@ -3841,7 +3841,7 @@
                 const saveInput = (row, col) => {
                     const inputEl = inputRefs.value[`${row.id}-${col.id}`]
                     if (!inputEl) return
-                    if (tempKey.value && inputEl.value !== tempKey.value) onDataEdited()
+                    if (inputEl.value !== tempKey.value) onDataEdited()
                     inputEl.removeAttribute('inputmode')
                     if (col.type !== 'category' || !tempKey.value) return
                     row[col.id] = tempKey.value
