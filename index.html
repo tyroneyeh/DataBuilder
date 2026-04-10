@@ -790,7 +790,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 border-2 border-red-500 p-2">
+                <div v-if="selectedScanMode === 'OCR_PLATE'" class="mt-4 border-2 border-red-500 p-2">
                     <p class="text-red-500 text-xs">🔍 OCR 丟給 Tesseract 的最終圖片：</p>
                     <img v-if="debugImageUrl" :src="debugImageUrl" class="w-full max-w-sm" />
                 </div>
@@ -943,7 +943,7 @@
                         </div>
                         <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API (車牌/文字辨識)</h4>
+                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API (文字辨識)</h4>
                             </div>
                             <div class="flex flex-col">
                                 <input v-model="googleVisionKey" type="password" placeholder="AIzaSy..." class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
@@ -1007,7 +1007,7 @@
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 flex items-center">
                     <span class="mr-2 text-indigo-500">💡</span> {{ translate('Tips') }}
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-gray-300 mb-6 whitespace-pre-line">{{ confirmModal.message }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-300 mb-6 whitespace-pre-line h-64 overflow-y-auto">{{ confirmModal.message }}</p>
                 <div class="flex justify-end space-x-3">
                     <button
                         ref="confirmCancelBtnRef"
@@ -1532,7 +1532,7 @@
                     },
                     {
                         id: 'OCR_PLATE',
-                        label: '🪪 車牌與文字辨識 (OCR)',
+                        label: '🪪 文字辨識 (OCR)',
                         description: '手動拍照截圖辨識。可以設定 Google Vision API Key 或用 Tesseract.js'
                     }
                 ]
@@ -3989,17 +3989,22 @@
                     })
 
                     const is1D = selectedScanMode.value.startsWith('1D_')
+                    const idPlate = selectedScanMode.value === 'OCR_PLATE'
 
                     const config = {
                         fps: 30,
                         qrbox: (viewfinderWidth, viewfinderHeight) => {
-                            const boxWidth = Math.min(viewfinderWidth * 0.85, 400)
                             const maxVisibleHeight = (window.innerHeight * 0.3) * 0.8
+                            let boxWidth = Math.min(viewfinderWidth * 0.85, 400)
                             let boxHeight = boxWidth
                             if (is1D) {
                                 boxHeight = Math.min(viewfinderHeight * 0.4, 150)
+                            } else if (idPlate) {
+                                boxWidth = viewfinderWidth
+                                boxHeight = viewfinderHeight
+                            } else {
+                                boxHeight = Math.min(boxHeight, maxVisibleHeight)
                             }
-                            boxHeight = Math.min(boxHeight, maxVisibleHeight)
                             return { width: boxWidth, height: boxHeight }
                         },
                         videoConstraints: {
@@ -4318,20 +4323,6 @@
                 }
                 */
 
-                const processOcrResult = (rawText) => {
-                    let cleanText = rawText.replaceAll(/[\s\r\n]/g, '').toUpperCase()
-                    const plateRegex = /([A-Z]{2,3})-?(\d{3,4})/
-                    const match = cleanText.match(plateRegex)
-                    if (match) {
-                        // 成功抓到車牌！格式化為 ABC-1234
-                        const finalPlate = `${match[1]}-${match[2]}`
-                        console.log('✅ 成功辨識車牌：', finalPlate)
-                        return finalPlate
-                    } else {
-                        console.log('❌ 畫面中找不到有效的車牌格式')
-                    }
-                }
-
                 const processOCR = async (base64Image) => {
                     const apiKey = googleVisionKey.value.trim()
                     isProcessing.value = true
@@ -4360,38 +4351,22 @@
                             await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js')
                             const result = await Tesseract.recognize(
                                 base64Image,
-                                'eng',
-                                {
-                                    logger: m => console.log(m),
-                                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
-                                    tessedit_pageseg_mode: '7'
-                                }
+                                'eng'
                             )
-                            fullText = result.data.text
+                            fullText = result.data.text.trim()
                         }
                         if (!fullText || fullText.length === 0) {
                             showConfirm('找不到任何文字！', true)
-                            return null
+                            return
                         }
 
-                        if (selectedScanMode.value === 'OCR_PLATE') {
-                            const match = processOcrResult(fullText)
-                            playBeep()
-                            if (match) {
-                                if (await showConfirm('有辨識到車牌: '+ match))
-                                    return match
-                            } else {
-                                console.log("OCR Raw Text:", fullText)
-                                if (await showConfirm('有辨識到文字，但找不到符合車牌的格式: '+ fullText))
-                                    return fullText.trim()
-                            }
-                        } else {
+                        playBeep()
+                        if (await showConfirm(fullText)) {
                             return fullText.trim()
                         }
                     } catch (error) {
                         console.error("OCR API Error:", error)
                         showConfirm('OCR 辨識失敗：' + error.message, true)
-                        return null
                     } finally {
                         isProcessing.value = false
                     }
@@ -4486,92 +4461,25 @@
 
                 const captureForOCR = async () => {
                     const videoEl = document.querySelector('#reader video')
-                    const frameEl = document.getElementById('qr-shaded-region')
-                    if (!videoEl || !frameEl) {
+                    if (!videoEl) {
                         alert('找不到相機畫面，請確認相機已開啟！')
                         return
                     }
-                    initAudioFromRef()
                     playBeep()
                     if (document.activeElement && document.activeElement.tagName === 'INPUT') {
                         document.activeElement.blur()
                     }
-                    // 2. 取得螢幕上的 DOM 尺寸 (確保 video 標籤沒有 padding/border)
-                    const videoRect = videoEl.getBoundingClientRect()
-                    const frameRect = frameEl.getBoundingClientRect()
 
-                    // 3. 🚀 計算 Object-Fit: cover 隱藏的「溢出偏移量」
-                    const videoRatio = videoEl.videoWidth / videoEl.videoHeight
-                    const elementRatio = videoRect.width / videoRect.height
-
-                    let renderWidth, renderHeight, offsetX = 0, offsetY = 0
-
-                    if (elementRatio > videoRatio) {
-                        // 螢幕較寬：上下被截掉
-                        renderWidth = videoRect.width
-                        renderHeight = videoRect.width / videoRatio
-                        offsetY = (renderHeight - videoRect.height) / 2
-                    } else {
-                        // 螢幕較細長：左右被截掉
-                        renderWidth = videoRect.height * videoRatio
-                        offsetX = (renderWidth - videoRect.width) / 2
-                    }
-
-                    // 算出「真實影片」與「螢幕渲染」的縮放比例
-                    const scale = videoEl.videoWidth / renderWidth
-
-                    // 4. 完美映射：算出畫面上「視覺虛線框」在「真實影片」中的 100% 區域
-                    const relativeLeft = frameRect.left - videoRect.left
-                    const relativeTop = frameRect.top - videoRect.top
-
-                    const safeStartX = Math.max(0, Math.floor((relativeLeft + offsetX) * scale))
-                    const safeStartY = Math.max(0, Math.floor((relativeTop + offsetY) * scale))
-                    const safeWidth = Math.min(videoEl.videoWidth - safeStartX, Math.floor(frameRect.width * scale))
-                    const safeHeight = Math.min(videoEl.videoHeight - safeStartY, Math.floor(frameRect.height * scale))
-
-                    // 5. 建立輸出畫布 (固定將畫布放大 2 倍給 OCR，解決字太小的問題)
                     const canvas = document.createElement('canvas')
-                    canvas.width = safeWidth * 2
-                    canvas.height = safeHeight * 2
+                    canvas.width = videoEl.videoHeight
+                    canvas.height = videoEl.videoHeight
                     const ctx = canvas.getContext('2d')
                     ctx.imageSmoothingEnabled = false
 
                     ctx.drawImage(
-                        videoEl,
-                        safeStartX, safeStartY, safeWidth, safeHeight, // 來源：完整擷取虛線框區域
-                        0, 0, canvas.width, canvas.height              // 目標：放大貼滿整個畫布
+                        videoEl, 0, 0, canvas.width, canvas.height
                     )
 
-                    // 最後取得影像資料交給後續的二值化處理
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-                    const data = imageData.data
-
-                    // 🚀 1. 第一圈：算出整張圖片的「平均亮度」
-                    let totalBrightness = 0
-                    const brightnessArray = new Uint8Array(data.length / 4) // 暫存每個像素的亮度，省效能
-
-                    for (let i = 0; i < data.length; i += 4) {
-                        // 計算亮度
-                        const brightness = 0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2]
-                        brightnessArray[i / 4] = brightness
-                        totalBrightness += brightness
-                    }
-
-                    // 動態門檻值 = 平均亮度 (通常可以稍微往下調一點點讓字更黑，例如乘以 0.9)
-                    const averageBrightness = totalBrightness / (canvas.width * canvas.height)
-                    const dynamicThreshold = averageBrightness * 0.9
-
-                    // 🚀 2. 第二圈：使用動態門檻進行非黑即白轉換
-                    for (let i = 0; i < data.length; i += 4) {
-                        const pixelIndex = i / 4
-                        const finalColor = brightnessArray[pixelIndex] > dynamicThreshold ? 255 : 0
-
-                        data[i] = finalColor
-                        data[i + 1] = finalColor
-                        data[i + 2] = finalColor
-                    }
-
-                    ctx.putImageData(imageData, 0, 0)
                     const base64Image = canvas.toDataURL('image/jpeg', 0.8)
                     debugImageUrl.value = base64Image
                     canvas.width = 0
@@ -4579,7 +4487,7 @@
                     const recognizedText = await processOCR(base64Image)
                     if (recognizedText) {
                         if (recognizedText === lastScannedText.value) {
-                            console.warn(`🛡️ 車牌 ${recognizedText} 已存在，防止重複寫入！`)
+                            console.warn(`🛡️ ${recognizedText} 已存在，防止重複寫入！`)
                             return
                         }
                         lastScannedText.value = recognizedText
