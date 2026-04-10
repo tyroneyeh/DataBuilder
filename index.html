@@ -2398,6 +2398,8 @@
                     let isVertical = false
                     let shouldMove = false
 
+                    tempKey.value = target.value
+
                     if (event.key === 'ArrowLeft') {
                         if (target.selectionStart > 0) return
                         direction = -1
@@ -3838,12 +3840,14 @@
 
                 const saveInput = (row, col) => {
                     const inputEl = inputRefs.value[`${row.id}-${col.id}`]
-                    onDataEdited()
-                    if (col.type !== 'category' || !inputEl  || !tempKey.value) return
+                    if (!inputEl) return
+                    if (tempKey.value && inputEl.value !== tempKey.value) onDataEdited()
                     inputEl.removeAttribute('inputmode')
+                    if (col.type !== 'category' || !tempKey.value) return
                     row[col.id] = tempKey.value
                     inputEl.value = tempKey.value
                     tempKey.value = ''
+
                 }
 
                 const initAudioFromRef = async () => {
