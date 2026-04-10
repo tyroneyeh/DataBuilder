@@ -4351,9 +4351,18 @@
                             fullText = texts[0].description
                         } else {
                             await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@7/dist/tesseract.min.js')
+                            let lang = 'eng'
+                            switch(currentLanguage.value) {
+                            case 'zh_TW':
+                                lang += '+chi_tra'
+                                break
+                            case 'zh_CN':
+                                lang += '+chi_sim'
+                                break
+                            }
                             const result = await Tesseract.recognize(
                                 base64Image,
-                                'eng'
+                                lang
                             )
                             fullText = result.data.text.trim()
                         }
