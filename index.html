@@ -491,7 +491,6 @@
                                         v-model="row[col.id]"
                                         :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
                                         :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
-                                        :list="col.type === 'category' && 'datalist-' + col.id"
                                         :data-tooltip="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
                                         class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
@@ -501,6 +500,7 @@
                                         }"
                                         @input="formatNumberInput(row, col)"
                                         @click="enterInput(row, col, $event)"
+                                        @focus="openGlobalMenu($event, row, col)"
                                         @blur="saveInput(row, col)"
                                         @keydown="focusNextInput($event, row.id, col.id)"
                                     >
@@ -654,7 +654,7 @@
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
-                                        :list="col.type === 'category' && 'datalist-' + col.id"
+                                        @focus="openGlobalMenu($event, null, col)"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
@@ -740,11 +740,22 @@
                     </tr>
                 </tfoot>
             </table>
-            <template v-for="col in columns">
-                <datalist v-if="col.type === 'category'" :id="'datalist-' + col.id">
-                    <option v-for="val in getUniqueValues(col.id)" :key="val" :value="val"></option>
-                </datalist>
-            </template>
+            <ul
+                v-for="col in columns"
+                v-show="activeColId === col.id"
+                :style="menuStyle"
+                class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border shadow-lg max-h-48 overflow-y-auto"
+            >
+                <li
+                    v-if="col.type === 'category'"
+                    v-for="val in getUniqueValues(col.id)"
+                    :key="val"
+                    @mousedown="selectOption(val)"
+                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                    {{ val }}
+                </li>
+            </ul>
         </div>
         <div v-if="scanningTarget" class="fixed bottom-0 left-0 z-50 w-full bg-white dark:bg-gray-900 rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden border-t border-gray-200 dark:border-gray-800 transition-colors duration-300">
             <div class="relative flex justify-center items-center pt-4 pb-2">
@@ -1566,6 +1577,9 @@
                     pitch: 1.1,
                     volume: 1
                 })
+                const activeColId = ref(null)
+                const activeRow = ref(null)
+                const menuStyle = ref({ top: '0px', left: '0px', width: '0px' })
 
                 let isInitializing = true
                 let scrollRAF
@@ -3837,32 +3851,13 @@
                     if (!inputEl) return
                     tempKey.value = inputEl.value
                     speakFeedback(inputEl.value)
-                    if (col.type === 'category') {
-                        if (event.target === inputEl) {
-                            inputEl.removeAttribute('inputmode')
-                        } else {
-                            inputEl.setAttribute('inputmode', 'none')
-                        }
-                        row[col.id] = ''
-                        inputEl.value = ''
-                        inputEl.focus()
-                        if (typeof inputEl.showPicker === 'function') {
-                            await nextTick()
-                            inputEl.showPicker()
-                        }
-                    }
                 }
 
                 const saveInput = (row, col) => {
                     const inputEl = inputRefs.value[`${row.id}-${col.id}`]
                     if (!inputEl) return
                     if (inputEl.value !== tempKey.value) onDataEdited()
-                    inputEl.removeAttribute('inputmode')
-                    if (col.type !== 'category' || !tempKey.value) return
-                    row[col.id] = tempKey.value
-                    inputEl.value = tempKey.value
-                    tempKey.value = ''
-
+                    tempKey.value = null
                 }
 
                 const initAudioFromRef = async () => {
@@ -4561,7 +4556,6 @@
                         })
                     } catch (error) {
                         console.error("Failed to toggle torch:", error)
-                        // 如果硬體報錯，把 UI 的燈號切回原本的狀態
                         isTorchOn.value = !isTorchOn.value
                         alert(translate('Failed to toggle torch. Please check your device settings.'))
                     }
@@ -4597,6 +4591,34 @@
 
                 const playTestSound = () => {
                     speakFeedback(translate('This is a test message.'))
+                }
+
+                const openGlobalMenu = (event, row, col) => {
+                    if (col.type !== 'category') return
+                    activeColId.value = col.id
+                    activeRow.value = {target: event.target, row}
+
+                    const inputEl = event.target
+                    const rect = inputEl.getBoundingClientRect()
+
+                    menuStyle.value = {
+                        top: `${rect.bottom + window.scrollY}px`,
+                        left: `${rect.left + window.scrollX}px`,
+                        width: `${rect.width}px`
+                    }
+
+                }
+
+                const selectOption = (opt) => {
+                    if (activeColId.value) {
+                        if (activeRow.value.row) activeRow.value.row[activeColId.value] = opt
+                        activeRow.value.target.value = opt
+                    }
+                    closeGlobalMenu()
+                }
+
+                const closeGlobalMenu = () => {
+                    activeColId.value = null
                 }
 
                 onMounted(async () => {
@@ -4643,6 +4665,12 @@
                     if ('speechSynthesis' in globalThis) {
                         speechSynthesis.speak(new SpeechSynthesisUtterance(""))
                     }
+
+                    window.addEventListener('mousedown', (e) => {
+                        if (!e.target.closest('input') && !e.target.closest('ul')) {
+                            closeGlobalMenu()
+                        }
+                    })
 
                     isInitializing = false
                 })
@@ -4793,7 +4821,13 @@
                     voiceSettings,
                     speakFeedback,
                     playTestSound,
-                    debugImageUrl
+                    debugImageUrl,
+                    activeColId,
+                    activeRow,
+                    openGlobalMenu,
+                    selectOption,
+                    closeGlobalMenu,
+                    menuStyle
                 }
             }
         }).mount('#app')
