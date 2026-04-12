@@ -535,32 +535,12 @@
                         <td v-if="!isPrinting" class="absolute sm:relative top-1 sm:top-auto right-1 sm:right-auto sm:border border-gray-300 dark:border-gray-700 px-2 py-2 text-center bg-transparent sm:bg-white dark:sm:bg-gray-800 transition-colors block sm:table-cell">
                             <div class="flex items-center justify-center space-x-2">
                                 <button
-                                    @click="toggleActionMenu(row.id)"
+                                    @click="toggleActionMenu($event, row)"
                                     class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
                                     :class="{'text-indigo-600 dark:text-indigo-400': row.note && row.note.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
-                            <div
-                                v-if="activeMenuRowId === row.id"
-                                @click="closeActionMenu"
-                                class="fixed inset-0 z-40 cursor-pointer"
-                                style="-webkit-tap-highlight-color: transparent"
-                            ></div>
-                            <div
-                                v-show="activeMenuRowId === row.id"
-                                class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
-                            >
-                                <button @click="ExpandNote(row)"
-                                    :class="[
-                                        row.isExpanded ? 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-gray-700' :
-                                        row.note && row.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-sm' : 'text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700'
-                                    ]"
-                                    class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ row.note && row.note.trim() !== '' && !row.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                                <button @click="copyRow(rows.indexOf(row))" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
-                                <button v-if="hasDateColumn" @click="copyRow(rows.indexOf(row), 1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
-                                <button @click="shareRow(row)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors font-medium">🔗 {{ translate('Share') }}</button>
-                                <button @click="removeRow(row.id)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
-                            </div>
+
                         </td>
                     </tr>
 
@@ -756,6 +736,29 @@
                     {{ val }}
                 </li>
             </ul>
+        </div>
+        <div class="absolute " :style="menuStyle">
+            <div
+                v-if="activeMenuRow"
+                @click="closeActionMenu"
+                class="fixed inset-0 z-40 cursor-pointer"
+                style="-webkit-tap-highlight-color: transparent"
+            ></div>
+            <div
+                v-if="activeMenuRow"
+                class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+            >
+                <button @click="ExpandNote"
+                    :class="[
+                        activeMenuRow.isExpanded ? 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-gray-700' :
+                        activeMenuRow.note && activeMenuRow.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-sm' : 'text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700'
+                    ]"
+                    class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ activeMenuRow.note && activeMenuRow.note.trim() !== '' && !activeMenuRow.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
+                <button @click="copyRow(0)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                <button v-if="hasDateColumn" @click="copyRow(1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
+                <button @click="shareRow" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors font-medium">🔗 {{ translate('Share') }}</button>
+                <button @click="removeRow" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
+            </div>
         </div>
         <div v-if="scanningTarget" class="fixed bottom-0 left-0 z-50 w-full bg-white dark:bg-gray-900 rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden border-t border-gray-200 dark:border-gray-800 transition-colors duration-300">
             <div class="relative flex justify-center items-center pt-4 pb-2">
@@ -1445,7 +1448,7 @@
                 const hasDateColumn = ref(false)
                 const hasNumberColumn = ref(false)
 
-                const activeMenuRowId = ref(null)
+                const activeMenuRow = ref(null)
 
                 const editingColId = ref(null)
                 const newColLabel = ref('')
@@ -1964,15 +1967,25 @@
                     await loadData()
                 }
 
-                const toggleActionMenu = (rowId) => {
-                    activeMenuRowId.value = activeMenuRowId.value === rowId ? null : rowId
+                const toggleActionMenu = (event, row) => {
+                    activeMenuRow.value = row
+
+                    const inputEl = event.target
+                    const rect = inputEl.getBoundingClientRect()
+
+                    menuStyle.value = {
+                        top: `${rect.bottom + window.scrollY}px`,
+                        left: `${rect.left + window.scrollX}px`,
+                        width: `${rect.width}px`
+                    }
                 }
 
                 const closeActionMenu = () => {
-                    activeMenuRowId.value = null
+                    activeMenuRow.value = null
                 }
 
-                const ExpandNote = async (row) => {
+                const ExpandNote = async () => {
+                    const row = activeMenuRow.value
                     row.isExpanded = !row.isExpanded
                     closeActionMenu()
                     onDataEdited()
@@ -2526,10 +2539,11 @@
                     onDataEdited()
                 }
 
-                const copyRow = async (index, ignoreDate = 0) => {
+                const copyRow = async (ignoreDate = 0) => {
+                    const index = rows.value.findIndex(row => row.id === activeMenuRow.value.id)
+                    const originalRow = rows.value[index]
                     closeActionMenu()
 
-                    const originalRow = rows.value[index]
                     if (!originalRow) return
 
                     const clonedRow = {...originalRow}
@@ -2574,6 +2588,7 @@
                 }
 
                 const removeRow = (idToRemove) => {
+                    if (!idToRemove) idToRemove = activeMenuRow.value.id
                     rows.value = rows.value.filter(row => row.id !== idToRemove).map(row => toRaw(row))
                     onDataEdited()
                     closeActionMenu()
@@ -4256,9 +4271,11 @@
                     }
                 }
 
-                const shareRow = async (row) => {
+                const shareRow = async () => {
+                    const row = activeMenuRow.value
                     closeActionMenu()
                     isProcessing.value = true
+                    await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
 
                     try {
                         const rawRowData = { ...toRaw(row) }
@@ -4280,7 +4297,7 @@
                                     isOpen: true,
                                     qrUrl: url,
                                     link: link,
-                                    title: translate('Share Link & QRCode') + ' - (' + (rows.value.indexOf(row) + 1) + ')',
+                                    title: translate('Share Link & QRCode'),
                                     desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
                                 }
                             }
@@ -4594,6 +4611,7 @@
                 }
 
                 const openGlobalMenu = (event, row, col) => {
+                    activeColId.value = null
                     if (col.type !== 'category') return
                     activeColId.value = col.id
                     activeRow.value = {target: event.target, row}
@@ -4682,7 +4700,7 @@
                     currentStorageKey,
                     changeStorageKey,
                     savedKeysList,
-                    activeMenuRowId,
+                    activeMenuRow,
                     toggleActionMenu,
                     closeActionMenu,
                     onKeyFocus,
