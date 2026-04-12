@@ -957,19 +957,18 @@
                         </div>
                         <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API (文字辨識)</h4>
+                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API {{ translate('Text recognized') }}</h4>
                             </div>
                             <div class="flex flex-col">
                                 <input v-model="googleVisionKey" type="password" placeholder="AIzaSy..." class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
-                                <p class="text-xs text-gray-500 mt-1">留空則停用 OCR 功能。前 1,000 次/月 免費。</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ translate('Get your API key from Google Cloud Console.') }} ({{ translate('There are 1000 free uses per month.') }})</p>
                             </div>
                         </div>
 
                         <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">語音回饋設定</h3>
-                                    <p class="text-sm text-gray-500">掃描成功或失敗時的語音提示</p>
+                                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ translate('Voice settings') }}</h3>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" v-model="isVoiceEnabled" class="sr-only peer">
@@ -979,7 +978,7 @@
                             <div class="space-y-4 transition-opacity duration-300" :class="isVoiceEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'">
                                 <div>
                                     <div class="flex justify-between text-sm mb-1">
-                                        <label class="text-gray-700 dark:text-gray-300">語速 (Rate)</label>
+                                        <label class="text-gray-700 dark:text-gray-300">{{ translate('Rate') }}</label>
                                         <span class="text-indigo-600 font-medium">{{ voiceSettings.rate }}x</span>
                                     </div>
                                     <input type="range" v-model.number="voiceSettings.rate" min="0.5" max="2.0" step="0.1"
@@ -987,7 +986,7 @@
                                 </div>
                                 <div>
                                     <div class="flex justify-between text-sm mb-1">
-                                        <label class="text-gray-700 dark:text-gray-300">音調 (Pitch)</label>
+                                        <label class="text-gray-700 dark:text-gray-300">{{ translate('Pitch') }}</label>
                                         <span class="text-indigo-600 font-medium">{{ voiceSettings.pitch }}</span>
                                     </div>
                                     <input type="range" v-model.number="voiceSettings.pitch" min="0" max="2.0" step="0.1"
@@ -995,7 +994,7 @@
                                 </div>
                                 <div>
                                     <div class="flex justify-between text-sm mb-1">
-                                        <label class="text-gray-700 dark:text-gray-300">音量 (Volume)</label>
+                                        <label class="text-gray-700 dark:text-gray-300">{{ translate('Volume') }}</label>
                                         <span class="text-indigo-600 font-medium">{{ Math.round(voiceSettings.volume * 100) }}%</span>
                                     </div>
                                     <input type="range" v-model.number="voiceSettings.volume" min="0" max="1.0" step="0.1"
@@ -1003,7 +1002,7 @@
                                 </div>
                                 <button @click="playTestSound"
                                         class="mt-4 w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-lg transition-colors border border-indigo-200 dark:bg-gray-700 dark:text-indigo-300 dark:border-gray-600 dark:hover:bg-gray-600">
-                                    ▶️ 播放測試語音
+                                    ▶️ {{ translate('Play test sound') }}
                                 </button>
                             </div>
                         </div>
@@ -1177,6 +1176,7 @@
                 "Failed to process image.": "圖片處理失敗。",
                 "Failed to read file.": "讀取檔案失敗。",
                 "Filter...": "篩選...",
+                "Get your API key from Google Cloud Console.": "從 Google Cloud Console 取得 API Key。",
                 "Gist ID (Leave blank to create new)": "Gist ID (初次建立請留白)",
                 "GitHub Gist Sync Settings": "GitHub Gist 同步設定",
                 "GitHub Gist not found! Please check your Gist ID. If this is your first time using it, please leave the Gist ID blank.": "找不到 GitHub Gist！請檢查您的 Gist ID。如果您是第一次使用, 請將 Gist ID 留白。",
@@ -1208,15 +1208,18 @@
                 "OK": "確定",
                 "Others": "其他",
                 "Photo": "相片",
+                "Play test sound": "播放測試聲音",
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B!",
                 "Please select columns A, B and C!": "請選擇欄位 A、B 與 C！",
+                "Pitch": "頻率",
                 "Price": "單價",
                 "Print": "列印",
                 "Product Barcode (1D)": "商品條碼 (1D)",
                 "QR Code (2D)": "QR Code (2D)",
                 "Quantity": "數量",
                 "Quarterly": "季",
+                "Rate": "比率",
                 "Remove column": "刪除欄位",
                 "Restore from Cloud": "從雲端還原",
                 "Restored from GitHub Gist successfully!": "成功從 GitHub Gist 還原！",
@@ -1239,6 +1242,8 @@
                 "Switch to Light Mode": "切換到亮色模式",
                 "TY's Data Builder": "TY的資料表計算器",
                 "Text": "文字",
+                "Text recognized": "文字辨識",
+                "There are 1000 free uses per month.": "每月有 1000 次免費使用次數。",
                 "The size limit for Gist is 1 MB.": "Gist 的大小限制為 1 MB。",
                 "This column already exists. Do you want to overwrite it?": "此欄位已存在。您要覆蓋嗎？",
                 "This will overwrite your current local data. Continue?": "這將會覆蓋您目前的本地資料。確定要繼續嗎？",
@@ -1253,6 +1258,8 @@
                 "Under Scopes, make sure to check \"gist\".": "在 Scopes 區塊, 請務必勾選「gist」。",
                 "Upload (JSON/CSV)": "上傳檔案 (JSON/CSV)",
                 "Value": "數值",
+                "Volume": "音量",
+                "Voice settings": "語音設定",
                 "Weekly": "週",
                 "Workspace": "切換存檔",
                 "Year": "年份",
