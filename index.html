@@ -1621,8 +1621,6 @@
                     try {
                         if (!currentStorageKey.value) return
                         const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
-                        if (!data.colCount) data.colCount = columns.value.length
-                        if (!data.rowCount) data.rowCount = rows.value.length
                         db.set(currentStorageKey.value, data)
                         await nextTick()
                         updateChart()
