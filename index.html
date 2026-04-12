@@ -2125,7 +2125,7 @@
                     hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                 }
 
-                const loadData = async () => {
+                const loadData = async (noDefulat = 0) => {
                     let hashData = null
 
                     let localData = await db.get(currentStorageKey.value)
@@ -2182,7 +2182,7 @@
                     } else if (localData.columns && localData.columns.length > 0) {
                         columns.value = localData.columns
                         rows.value = localData.rows
-                    } else {
+                    } else if (!noDefulat) {
                         columns.value = [
                             {id: 'col_1', label: translate('Item'), type: 'category'},
                             {id: 'col_2', label: translate('Price'), type: 'number'},
@@ -2732,12 +2732,16 @@
                 const clearStorage = async () => {
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
                         await db.remove(currentStorageKey.value)
+                        colCount.value = 0
+                        columns.value = []
+                        rowCount.value = 0
+                        rows.value = []
                         savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
                         if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
                         localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
                         currentStorageKey.value = savedKeysList.value[0]
                         window.history.replaceState(null, null, window.location.pathname)
-                        loadData()
+                        loadData(1)
                     }
                 }
 
