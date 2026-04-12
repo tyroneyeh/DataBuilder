@@ -629,20 +629,20 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </span>
-                                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="flex relative">
+                                <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="flex relative">
                                     <input
-                                        type="text"
+                                        :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
                                         @focus="openGlobalMenu($event, null, col)"
-                                        :placeholder="'🔍 ' + translate('Filter...')"
+                                        :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
                                     <button v-if="!isPrinting && col.type !== 'number'"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row: null, col }"
                                         class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
-                                        :class="{'sm:right-0': ['category', 'text'].includes(col.type)}"
+                                        :class="{'sm:right-8': ['date', 'time'].includes(col.type), 'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -656,7 +656,7 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </div>
-                                <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                                <div v-else-if="col.type === 'date' && !isPrinting" class="relative">
 
                                     <div v-if="activeDateFilterCol === col.id"
                                         @click="activeDateFilterCol = null"
@@ -666,15 +666,15 @@
 
                                     <div class="relative z-50">
                                         <input
-                                            :type="col.type"
-                                            :value="col.type === 'date' && (dateRangeFilters[col.id]?.start || '')"
-                                            @input="col.type === 'date' && updateDateRange(col.id, 'start', $event.target.value)"
+                                            type="date"
+                                            :value="dateRangeFilters[col.id]?.start || ''"
+                                            @input="updateDateRange(col.id, 'start', $event.target.value)"
                                             @click="activeDateFilterCol = col.id"
                                             class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
                                         >
                                         <button
-                                            v-show="col.type === 'date' && (dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end)"
-                                            @click.stop="col.type === 'date' && (clearDateRange(col.id); activeDateFilterCol = null)"
+                                            v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
+                                            @click.stop="clearDateRange(col.id); activeDateFilterCol = null"
                                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700"
                                             :title="translate('Clear filter')"
                                         >✖</button>
