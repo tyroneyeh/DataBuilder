@@ -4615,8 +4615,10 @@
                 }
 
                 const openGlobalMenu = (event, row, col) => {
-                    closeGlobalMenu()
-                    if (col.type !== 'category') return
+                    if (col.type !== 'category') {
+                        closeGlobalMenu()
+                        return
+                    }
                     activeColId.value = col.id
                     activeRow.value = {target: event.target, row}
 
