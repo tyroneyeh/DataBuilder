@@ -428,7 +428,7 @@
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
-                                @click.stop.prevent="enterInput(row, col, $event)"
+                                @click.stop.prevent="openGlobalMenu($event, row, col)"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
                             >
@@ -4610,13 +4610,17 @@
                     speakFeedback(translate('This is a test message.'))
                 }
 
-                const openGlobalMenu = (event, row, col) => {
+                const closeGlobalMenu = () => {
                     activeColId.value = null
+                }
+
+                const openGlobalMenu = (event, row, col) => {
+                    closeGlobalMenu()
                     if (col.type !== 'category') return
                     activeColId.value = col.id
                     activeRow.value = {target: event.target, row}
 
-                    const inputEl = event.target
+                    const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     const rect = inputEl.getBoundingClientRect()
 
                     menuStyle.value = {
@@ -4631,12 +4635,9 @@
                     if (activeColId.value) {
                         if (activeRow.value.row) activeRow.value.row[activeColId.value] = opt
                         activeRow.value.target.value = opt
+                        onDataEdited()
                     }
                     closeGlobalMenu()
-                }
-
-                const closeGlobalMenu = () => {
-                    activeColId.value = null
                 }
 
                 onMounted(async () => {
