@@ -1620,6 +1620,8 @@
                 const debouncedSave = debounce(async () => {
                     try {
                         if (!currentStorageKey.value) return
+                        if (!colCount.value) colCount.value = columns.value.length
+                        if (!rowCount.value) rowCount.value = rows.value.length
                         const data = {title: tableTitle.value, colCount: colCount.value, columns: toRaw(columns.value), rowCount: rowCount.value, rows: toRaw(rows.value), note: globalNotes.value}
                         db.set(currentStorageKey.value, data)
                         await nextTick()
