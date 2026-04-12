@@ -1620,7 +1620,7 @@
                 const debouncedSave = debounce(async () => {
                     try {
                         if (!currentStorageKey.value) return
-                        const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
+                        const data = {title: tableTitle.value, colCount: colCount.value, columns: toRaw(columns.value), rowCount: rowCount.value, rows: toRaw(rows.value), note: globalNotes.value}
                         db.set(currentStorageKey.value, data)
                         await nextTick()
                         updateChart()
