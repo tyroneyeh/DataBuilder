@@ -1450,6 +1450,7 @@
                 const tableTitle = ref('')
                 const colCount = ref(0)
                 const columns = shallowRef([])
+                const rowCount = ref(0)
                 const rows = shallowRef([])
                 const inputRefs = ref({})
                 const hasDateColumn = ref(false)
@@ -1621,6 +1622,7 @@
                         if (!currentStorageKey.value) return
                         const data = {title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value}
                         if (!data.colCount) data.colCount = columns.value.length
+                        if (!data.rowCount) data.rowCount = rows.value.length
                         db.set(currentStorageKey.value, data)
                         await nextTick()
                         updateChart()
@@ -2138,6 +2140,7 @@
                             }
                         }
                         colCount.value = localData.colCount
+                        rowCount.value = localData.rowCount
                     } else {
                         localData = { title: '', columns: [], rows: [], note: '' }
                     }
@@ -2348,7 +2351,9 @@
                 }
 
                 const addRow = async () => {
-                    const newRowId = `row_${rows.value.length + 1}`
+                    if (!rowCount.value) rowCount.value = rows.value.length
+                    rowCount.value++
+                    const newRowId = `row_${rowCount.value}`
                     const newRow = {id: newRowId, note: '', isExpanded: false}
                     const {todayDate, currentTime} = getDate()
 
@@ -2554,7 +2559,9 @@
                     if (!originalRow) return
 
                     const clonedRow = {...originalRow}
-                    clonedRow.id = 'row_' + Date.now()
+                    if (!rowCount.value) rowCount.value = rows.value.length
+                    rowCount.value++
+                    clonedRow.id = 'row_' + rowCount.value
 
                     if (ignoreDate || !columns.value.some(col => col.type === 'date')) {
                         const {todayDate, currentTime} = getDate()
@@ -2856,11 +2863,11 @@
                         }
                     })
 
-                    let addCount = 0
+                    let addCount = rowCount.value ? rowCount.value : rows.value.length
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
-
-                        const newRow = { id: `row_${Date.now()}_${addCount+1}` }
+                        addCount++
+                        const newRow = { id: `row_${addCount}` }
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
@@ -2886,7 +2893,6 @@
                         })
 
                         rows.value.push(newRow)
-                        addCount++
                     })
 
                     if (dateColId) {
