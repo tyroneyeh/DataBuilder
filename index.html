@@ -4713,7 +4713,6 @@
                     activeRow.value.row[activeRow.value.col.id] = el.value
                     await nextTick()
                     el.setSelectionRange(start + 1, start + 1)
-                    el.focus()
                 }
 
                 const backspace = async () => {
@@ -4725,7 +4724,6 @@
                     activeRow.value.row[activeRow.value.col.id] = el.value
                     await nextTick()
                     el.setSelectionRange(start - 1, start - 1)
-                    el.focus()
                 }
 
                 const clearAll = () => {
