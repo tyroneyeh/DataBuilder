@@ -4653,14 +4653,19 @@
                 }
 
                 const openGlobalMenu = (event, row, col) => {
+                    const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     if (col.type !== 'category') {
                         closeGlobalMenu()
+                        if (col.type === 'number') {
+                            inputEl.inputMode = 'text'
+                            inputEl.focus()
+                            inputEl.select()
+                        }
                         return
                     }
                     activeColId.value = col.id
                     activeRow.value = {target: event.target, row}
 
-                    const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     const rect = inputEl.getBoundingClientRect()
 
                     menuStyle.value = {
