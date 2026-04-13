@@ -4676,10 +4676,10 @@
                     speakFeedback(translate('This is a test message.'))
                 }
 
-                const openGlobalMenu = async (event, row, col) => {
+                const openGlobalMenu = (event, row, col) => {
                     const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
                     const target = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
-                    activeRow.value = {target, row, col}
+                    activeRow.value = {target, row, col, start: target.selectionStart, end: target.selectionEnd}
                     const rect = target.getBoundingClientRect()
 
                     menuStyle.value = {
@@ -4704,26 +4704,26 @@
                     activeRow.value = null
                 }
 
-                const append = async (char) => {
+                const append = (char) => {
                     const el = activeRow.value?.target
                     if (!el) return
-                    const start = el.selectionStart
-                    const end = el.selectionEnd
+                    const start = activeRow.value.start
+                    const end = activeRow.value.end
                     el.value = el.value.slice(0, start) + char + el.value.slice(end)
                     activeRow.value.row[activeRow.value.col.id] = el.value
-                    await nextTick()
-                    el.setSelectionRange(start + 1, start + 1)
+                    activeRow.value.start = start + 1
+                    activeRow.value.end = start + 1
                 }
 
-                const backspace = async () => {
+                const backspace = () => {
                     const el = activeRow.value?.target
                     if (!el) return
-                    const start = el.selectionStart
-                    const end = el.selectionEnd
+                    const start = activeRow.value.start
+                    const end = activeRow.value.end
                     el.value = el.value.slice(0, start - 1) + el.value.slice(end)
                     activeRow.value.row[activeRow.value.col.id] = el.value
-                    await nextTick()
-                    el.setSelectionRange(start - 1, start - 1)
+                    activeRow.value.start = start - 1
+                    activeRow.value.end = start - 1
                 }
 
                 const clearAll = () => {
