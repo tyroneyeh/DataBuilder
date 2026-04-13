@@ -740,27 +740,28 @@
         <div
             v-show="isKeyboardOpen"
             :style="menuStyle"
-            class="absolute w-full bg-gray-200 p-2 pb-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] transition-transform duration-300"
-            >
+            class="absolute w-full p-2 pb-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] transition-transform duration-300 bg-gray-200 dark:bg-gray-800 dark:shadow-[0_-4px_10px_rgba(0,0,0,0.5)]"
+        >
             <div class="grid grid-cols-4 gap-2 h-64">
-                <button @click="clearAll" class="col-span-2 bg-red-100 text-red-600 rounded-lg text-xl font-medium active:bg-red-200 transition-colors">AC</button>
-                <button @click="backspace" class="bg-gray-300 text-gray-700 rounded-lg text-xl active:bg-gray-400 transition-colors">⌫</button>
-                <button @click="append('/')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">÷</button>
-                <button @click="append('7')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">7</button>
-                <button @click="append('8')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">8</button>
-                <button @click="append('9')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">9</button>
-                <button @click="append('*')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">×</button>
-                <button @click="append('4')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">4</button>
-                <button @click="append('5')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">5</button>
-                <button @click="append('6')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">6</button>
-                <button @click="append('-')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">−</button>
-                <button @click="append('1')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">1</button>
-                <button @click="append('2')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">2</button>
-                <button @click="append('3')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">3</button>
-                <button @click="append('+')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">+</button>
-                <button @click="append('0')" class="col-span-2 bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">0</button>
-                <button @click="append('.')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">.</button>
-                <button @click="doCalc" class="bg-green-500 text-white rounded-lg text-xl font-medium shadow-sm active:bg-green-600 transition-colors">完成</button>
+                <button @click="clearAll" class="rounded-lg text-xl font-medium transition-colors bg-red-100 text-red-600 active:bg-red-200 dark:bg-red-900/40 dark:text-red-400 dark:active:bg-red-900/60">AC</button>
+                <button @click="backspace" class="rounded-lg text-xl transition-colors bg-gray-300 text-gray-700 active:bg-gray-400 dark:bg-gray-700 dark:text-gray-300 dark:active:bg-gray-600">⌫</button>
+                <button @click="append('%')" class="rounded-lg text-2xl transition-colors bg-indigo-100 text-indigo-600 active:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:active:bg-indigo-900/60">%</button>
+                <button @click="append('/')" class="rounded-lg text-2xl transition-colors bg-indigo-100 text-indigo-600 active:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:active:bg-indigo-900/60">÷</button>
+                <button @click="append('7')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">7</button>
+                <button @click="append('8')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">8</button>
+                <button @click="append('9')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">9</button>
+                <button @click="append('*')" class="rounded-lg text-2xl transition-colors bg-indigo-100 text-indigo-600 active:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:active:bg-indigo-900/60">×</button>
+                <button @click="append('4')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">4</button>
+                <button @click="append('5')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">5</button>
+                <button @click="append('6')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">6</button>
+                <button @click="append('-')" class="rounded-lg text-2xl transition-colors bg-indigo-100 text-indigo-600 active:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:active:bg-indigo-900/60">−</button>
+                <button @click="append('1')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">1</button>
+                <button @click="append('2')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">2</button>
+                <button @click="append('3')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">3</button>
+                <button @click="append('+')" class="rounded-lg text-2xl transition-colors bg-indigo-100 text-indigo-600 active:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:active:bg-indigo-900/60">+</button>
+                <button @click="append('0')" class="col-span-2 rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">0</button>
+                <button @click="append('.')" class="rounded-lg text-2xl shadow-sm transition-colors bg-white text-gray-800 active:bg-gray-100 dark:bg-gray-600 dark:text-gray-100 dark:active:bg-gray-500">.</button>
+                <button @click="doCalc" class="rounded-lg text-xl font-medium shadow-sm transition-colors bg-green-500 text-white active:bg-green-600 dark:bg-green-600 dark:active:bg-green-700">=</button>
             </div>
         </div>
         <div class="absolute" :style="menuStyle">
@@ -4677,9 +4678,9 @@
 
                 const openGlobalMenu = async (event, row, col) => {
                     const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
-                    const inputEl = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
-                    activeRow.value = {target: event.target, row, col}
-                    const rect = inputEl.getBoundingClientRect()
+                    const target = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
+                    activeRow.value = {target, row, col}
+                    const rect = target.getBoundingClientRect()
 
                     menuStyle.value = {
                         top: `${rect.bottom + window.scrollY}px`,
@@ -4687,20 +4688,11 @@
                         width: `${rect.width}px`
                     }
 
-                    if (col.type !== 'category') {
-                        if (col.type === 'number' && isLabel) {
-                            inputEl.blur()
-                            inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'none' : 'numeric'
-                            isKeyboardOpen.value = inputEl.inputMode === 'none'
-                            await nextTick()
-                            inputEl.focus()
-                        }
-                        return
+                    isKeyboardOpen.value = false
+                    if (col.type !== 'category' && isLabel) {
+                        target.inputMode = target.inputMode === 'decimal' ? 'none' : 'decimal'
+                        isKeyboardOpen.value = target.inputMode === 'none'
                     }
-
-                    await nextTick()
-                    inputEl.focus()
-
                 }
 
                 const selectOption = (opt) => {
