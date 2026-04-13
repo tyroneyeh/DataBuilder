@@ -3500,17 +3500,15 @@
                         expenseChart.value = null
                     }
                     const trendObj = getTrendChartData(topCategories)
+                    hasTrendData.value = false
                     if (trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value) {
                         hasTrendData.value = true
                         const sortedLabels = Object.keys(trendObj.trendData).sort((a, b) => a.localeCompare(b))
                         await nextTick()
                         updateTrend(ctxLine, sortedLabels, trendObj)
-                    } else {
-                        hasTrendData.value = false
-                        if (trendChart.value) {
-                            trendChart.value.destroy()
-                            trendChart.value = null
-                        }
+                    } else if (trendChart.value) {
+                        trendChart.value.destroy()
+                        trendChart.value = null
                     }
                 }
 
