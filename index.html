@@ -180,9 +180,9 @@
                             <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
                                 :class="trendChartType === 'line' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'"></div>
 
-                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300"
+                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                                 :class="trendChartType === 'bar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📊 {{  translate('Bar') }}</div>
-                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300"
+                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                                 :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }} </div>
                         </div>
                         <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
@@ -3268,7 +3268,7 @@
                     }
                 }
 
-                const toggleLegend = async (index) => {
+                const toggleLegend = (index) => {
                     legendClickCount++
                     if (legendClickCount === 1) {
                         legendClickTimer = setTimeout(async () => {
@@ -3277,8 +3277,6 @@
                                 expenseChart.value.toggleDataVisibility(index)
                                 expenseChart.value.update()
                             }
-                            await nextTick()
-                            updateChart()
                         }, 250)
                     } else if (legendClickCount === 2) {
                         clearTimeout(legendClickTimer)
@@ -3307,9 +3305,6 @@
                             }
                             chart.update()
                         }
-
-                        await nextTick()
-                        updateChart()
                     }
                 }
 
