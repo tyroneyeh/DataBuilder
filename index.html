@@ -428,7 +428,7 @@
                         <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
-                                @click.stop.prevent="openGlobalMenu($event, row, col)"
+                                @mousedown.prevent="openGlobalMenu($event, row, col)"
                                 class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
                             >
@@ -4652,21 +4652,18 @@
                     activeColId.value = null
                 }
 
-                const openGlobalMenu = (event, row, col) => {
+                const openGlobalMenu = async (event, row, col) => {
                     const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     if (col.type !== 'category') {
                         closeGlobalMenu()
                         if (col.type === 'number' && event.target.tagName === 'LABEL') {
                             inputEl.blur()
                             inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'text' : 'numeric'
-                            setTimeout(() => {
-                                inputEl.focus()
-                            }, 300)
+                            await nextTick()
+                            inputEl.focus()
                         }
                         return
                     }
-                    activeColId.value = col.id
-                    activeRow.value = {target: event.target, row}
 
                     const rect = inputEl.getBoundingClientRect()
 
@@ -4675,6 +4672,14 @@
                         left: `${rect.left + window.scrollX}px`,
                         width: `${rect.width}px`
                     }
+
+                    activeRow.value = {target: event.target, row}
+                    await nextTick()
+                    setTimeout(() => {
+                        activeColId.value = col.id
+                    }, 50)
+
+                    inputEl.focus()
 
                 }
 
