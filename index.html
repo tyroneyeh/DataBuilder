@@ -3486,14 +3486,11 @@
                         const sortedEntries = Object.entries(categoryData).sort((a, b) => b[1] - a[1])
                         const MAX_CAT = 12
                         const finalData = {}
-                        const otherLabel = translate('Others')
                         sortedEntries.forEach((item, index) => {
                             if (index < MAX_CAT) {
-                                finalData[item[0]] = item[1]
                                 topCategories.add(item[0])
-                            } else {
-                                finalData[otherLabel] = (finalData[otherLabel] || 0) + item[1]
                             }
+                            finalData[item[0]] = item[1]
                         })
                         labels = Object.keys(finalData)
                         values = Object.values(finalData)
