@@ -4657,7 +4657,7 @@
                     if (col.type !== 'category') {
                         closeGlobalMenu()
                         if (col.type === 'number') {
-                            inputEl.inputMode = 'text'
+                            inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'text' : 'numeric'
                             inputEl.focus()
                             inputEl.select()
                         }
