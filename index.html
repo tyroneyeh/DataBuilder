@@ -722,7 +722,7 @@
             </table>
             <ul
                 v-for="col in columns"
-                v-show="activeColId === col.id"
+                v-show="activeRow?.col.id === col.id"
                 :style="menuStyle"
                 class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border shadow-lg max-h-48 overflow-y-auto"
             >
@@ -737,7 +737,33 @@
                 </li>
             </ul>
         </div>
-        <div class="absolute " :style="menuStyle">
+        <div
+            v-show="isKeyboardOpen"
+            :style="menuStyle"
+            class="absolute w-full bg-gray-200 p-2 pb-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] transition-transform duration-300"
+            >
+            <div class="grid grid-cols-4 gap-2 h-64">
+                <button @click="clearAll" class="col-span-2 bg-red-100 text-red-600 rounded-lg text-xl font-medium active:bg-red-200 transition-colors">AC</button>
+                <button @click="backspace" class="bg-gray-300 text-gray-700 rounded-lg text-xl active:bg-gray-400 transition-colors">⌫</button>
+                <button @click="append('/')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">÷</button>
+                <button @click="append('7')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">7</button>
+                <button @click="append('8')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">8</button>
+                <button @click="append('9')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">9</button>
+                <button @click="append('*')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">×</button>
+                <button @click="append('4')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">4</button>
+                <button @click="append('5')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">5</button>
+                <button @click="append('6')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">6</button>
+                <button @click="append('-')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">−</button>
+                <button @click="append('1')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">1</button>
+                <button @click="append('2')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">2</button>
+                <button @click="append('3')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">3</button>
+                <button @click="append('+')" class="bg-indigo-100 text-indigo-600 rounded-lg text-2xl active:bg-indigo-200 transition-colors">+</button>
+                <button @click="append('0')" class="col-span-2 bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">0</button>
+                <button @click="append('.')" class="bg-white rounded-lg text-2xl shadow-sm active:bg-gray-100 transition-colors">.</button>
+                <button @click="doCalc" class="bg-green-500 text-white rounded-lg text-xl font-medium shadow-sm active:bg-green-600 transition-colors">完成</button>
+            </div>
+        </div>
+        <div class="absolute" :style="menuStyle">
             <div
                 v-if="activeMenuRow"
                 @click="closeActionMenu"
@@ -1595,9 +1621,10 @@
                     pitch: 1.1,
                     volume: 1
                 })
-                const activeColId = ref(null)
                 const activeRow = ref(null)
                 const menuStyle = ref({ top: '0px', left: '0px', width: '0px' })
+                const formula = ref('')
+                const isKeyboardOpen = ref(false)
 
                 let isInitializing = true
                 let scrollRAF
@@ -4648,23 +4675,10 @@
                     speakFeedback(translate('This is a test message.'))
                 }
 
-                const closeGlobalMenu = () => {
-                    activeColId.value = null
-                }
-
                 const openGlobalMenu = async (event, row, col) => {
-                    const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
-                    if (col.type !== 'category') {
-                        closeGlobalMenu()
-                        if (col.type === 'number' && event.target.tagName === 'LABEL') {
-                            inputEl.blur()
-                            inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'text' : 'numeric'
-                            await nextTick()
-                            inputEl.focus()
-                        }
-                        return
-                    }
-
+                    const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
+                    const inputEl = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
+                    activeRow.value = {target: event.target, row, col}
                     const rect = inputEl.getBoundingClientRect()
 
                     menuStyle.value = {
@@ -4673,23 +4687,50 @@
                         width: `${rect.width}px`
                     }
 
-                    activeRow.value = {target: event.target, row}
-                    await nextTick()
-                    setTimeout(() => {
-                        activeColId.value = col.id
-                    }, 50)
+                    if (col.type !== 'category') {
+                        if (col.type === 'number' && isLabel) {
+                            inputEl.blur()
+                            inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'none' : 'numeric'
+                            isKeyboardOpen.value = inputEl.inputMode === 'none'
+                            await nextTick()
+                            inputEl.focus()
+                        }
+                        return
+                    }
 
+                    await nextTick()
                     inputEl.focus()
 
                 }
 
                 const selectOption = (opt) => {
-                    if (activeColId.value) {
-                        if (activeRow.value.row) activeRow.value.row[activeColId.value] = opt
+                    if (activeRow.value) {
+                        if (activeRow.value.row) activeRow.value.row[activeRow.value.col.id] = opt
                         activeRow.value.target.value = opt
                         onDataEdited()
                     }
-                    closeGlobalMenu()
+                    activeRow.value = null
+                }
+
+                const append = (char) => {
+                   activeRow.value.target.value += char
+                   activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
+                }
+
+                const backspace = () => {
+                    activeRow.value.target.value = activeRow.value.target.value.slice(0, -1)
+                    activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
+                }
+
+                const clearAll = () => {
+                    activeRow.value.target.value = ''
+                    activeRow.value.row[activeRow.value.col.id] = ''
+                }
+
+                const doCalc = () => {
+                    isKeyboardOpen.value = false
+                    activeRow.value.target.value = calculateInlineMath(activeRow.value.row[activeRow.value.col.id])
+                    activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
                 }
 
                 onMounted(async () => {
@@ -4736,12 +4777,6 @@
                     if ('speechSynthesis' in globalThis) {
                         speechSynthesis.speak(new SpeechSynthesisUtterance(""))
                     }
-
-                    window.addEventListener('mousedown', (e) => {
-                        if (!e.target.closest('input') && !e.target.closest('ul')) {
-                            closeGlobalMenu()
-                        }
-                    })
 
                     isInitializing = false
                 })
@@ -4893,12 +4928,15 @@
                     speakFeedback,
                     playTestSound,
                     debugImageUrl,
-                    activeColId,
                     activeRow,
                     openGlobalMenu,
                     selectOption,
-                    closeGlobalMenu,
-                    menuStyle
+                    menuStyle,
+                    isKeyboardOpen,
+                    append,
+                    backspace,
+                    clearAll,
+                    doCalc
                 }
             }
         }).mount('#app')
