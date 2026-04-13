@@ -4656,11 +4656,12 @@
                     const inputEl = event.target.tagName === 'LABEL' ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     if (col.type !== 'category') {
                         closeGlobalMenu()
-                        if (col.type === 'number') {
+                        if (col.type === 'number' && event.target.tagName === 'LABEL') {
                             inputEl.blur()
                             inputEl.inputMode = inputEl.inputMode === 'numeric' ? 'text' : 'numeric'
-                            inputEl.focus()
-                            inputEl.select()
+                            setTimeout(() => {
+                                inputEl.focus()
+                            }, 300)
                         }
                         return
                     }
