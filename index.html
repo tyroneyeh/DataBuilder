@@ -3740,30 +3740,46 @@
                     }
 
                     const storageKey = currentStorageKey.value || tempKey.value || 'ty-db'
+                    const fileContent = await compressToBase64(JSON.stringify(payload, null, 2))
+                    const sizeInBytes = new Blob([fileContent]).size
+                    const ONE_MB = 1000 * 1000
+                    if (sizeInBytes > ONE_MB) {
+                        isProcessing.value = false
+                        const sizeInMB = (sizeInBytes / ONE_MB).toFixed(2)
+                        alert(translate(`Backup failed: Data size (${sizeInMB}MB) exceeds the 1MB limit.`))
+                        return
+                    }
 
                     const gistBody = {
                         description: `TY's Data Builder Backup - ${storageKey}`,
                         public: false,
                         files: {
                             [`${storageKey}.json`]: {
-                                content: await compressToBase64(JSON.stringify(payload, null, 2))
+                                content: fileContent
                             }
                         }
                     }
 
                     const cleanGistId = gistId.value.trim()
                     let result
-                    if (cleanGistId) {
-                        result = await fetchGistAPI('PATCH', `/${cleanGistId}`, gistBody)
-                    } else {
-                        result = await fetchGistAPI('POST', '', gistBody)
-                        if (result && result.id) {
-                            gistId.value = result.id
+                    try {
+                        if (cleanGistId) {
+                            result = await fetchGistAPI('PATCH', `/${cleanGistId}`, gistBody)
+                        } else {
+                            result = await fetchGistAPI('POST', '', gistBody)
+                            if (result && result.id) {
+                                gistId.value = result.id
+                            }
                         }
+                        if (result) {
+                            alert(translate('Backed up to GitHub Gist successfully!'))
+                        }
+                    } catch (error) {
+                        console.error("Gist backup error:", error)
+                        alert(translate('Backup failed. Please try again.'))
+                    } finally {
+                        isProcessing.value = false
                     }
-
-                    isProcessing.value = false
-                    if (result) alert(translate('Backed up to GitHub Gist successfully!'))
                 }
 
                 const restoreFromGist = async () => {
