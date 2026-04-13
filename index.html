@@ -75,154 +75,150 @@
                     :class="isChartOpen ? 'rotate-180' : 'rotate-0'"
                 >▼</span>
             </div>
-
-            <div v-show="columns.length"
+            <div v-show="columns.length && isChartOpen"
                 class="grid transition-all duration-500 ease-in-out"
-                :class="isChartOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
             >
-                <div class="overflow-hidden">
-                    <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
-                        <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
-                            <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
-                            <button
-                                v-for="y in yearFilters" :key="y.year"
-                                @click="toggleFilter('year', y.year)"
-                                class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                                :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
-                            >
-                                {{ y.year }}
-                            </button>
-                        </div>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
+                <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
+                    <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
+                        <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
                         <button
-                            v-for="m in monthFilters" :key="m.month"
-                            @click="toggleFilter('month', m.month)"
+                            v-for="y in yearFilters" :key="y.year"
+                            @click="toggleFilter('year', y.year)"
                             class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
-                            :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
+                            :class="y.active ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
                         >
-                            {{ m.month }}
+                            {{ y.year }}
                         </button>
                     </div>
-                    <div class="flex flex-col md:flex-row items-center items-start w-full my-2 max-w-[95%] md:max-w-[70%] mx-auto">
+                    <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Month') }}:</span>
+                    <button
+                        v-for="m in monthFilters" :key="m.month"
+                        @click="toggleFilter('month', m.month)"
+                        class="px-3 py-1 text-xs font-bold rounded-full transition-all duration-200 border select-none active:scale-95"
+                        :class="m.active ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:border-indigo-700 shadow-sm' : 'bg-gray-50 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700 opacity-50 grayscale'"
+                    >
+                        {{ m.month }}
+                    </button>
+                </div>
+                <div class="flex flex-col md:flex-row items-center items-start w-full my-2 max-w-[95%] md:max-w-[70%] mx-auto">
 
-                        <div class="relative h-100 w-full flex justify-center items-center">
-                            <canvas id="expenseChart" class="z-10"></canvas>
-                        </div>
+                    <div class="relative h-100 w-full flex justify-center items-center">
+                        <canvas id="expenseChart" class="z-10"></canvas>
+                    </div>
 
-                        <div class="w-full overflow-y-auto flex flex-col" :class="{'h-100': customLegendItems.length > 9}">
+                    <div class="w-full overflow-y-auto flex flex-col" :class="{'h-100': customLegendItems.length > 9}">
 
-                            <div
-                                v-for="item in customLegendItems"
-                                :key="item.index"
-                                @click="toggleLegend(item.index)"
-                                class="flex items-center justify-between rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                                :class="{'opacity-40 grayscale': item.hidden}"
-                            >
-                                <div class="flex items-center space-x-3 overflow-hidden w-full">
-                                    <span
-                                        class="w-4 h-4 rounded-full flex-shrink-0"
-                                        :style="{backgroundColor: item.color}"
-                                    ></span>
+                        <div
+                            v-for="item in customLegendItems"
+                            :key="item.index"
+                            @click="toggleLegend(item.index)"
+                            class="flex items-center justify-between rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                            :class="{'opacity-40 grayscale': item.hidden}"
+                        >
+                            <div class="flex items-center space-x-3 overflow-hidden w-full">
+                                <span
+                                    class="w-4 h-4 rounded-full flex-shrink-0"
+                                    :style="{backgroundColor: item.color}"
+                                ></span>
 
-                                    <span
-                                        class="text-gray-700 dark:text-gray-200 font-medium truncate w-full"
-                                        :class="{ 'line-through text-gray-400 dark:text-gray-500': item.hidden }"
-                                        :data-tooltip="item.text"
-                                    >
-                                        {{ item.text }}
-                                    </span>
-                                </div>
-
-                                <div class="text-right pl-4">
-                                    <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :data-tooltip="item.value.toLocaleString()">
-                                        {{ formatNumber(item.value) }}
-                                    </div>
-                                    <div class="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                                        {{ item.percentage }}%
-                                    </div>
-                                </div>
+                                <span
+                                    class="text-gray-700 dark:text-gray-200 font-medium truncate w-full"
+                                    :class="{ 'line-through text-gray-400 dark:text-gray-500': item.hidden }"
+                                    :data-tooltip="item.text"
+                                >
+                                    {{ item.text }}
+                                </span>
                             </div>
 
+                            <div class="text-right pl-4">
+                                <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :data-tooltip="item.value.toLocaleString()">
+                                    {{ formatNumber(item.value) }}
+                                </div>
+                                <div class="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                    {{ item.percentage }}%
+                                </div>
+                            </div>
                         </div>
 
                     </div>
-                    <div v-if="!isPrinting" class="w-auto flex flex-col sm:flex-row justify-center items-center mx-auto bg-gray-50 dark:bg-gray-700/30 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 dark:border-gray-700 gap-3 ">
 
-                        <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:pr-4">
-                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
-                            <select v-model="selectedChartCatColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                                <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
-                                    {{ col.label }}
-                                </option>
-                            </select>
-                        </div>
+                </div>
+                <div v-if="!isPrinting" class="w-auto flex flex-col sm:flex-row justify-center items-center mx-auto bg-gray-50 dark:bg-gray-700/30 p-3 sm:py-2 sm:px-4 rounded-lg text-sm border border-gray-100 dark:border-gray-700 gap-3 ">
 
-                        <div v-if="hasDateColumn" class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:px-4">
-                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">📈 {{ translate('Timeline') }}:</span>
-                            <select v-model="selectedChartDateColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                                <option value="">{{ translate('None') }}</option>
-                                <option v-for="col in columns.filter(c => c.type === 'date')" :key="col.id" :value="col.id">
-                                    {{ col.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="flex items-center justify-between w-full sm:w-auto sm:pl-4">
-                            <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
-                            <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                                <option v-for="col in columns.filter(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))" :key="col.id" :value="col.id">
-                                    {{ col.label }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-32 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" @click="toggleTrendChartType" v-if="hasDateColumn">
-                            <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
-                                :class="trendChartType === 'line' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'"></div>
-
-                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
-                                :class="trendChartType === 'bar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📊 {{  translate('Bar') }}</div>
-                            <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
-                                :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }} </div>
-                        </div>
-                        <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
-                            <button @click="updateChart('day')"
-                                    :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Daily') }}
-                            </button>
-                            <button @click="updateChart('week')"
-                                    :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Weekly') }}
-                            </button>
-                            <button v-if="monthFilters.length > 1" @click="updateChart('month')"
-                                    :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Monthly') }}
-                            </button>
-                            <button v-if="monthFilters.length > 3" @click="updateChart('quarter')"
-                                    :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Quarterly') }}
-                            </button>
-                            <button v-if="monthFilters.length > 5" @click="updateChart('halfyear')"
-                                    :class="timeUnit === 'halfyear' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Half-Yearly') }}
-                            </button>
-                            <button v-if="yearFilters.length > 1" @click="updateChart('year')"
-                                    :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
-                                    class="px-3 py-1 text-xs rounded-md transition-colors">
-                                {{ translate('Yearly') }}
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:pr-4">
+                        <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">🏷️ {{ translate('Label') }}:</span>
+                        <select v-model="selectedChartCatColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <option v-for="col in columns.filter(c => ['text', 'category'].includes(c.type))" :key="col.id" :value="col.id">
+                                {{ col.label }}
+                            </option>
+                        </select>
                     </div>
-                    <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
-                        <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
-                        <div class="relative h-64 w-full">
-                            <canvas id="trendChart"></canvas>
-                        </div>
+
+                    <div v-if="hasDateColumn" class="flex items-center justify-between w-full sm:w-auto sm:border-r border-gray-200 dark:border-gray-600 sm:px-4">
+                        <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">📈 {{ translate('Timeline') }}:</span>
+                        <select v-model="selectedChartDateColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <option value="">{{ translate('None') }}</option>
+                            <option v-for="col in columns.filter(c => c.type === 'date')" :key="col.id" :value="col.id">
+                                {{ col.label }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between w-full sm:w-auto sm:pl-4">
+                        <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
+                        <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
+                            <option v-for="col in columns.filter(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))" :key="col.id" :value="col.id">
+                                {{ col.label }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-32 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" @click="toggleTrendChartType" v-if="hasDateColumn">
+                        <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
+                            :class="trendChartType === 'line' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'"></div>
+
+                        <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                            :class="trendChartType === 'bar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📊 {{  translate('Bar') }}</div>
+                        <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                            :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }} </div>
+                    </div>
+                    <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
+                        <button @click="updateChart('day')"
+                                :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Daily') }}
+                        </button>
+                        <button @click="updateChart('week')"
+                                :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Weekly') }}
+                        </button>
+                        <button v-if="monthFilters.length > 1" @click="updateChart('month')"
+                                :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Monthly') }}
+                        </button>
+                        <button v-if="monthFilters.length > 3" @click="updateChart('quarter')"
+                                :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Quarterly') }}
+                        </button>
+                        <button v-if="monthFilters.length > 5" @click="updateChart('halfyear')"
+                                :class="timeUnit === 'halfyear' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Half-Yearly') }}
+                        </button>
+                        <button v-if="yearFilters.length > 1" @click="updateChart('year')"
+                                :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
+                                class="px-3 py-1 text-xs rounded-md transition-colors">
+                            {{ translate('Yearly') }}
+                        </button>
+                    </div>
+                </div>
+                <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4">
+                    <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 flex items-center">📈 {{ translate('Trend') }}</h4>
+                    <div class="relative h-64 w-full">
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -355,7 +351,17 @@
             </div>
         </div>
 
-        <div class="flex justify-center print:pt-0 mt-4">
+        <div
+            @click="toggleTitle"
+            class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer print:hidden"
+        >
+            <span class="flex items-center">🏷️ {{ translate('Title') }}</span>
+            <span
+                class="transform transition-transform duration-300 text-gray-400"
+                :class="isTitleOpen ? 'rotate-180' : 'rotate-0'"
+            >▼</span>
+        </div>
+        <div class="flex justify-center print:pt-0" v-if="isTitleOpen">
             <input
                 v-model="tableTitle"
                 type="text"
@@ -1284,6 +1290,7 @@
                 "Time": "時間",
                 "Timeline": "時間軸",
                 "Tips": "提示",
+                "Title": "標題",
                 "To": "到",
                 "Toggle": "切換",
                 "Total": "總計",
@@ -1503,7 +1510,8 @@
                 const fileInput = ref(null)
 
                 const isMenuOpen = ref(false)
-                const isChartOpen = ref(localStorage.getItem('isExpenseChartOpen'))
+                const isChartOpen = ref(localStorage.getItem('ty_chart_open'))
+                const isTitleOpen = ref(localStorage.getItem('ty_title_open'))
                 const customLegendItems = ref([])
                 const selectedChartCatColId = ref(null)
                 const selectedChartNumColId = ref(null)
@@ -3006,7 +3014,7 @@
                 const toggleChart = async () => {
                     if (!columns.value.length) return
                     isChartOpen.value = !isChartOpen.value
-                    isChartOpen.value ? localStorage.setItem('isExpenseChartOpen', 1) : localStorage.removeItem('isExpenseChartOpen')
+                    isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
                     if (isChartOpen.value) {
                         await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
                         updateChart()
@@ -4736,6 +4744,11 @@
                     activeRow.value.row[activeRow.value.col.id] = el.value
                 }
 
+                const toggleTitle = () => {
+                    isTitleOpen.value = !isTitleOpen.value
+                    isTitleOpen.value ? localStorage.setItem('ty_title_open', 1) : localStorage.removeItem('ty_title_open')
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -4838,6 +4851,8 @@
                     getUniqueValues,
                     toggleChart,
                     isChartOpen,
+                    toggleTitle,
+                    isTitleOpen,
                     customLegendItems,
                     toggleLegend,
                     updateChart,
