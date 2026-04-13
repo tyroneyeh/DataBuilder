@@ -805,13 +805,13 @@
                 </div>
 
                 <div v-if="selectedScanMode === 'OCR_PLATE'" class="mt-4 border-2 border-red-500 p-2">
-                    <p class="text-red-500 text-xs">🔍 OCR 丟給 Tesseract 的最終圖片：</p>
+                    <p class="text-red-500 text-xs">🔍 {{ translate('The final image sent by OCR to Tesseract') }}：</p>
                     <img v-if="debugImageUrl" :src="debugImageUrl" class="w-full max-w-sm" />
                 </div>
                 <div v-if="isScannerOpen && selectedScanMode === 'OCR_PLATE'" class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm transition-all">
                     <div class="flex items-center gap-2">
-                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200">🤖 Edge AI 自動抓拍</span>
-                        <span class="text-xs text-gray-500 hidden sm:inline">對準目標停留1秒自動拍照</span>
+                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200">🤖 {{ translate('Edge AI Automatic Capture') }}</span>
+                        <span class="text-xs text-gray-500 hidden sm:inline">{{ translate('Aim at the target and hold for 1 second to automatically take a picture.') }}</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" v-model="isAutoScanEnabled" class="sr-only peer">
@@ -832,8 +832,8 @@
                         :disabled="isProcessing"
                         class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-indigo-600 dark:bg-gray-800/90 dark:text-indigo-400 px-6 py-3 rounded-full font-extrabold shadow-[0_4px_20px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 z-50 active:scale-95 transition-all backdrop-blur-sm border border-gray-200 dark:border-gray-600 disabled:opacity-50"
                     >
-                        <span v-if="!isProcessing">📸 拍照辨識</span>
-                        <span v-else>⏳ 辨識中...</span>
+                        <span v-if="!isProcessing">📸 {{ translate('Photo recognition') }}</span>
+                        <span v-else>⏳ {{ translate('Recognition in progress...') }}</span>
                     </button>
                     <div
                         v-if="isZoomSupported"
@@ -1131,6 +1131,7 @@
                 "A new version is available. Do you want to reload?": "有新版本可用，是否重新載入?",
                 "Action": "操作",
                 "Add": "新增",
+                "Aim at the target and hold for 1 second to automatically take a picture.": "對準目標停留1秒自動拍照",
                 "All": "全部",
                 "Are you sure you want to clear all data?": "確定要清除所有資料嗎？",
                 "Are you sure you want to delete this column?": "確定要刪除此欄嗎?",
@@ -1167,6 +1168,7 @@
                 "Do you want to merge numbers?": "是否加總數量?",
                 "Download": "下載",
                 "EAN/UPC, optimized for retail inventory": "EAN/UPC, 適合零售盤點",
+                "Edge AI Automatic Capture": "Edge AI 自動抓拍",
                 "Enter details here...": "輸入詳細說明...",
                 "Enter title...": "請輸入標題...",
                 "Expand All Notes": "展開全部備註",
@@ -1208,6 +1210,7 @@
                 "OK": "確定",
                 "Others": "其他",
                 "Photo": "相片",
+                "Photo recognition": "拍照辨識",
                 "Play test sound": "播放測試聲音",
                 "Please enter a column name!": "請輸入欄位名稱！",
                 "Please select columns A and B!": "請選擇欄位 A 與 B!",
@@ -1220,6 +1223,7 @@
                 "Quantity": "數量",
                 "Quarterly": "季",
                 "Rate": "速率",
+                "Recognition in progress...": "辨識中...",
                 "Remove column": "刪除欄位",
                 "Restore from Cloud": "從雲端還原",
                 "Restored from GitHub Gist successfully!": "成功從 GitHub Gist 還原！",
@@ -1244,6 +1248,7 @@
                 "Text": "文字",
                 "Text recognized": "文字辨識",
                 "There are 1000 free uses per month.": "每月有 1000 次免費使用次數。",
+                "The final image sent by OCR to Tesseract": "OCR 丟給 Tesseract 的最終圖片",
                 "The size limit for Gist is 1 MB.": "Gist 的大小限制為 1 MB。",
                 "This column already exists. Do you want to overwrite it?": "此欄位已存在。您要覆蓋嗎？",
                 "This will overwrite your current local data. Continue?": "這將會覆蓋您目前的本地資料。確定要繼續嗎？",
