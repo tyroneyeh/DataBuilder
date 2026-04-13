@@ -4712,25 +4712,42 @@
                     activeRow.value = null
                 }
 
-                const append = (char) => {
-                   activeRow.value.target.value += char
-                   activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
+                const append = async (char) => {
+                    const el = activeRow.value?.target
+                    if (!el) return
+                    const start = el.selectionStart
+                    const end = el.selectionEnd
+                    el.value = el.value.slice(0, start) + char + el.value.slice(end)
+                    activeRow.value.row[activeRow.value.col.id] = el.value
+                    await nextTick()
+                    el.setSelectionRange(start + 1, start + 1)
+                    el.focus()
                 }
 
-                const backspace = () => {
-                    activeRow.value.target.value = activeRow.value.target.value.slice(0, -1)
-                    activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
+                const backspace = async () => {
+                    const el = activeRow.value?.target
+                    if (!el) return
+                    const start = el.selectionStart
+                    const end = el.selectionEnd
+                    el.value = el.value.slice(0, start - 1) + el.value.slice(end)
+                    activeRow.value.row[activeRow.value.col.id] = el.value
+                    await nextTick()
+                    el.setSelectionRange(start - 1, start - 1)
+                    el.focus()
                 }
 
                 const clearAll = () => {
+                    if (!activeRow.value) return
                     activeRow.value.target.value = ''
                     activeRow.value.row[activeRow.value.col.id] = ''
                 }
 
                 const doCalc = () => {
+                    const el = activeRow.value?.target
+                    if (!el) return
                     isKeyboardOpen.value = false
-                    activeRow.value.target.value = calculateInlineMath(activeRow.value.row[activeRow.value.col.id])
-                    activeRow.value.row[activeRow.value.col.id] = activeRow.value.target.value
+                    el.value = calculateInlineMath(activeRow.value.row[activeRow.value.col.id])
+                    activeRow.value.row[activeRow.value.col.id] = el.value
                 }
 
                 onMounted(async () => {
