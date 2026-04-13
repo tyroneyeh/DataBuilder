@@ -433,7 +433,7 @@
                                 :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
                             >
                                 {{ col.label }}
-                                <span v-if="col.type === 'category'" class="text-xs ml-1 opacity-50">▼</span>
+                                <span v-if="['category', 'number'].includes(col.type)" class="text-xs ml-1 opacity-50">▼</span>
                             </label>
 
                             <div v-if="col.type === 'checkbox'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1">
@@ -1950,6 +1950,7 @@
                 })
 
                 const onDataEdited = (target = 'rows') => {
+                    if (isInitializing) return
                     if (target === 'rows' || target === 'both') {
                         triggerRef(rows)
                     }
