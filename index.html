@@ -952,9 +952,9 @@
             </div>
 
             <div class="w-full bg-white dark:bg-gray-800 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
-                <div class="flex flex-wrap w-full justify-start gap-3 mb-6" v-if="githubToken.trim() || gistId.trim()">
-                    <button @click="backupToGist" v-if="githubToken.trim()" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬆️ {{ translate('Backup to Cloud') }}</button>
-                    <button @click="restoreFromGist" v-if="gistId.trim()" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬇️ {{ translate('Restore from Cloud') }}</button>
+                <div class="flex flex-wrap w-full justify-start gap-3 mb-6" v-if="githubToken || gistId">
+                    <button @click="backupToGist" v-if="githubToken" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬆️ {{ translate('Backup to Cloud') }}</button>
+                    <button @click="restoreFromGist" v-if="gistId" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2 focus:outline-none">⬇️ {{ translate('Restore from Cloud') }}</button>
                 </div>
                 <div @click="isGistSettingsOpen = !isGistSettingsOpen" class="flex items-center justify-between cursor-pointer group select-none">
                     <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">⚙️ {{ translate('Settings') }}</h3>
@@ -1676,7 +1676,7 @@
                 }, 500)
 
                 watch([githubToken, gistId], () => {
-                    localStorage.setItem('ty_github_token', githubToken.value)
+                    localStorage.setItem('ty_github_token', githubToken.value.trim())
                     if (gistId.value.includes('/')) {
                         gistId.value = gistId.value.split('/').pop()
                     }
