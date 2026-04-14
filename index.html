@@ -3540,6 +3540,10 @@
                         expenseChart.value.destroy()
                         expenseChart.value = null
                     }
+                    if (!values.length) {
+                        isChartOpen.value = false
+                        return
+                    }
                     const trendObj = getTrendChartData(topCategories)
                     hasTrendData.value = false
                     if (trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value) {
