@@ -1662,7 +1662,7 @@
                     try {
                         if (!currentStorageKey.value) return
                         if (!colCount.value) colCount.value = columns.value.length
-                        if (!rowCount.value) rowCount.value = rows.value.length
+                        if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
                         const data = {title: tableTitle.value, colCount: colCount.value, columns: toRaw(columns.value), rowCount: rowCount.value, rows: toRaw(rows.value), note: globalNotes.value}
                         db.set(currentStorageKey.value, data)
                         await nextTick()
@@ -2183,8 +2183,6 @@
                                 console.error('Local data error', e)
                             }
                         }
-                        colCount.value = localData.colCount
-                        rowCount.value = localData.rowCount
                     } else {
                         localData = { title: '', columns: [], rows: [], note: '' }
                     }
@@ -2248,6 +2246,9 @@
                     hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                     tableTitle.value = hashData?.title || localData.title || translate('My Data Sheets')
                     globalNotes.value = hashData?.note || localData.note || ''
+
+                    if (!colCount.value || colCount.value < columns.value.length) colCount.value = columns.value.length
+                    if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
 
                     updateColumns()
                     updateTitle()
@@ -2397,7 +2398,7 @@
                 }
 
                 const addRow = async () => {
-                    if (!rowCount.value) rowCount.value = rows.value.length
+                    if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
                     rowCount.value++
                     const newRowId = `row_${rowCount.value}`
                     const newRow = {id: newRowId, note: '', isExpanded: false}
@@ -2592,6 +2593,7 @@
                     if (!await showConfirm(translate("Are you sure you want to delete this column?"))) return
 
                     columns.value = columns.value.filter(col => col.id !== idToRemove).map(col => toRaw(col))
+                    if (!columns.value.length) colCount.value = 0
                     updateColumns()
                     rows.value.forEach(row => delete row[idToRemove])
                     onDataEdited()
@@ -2605,7 +2607,7 @@
                     if (!originalRow) return
 
                     const clonedRow = {...originalRow}
-                    if (!rowCount.value) rowCount.value = rows.value.length
+                    if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
                     rowCount.value++
                     clonedRow.id = 'row_' + rowCount.value
 
@@ -2650,6 +2652,7 @@
                 const removeRow = (idToRemove) => {
                     if (!idToRemove) idToRemove = activeMenuRow.value.id
                     rows.value = rows.value.filter(row => row.id !== idToRemove).map(row => toRaw(row))
+                    if (!rows.value.length) rowCount.value = 0
                     onDataEdited()
                     closeActionMenu()
                 }
@@ -2808,7 +2811,7 @@
                     onDataEdited('columns')
                 }
 
-                const processImportText = async(rawText, isBulk = false) => {
+                const processImportText = async(rawText) => {
                     let dataList = []
                     let isJSON = false
                     let parsedColumnMeta = {}
@@ -2831,8 +2834,8 @@
                         const lines = rawText.split(/\r?\n/).filter(l => l.trim() !== '')
                         if (lines.length > 1) {
                             const separator = lines[0].includes('\t') ? '\t' : ','
+                            const re = new RegExp(`${separator}(?=(?:(?:[^"]*"){2})*[^"]*$)`)
                             const parseCSVLine = (text) => {
-                                const re = new RegExp(`${separator}(?=(?:(?:[^"]*"){2})*[^"]*$)`)
                                 return text.split(re).map(v => {
                                     let s = v.trim()
                                     if(s.startsWith('"') && s.endsWith('"')) s = s.substring(1, s.length - 1).replaceAll('""', '"')
@@ -2915,11 +2918,11 @@
                         }
                     })
 
-                    let addCount = rowCount.value ? rowCount.value : rows.value.length
+                    let addCount = 0
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
-                        addCount++
-                        const newRow = { id: `row_${addCount}` }
+                        const newRow = { id: `row_${rowCount.value}` }
+                        rowCount.value++
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
@@ -2945,6 +2948,8 @@
                         })
 
                         rows.value.push(newRow)
+                        addCount++
+
                     })
 
                     if (dateColId) {
@@ -2954,13 +2959,6 @@
                             const bDate = new Date(b[dateColId])
                             return  aDate - bDate
                         })
-                    }
-
-                    if (addCount > 0 && !isBulk) {
-                        scrollToPosition(1)
-                        await nextTick()
-                        onDataEdited('both')
-                        alert(`${translate('Imported items successfully!')} (${addCount})`)
                     }
                     return addCount
                 }
@@ -2975,21 +2973,19 @@
                     const files = event.target.files
                     if (!files || !files.length) return
 
-                    let totalImportedCount = 0
                     isProcessing.value = true
 
                     try {
+                        let addCount = 0
                         for (const file of files) {
                             const text = await file.text()
-                            const count = await processImportText(text, true)
-                            if (!count) continue
-                            totalImportedCount += count
+                            addCount += await processImportText(text)
                         }
-                        if (totalImportedCount > 0) {
+                        if (addCount > 0) {
                             scrollToPosition(1)
                             await nextTick()
                             onDataEdited('both')
-                            alert(`${translate('Imported items successfully!')} (${totalImportedCount})`)
+                            alert(`${translate('Imported items successfully!')} (${addCount})`)
                         }
                     } catch (error) {
                         console.error(error)
