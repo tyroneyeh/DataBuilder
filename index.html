@@ -417,9 +417,11 @@
                         <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
-                <tbody v-if="!isPrinting && windowStart > 0" class="block sm:table-row-group">
-                    <tr :style="{ height: `${topPaddingHeight}px` }" class="block sm:table-row">
-                        <td :colspan="columns.length + 1" class="p-0 border-none bg-transparent"></td>
+                <tbody v-if="!isPrinting && paddingTop > 0" class="block sm:table-row-group">
+                    <tr class="block sm:table-row">
+                        <td :colspan="columns.length + 1" class="p-0 border-0 m-0">
+                            <div :style="{ height: paddingTop + 'px' }"></div>
+                        </td>
                     </tr>
                 </tbody>
 
@@ -585,9 +587,11 @@
                     </tr>
                 </tbody>
 
-                <tbody v-if="!isPrinting && windowEnd < filteredRows.length" class="block sm:table-row-group">
-                    <tr :style="{ height: `${bottomPaddingHeight}px` }" class="block sm:table-row">
-                        <td :colspan="columns.length + 1" class="p-0 border-none bg-transparent"></td>
+                <tbody v-if="!isPrinting && paddingBottom > 0" class="block sm:table-row-group">
+                    <tr class="block sm:table-row">
+                        <td :colspan="columns.length + 1" class="p-0 border-0 m-0">
+                            <div :style="{ height: paddingBottom + 'px' }"></div>
+                        </td>
                     </tr>
                 </tbody>
 
@@ -1564,7 +1568,6 @@
                 const windowStart = ref(0)
                 const windowEnd = ref(50)
                 const bottomSentinel = ref(null)
-                const defaultItemHeight = 80
                 const heightCache = ref({})
                 const rowElementsCache = new Map()
                 const isPrinting = ref(false)
@@ -1649,9 +1652,12 @@
                 const activeRow = ref(null)
                 const menuStyle = ref({ top: '0px', left: '0px', width: '0px' })
                 const isKeyboardOpen = ref(false)
+                const paddingTop = ref(0)
+                const paddingBottom = ref(0)
 
                 let isInitializing = true
                 let scrollRAF
+                let defaultItemHeight = 53
                 let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
                 let resizeObserver
@@ -1786,11 +1792,21 @@
                             rowElementsCache.set(rowId, el)
                             if (resizeObserver) resizeObserver.observe(el)
                         }
-                        const currentHeight = el.getBoundingClientRect().height
-                        const oldHeight = heightCache.value[rowId] || 0
+
+                        const isMobileView = window.innerWidth < 640
+                        const marginOffset = isMobileView ? 16 : 0
+                        const currentHeight = el.getBoundingClientRect().height + marginOffset
+                        const oldHeight = heightCache.value.get ? heightCache.value.get(rowId) : (heightCache.value[rowId] || 0)
+
                         if (Math.abs(currentHeight - oldHeight) > 0.5) {
                             window.requestAnimationFrame(() => {
-                                heightCache.value[rowId] = currentHeight
+                                if (heightCache.value.set) {
+                                    heightCache.value.set(rowId, currentHeight)
+                                } else {
+                                    heightCache.value[rowId] = currentHeight
+                                }
+
+                                defaultItemHeight = currentHeight
                             })
                         }
                     } else {
@@ -1801,26 +1817,6 @@
                         }
                     }
                 }
-
-                const topPaddingHeight = computed(() => {
-                    let sum = 0
-                    const maxIdx = Math.min(windowStart.value, filteredRows.value.length)
-                    for (let i = 0; i < maxIdx; i++) {
-                        const row = filteredRows.value[i]
-                        if (row) sum += heightCache.value[row.id] || defaultItemHeight
-                    }
-                    return sum
-                })
-
-                const bottomPaddingHeight = computed(() => {
-                    let sum = 0
-                    const total = filteredRows.value.length
-                    for (let i = windowEnd.value; i < total; i++) {
-                        const row = filteredRows.value[i]
-                        if (row) sum += heightCache.value[row.id] || defaultItemHeight
-                    }
-                    return sum
-                })
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
 
@@ -1986,10 +1982,6 @@
                     }
                     debouncedSave()
                 }
-
-                const saveScrollPosition = debounce((e) => {
-                    e.target.scrollTop ? localStorage.setItem('ledger_scroll_pos', e.target.scrollTop) : localStorage.removeItem('ledger_scroll_pos')
-                }, 300)
 
                 const loadChartCols = () => {
                     selectedChartCatColId.value = localStorage.getItem(`${currentStorageKey.value}_chartCatColId`)
@@ -2400,23 +2392,26 @@
 
                 const scrollToPosition = async (direction) => {
                     if (!tableContainer.value) return
-                    tableContainer.value.scrollIntoView()
                     if (direction === 'top') {
                         tableContainer.value.scrollTop = 0
                         return
                     }
-                    if (typeof direction === 'number') tableContainer.value.scrollTop += 1
+                    if (typeof direction === 'number') {
+                        tableContainer.value.scrollTop += direction
+                        return
+                    }
 
-                    const total = filteredRows.value.length
-                    windowStart.value = Math.max(0, total - 20)
-                    windowEnd.value = total
-                    await nextTick()
                     tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                    setTimeout(() => {
+                        if (!tableContainer.value) return
+                        tableContainer.value.scrollTop = tableContainer.value.scrollHeight
+                    }, 80)
+
                     setTimeout(() => {
                         if (tableContainer.value) {
                             tableContainer.value.scrollTop = tableContainer.value.scrollHeight
                         }
-                    }, 50)
+                    }, 200)
                 }
 
                 const addRow = async () => {
@@ -2916,7 +2911,7 @@
                                 }
                             } else if (key.toLowerCase().includes(translate('Date').toLowerCase())) {
                                 targetType = 'date'
-                                hasDateColumns.value = true
+                                hasDateColumn.value = true
                             } else if (key.toLowerCase().includes(translate('Time').toLowerCase())) {
                                 targetType = 'time'
                             } else if (key.toLowerCase().includes(translate('Checkbox').toLowerCase())) {
@@ -3696,7 +3691,6 @@
 
                     scrollRAF = requestAnimationFrame(() => {
                         checkScrollState()
-                        saveScrollPosition(e)
 
                         const total = filteredRows.value.length
                         if (total <= 50) {
@@ -3708,7 +3702,7 @@
                         const buffer = 15
 
                         let currentY = 0
-                        let start = 0
+                        let start = total > 0 ? total - 1 : 0
                         for (let i = 0; i < total; i++) {
                             const rowId = filteredRows.value[i].id
                             const cachedH = heightCache.value.get ? heightCache.value.get(rowId) : heightCache.value[rowId]
@@ -3733,6 +3727,9 @@
 
                         const newStart = Math.max(0, start - buffer)
                         const newEnd = Math.min(total, end + buffer * 2)
+
+                        paddingTop.value = newStart * defaultItemHeight
+                        paddingBottom.value = (total - newEnd) * defaultItemHeight
 
                         if (windowStart.value !== newStart) windowStart.value = newStart
                         if (windowEnd.value !== newEnd) windowEnd.value = newEnd
@@ -4520,7 +4517,7 @@
 
                 const initEdgeAI = async () => {
                     if (aiModel) {
-                        topAutoCaptureLoop()
+                        stopAutoCaptureLoop()
                         startAutoCaptureLoop()
                         return
                     }
@@ -4773,18 +4770,6 @@
                     await loadData()
                     initChartColumns()
                     refreshYearFilters()
-
-                    const savedScroll = localStorage.getItem('ledger_scroll_pos')
-                    if (savedScroll && tableContainer.value) {
-                        setTimeout(() => {
-                            if (tableContainer.value) {
-                                tableContainer.value.scrollTop = Number(savedScroll)
-                                handleTableScroll({target: tableContainer.value})
-                            }
-                        }, 50)
-                    }
-
-                    checkScrollState()
                     initGlobalTooltip()
 
                     if ('speechSynthesis' in globalThis) {
@@ -4868,7 +4853,6 @@
                     onConfirmOk,
                     onConfirmCancel,
                     tableContainer,
-                    saveScrollPosition,
                     formatNumber,
                     scrollToPosition,
                     isAtTop,
@@ -4885,8 +4869,8 @@
                     onDataEdited,
                     ExpandNote,
                     autoHeight,
-                    topPaddingHeight,
-                    bottomPaddingHeight,
+                    paddingTop,
+                    paddingBottom,
                     setupObserver,
                     isPrinting,
                     triggerPrint,
