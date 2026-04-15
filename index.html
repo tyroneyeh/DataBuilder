@@ -2430,7 +2430,6 @@
                     }
 
                     await nextTick()
-                    scrollToPosition()
                     setTimeout(() => {
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
@@ -2646,13 +2645,6 @@
                         windowEnd.value = rows.value.length
                     }
                     await nextTick()
-                    if (isAppendToEnd) {
-                        scrollToPosition()
-                    } else {
-                        if (tableContainer.value) {
-                            tableContainer.value.scrollTop += 1
-                        }
-                    }
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
                         setTimeout(() => {
@@ -2660,7 +2652,7 @@
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
-                                    block: 'center'
+                                    block: 'start'
                                 })
                                 targetInput.focus()
                                 targetInput.select()
