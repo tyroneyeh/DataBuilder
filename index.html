@@ -2235,7 +2235,10 @@
                     } else if (localData.columns && localData.columns.length > 0) {
                         columns.value = localData.columns
                         rows.value = localData.rows
-                    } else if (!noDefulat) {
+                    } else if (noDefulat) {
+                        rows.value = []
+                        rowCount.value = 0
+                    } else {
                         columns.value = [
                             {id: 'col_1', label: translate('Item'), type: 'category'},
                             {id: 'col_2', label: translate('Price'), type: 'number'},
@@ -2250,9 +2253,6 @@
                         }
                         colCount.value = columns.value.length
                         rowCount.value = rows.value.length
-                    } else {
-                        rows.value = []
-                        rowCount.value = 0
                     }
                     scrollToPosition(1)
 
@@ -2268,6 +2268,9 @@
                     updateTitle()
 
                     onDataEdited('both')
+
+                    await nextTick()
+                    restoreScrollPosition()
                 }
 
                 const startDragging = (type, identifier, event) => {
@@ -3689,6 +3692,8 @@
                     const scrollTop = target.scrollTop
                     const clientHeight = target.clientHeight
 
+                    saveScrollPosition(scrollTop)
+
                     scrollRAF = requestAnimationFrame(() => {
                         checkScrollState()
 
@@ -4743,6 +4748,33 @@
                 const toggleTitle = () => {
                     isTitleOpen.value = !isTitleOpen.value
                     isTitleOpen.value ? localStorage.setItem('ty_title_open', 1) : localStorage.removeItem('ty_title_open')
+                }
+
+                const saveScrollPosition = debounce((scrollTop) => {
+                    if (!currentStorageKey.value) return
+                    localStorage.setItem(`${currentStorageKey.value}_scrollTop`, scrollTop)
+                }, 300)
+
+                const restoreScrollPosition = () => {
+                    if (!tableContainer.value || !currentStorageKey.value) return
+                    const savedTop = localStorage.getItem(`${currentStorageKey.value}_scrollTop`)
+                    if (!savedTop) return
+
+                    const targetTop = parseFloat(savedTop)
+                    if (targetTop <= 0) return
+                    tableContainer.value.scrollTop = targetTop
+
+                    setTimeout(() => {
+                        if (tableContainer.value) {
+                            tableContainer.value.scrollTop = targetTop
+                        }
+                    }, 50)
+
+                    setTimeout(() => {
+                        if (tableContainer.value) {
+                            tableContainer.value.scrollTop = targetTop
+                        }
+                    }, 200)
                 }
 
                 onMounted(async () => {
