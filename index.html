@@ -1648,7 +1648,6 @@
                 })
                 const activeRow = ref(null)
                 const menuStyle = ref({ top: '0px', left: '0px', width: '0px' })
-                const formula = ref('')
                 const isKeyboardOpen = ref(false)
 
                 let isInitializing = true
@@ -4407,33 +4406,6 @@
                     }
                 }
 
-                /*
-                const handleGlobalPaste = async (e) => {
-                    if (isProcessing.value) return;
-                    const clipboardData = e.clipboardData || window.clipboardData;
-                    if (!clipboardData) return;
-                    const pastedText = clipboardData.getData('text');
-                    if (!pastedText) return;
-                    const trimmedText = pastedText.trim();
-                    const isTabularData = trimmedText.includes('\n') || trimmedText.includes('\t')
-                    if (!isTabularData) return
-                    const activeEl = document.activeElement
-                    if (activeEl) {
-                        if (activeEl.tagName.toLowerCase() === 'textarea') return
-                    }
-                    e.preventDefault()
-                    isProcessing.value = true
-                    try {
-                        await processImportText(trimmedText, false)
-                    } catch (err) {
-                        console.error("Paste import error:", err)
-                        alert(translate('Failed to process pasted data.'))
-                    } finally {
-                        isProcessing.value = false
-                    }
-                }
-                */
-
                 const processOCR = async (base64Image) => {
                     const apiKey = googleVisionKey.value.trim()
                     isProcessing.value = true
@@ -4797,8 +4769,6 @@
                             }
                         }
                     })
-
-                    // document.addEventListener('paste', handleGlobalPaste)
 
                     await loadData()
                     initChartColumns()
