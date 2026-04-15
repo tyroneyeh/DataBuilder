@@ -4735,9 +4735,13 @@
 
                 const selectOption = (opt) => {
                     if (activeRow.value) {
-                        if (activeRow.value.row) activeRow.value.row[activeRow.value.col.id] = opt
+                        if (activeRow.value.row) {
+                            activeRow.value.row[activeRow.value.col.id] = opt
+                            onDataEdited()
+                        } else {
+                            columnFilters.value[activeRow.value.col.id] = opt
+                        }
                         activeRow.value.target.value = opt
-                        onDataEdited()
                     }
                     activeRow.value = null
                 }
