@@ -2017,7 +2017,7 @@
 
                     loadChartCols()
 
-                    await loadData()
+                    await loadData(1)
                 }
 
                 const toggleActionMenu = (event, row) => {
@@ -2239,6 +2239,9 @@
                         }
                         colCount.value = columns.value.length
                         rowCount.value = rows.value.length
+                    } else {
+                        rows.value = []
+                        rowCount.value = 0
                     }
                     scrollToPosition(1)
 
