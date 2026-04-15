@@ -1939,9 +1939,6 @@
                             })
                         })
                     }
-                    setTimeout(() => {
-                        scrollToPosition(1)
-                    }, 100)
                     return result
                 })
 
@@ -2254,7 +2251,6 @@
                         colCount.value = columns.value.length
                         rowCount.value = rows.value.length
                     }
-                    scrollToPosition(1)
 
                     hasDateColumn.value = columns.value.some(column => column.type === 'date')
                     hasNumberColumn.value = columns.value.some(column => column.type === 'number')
@@ -2399,10 +2395,6 @@
                         tableContainer.value.scrollTop = 0
                         return
                     }
-                    if (typeof direction === 'number') {
-                        tableContainer.value.scrollTop += direction
-                        return
-                    }
 
                     tableContainer.value.scrollTop = tableContainer.value.scrollHeight
                     setTimeout(() => {
@@ -2428,17 +2420,17 @@
                         if (col.type === 'date') newRow[col.id] = todayDate
                         else if (col.type === 'time') newRow[col.id] = currentTime
                         else if (col.type === 'photo') newRow[col.id] = []
-                        else if (!col.type.startsWith('multiply') || !col.type.startsWith('minus')) newRow[col.id] = col.type === 'number' ? null : ''
+                        else if (!col.type?.startsWith('multiply') && !col.type?.startsWith('minus')) newRow[col.id] = col.type === 'number' ? null : ''
                     })
 
                     rows.value = [...rows.value, newRow]
-                    scrollToPosition(1)
                     onDataEdited()
                     if (windowEnd.value < rows.value.length) {
                         windowEnd.value = rows.value.length
                     }
 
                     await nextTick()
+                    scrollToPosition()
                     setTimeout(() => {
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
@@ -2446,7 +2438,7 @@
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
-                                    block: 'start'
+                                    block: 'center'
                                 })
                                 targetInput.focus()
                             } else {
@@ -2456,7 +2448,7 @@
                                 })
                             }
                         }
-                    }, 50)
+                    }, 150)
                 }
 
                 const formatNumberInput = (row, col) => {
@@ -2626,33 +2618,39 @@
 
                     if (!originalRow) return
 
-                    const clonedRow = {...originalRow}
+                    const clonedRow = JSON.parse(JSON.stringify(originalRow))
                     if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
                     rowCount.value++
                     clonedRow.id = 'row_' + rowCount.value
+                    const isAppendToEnd = ignoreDate || !columns.value.some(col => col.type === 'date')
 
-                    if (ignoreDate || !columns.value.some(col => col.type === 'date')) {
+                    if (isAppendToEnd) {
                         const {todayDate, currentTime} = getDate()
                         for (const column of columns.value) {
-                            switch (column.type) {
-                                case 'date':
-                                    clonedRow[column.id] = todayDate
-                                    break
-                                case 'time':
-                                    clonedRow[column.id] = currentTime
-                                    break
-                            }
+                            if (column.type === 'date') clonedRow[column.id] = todayDate
+                            else if (column.type === 'time') clonedRow[column.id] = currentTime
                         }
                         rows.value = [...rows.value, clonedRow]
-                        scrollToPosition(1)
                     } else {
-                        rows.value = [...rows.value.slice(0, index + 1), clonedRow, ...rows.value.slice(index + 1)]
-                        scrollToPosition(1)
+                        rows.value = [
+                            ...rows.value.slice(0, index + 1),
+                            clonedRow,
+                            ...rows.value.slice(index + 1)
+                        ]
                     }
 
                     onDataEdited()
+                    if (windowEnd.value < rows.value.length) {
+                        windowEnd.value = rows.value.length
+                    }
                     await nextTick()
-
+                    if (isAppendToEnd) {
+                        scrollToPosition()
+                    } else {
+                        if (tableContainer.value) {
+                            tableContainer.value.scrollTop += 1
+                        }
+                    }
                     const firstEditableCol = columns.value.find(c => editableTypes.has(c.type))
                     if (firstEditableCol) {
                         setTimeout(() => {
@@ -2660,12 +2658,12 @@
                             if (targetInput) {
                                 targetInput.scrollIntoView({
                                     behavior: 'smooth',
-                                    block: 'start'
+                                    block: 'center'
                                 })
                                 targetInput.focus()
                                 targetInput.select()
                             }
-                        }, 50)
+                        }, 150)
                     }
                 }
 
@@ -2798,6 +2796,7 @@
 
                 const clearStorage = async () => {
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
+                        localStorage.removeItem(`${currentStorageKey.value}_scrollTop`)
                         await db.remove(currentStorageKey.value)
                         colCount.value = 0
                         columns.value = []
@@ -2808,7 +2807,24 @@
                         localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
                         currentStorageKey.value = savedKeysList.value[0]
                         window.history.replaceState(null, null, window.location.pathname)
-                        loadData(1)
+                        if (heightCache.value.clear) {
+                            heightCache.value.clear()
+                        } else {
+                            heightCache.value = {}
+                        }
+                        windowStart.value = 0
+                        windowEnd.value = 50
+                        paddingTop.value = 0
+                        paddingBottom.value = 0
+
+                        if (tableContainer.value) {
+                            tableContainer.value.scrollTop = 0
+                        }
+                        await loadData(1)
+                        if (tableContainer.value) {
+                            handleTableScroll({ target: tableContainer.value })
+                        }
+
                     }
                 }
 
@@ -2939,6 +2955,7 @@
                     })
 
                     let addCount = 0
+                    const newRows = []
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
                         const newRow = { id: `row_${rowCount.value}` }
@@ -2967,10 +2984,12 @@
                             }
                         })
 
-                        rows.value.push(newRow)
+                        newRows.push(newRow)
                         addCount++
 
                     })
+
+                    rows.value = [...rows.value, ...newRows]
 
                     if (dateColId) {
                         hasDateColumn.value = true
@@ -3002,9 +3021,23 @@
                             addCount += await processImportText(text)
                         }
                         if (addCount > 0) {
-                            scrollToPosition(1)
-                            await nextTick()
                             onDataEdited('both')
+                            await nextTick()
+                            if (heightCache.value.clear) {
+                                heightCache.value.clear()
+                            } else {
+                                heightCache.value = {}
+                            }
+
+                            windowStart.value = 0
+                            windowEnd.value = Math.min(50, rows.value.length)
+                            paddingTop.value = 0
+                            paddingBottom.value = 0
+
+                            if (tableContainer.value) {
+                                tableContainer.value.scrollTop = 0
+                                handleTableScroll({ target: tableContainer.value })
+                            }
                             alert(`${translate('Imported items successfully!')} (${addCount})`)
                         }
                     } catch (error) {
