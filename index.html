@@ -2527,7 +2527,9 @@
                         shouldMove = true
                         if (columns.value[currentIndex].type === 'number') {
                             const row = rows.value.find(r => r.id === rowId)
-                            row[colId] = calculateInlineMath(row[colId])
+                            row[colId] = calculateInlineMath(event.target.value)
+                            target.value = row[colId]
+                            target.dispatchEvent(new Event('input'))
                         }
                     } else if (event.key === 'ArrowUp') {
                         direction = -1
@@ -4780,6 +4782,7 @@
                     isKeyboardOpen.value = false
                     el.value = calculateInlineMath(activeRow.value.row[activeRow.value.col.id])
                     activeRow.value.row[activeRow.value.col.id] = el.value
+                    onDataEdited()
                 }
 
                 const toggleTitle = () => {
