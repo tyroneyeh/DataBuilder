@@ -2140,13 +2140,35 @@
                     const timeColumn = columns.value.find(c => c.type === 'time')
                     const actualTimeColId = timeColumn ? timeColumn.id : null
 
+                    const parseTimeToMins = (timeString) => {
+                        if (!timeString || String(timeString).trim() === '') {
+                            return null
+                        }
+                        const match = String(timeString).trim().match(/(\d{1,2}):(\d{2})/)
+                        if (match) {
+                            const h = parseInt(match[1], 10)
+                            const m = parseInt(match[2], 10)
+                            if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+                                return h * 60 + m
+                            }
+                        }
+                        return null
+                    }
+
                     const now = new Date()
-                    const currentMins = now.getHours() * 60 + now.getMinutes()
+                    let currentMins = now.getHours() * 60 + now.getMinutes()
+
+                    if (actualTimeColId && activeRow.value && activeRow.value.row) {
+                        const currentTimeStr = activeRow.value.row[actualTimeColId]
+                        const parsedMins = parseTimeToMins(currentTimeStr)
+                        if (parsedMins !== null) {
+                            currentMins = parsedMins
+                        }
+                    }
 
                     const timeDiffMap = {}
                     const frequencyMap = {}
                     const validValues = []
-
                     rows.value.forEach(row => {
                         const val = row[colId]
                         if (val !== null && val !== undefined && String(val).trim() !== '') {
@@ -2156,14 +2178,8 @@
                             validValues.push(strVal)
 
                             if (actualTimeColId) {
-                                const timeStr = String(row[actualTimeColId] || '')
-                                const match = timeStr.match(/(\d{1,2}):(\d{2})/)
-
-                                if (match) {
-                                    const h = parseInt(match[1], 10)
-                                    const m = parseInt(match[2], 10)
-                                    const rowMins = h * 60 + m
-
+                                const rowMins = parseTimeToMins(row[actualTimeColId])
+                                if (rowMins !== null) {
                                     let diff = Math.abs(currentMins - rowMins)
                                     if (diff > 12 * 60) diff = 24 * 60 - diff
 
