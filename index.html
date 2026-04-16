@@ -1941,7 +1941,10 @@
                     debouncedUpdateChart()
                     await nextTick()
                     if (tableContainer.value) {
-                        tableContainer.value.scrollTop = 0
+                        const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
+                        if (tableContainer.value.scrollTop > maxScroll + 50) {
+                            tableContainer.value.scrollTop = 0
+                        }
                         handleTableScroll({ target: tableContainer.value })
                     }
                 })
@@ -2417,6 +2420,8 @@
                         else if (!col.type?.startsWith('multiply') && !col.type?.startsWith('minus')) newRow[col.id] = col.type === 'number' ? null : ''
                     })
 
+                    Object.keys(columnFilters.value).forEach(key => columnFilters.value[key] = '')
+
                     rows.value = [...rows.value, newRow]
                     onDataEdited()
                     if (windowEnd.value < rows.value.length) {
@@ -2429,16 +2434,12 @@
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                             if (targetInput) {
-                                targetInput.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'center'
-                                })
-                                targetInput.focus()
+                                targetInput.focus({ preventScroll: true })
                             } else {
-                                inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]?.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'end'
-                                })
+                                const fallbackInput = inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]
+                                if (fallbackInput) {
+                                    fallbackInput.focus({ preventScroll: true })
+                                }
                             }
                         }
                     }, 150)
@@ -2493,7 +2494,7 @@
                                 const currentRowIndex = rows.value.findIndex(row => row.id === rowId)
                                 if (await showConfirm(translate('Are you sure you want to delete this row?'))) removeRow(rowId)
                                 await nextTick()
-                                inputRefs.value[`row_${currentRowIndex}-${colId}`]?.focus()
+                                inputRefs.value[`row_${currentRowIndex}-${colId}`]?.focus({ preventScroll: true })
                             }
                         }
                         return
@@ -2644,11 +2645,7 @@
                         setTimeout(() => {
                             const targetInput = inputRefs.value[`${clonedRow.id}-${firstEditableCol.id}`]
                             if (targetInput) {
-                                targetInput.scrollIntoView({
-                                    behavior: 'smooth',
-                                    block: 'start'
-                                })
-                                targetInput.focus()
+                                targetInput.focus({ preventScroll: !ignoreDate })
                                 targetInput.select()
                             }
                         }, 150)
