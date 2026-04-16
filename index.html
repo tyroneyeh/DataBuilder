@@ -2137,9 +2137,68 @@
                 }
 
                 const getUniqueValues = (colId) => {
-                    const allValues = rows.value.map(row => row[colId])
-                    const validValues = allValues.filter(val => val !== null && val !== undefined && String(val).trim() !== '')
-                    return [...new Set(validValues)]
+                    const timeColumn = columns.value.find(c => c.type === 'time')
+                    const actualTimeColId = timeColumn ? timeColumn.id : null
+
+                    const now = new Date()
+                    const currentMins = now.getHours() * 60 + now.getMinutes()
+
+                    const timeDiffMap = {}
+                    const frequencyMap = {}
+                    const validValues = []
+
+                    rows.value.forEach(row => {
+                        const val = row[colId]
+                        if (val !== null && val !== undefined && String(val).trim() !== '') {
+                            const strVal = String(val).trim()
+
+                            frequencyMap[strVal] = (frequencyMap[strVal] || 0) + 1
+                            validValues.push(strVal)
+
+                            if (actualTimeColId) {
+                                const timeStr = String(row[actualTimeColId] || '')
+                                const match = timeStr.match(/(\d{1,2}):(\d{2})/)
+
+                                if (match) {
+                                    const h = parseInt(match[1], 10)
+                                    const m = parseInt(match[2], 10)
+                                    const rowMins = h * 60 + m
+
+                                    let diff = Math.abs(currentMins - rowMins)
+                                    if (diff > 12 * 60) diff = 24 * 60 - diff
+
+                                    if (timeDiffMap[strVal] === undefined || diff < timeDiffMap[strVal]) {
+                                        timeDiffMap[strVal] = diff
+                                    }
+                                }
+                            }
+                        }
+                    })
+
+                    const uniqueValues = [...new Set(validValues)]
+                    const TIME_THRESHOLD = 60
+
+                    return uniqueValues.sort((a, b) => {
+                        const freqA = frequencyMap[a]
+                        const freqB = frequencyMap[b]
+
+                        if (actualTimeColId) {
+                            const diffA = timeDiffMap[a] === undefined ? Infinity : timeDiffMap[a]
+                            const diffB = timeDiffMap[b] === undefined ? Infinity : timeDiffMap[b]
+
+                            const isAMatch = diffA <= TIME_THRESHOLD
+                            const isBMatch = diffB <= TIME_THRESHOLD
+
+                            if (isAMatch && !isBMatch) return -1
+                            if (!isAMatch && isBMatch) return 1
+
+                            if (isAMatch && isBMatch) {
+                                if (diffA !== diffB) return diffA - diffB
+                            }
+                        }
+
+                        return freqB - freqA
+                    })
                 }
 
                 const decompressFromBase64 = async (base64) => {
