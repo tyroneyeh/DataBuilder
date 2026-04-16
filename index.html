@@ -70,13 +70,12 @@
                 class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             >
                 <span class="flex items-center">📊 {{ translate('Summary') }}</span>
-                <span
-                    class="transform transition-transform duration-300 text-gray-400"
-                    :class="isChartOpen ? 'rotate-180' : 'rotate-0'"
-                >▼</span>
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                    <span class="transform transition-transform duration-300" :class="isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+                </div>
             </div>
-            <div v-show="columns.length && isChartOpen"
-                class="grid transition-all duration-500 ease-in-out"
+            <div
+                class="grid transition-all duration-500 ease-in-out" :class="columns.length && isChartOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0 h-0 overflow-hidden'"
             >
                 <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
                     <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
@@ -270,10 +269,9 @@
                     class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                     <span class="flex items-center">☰ {{ translate('Columns') }}</span>
-                    <span
-                        class="transform transition-transform duration-300 text-gray-400"
-                        :class="isMenuOpen ? 'rotate-180' : 'rotate-0'"
-                    >▼</span>
+                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                        <span class="transform transition-transform duration-300" :class="isMenuOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+                    </div>
                 </div>
                 <div
                     class="flex flex-wrap gap-4 mx-2"
@@ -358,10 +356,9 @@
             class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer print:hidden"
         >
             <span class="flex items-center">🏷️ {{ translate('Title') }}</span>
-            <span
-                class="transform transition-transform duration-300 text-gray-400"
-                :class="isTitleOpen ? 'rotate-180' : 'rotate-0'"
-            >▼</span>
+            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                <span class="transform transition-transform duration-300" :class="isTitleOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+            </div>
         </div>
         <div class="flex justify-center print:pt-0" v-if="isTitleOpen">
             <input
