@@ -372,7 +372,7 @@
             >
         </div>
         <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
-
+            <div v-if="!isPrinting && paddingTop > 0" :style="{ height: paddingTop + 'px' }" class="w-full"></div>
             <table class="w-full border-collapse relative print:w-full block sm:table print:table">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
@@ -417,13 +417,6 @@
                         <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
                     </tr>
                 </thead>
-                <tbody v-if="!isPrinting && paddingTop > 0" class="block sm:table-row-group">
-                    <tr class="block sm:table-row">
-                        <td :colspan="columns.length + 1" class="p-0 border-0 m-0">
-                            <div :style="{ height: paddingTop + 'px' }"></div>
-                        </td>
-                    </tr>
-                </tbody>
 
                 <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative" >
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
@@ -587,14 +580,6 @@
                     </tr>
                 </tbody>
 
-                <tbody v-if="!isPrinting && paddingBottom > 0" class="block sm:table-row-group">
-                    <tr class="block sm:table-row">
-                        <td :colspan="columns.length + 1" class="p-0 border-0 m-0">
-                            <div :style="{ height: paddingBottom + 'px' }"></div>
-                        </td>
-                    </tr>
-                </tbody>
-
                 <tbody v-if="!isPrinting" class="block sm:table-row-group">
                     <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
                         <td @click="addRow" class="sm:sticky left-0 sm:border-0 border-gray-300 dark:border-gray-700 p-0 text-center cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
@@ -732,6 +717,8 @@
                     </tr>
                 </tfoot>
             </table>
+            <div v-if="!isPrinting && paddingBottom > 0" :style="{ height: paddingBottom + 'px' }" class="w-full"></div>
+
             <ul
                 v-for="col in columns"
                 v-show="activeRow?.col.id === col.id"
@@ -1806,7 +1793,9 @@
                                     heightCache.value[rowId] = currentHeight
                                 }
 
-                                defaultItemHeight = currentHeight
+                                if (currentHeight > 40 && currentHeight < 100) {
+                                    defaultItemHeight = currentHeight
+                                }
                             })
                         }
                     } else {
@@ -1948,8 +1937,13 @@
                     updateChart()
                 }, 300)
 
-                watch(filteredRows, () => {
+                watch(filteredRows, async () => {
                     debouncedUpdateChart()
+                    await nextTick()
+                    if (tableContainer.value) {
+                        tableContainer.value.scrollTop = 0
+                        handleTableScroll({ target: tableContainer.value })
+                    }
                 })
 
                 const visibleRows = computed(() => {
@@ -3728,43 +3722,59 @@
                         if (total <= 50) {
                             if (windowStart.value !== 0) windowStart.value = 0
                             if (windowEnd.value !== total) windowEnd.value = total
+                            if (paddingTop.value !== 0) paddingTop.value = 0
+                            if (paddingBottom.value !== 0) paddingBottom.value = 0
                             return
                         }
 
                         const buffer = 15
+                        const thead = tableContainer.value.querySelector('thead')
+                        const headerHeight = thead ? thead.getBoundingClientRect().height : 0
+                        const safeItemHeight = Math.max(40, defaultItemHeight)
 
-                        let currentY = 0
-                        let start = total > 0 ? total - 1 : 0
-                        for (let i = 0; i < total; i++) {
-                            const rowId = filteredRows.value[i].id
+                        const getRowHeight = (index) => {
+                            const rowId = filteredRows.value[index].id
                             const cachedH = heightCache.value.get ? heightCache.value.get(rowId) : heightCache.value[rowId]
-                            const h = cachedH || defaultItemHeight
-                            if (currentY + h > scrollTop) {
-                                start = i
-                                break
-                            }
-                            currentY += h
+                            return Math.max(40, cachedH || safeItemHeight)
                         }
 
-                        let end = start
-                        let visibleHeight = 0
-                        for (let i = start; i < total; i++) {
-                            const rowId = filteredRows.value[i].id
-                            const cachedH = heightCache.value.get ? heightCache.value.get(rowId) : heightCache.value[rowId]
-                            const h = cachedH || defaultItemHeight
-                            visibleHeight += h
-                            end = i + 1
-                            if (visibleHeight > clientHeight) break
+                        let currentY = headerHeight
+                        let start = -1
+                        let end = total
+
+                        for (let i = 0; i < total; i++) {
+                            const h = getRowHeight(i)
+                            if (start === -1 && currentY + h > scrollTop) {
+                                start = i
+                            }
+                            currentY += h
+                            if (start !== -1 && currentY > scrollTop + clientHeight) {
+                                end = i + 1
+                                break
+                            }
+                        }
+
+                        if (start === -1) {
+                            const estimatedItemsPerScreen = Math.ceil(clientHeight / safeItemHeight)
+                            start = total > 0 ? Math.max(0, total - estimatedItemsPerScreen) : 0
+                            end = total
                         }
 
                         const newStart = Math.max(0, start - buffer)
                         const newEnd = Math.min(total, end + buffer * 2)
 
-                        paddingTop.value = newStart * defaultItemHeight
-                        paddingBottom.value = (total - newEnd) * defaultItemHeight
+                        let pTop = 0
+                        for (let i = 0; i < newStart; i++) {
+                            pTop += getRowHeight(i)
+                        }
+
+                        const remainingItems = total - newEnd
+                        let pBottom = remainingItems > 0 ? remainingItems * safeItemHeight : 0
 
                         if (windowStart.value !== newStart) windowStart.value = newStart
                         if (windowEnd.value !== newEnd) windowEnd.value = newEnd
+                        if (paddingTop.value !== pTop) paddingTop.value = pTop
+                        if (paddingBottom.value !== pBottom) paddingBottom.value = pBottom
                     })
                 }
 
