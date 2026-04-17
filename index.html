@@ -4446,6 +4446,8 @@
 
                 const generateShareLink = async () => {
                     isProcessing.value = true
+                    await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
+
                     try {
                         let link = ''
                         const gistValue = gistId.value.trim()
@@ -4454,7 +4456,7 @@
                         } else {
 
                             const photoCol = columns.value.find(col => col.type === 'photo')
-                            const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value, note: globalNotes.value }
+                            const payload = { title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value }
                             if (photoCol) {
                                 payload.rows = payload.rows.map(({[photoCol.id]: photos, ...rest }) => rest)
                             }
@@ -4463,8 +4465,6 @@
                             const encoded = encodeURIComponent(compressedBase64)
                             link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
                         }
-
-                        await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
 
                         QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                             if (err) return alert(err)
@@ -4492,6 +4492,10 @@
 
                     try {
                         const rawRowData = { ...toRaw(row) }
+                        const photoCol = columns.value.find(col => col.type === 'photo')
+                        if (photoCol) {
+                            delete rawRowData[photoCol.id]
+                        }
                         delete rawRowData.id
 
                         const payload = {
@@ -4505,14 +4509,13 @@
                         const link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
 
                         QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
-                            if (!err) {
-                                shareModal.value = {
-                                    isOpen: true,
-                                    qrUrl: url,
-                                    link: link,
-                                    title: translate('Share Link & QRCode'),
-                                    desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
-                                }
+                            if (err) return alert(err)
+                            shareModal.value = {
+                                isOpen: true,
+                                qrUrl: url,
+                                link: link,
+                                title: translate('Share Link & QRCode'),
+                                desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
                             }
                         })
                     } catch (e) {
