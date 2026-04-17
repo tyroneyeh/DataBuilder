@@ -2987,7 +2987,6 @@
                                 }
                             } else if (key.toLowerCase().includes(translate('Date').toLowerCase())) {
                                 targetType = 'date'
-                                hasDateColumn.value = true
                             } else if (key.toLowerCase().includes(translate('Time').toLowerCase())) {
                                 targetType = 'time'
                             } else if (key.toLowerCase().includes(translate('Checkbox').toLowerCase())) {
@@ -2996,7 +2995,6 @@
                                 targetType = 'text'
                             } else {
                                 let isAllNumbers = dataList.every(item => !item[key] || !isNaN(parseFloat(item[key])))
-                                hasNumberColumn.value = hasNumberColumn.value || isAllNumbers
                                 targetType = isAllNumbers ? 'number' : 'text'
                             }
 
@@ -3022,11 +3020,13 @@
                             if (val !== undefined && val !== null && val !== '') {
                                 if (col.type === 'number' || col.type?.startsWith('multiply') || col.type === 'minus') {
                                     newRow[col.id] = parseFloat(val) || 0
+                                    hasNumberColumn.value = true
                                 } else if (col.type === 'checkbox') {
                                     newRow[col.id] = !!val
                                 } else if (col.type === 'date') {
                                     newRow[col.id] = formatDate(val)
                                     if (!dateColId) dateColId = col.id
+                                    hasDateColumn.value = true
                                 } else if (col.type === 'time') {
                                     newRow[col.id] = formatTime(val)
                                 } else {
@@ -3036,6 +3036,7 @@
                                 newRow[col.id] =  false
                             } else if (col.type === 'number') {
                                 newRow[col.id] = 0
+                                hasNumberColumn.value = true
                             } else {
                                 newRow[col.id] = ''
                             }
@@ -3132,8 +3133,9 @@
                 }
 
                 const getChartData = (type = 'category') => {
-                    const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
+                    const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => c.type?.startsWith('number'))
                     if (!numCol) return null
+                    selectedChartNumColId.value = numCol.id
 
                     const colId = type === 'date' ? selectedChartDateColId.value : selectedChartCatColId.value
                     if (!colId) return null
@@ -3993,6 +3995,7 @@
                             rows.value = data.rows || []
                             globalNotes.value = data.note || ''
                             hasDateColumn.value = columns.value.some(column => column.type === 'date')
+                            hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                         }
                         onDataEdited('both')
                         alert(translate('Restored from GitHub Gist successfully!'))
