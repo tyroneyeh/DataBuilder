@@ -459,9 +459,9 @@
                             <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
                                 {{ formatNumber((parseFloat(row[col.opA]) || 0) - (parseFloat(row[col.opB]) || 0)) }}
                             </div>
-                            <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id].length}">
+                            <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id]?.length}">
 
-                                <template v-if="row[col.id].length">
+                                <template v-if="row[col.id]?.length">
 
                                     <div v-for="(imgSrc, idx) in row[col.id]" :key="idx" class="relative group/photo inline-block shrink-0">
                                         <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="" />
@@ -4452,7 +4452,12 @@
                         if (gistValue) {
                             link = `${window.location.origin}${window.location.pathname}#gist:${gistValue}`
                         } else {
+
+                            const photoCol = columns.value.find(col => col.type === 'photo')
                             const payload = { title: tableTitle.value, columns: columns.value, rows: rows.value, note: globalNotes.value }
+                            if (photoCol) {
+                                payload.rows = payload.rows.map(({[photoCol.id]: photos, ...rest }) => rest)
+                            }
                             const jsonString = JSON.stringify(payload)
                             const compressedBase64 = await compressToBase64(jsonString)
                             const encoded = encodeURIComponent(compressedBase64)
@@ -4462,14 +4467,13 @@
                         await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
 
                         QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
-                            if (!err) {
-                                shareModal.value = {
-                                    isOpen: true,
-                                    qrUrl: url,
-                                    link: link,
-                                    title: translate('Share Link & QRCode'),
-                                    desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
-                                }
+                            if (err) return alert(err)
+                            shareModal.value = {
+                                isOpen: true,
+                                qrUrl: url,
+                                link: link,
+                                title: translate('Share Link & QRCode'),
+                                desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
                             }
                         })
                     } catch (e) {
