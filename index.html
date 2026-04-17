@@ -4791,6 +4791,11 @@
                 }
 
                 const openGlobalMenu = (event, row, col) => {
+                    if (!['number', 'category'].includes(col.type)) {
+                        isKeyboardOpen.value = false
+                        activeRow.value = null
+                        return
+                    }
                     const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
                     const target = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     activeRow.value = {target, row, col, start: target.selectionStart, end: target.selectionEnd}
