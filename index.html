@@ -370,7 +370,7 @@
         </div>
         <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
             <div v-if="!isPrinting && paddingTop > 0" :style="{ height: paddingTop + 'px' }" class="w-full"></div>
-            <table class="w-full border-collapse relative print:w-full block sm:table print:table">
+            <table class="w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
                         <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')" >#{{ filteredRows.length }}</th>
@@ -499,7 +499,7 @@
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
                                         }"
                                         @input="formatNumberInput(row, col)"
-                                        @click="enterInput(row, col, $event)"
+                                        @click.stop="enterInput(row, col, $event)"
                                         @focus="openGlobalMenu($event, row, col)"
                                         @blur="saveInput(row, col)"
                                         @keydown="focusNextInput($event, row.id, col.id)"
@@ -629,7 +629,7 @@
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
-                                        @focus="openGlobalMenu($event, null, col)"
+                                        @click.stop="openGlobalMenu($event, null, col)"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
@@ -4793,7 +4793,7 @@
                 }
 
                 const openGlobalMenu = (event, row, col) => {
-                    if (!['number', 'category'].includes(col.type)) {
+                    if (!col || !['number', 'category'].includes(col.type)) {
                         isKeyboardOpen.value = false
                         activeRow.value = null
                         return
