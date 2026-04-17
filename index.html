@@ -4836,8 +4836,8 @@
                 const backspace = () => {
                     const el = activeRow.value?.target
                     if (!el) return
-                    const start = activeRow.value.start
-                    const end = activeRow.value.end
+                    const start = activeRow.value.start > 0 ? activeRow.value.start : el.value.length
+                    const end = activeRow.value.end > 0 ? activeRow.value.end : el.value.length
                     el.value = el.value.slice(0, start - 1) + el.value.slice(end)
                     activeRow.value.row[activeRow.value.col.id] = el.value
                     activeRow.value.start = start - 1
