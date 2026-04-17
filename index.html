@@ -3125,7 +3125,6 @@
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
                     if (isChartOpen.value) {
-                        await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
                         updateChart()
                         await nextTick()
                         if (expenseChart.value) expenseChart.value.resize()
