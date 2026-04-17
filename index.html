@@ -3871,10 +3871,12 @@
 
                 const fetchGistAPI = async (method, urlExt = '', body = null) => {
 
+                    const timestamp = new Date().getTime()
                     const options = {
                         method,
+                        cache: 'no-cache',
                         headers: {
-                            'Accept': 'application/vnd.github+json',
+                            'Accept': 'application/vnd.github.v3+json',
                             'X-GitHub-Api-Version': '2022-11-28'
                         }
                     }
@@ -3886,7 +3888,7 @@
                     if (body) options.body = JSON.stringify(body)
 
                     try {
-                        const response = await fetch(`https://api.github.com/gists${urlExt}`, options)
+                        const response = await fetch(`https://api.github.com/gists${urlExt}?_t=${timestamp}`, options)
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
                         return await response.json()
                     } catch (e) {
