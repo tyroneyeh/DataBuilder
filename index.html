@@ -949,7 +949,7 @@
 
             <div v-if="outputToScreen" class="flex flex-col gap-3">
                 <div class="h-64 bg-gray-900 text-green-400 p-4 rounded-xl overflow-x-auto shadow-inner border border-gray-700">
-                    <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code>{{ outputToScreen }}</code></pre>
+                    <pre class="text-xs sm:text-sm font-mono whitespace-pre-wrap"><code contenteditable class="focus:outline-none" @input="outputToScreen = $event.target.innerText">{{ outputToScreen }}</code></pre>
                 </div>
                 <button class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto flex items-center justify-center gap-2" @click="downloadFile(outputToScreen)">
                     📥 {{ translate('Download') }}
