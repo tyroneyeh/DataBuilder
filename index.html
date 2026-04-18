@@ -4856,6 +4856,7 @@
                     if (!col || !['number', 'category'].includes(col.type)) {
                         isKeyboardOpen.value = false
                         activeRow.value = null
+                        activeDropdownIndex.value = -1
                         return
                     }
                     const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
