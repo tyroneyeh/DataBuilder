@@ -727,12 +727,11 @@
                     v-if="col.type === 'category'"
                     v-for="(val, index) in getUniqueValues(col.id)"
                     :key="val"
-                    ref="dropdownListRefs"
                     @mousedown="selectOption(val)"
                     @mouseover="activeDropdownIndex = index"
                     class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     :class="{
-                        'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-bold': activeDropdownIndex === index,
+                        'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-bold dropdown-active-item': activeDropdownIndex === index && activeRow?.col.id === col.id,
                         'hover:bg-gray-100 dark:hover:bg-gray-700': activeDropdownIndex !== index
                     }"
                     >
@@ -1646,7 +1645,6 @@
                 const paddingTop = ref(0)
                 const paddingBottom = ref(0)
                 const activeDropdownIndex = ref(-1)
-                const dropdownListRefs = ref([])
 
                 let isInitializing = true
                 let scrollRAF
@@ -2565,7 +2563,7 @@
 
                 const scrollToActive = async () => {
                     await nextTick()
-                    const activeEl = dropdownListRefs.value[activeDropdownIndex.value]
+                    const activeEl = document.querySelector('.dropdown-active-item')
                     if (activeEl) {
                         activeEl.scrollIntoView({ block: 'nearest' })
                     }
@@ -5152,7 +5150,6 @@
                     backspace,
                     clearAll,
                     doCalc,
-                    dropdownListRefs,
                     activeDropdownIndex
                 }
             }
