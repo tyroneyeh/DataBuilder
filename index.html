@@ -725,10 +725,16 @@
             >
                 <li
                     v-if="col.type === 'category'"
-                    v-for="val in getUniqueValues(col.id)"
+                    v-for="(val, index) in getUniqueValues(col.id)"
                     :key="val"
+                    ref="dropdownListRefs"
                     @mousedown="selectOption(val)"
+                    @mouseover="activeDropdownIndex = index"
                     class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    :class="{
+                        'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-bold': activeDropdownIndex === index,
+                        'hover:bg-gray-100 dark:hover:bg-gray-700': activeDropdownIndex !== index
+                    }"
                     >
                     {{ val }}
                 </li>
@@ -1639,6 +1645,8 @@
                 const isKeyboardOpen = ref(false)
                 const paddingTop = ref(0)
                 const paddingBottom = ref(0)
+                const activeDropdownIndex = ref(-1)
+                const dropdownListRefs = ref([])
 
                 let isInitializing = true
                 let scrollRAF
@@ -1761,6 +1769,10 @@
 
                 watch(voiceSettings, (newVal) => {
                     newVal ? localStorage.setItem('ty_voice_settings', JSON.stringify(newVal)) : localStorage.removeItem('ty_voice_settings')
+                })
+
+                watch(() => activeRow.value, () => {
+                    activeDropdownIndex.value = -1
                 })
 
                 const toggleDarkMode = () => {
@@ -2551,9 +2563,48 @@
                     return originalString
                 }
 
+                const scrollToActive = async () => {
+                    await nextTick()
+                    const activeEl = dropdownListRefs.value[activeDropdownIndex.value]
+                    if (activeEl) {
+                        activeEl.scrollIntoView({ block: 'nearest' })
+                    }
+                }
+
                 const focusNextInput = async (event, rowId, colId) => {
                     const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
+
+                    if (event.key === 'Escape') {
+                        activeRow.value = null
+                        activeDropdownIndex.value = -1
+                        return
+                    }
+
                     if (!allowedKeys.includes(event.key)) return
+
+                    const isDropdownActive = activeRow.value !== null
+                    const options = isDropdownActive ? getUniqueValues(activeRow.value.col.id) : []
+
+                    if (isDropdownActive && options.length > 0) {
+                        if (event.key === 'ArrowDown') {
+                            event.preventDefault()
+                            activeDropdownIndex.value = (activeDropdownIndex.value + 1) % options.length
+                            scrollToActive()
+                            return
+                        }
+                        else if (event.key === 'ArrowUp') {
+                            event.preventDefault()
+                            activeDropdownIndex.value = activeDropdownIndex.value <= 0 ? options.length - 1 : activeDropdownIndex.value - 1
+                            scrollToActive()
+                            return
+                        }
+                        else if (event.key === 'Enter' && activeDropdownIndex.value >= 0) {
+                            event.preventDefault()
+                            selectOption(options[activeDropdownIndex.value])
+                            activeDropdownIndex.value = -1
+                            return
+                        }
+                    }
 
                     const target = event.target
                     const currentIndex = columns.value.findIndex(col => col.id === colId)
@@ -5100,7 +5151,9 @@
                     append,
                     backspace,
                     clearAll,
-                    doCalc
+                    doCalc,
+                    dropdownListRefs,
+                    activeDropdownIndex
                 }
             }
         }).mount('#app')
