@@ -2856,14 +2856,18 @@
                     if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
                         localStorage.removeItem(`${currentStorageKey.value}_scrollTop`)
                         await db.remove(currentStorageKey.value)
-                        colCount.value = 0
-                        columns.value = []
+
+                        if (rowCount.value === 0) {
+                            savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
+                            if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
+                            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                            currentStorageKey.value = savedKeysList.value[0]
+                            colCount.value = 0
+                            columns.value = []
+                        }
+
                         rowCount.value = 0
                         rows.value = []
-                        savedKeysList.value = savedKeysList.value.filter(key => key !== currentStorageKey.value)
-                        if (savedKeysList.value.length === 0) savedKeysList.value = ['ty-db']
-                        localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
-                        currentStorageKey.value = savedKeysList.value[0]
                         window.history.replaceState(null, null, window.location.pathname)
                         if (heightCache.value.clear) {
                             heightCache.value.clear()
