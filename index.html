@@ -721,7 +721,7 @@
                 v-for="col in columns"
                 v-show="activeRow?.col.id === col.id"
                 :style="menuStyle"
-                class="absolute w-full mt-1 bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto"
+                class="absolute w-full mt-1 bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto transform-gpu translate-z-0"
             >
                 <li
                     v-if="col.type === 'category'"
