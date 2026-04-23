@@ -464,7 +464,7 @@
                                 <template v-if="row[col.id]?.length">
 
                                     <div v-for="(imgSrc, idx) in row[col.id]" :key="idx" class="relative group/photo inline-block shrink-0">
-                                        <img :src="imgSrc" @click="viewPhoto(imgSrc)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="" />
+                                        <img :src="imgSrc" @click="viewPhoto(row[col.id], idx)" class="h-10 object-cover rounded border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm active:scale-95 transition-transform" alt="" />
                                         <button v-if="!isPrinting" @click.stop="removePhoto(row, col.id, idx)" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-100 sm:opacity-0 group-hover/photo:opacity-100 transition-opacity shadow z-10">✖</button>
                                     </div>
 
@@ -1077,12 +1077,44 @@
             </div>
         </div>
         <div v-if="photoViewer.isOpen"
-            class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer"
+            class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer select-none"
             @click="photoViewer.isOpen = false">
-            <img :src="photoViewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl" alt="" />
-            <button class="absolute top-4 right-4 text-white hover:text-red-400 transition-colors">
+
+            <button
+                v-if="photoViewer.currentIndex > 0"
+                @click.stop="photoViewer.currentIndex--"
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-blue-400 transition-colors bg-black/40 hover:bg-black/70 rounded-full p-2 z-10"
+                title="上一張"
+            >
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+
+            <img
+                :src="photoViewer.urls[photoViewer.currentIndex]"
+                class="max-w-full max-h-[90vh] object-contain rounded shadow-2xl cursor-default"
+                @click.stop
+                alt=""
+            />
+
+            <button
+                v-if="photoViewer.currentIndex < photoViewer.urls.length - 1"
+                @click.stop="photoViewer.currentIndex++"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-blue-400 transition-colors bg-black/40 hover:bg-black/70 rounded-full p-2 z-10"
+            >
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <button class="absolute top-4 right-4 text-white hover:text-red-400 transition-colors z-10" @click.stop="photoViewer.isOpen = false">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
+
+            <div
+                v-if="photoViewer.urls.length > 1"
+                class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-1 rounded-full text-sm tracking-widest cursor-default"
+                @click.stop
+            >
+                {{ photoViewer.currentIndex + 1 }} / {{ photoViewer.urls.length }}
+            </div>
         </div>
         <div v-if="!isPrinting"
             @mouseenter="onScrollBtnsEnter"
@@ -1617,7 +1649,7 @@
                 const selectedScanMode = ref('ALL')
                 const lastScannedText = ref('')
                 const beepAudioRef = ref(null)
-                const photoViewer = ref({ isOpen: false, url: '' })
+                const photoViewer = ref({ isOpen: false, urls: [], currentIndex: 0 })
                 const dateRangeFilters = ref({
                     start: '',
                     end: ''
@@ -4383,8 +4415,8 @@
                     sharedFileInput.click()
                 }
 
-                const viewPhoto = (url) => {
-                    photoViewer.value = { isOpen: true, url }
+                const viewPhoto = (urls, currentIndex) => {
+                    photoViewer.value = { isOpen: true, urls,  currentIndex }
                 }
 
                 const removePhoto = (row, colId, index) => {
@@ -4961,6 +4993,24 @@
                     }, 200)
                 }
 
+                const handleKeydown = (e) => {
+                    if (!photoViewer.value.isOpen) return
+
+                    if (e.key === 'ArrowRight') {
+                        if (photoViewer.value.currentIndex < photoViewer.value.urls.length - 1) {
+                            photoViewer.value.currentIndex++
+                        }
+                    }
+                    else if (e.key === 'ArrowLeft') {
+                        if (photoViewer.value.currentIndex > 0) {
+                            photoViewer.value.currentIndex--
+                        }
+                    }
+                    else if (e.key === 'Escape') {
+                        photoViewer.value.isOpen = false
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -4987,6 +5037,7 @@
                     initChartColumns()
                     refreshYearFilters()
                     initGlobalTooltip()
+                    window.addEventListener('keydown', handleKeydown)
 
                     if ('speechSynthesis' in globalThis) {
                         speechSynthesis.speak(new SpeechSynthesisUtterance(""))
