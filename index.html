@@ -721,7 +721,7 @@
                 v-for="col in columns"
                 v-show="activeRow?.col.id === col.id"
                 :style="menuStyle"
-                class="absolute w-full mt-1 bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto transform-gpu translate-z-0"
+                class="absolute w-full mt-1 bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto transform-gpu translate-z-0 z-50"
             >
                 <li
                     v-if="col.type === 'category'"
@@ -2204,8 +2204,8 @@
                     const TIME_THRESHOLD = 60
 
                     return uniqueValues.sort((a, b) => {
-                        const freqA = frequencyMap[a]
-                        const freqB = frequencyMap[b]
+                        const freqA = frequencyMap[a] || 0
+                        const freqB = frequencyMap[b] || 0
 
                         if (actualTimeColId) {
                             const diffA = timeDiffMap[a] === undefined ? Infinity : timeDiffMap[a]
@@ -2216,10 +2216,11 @@
 
                             if (isAMatch && !isBMatch) return -1
                             if (!isAMatch && isBMatch) return 1
-
-                            if (isAMatch && isBMatch) {
-                                if (diffA !== diffB) return diffA - diffB
+                            if (freqA !== freqB) {
+                                return freqB - freqA
                             }
+
+                            return diffA - diffB
                         }
 
                         return freqB - freqA
