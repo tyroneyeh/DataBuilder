@@ -415,7 +415,7 @@
                     </tr>
                 </thead>
 
-                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative" >
+                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
@@ -425,7 +425,11 @@
                             <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400 dark:text-gray-500">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
                         </td>
 
-                        <td v-for="col in columns" :key="col.id" class="group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
+                        <td v-for="(col, colIndex) in columns" :key="col.id"
+                            @mousedown="handleMouseDown(index, colIndex)"
+                            @mouseenter="handleMouseEnter(index, colIndex)"
+                            v-bind="getSelectionStyles(index, colIndex)"
+                            class="cursor-cell group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
                                 @click.stop="openGlobalMenu($event, row, col)"
@@ -1699,6 +1703,9 @@
                 const activeDropdownIndex = ref(-1)
                 const screenTarget = ref(null)
                 const isFullscreen = ref(false)
+                const isDragging = ref(false)
+                const startCell = ref(null)
+                const endCell = ref(null)
 
                 let isInitializing = true
                 let scrollRAF
@@ -5032,6 +5039,13 @@
                         toggleFullscreen()
                     }
 
+                    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBox.value) {
+                        const activeTag = document.activeElement?.tagName
+                        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
+                        handleDelete()
+                        e.preventDefault()
+                    }
+
                     if (!photoViewer.value.isOpen) return
 
                     if (e.key === 'ArrowRight') {
@@ -5094,6 +5108,136 @@
                     })
                 }
 
+                const getSelectionStyles = (rowIndex, colIndex) => {
+                    if (!selectedBox.value) return 'bg-white dark:bg-gray-800'
+
+                    const { minRow, maxRow, minCol, maxCol } = selectedBox.value
+
+                    if (rowIndex < minRow || rowIndex > maxRow || colIndex < minCol || colIndex > maxCol) {
+                        return 'bg-white dark:bg-gray-800'
+                    }
+
+                    let classes = 'bg-blue-100 dark:bg-blue-900/40 relative z-10 '
+
+                    let shadows = []
+
+                    if (rowIndex === minRow) shadows.push('inset 0 2px 0 0 #3b82f6')
+                    if (rowIndex === maxRow) shadows.push('inset 0 -2px 0 0 #3b82f6')
+                    if (colIndex === minCol) shadows.push('inset 2px 0 0 0 #3b82f6')
+                    if (colIndex === maxCol) shadows.push('inset -2px 0 0 0 #3b82f6')
+                    return {
+                        class: classes,
+                        style: shadows.length > 0 ? `box-shadow: ${shadows.join(', ')};` : ''
+                    }
+                }
+
+                const selectedBox = computed(() => {
+                    if (!startCell.value || !endCell.value) return null
+                    return {
+                        minRow: Math.min(startCell.value.row, endCell.value.row),
+                        maxRow: Math.max(startCell.value.row, endCell.value.row),
+                        minCol: Math.min(startCell.value.col, endCell.value.col),
+                        maxCol: Math.max(startCell.value.col, endCell.value.col),
+                    }
+                })
+
+                const isCellSelected = (rowIndex, colIndex) => {
+                    if (!selectedBox.value) return false
+                    const box = selectedBox.value
+                    return rowIndex >= box.minRow && rowIndex <= box.maxRow &&
+                        colIndex >= box.minCol && colIndex <= box.maxCol
+                }
+
+                const handleMouseDown = (rowIndex, colIndex) => {
+                    isDragging.value = true
+                    startCell.value = { row: rowIndex, col: colIndex }
+                    endCell.value = { row: rowIndex, col: colIndex }
+                }
+
+                const handleMouseEnter = (rowIndex, colIndex) => {
+                    if (isDragging.value) {
+                        endCell.value = { row: rowIndex, col: colIndex }
+                    }
+                }
+
+                const handleMouseUp = () => {
+                    if (isDragging.value) {
+                        isDragging.value = false
+                    }
+                }
+
+                const handleCopy = (e) => {
+                    const activeTag = document.activeElement?.tagName
+                    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
+
+                    if (!selectedBox.value) return
+
+                    e.preventDefault()
+
+                    const { minRow, maxRow, minCol, maxCol } = selectedBox.value
+                    const currentOffset = windowStart.value || 0
+                    const absoluteMinRow = currentOffset + minRow
+                    const absoluteMaxRow = currentOffset + maxRow
+                    const tsvLines = []
+
+                    for (let r = absoluteMinRow; r <= absoluteMaxRow; r++) {
+                        const rowData = []
+                        for (let c = minCol; c <= maxCol; c++) {
+                            const colId = columns.value[c].id
+                            let cellValue = rows.value[r][colId]
+
+                            if (cellValue === undefined || cellValue === null) {
+                                cellValue = ''
+                            } else {
+                                cellValue = String(cellValue).replaceAll(/\r?\n/g, ' ')
+                            }
+
+                            rowData.push(cellValue)
+                        }
+                        tsvLines.push(rowData.join('\t'))
+                    }
+
+                    const finalClipboardText = tsvLines.join('\n')
+
+                    if (e.clipboardData) {
+                        e.clipboardData.setData('text/plain', finalClipboardText)
+                    }
+
+                }
+
+                const handleDelete = () => {
+                    if (!selectedBox.value) return
+                    const { minRow, maxRow, minCol, maxCol } = selectedBox.value
+                    const isWholeRowSelected = minCol === 0 && maxCol === columns.value.length - 1
+
+                    const currentOffset = windowStart.value || 0
+                    const absoluteMinRow = currentOffset + minRow
+                    const absoluteMaxRow = currentOffset + maxRow
+
+                    if (isWholeRowSelected) {
+                        const deleteCount = maxRow - minRow + 1
+                        const newRows = [...rows.value]
+                        newRows.splice(absoluteMinRow, deleteCount)
+                        rows.value = newRows
+                        selectedBox.value = null
+                        startCell.value = null
+                        endCell.value = null
+                        isDragging.value = false
+
+                    } else {
+                        for (let r = absoluteMinRow; r <= absoluteMaxRow; r++) {
+                            for (let c = minCol; c <= maxCol; c++) {
+                                const colId = columns.value[c].id
+                                if (!['multiply', 'photo', 'multiply3', 'minus'].includes(columns.value[c].type)) {
+                                    rows.value[r][colId] = ''
+                                }
+                            }
+                        }
+                    }
+
+                    onDataEdited()
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -5121,6 +5265,8 @@
                     refreshYearFilters()
                     initGlobalTooltip()
                     window.addEventListener('keydown', handleKeydown)
+                    window.addEventListener('mouseup', handleMouseUp)
+                    document.addEventListener('copy', handleCopy)
 
                     if ('speechSynthesis' in globalThis) {
                         speechSynthesis.speak(new SpeechSynthesisUtterance(""))
@@ -5131,6 +5277,8 @@
 
                 onUnmounted(() => {
                     window.removeEventListener('keydown', handleKeydown)
+                    window.removeEventListener('mouseup', handleMouseUp)
+                    document.removeEventListener('copy', handleCopy)
                     document.body.style.overflow = ''
                 })
 
@@ -5296,7 +5444,14 @@
                     screenTarget,
                     isFullscreen,
                     toggleFullscreen,
-                    handlePaste
+                    handlePaste,
+                    getSelectionStyles,
+                    isDragging,
+                    startCell,
+                    endCell,
+                    isCellSelected,
+                    handleMouseDown,
+                    handleMouseEnter,
                 }
             }
         }).mount('#app')
