@@ -1164,10 +1164,12 @@
         </div>
         <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4 transition-colors">
             &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
-            <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex justify-end" target="_blank">
+            <div class="flex w-full justify-end">
+            <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex" target="_blank">
                 <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" class="dark:invert"/>
                 <img src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" />
             </a>
+            </div>
         </footer>
         <div class="fixed pointer-events-none z-[100] transition-opacity duration-200"
          :style="{
