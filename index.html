@@ -498,6 +498,7 @@
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
                                         }"
+                                        @paste="handlePaste($event, index, col.id)"
                                         @input="formatNumberInput(row, col)"
                                         @click.stop="enterInput(row, col, $event)"
                                         @focus="openGlobalMenu($event, row, col)"
@@ -5057,6 +5058,42 @@
                     }
                 }
 
+                const handlePaste = (e, startRowIndex, startColId) => {
+                    const pasteData = e.clipboardData.getData('text')
+                    if (!pasteData || (!pasteData.includes('\t') && !pasteData.includes('\n'))) return
+
+                    e.preventDefault()
+                    const pastedRows = pasteData.split(/\r?\n/)
+                    if (pastedRows[pastedRows.length - 1] === '') {
+                        pastedRows.pop()
+                    }
+
+                    const startColIndex = columns.value.findIndex(c => c.id === startColId)
+                    if (startColIndex === -1) return
+
+                    const neededRows = (startRowIndex + pastedRows.length) - rows.value.length
+                    if (neededRows > 0) {
+                        for (let i = 0; i < neededRows; i++) {
+                            addRow()
+                        }
+                    }
+
+                    pastedRows.forEach((rowString, i) => {
+                        const targetRowIndex = startRowIndex + i
+                        const cells = rowString.split('\t')
+                        cells.forEach((cellValue, j) => {
+                            const targetColIndex = startColIndex + j
+                            if (targetColIndex < columns.value.length) {
+                                const targetColId = columns.value[targetColIndex].id
+                                const newVal = cellValue.trim()
+                                if (rows.value[targetRowIndex][targetColId] !== newVal) {
+                                    rows.value[targetRowIndex][targetColId] = newVal
+                                }
+                            }
+                        })
+                    })
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -5258,7 +5295,8 @@
                     activeDropdownIndex,
                     screenTarget,
                     isFullscreen,
-                    toggleFullscreen
+                    toggleFullscreen,
+                    handlePaste
                 }
             }
         }).mount('#app')
