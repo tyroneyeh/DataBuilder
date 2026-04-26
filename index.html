@@ -1822,8 +1822,10 @@
                     newVal ? localStorage.setItem('ty_voice_settings', JSON.stringify(newVal)) : localStorage.removeItem('ty_voice_settings')
                 })
 
-                watch(() => activeRow.value, () => {
-                    activeDropdownIndex.value = -1
+                watch(() => activeRow.value ? activeRow.value.row[activeRow.value.col.id] : null, (newValue, oldValue) => {
+                    if (newValue !== oldValue) {
+                                activeDropdownIndex.value = -1
+                    }
                 })
 
                 const toggleDarkMode = () => {
@@ -2255,7 +2257,7 @@
                     const uniqueValues = [...new Set(validValues)]
                     const TIME_THRESHOLD = 60
 
-                    return uniqueValues.sort((a, b) => {
+                    const sortedValues = uniqueValues.sort((a, b) => {
                         const freqA = frequencyMap[a] || 0
                         const freqB = frequencyMap[b] || 0
 
@@ -2277,6 +2279,17 @@
 
                         return freqB - freqA
                     })
+
+                    if (activeRow.value && activeRow.value.row) {
+                        const currentInput = String(activeRow.value.row[colId] || '').trim().toLowerCase()
+                        if (currentInput) {
+                            return sortedValues.filter(option => {
+                                return String(option).toLowerCase().includes(currentInput)
+                            })
+                        }
+                    }
+
+                    return sortedValues
                 }
 
                 const decompressFromBase64 = async (base64) => {
