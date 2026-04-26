@@ -5109,12 +5109,17 @@
                 }
 
                 const getSelectionStyles = (rowIndex, colIndex) => {
-                    if (!selectedBox.value) return 'bg-white dark:bg-gray-800'
+                    const defaultStyle = {
+                        class: 'bg-white dark:bg-gray-800',
+                        style: ''
+                    }
+
+                    if (!selectedBox.value) return defaultStyle
 
                     const { minRow, maxRow, minCol, maxCol } = selectedBox.value
 
                     if (rowIndex < minRow || rowIndex > maxRow || colIndex < minCol || colIndex > maxCol) {
-                        return 'bg-white dark:bg-gray-800'
+                        return defaultStyle
                     }
 
                     let classes = 'bg-blue-100 dark:bg-blue-900/40 relative z-10 '
