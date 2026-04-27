@@ -2085,6 +2085,16 @@
                 initStorageKeys()
 
                 const changeStorageKey = async () => {
+                    isDragging.value = false
+                    startCell.value = null
+                    endCell.value = null
+                    selectedBox.value = null
+                    activeDropdownIndex.value = -1
+                    if (typeof activeRow !== 'undefined') activeRow.value = null
+                    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+                        document.activeElement.blur()
+                    }
+
                     let newKey = currentStorageKey.value.trim()
                     if (!newKey) {
                         newKey = 'ty-db'
