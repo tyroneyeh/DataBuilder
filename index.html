@@ -370,7 +370,7 @@
         </div>
         <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
             <div v-if="!isPrinting && paddingTop > 0" :style="{ height: paddingTop + 'px' }" class="w-full"></div>
-            <table class="w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
+            <table :key="currentStorageKey" class="w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
                         <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')" >#{{ filteredRows.length }}</th>
@@ -426,9 +426,9 @@
                         </td>
 
                         <td v-for="(col, colIndex) in columns" :key="col.id"
-                            @mousedown="handleMouseDown(index, colIndex, $event)"
-                            @mouseenter="handleMouseEnter(index, colIndex)"
-                            v-bind="getSelectionStyles(index, colIndex)"
+                            @mousedown="handleMouseDown(windowStart + index, colIndex, $event)"
+                            @mouseenter="handleMouseEnter(windowStart + index, colIndex)"
+                            v-bind="getSelectionStyles(windowStart + index, colIndex)"
                             class="cursor-cell group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 sm:pl-2 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                             <label v-if="!isPrinting"
@@ -2085,6 +2085,7 @@
                 initStorageKeys()
 
                 const changeStorageKey = async () => {
+                    windowStart.value = 0
                     isDragging.value = false
                     startCell.value = null
                     endCell.value = null
@@ -2106,6 +2107,10 @@
                     localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
 
                     loadChartCols()
+
+                    rows.value = []
+                    columns.value = []
+                    await nextTick()
 
                     await loadData(1)
                 }
@@ -5069,12 +5074,9 @@
                         e.preventDefault()
 
                         const { minRow, maxRow, minCol, maxCol } = selectedBox.value
-                        const currentOffset = windowStart.value || 0
-                        const absoluteMinRow = currentOffset + minRow
-                        const absoluteMaxRow = currentOffset + maxRow
                         const tsvLines = []
 
-                        for (let r = absoluteMinRow; r <= absoluteMaxRow; r++) {
+                        for (let r = minRow; r <= maxRow; r++) {
                             const rowData = []
                             for (let c = minCol; c <= maxCol; c++) {
                                 const colId = columns.value[c].id
@@ -5261,10 +5263,6 @@
                     const { minRow, maxRow, minCol, maxCol } = selectedBox.value
                     const isWholeRowSelected = minCol === 0 && maxCol === columns.value.length - 1
 
-                    const currentOffset = windowStart.value || 0
-                    const absoluteMinRow = currentOffset + minRow
-                    const absoluteMaxRow = currentOffset + maxRow
-
                     if (isWholeRowSelected) {
                         const deleteCount = maxRow - minRow + 1
                         const newRows = [...rows.value]
@@ -5276,7 +5274,7 @@
                         isDragging.value = false
 
                     } else {
-                        for (let r = absoluteMinRow; r <= absoluteMaxRow; r++) {
+                        for (let r = minRow; r <= maxRow; r++) {
                             for (let c = minCol; c <= maxCol; c++) {
                                 const colId = columns.value[c].id
                                 if (!['multiply', 'photo', 'multiply3', 'minus'].includes(columns.value[c].type)) {
