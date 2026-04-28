@@ -502,7 +502,7 @@
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
                                         }"
-                                        @paste="handlePaste($event, index, col.id)"
+                                        @paste="handlePaste($event, windowStart + index, col.id)"
                                         @input="formatNumberInput(row, col)"
                                         @click.stop="enterInput(row, col, $event)"
                                         @focus="openGlobalMenu($event, row, col)"
@@ -5101,6 +5101,28 @@
                         } catch (err) {
                             console.error('Copy failed:', err)
                         }
+                    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+                        if (!selectedBox.value && !startCell.value) return
+                        e.preventDefault()
+
+                        try {
+                            const pasteText = await navigator.clipboard.readText()
+                            if (!pasteText) return
+                            const mockEvent = {
+                                clipboardData: {
+                                    getData: () => pasteText
+                                },
+                                preventDefault: () => {}
+                            }
+                            const targetRowIndex = selectedBox.value ? selectedBox.value.minRow : startCell.value.row
+                            const targetColIndex = selectedBox.value ? selectedBox.value.minCol : startCell.value.col
+                            const targetColId = columns.value[targetColIndex].id
+
+                            handlePaste(mockEvent, targetRowIndex, targetColId)
+
+                        } catch (err) {
+                            console.error('Paste failed:', err)
+                        }
                     }
 
                     if (!photoViewer.value.isOpen) return
@@ -5129,53 +5151,91 @@
                     }
                 }
 
-                const handlePaste = (e, startRowIndex, startColId) => {
+                const handlePaste = (e, index, startColId) => {
                     const pasteData = e.clipboardData?.getData('text')
-                    if (!pasteData || (!pasteData.includes('\t') && !pasteData.includes('\n'))) return
+                    if (!pasteData) return
+
+                    const isMultiSelected = selectedBox.value && 
+                        (selectedBox.value.minRow !== selectedBox.value.maxRow || selectedBox.value.minCol !== selectedBox.value.maxCol)
+
+                    if (!isMultiSelected && !pasteData.includes('\t') && !pasteData.includes('\n')) {
+                        return
+                    }
+
                     e.preventDefault()
                     const pastedRows = pasteData.split(/\r?\n/)
                     if (pastedRows[pastedRows.length - 1] === '') {
                         pastedRows.pop()
                     }
 
-                    const startColIndex = columns.value.findIndex(c => c.id === startColId)
-                    if (startColIndex === -1) return
-
                     const currentOffset = windowStart?.value || 0
-                    const absoluteStartRow = currentOffset + startRowIndex
-
-                    const neededRows = (absoluteStartRow + pastedRows.length) - rows.value.length
-                    if (neededRows > 0) {
-                        for (let i = 0; i < neededRows; i++) {
-                            addRow()
-                        }
-                    }
-
                     const newRows = [...rows.value]
+                    let hasChanges = false
 
-                    pastedRows.forEach((rowString, i) => {
-                        const targetRowIndex = absoluteStartRow + i
-                        const cells = rowString.split('\t')
-
-                        newRows[targetRowIndex] = { ...newRows[targetRowIndex] }
-
-                        cells.forEach((cellValue, j) => {
-                            const targetColIndex = startColIndex + j
-                            if (targetColIndex < columns.value.length) {
-                                const targetColId = columns.value[targetColIndex].id
-                                const newVal = cellValue.trim()
-                                const colType = columns.value[targetColIndex].type
+                    if (isMultiSelected) {
+                        const { minRow, maxRow, minCol, maxCol } = selectedBox.value
+                        const isSingleValue = pastedRows.length === 1 && !pastedRows[0].includes('\t')
+                        const singleValue = pastedRows[0].trim()
+                        for (let r = minRow; r <= maxRow; r++) {
+                            newRows[r] = { ...newRows[r] }
+                            const pasteRowIdx = (r - minRow) % pastedRows.length
+                            const cells = pastedRows[pasteRowIdx].split('\t')
+                            for (let c = minCol; c <= maxCol; c++) {
+                                const colId = columns.value[c].id
+                                const colType = columns.value[c].type
                                 if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
-                                    if (newRows[targetRowIndex][targetColId] !== newVal) {
-                                        newRows[targetRowIndex][targetColId] = newVal
+                                    let newVal = ''
+                                    if (isSingleValue) {
+                                        newVal = singleValue 
+                                    } else {
+                                        const pasteColIdx = (c - minCol) % cells.length
+                                        newVal = (cells[pasteColIdx] || '').trim()
+                                    }
+
+                                    if (newRows[r][colId] !== newVal) {
+                                        newRows[r][colId] = newVal
+                                        hasChanges = true
                                     }
                                 }
                             }
-                        })
-                    })
+                        }
+                    } else {
+                        const startColIndex = columns.value.findIndex(c => c.id === startColId)
+                        if (startColIndex === -1) return
 
-                    rows.value = newRows
-                    onDataEdited()
+                        const absoluteStartRow = currentOffset + index
+
+                        const neededRows = (absoluteStartRow + pastedRows.length) - rows.value.length
+                        if (neededRows > 0) {
+                            for (let i = 0; i < neededRows; i++) addRow()
+                        }
+
+                        pastedRows.forEach((rowString, i) => {
+                            const targetRowIndex = absoluteStartRow + i
+                            newRows[targetRowIndex] = { ...newRows[targetRowIndex] }
+                            const cells = rowString.split('\t')
+
+                            cells.forEach((cellValue, j) => {
+                                const targetColIndex = startColIndex + j
+                                if (targetColIndex < columns.value.length) {
+                                    const targetColId = columns.value[targetColIndex].id
+                                    const colType = columns.value[targetColIndex].type
+                                    if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
+                                        const newVal = cellValue.trim()
+                                        if (newRows[targetRowIndex][targetColId] !== newVal) {
+                                            newRows[targetRowIndex][targetColId] = newVal
+                                            hasChanges = true
+                                        }
+                                    }
+                                }
+                            })
+                        })
+                    }
+
+                    if (hasChanges) {
+                        rows.value = newRows
+                        onDataEdited()
+                    }
                 }
 
                 const getSelectionStyles = (rowIndex, colIndex) => {
@@ -5266,7 +5326,7 @@
                     if (isWholeRowSelected) {
                         const deleteCount = maxRow - minRow + 1
                         const newRows = [...rows.value]
-                        newRows.splice(absoluteMinRow, deleteCount)
+                        newRows.splice(minRow, deleteCount)
                         rows.value = newRows
                         selectedBox.value = null
                         startCell.value = null
