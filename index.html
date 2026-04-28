@@ -5383,7 +5383,6 @@
                 onUnmounted(() => {
                     window.removeEventListener('keydown', handleKeydown)
                     window.removeEventListener('mouseup', handleMouseUp)
-                    resizeObserver?.disconnect()
                     document.body.style.overflow = ''
                 })
 
