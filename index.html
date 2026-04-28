@@ -411,7 +411,7 @@
                     </tr>
                 </thead>
 
-                <tbody v-if="paddingTop > 0" key="spacer-top" class="block sm:table-row-group">
+                <tbody v-if="paddingTop > 0" key="spacer-top" class="block sm:table-row-group print:hidden">
                     <tr>
                         <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
                             <div :style="{ height: paddingTop + 'px' }"></div>
@@ -587,7 +587,7 @@
                     </tr>
                 </tbody>
 
-                <tbody v-if="paddingBottom > 0" key="spacer-bottom" class="block sm:table-row-group">
+                <tbody v-if="paddingBottom > 0" key="spacer-bottom" class="block sm:table-row-group print:hidden">
                     <tr>
                         <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
                             <div :style="{ height: paddingBottom + 'px' }"></div>
