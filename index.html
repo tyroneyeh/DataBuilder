@@ -366,7 +366,6 @@
             >
         </div>
         <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
-            <div v-if="!isPrinting && paddingTop > 0" :style="{ height: paddingTop + 'px' }" class="w-full"></div>
             <table :key="currentStorageKey" class="w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
@@ -412,7 +411,15 @@
                     </tr>
                 </thead>
 
-                <tbody v-for="(row, index) in visibleRows" :key="row.id" :ref="(el) => setupObserver(row.id, el)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
+                <tbody v-if="paddingTop > 0" key="spacer-top" class="block sm:table-row-group">
+                    <tr>
+                        <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
+                            <div :style="{ height: paddingTop + 'px' }"></div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody v-for="(row, index) in visibleRows" :key="'data-' + currentStorageKey + '-' + row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
@@ -580,7 +587,15 @@
                     </tr>
                 </tbody>
 
-                <tbody v-if="!isPrinting" class="block sm:table-row-group">
+                <tbody v-if="paddingBottom > 0" key="spacer-bottom" class="block sm:table-row-group">
+                    <tr>
+                        <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
+                            <div :style="{ height: paddingBottom + 'px' }"></div>
+                        </td>
+                    </tr>
+                </tbody>
+
+                <tbody v-if="!isPrinting" key="action-add-row" class="block sm:table-row-group">
                     <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
                         <td @click="addRow" class="sm:sticky left-0 sm:border-0 border-gray-300 dark:border-gray-700 p-0 text-center cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
                             <button class="w-full h-full min-h-[60px] sm:min-h-[50px] flex items-center justify-center focus:outline-none outline-none">
@@ -717,7 +732,6 @@
                     </tr>
                 </tfoot>
             </table>
-            <div v-if="!isPrinting && paddingBottom > 0" :style="{ height: paddingBottom + 'px' }" class="w-full"></div>
             <Teleport to="body">
             <ul
                 v-for="col in columns"
@@ -1841,44 +1855,6 @@
                     isDark.value = !isDark.value
                 }
 
-                const setupObserver = (rowId, el) => {
-                    if (isPrinting.value) return
-
-                    if (el) {
-                        if (rowElementsCache.get(rowId) !== el) {
-                            const oldEl = rowElementsCache.get(rowId)
-                            if (oldEl && resizeObserver) resizeObserver.unobserve(oldEl)
-                            rowElementsCache.set(rowId, el)
-                            if (resizeObserver) resizeObserver.observe(el)
-                        }
-
-                        const isMobileView = window.innerWidth < 640
-                        const marginOffset = isMobileView ? 16 : 0
-                        const currentHeight = el.getBoundingClientRect().height + marginOffset
-                        const oldHeight = heightCache.value.get ? heightCache.value.get(rowId) : (heightCache.value[rowId] || 0)
-
-                        if (Math.abs(currentHeight - oldHeight) > 0.5) {
-                            window.requestAnimationFrame(() => {
-                                if (heightCache.value.set) {
-                                    heightCache.value.set(rowId, currentHeight)
-                                } else {
-                                    heightCache.value[rowId] = currentHeight
-                                }
-
-                                if (currentHeight > 40 && currentHeight < 100) {
-                                    defaultItemHeight = currentHeight
-                                }
-                            })
-                        }
-                    } else {
-                        const oldEl = rowElementsCache.get(rowId)
-                        if (oldEl && resizeObserver) {
-                            resizeObserver.unobserve(oldEl)
-                            rowElementsCache.delete(rowId)
-                        }
-                    }
-                }
-
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
 
                 const areAllExpanded = computed(() => {
@@ -2165,6 +2141,8 @@
                     onDataEdited()
                 }
 
+                const generateId = () => 'row_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)
+
                 const mergeDuplicates = async (silent = false) => {
                     const isSilent = silent === true
                     const keyCol = columns.value.find(col => ['text', 'category'].includes(col.type))
@@ -2212,10 +2190,8 @@
                         }
                     })
 
-                    let mergeCounter = 0
                     rows.value = Array.from(mergedMap.values()).map(r => {
-                        mergeCounter++
-                        return { ...r, id: `row_${mergeCounter}` }
+                        return { ...r, id: generateId() }
                     })
 
                     if (!isSilent) {
@@ -2581,9 +2557,7 @@
                 }
 
                 const addRow = async () => {
-                    if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
-                    rowCount.value++
-                    const newRowId = `row_${rowCount.value}`
+                    const newRowId = generateId()
                     const newRow = {id: newRowId, note: '', isExpanded: false}
                     const {todayDate, currentTime} = getDate()
 
@@ -2828,9 +2802,7 @@
                     if (!originalRow) return
 
                     const clonedRow = JSON.parse(JSON.stringify(originalRow))
-                    if (!rowCount.value || rowCount.value < rows.value.length) rowCount.value = rows.value.length
-                    rowCount.value++
-                    clonedRow.id = 'row_' + rowCount.value
+                    clonedRow.id = generateId()
                     const isAppendToEnd = ignoreDate || !columns.value.some(col => col.type === 'date')
 
                     if (isAppendToEnd) {
@@ -3158,8 +3130,7 @@
                     const newRows = []
                     dataList.forEach(item => {
                         if (item['#'] === translate('Total') || item[Object.keys(item)[0]] === translate('Total')) return
-                        const newRow = { id: `row_${rowCount.value}` }
-                        rowCount.value++
+                        const newRow = { id: generateId() }
                         columns.value.forEach(col => {
                             const val = item[col.label]
                             if (val !== undefined && val !== null && val !== '') {
@@ -3956,11 +3927,13 @@
                         let currentY = headerHeight
                         let start = -1
                         let end = total
+                        let pTopAtStart = 0
 
                         for (let i = 0; i < total; i++) {
                             const h = getRowHeight(i)
                             if (start === -1 && currentY + h > scrollTop) {
                                 start = i
+                                pTopAtStart = currentY
                             }
                             currentY += h
                             if (start !== -1 && currentY > scrollTop + clientHeight) {
@@ -3970,21 +3943,23 @@
                         }
 
                         if (start === -1) {
-                            const estimatedItemsPerScreen = Math.ceil(clientHeight / safeItemHeight)
-                            start = total > 0 ? Math.max(0, total - estimatedItemsPerScreen) : 0
+                            const estimatedItems = Math.ceil(clientHeight / safeItemHeight)
+                            start = Math.max(0, total - estimatedItems)
                             end = total
+                            pTopAtStart = headerHeight + (start * safeItemHeight) // 粗略估算
                         }
 
                         const newStart = Math.max(0, start - buffer)
                         const newEnd = Math.min(total, end + buffer * 2)
 
-                        let pTop = 0
-                        for (let i = 0; i < newStart; i++) {
-                            pTop += getRowHeight(i)
+                        let pTop = pTopAtStart - headerHeight
+                        for (let i = start - 1; i >= newStart; i--) {
+                            pTop -= getRowHeight(i)
                         }
+                        pTop = Math.max(0, pTop)
 
                         const remainingItems = total - newEnd
-                        let pBottom = remainingItems > 0 ? remainingItems * safeItemHeight : 0
+                        const pBottom = remainingItems > 0 ? remainingItems * safeItemHeight : 0
 
                         if (windowStart.value !== newStart) windowStart.value = newStart
                         if (windowEnd.value !== newEnd) windowEnd.value = newEnd
@@ -5152,7 +5127,7 @@
                     const pasteData = e.clipboardData?.getData('text')
                     if (!pasteData) return
 
-                    const isMultiSelected = selectedBox.value && 
+                    const isMultiSelected = selectedBox.value &&
                         (selectedBox.value.minRow !== selectedBox.value.maxRow || selectedBox.value.minCol !== selectedBox.value.maxCol)
 
                     if (!isMultiSelected && !pasteData.includes('\t') && !pasteData.includes('\n')) {
@@ -5183,7 +5158,7 @@
                                 if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
                                     let newVal = ''
                                     if (isSingleValue) {
-                                        newVal = singleValue 
+                                        newVal = singleValue
                                     } else {
                                         const pasteColIdx = (c - minCol) % cells.length
                                         newVal = (cells[pasteColIdx] || '').trim()
@@ -5202,9 +5177,17 @@
 
                         const absoluteStartRow = currentOffset + index
 
-                        const neededRows = (absoluteStartRow + pastedRows.length) - rows.value.length
+                        const neededRows = (absoluteStartRow + pastedRows.length) - newRows.length
                         if (neededRows > 0) {
-                            for (let i = 0; i < neededRows; i++) addRow()
+                            for (let i = 0; i < neededRows; i++) {
+                                const newRow = { id: generateId(), note: '', isExpanded: false }
+                                columns.value.forEach(col => {
+                                    if (col.type === 'number') newRow[col.id] = null
+                                    else if (col.type === 'photo') newRow[col.id] = []
+                                    else newRow[col.id] = ''
+                                })
+                                newRows.push(newRow)
+                            }
                         }
 
                         pastedRows.forEach((rowString, i) => {
@@ -5478,7 +5461,6 @@
                     autoHeight,
                     paddingTop,
                     paddingBottom,
-                    setupObserver,
                     isPrinting,
                     triggerPrint,
                     isDark,
