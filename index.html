@@ -74,9 +74,7 @@
                     <span class="transform transition-transform duration-300" :class="isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
                 </div>
             </div>
-            <div
-                class="grid transition-all duration-500 ease-in-out" :class="columns.length && isChartOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0 h-0 overflow-hidden'"
-            >
+            <div v-show="columns.length && isChartOpen" class="w-full mt-4">
                 <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
                     <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
                         <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
@@ -99,9 +97,8 @@
                         {{ m.month }}
                     </button>
                 </div>
-                <div class="flex flex-col md:flex-row items-center items-start w-full my-2 max-w-[95%] md:max-w-[70%] mx-auto">
-
-                    <div class="relative h-100 w-full flex justify-center items-center">
+                <div class="flex flex-col md:flex-row w-full my-2 max-w-[95%] md:max-w-[70%] mx-auto">
+                    <div class="relative w-full h-[300px] md:h-[400px] overflow-hidden">
                         <canvas id="expenseChart" class="z-10"></canvas>
                     </div>
 
@@ -5386,6 +5383,7 @@
                 onUnmounted(() => {
                     window.removeEventListener('keydown', handleKeydown)
                     window.removeEventListener('mouseup', handleMouseUp)
+                    resizeObserver?.disconnect()
                     document.body.style.overflow = ''
                 })
 
