@@ -420,7 +420,10 @@
                 </tbody>
 
                 <tbody v-for="(row, index) in visibleRows" :key="'data-' + currentStorageKey + '-' + row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative"
+                        :data-id="row.id"
+                        :ref="(el) => observeRow(el, row.id)"
+                    >
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
                             @pointerdown="startDragging('rows', row.id, $event)">
@@ -1721,6 +1724,7 @@
                 const startCell = ref(null)
                 const endCell = ref(null)
                 const isCopied = ref(false)
+                const observedRows = new WeakSet()
 
                 let isInitializing = true
                 let scrollRAF
@@ -2412,6 +2416,21 @@
                     updateTitle()
 
                     onDataEdited('both')
+
+                    const seenIds = new Set()
+                    let hasFixed = false
+
+                    rows.value.forEach(row => {
+                        if (!row.id || seenIds.has(row.id)) {
+                            row.id = generateId()
+                            hasFixed = true
+                        }
+                        seenIds.add(row.id)
+                    })
+
+                    if (hasFixed) {
+                        debouncedSave()
+                    }
 
                     await nextTick()
                     restoreScrollPosition()
@@ -5420,6 +5439,14 @@
                     onDataEdited()
                 }
 
+                const observeRow = (el, id) => {
+                    if (el && !observedRows.has(el)) {
+                        el.dataset.rowId = id
+                        if (resizeObserver) resizeObserver.observe(el)
+                        observedRows.add(el)
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -5631,7 +5658,8 @@
                     isCellSelected,
                     handleMouseDown,
                     handleMouseEnter,
-                    isCopied
+                    isCopied,
+                    observeRow
                 }
             }
         }).mount('#app')
