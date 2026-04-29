@@ -1844,9 +1844,14 @@
                     newVal ? localStorage.setItem('ty_voice_settings', JSON.stringify(newVal)) : localStorage.removeItem('ty_voice_settings')
                 })
 
-                watch(() => activeRow.value ? activeRow.value.row[activeRow.value.col.id] : null, (newValue, oldValue) => {
+                watch(() => {
+                    if (!activeRow.value || !activeRow.value.col) return null
+                    return activeRow.value.row
+                        ? activeRow.value.row[activeRow.value.col.id]
+                        : columnFilters.value[activeRow.value.col.id]
+                }, (newValue, oldValue) => {
                     if (newValue !== oldValue) {
-                                activeDropdownIndex.value = -1
+                        activeDropdownIndex.value = -1
                     }
                 })
 
