@@ -365,7 +365,7 @@
                 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 dark:text-white bg-transparent border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-blue-500 focus:outline-none transition-colors px-4 py-2 w-full sm:w-2/3 print:text-black print:border-none dark:placeholder-gray-500"
             >
         </div>
-        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
+        <div ref="tableContainer" @scroll="handleTableScroll" class="max-h-[80vh] overflow-y-auto [overflow-anchor:none] overflow-x-hidden sm:overflow-x-auto mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm print:max-h-none print:overflow-visible print:border-none print:shadow-none print:mb-0 bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300" style="-webkit-overflow-scrolling: touch;overflow-anchor: none">
             <table :key="currentStorageKey" class="w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
                 <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
                     <tr>
@@ -411,7 +411,7 @@
                     </tr>
                 </thead>
 
-                <tbody v-if="paddingTop > 0" key="spacer-top" class="block sm:table-row-group print:hidden">
+                <tbody v-if="!isPrinting" key="spacer-top" class="block sm:table-row-group print:hidden">
                     <tr>
                         <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
                             <div :style="{ height: paddingTop + 'px' }"></div>
@@ -419,11 +419,11 @@
                     </tr>
                 </tbody>
 
-                <tbody v-for="(row, index) in visibleRows" :key="'data-' + currentStorageKey + '-' + row.id + '-' + (windowStart + index)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative"
-                        :data-id="row.id"
-                        :ref="(el) => observeRow(el, row.id)"
-                    >
+                <tbody v-for="(row, index) in visibleRows"
+                    :key="'data-' + currentStorageKey + '-' + row.id + '-' + (windowStart + index)"
+                    :ref="(el) => observeRow(el, row.id)"
+                    class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
                         <td class="sm:sticky text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
                             @pointerdown="startDragging('rows', row.id, $event)">
@@ -590,7 +590,7 @@
                     </tr>
                 </tbody>
 
-                <tbody v-if="paddingBottom > 0" key="spacer-bottom" class="block sm:table-row-group print:hidden">
+                <tbody v-if="!isPrinting" key="spacer-bottom" class="block sm:table-row-group print:hidden">
                     <tr>
                         <td :colspan="columns.length + 1" style="padding: 0; border: none; margin: 0;">
                             <div :style="{ height: paddingBottom + 'px' }"></div>
@@ -1631,7 +1631,6 @@
                 const windowStart = ref(0)
                 const windowEnd = ref(50)
                 const bottomSentinel = ref(null)
-                const heightCache = ref({})
                 const rowElementsCache = new Map()
                 const isPrinting = ref(false)
                 const isDark = ref(
@@ -1728,7 +1727,8 @@
 
                 let isInitializing = true
                 let scrollRAF
-                let defaultItemHeight = 53
+                let heightCache = {}
+                let averageRowHeight = 53
                 let dragSource = { id: null, index: -1, element: null, type: null }
                 let isSwapping = false
                 let resizeObserver
@@ -3931,15 +3931,14 @@
                             return
                         }
 
-                        const buffer = 15
+                        const buffer = 25
                         const thead = tableContainer.value.querySelector('thead')
                         const headerHeight = thead ? thead.getBoundingClientRect().height : 0
-                        const safeItemHeight = Math.max(40, defaultItemHeight)
+                        const safeItemHeight = Math.max(40, averageRowHeight)
 
                         const getRowHeight = (index) => {
                             const rowId = filteredRows.value[index].id
-                            const cachedH = heightCache.value.get ? heightCache.value.get(rowId) : heightCache.value[rowId]
-                            return Math.max(40, cachedH || safeItemHeight)
+                            return heightCache[rowId] || safeItemHeight
                         }
 
                         let currentY = headerHeight
@@ -3961,10 +3960,14 @@
                         }
 
                         if (start === -1) {
+                            end = total
                             const estimatedItems = Math.ceil(clientHeight / safeItemHeight)
                             start = Math.max(0, total - estimatedItems)
-                            end = total
-                            pTopAtStart = headerHeight + (start * safeItemHeight) // 粗略估算
+                            let preciseTop = currentY
+                            for (let i = total - 1; i >= start; i--) {
+                                preciseTop -= getRowHeight(i)
+                            }
+                            pTopAtStart = Math.max(headerHeight, preciseTop)
                         }
 
                         const newStart = Math.max(0, start - buffer)
@@ -3977,7 +3980,10 @@
                         pTop = Math.max(0, pTop)
 
                         const remainingItems = total - newEnd
-                        const pBottom = remainingItems > 0 ? remainingItems * safeItemHeight : 0
+                        let pBottom = 0
+                        for (let i = newEnd; i < total; i++) {
+                            pBottom += getRowHeight(i)
+                        }
 
                         if (windowStart.value !== newStart) windowStart.value = newStart
                         if (windowEnd.value !== newEnd) windowEnd.value = newEnd
@@ -5456,15 +5462,34 @@
                         isPrinting.value = false
                         if (isDark.value) document.documentElement.classList.add('dark')
                     })
+                    window.addEventListener('keydown', handleKeydown)
+                    window.addEventListener('mouseup', handleMouseUp)
+
                     resizeObserver = new ResizeObserver((entries) => {
+                        let heightChanged = false
                         for (let entry of entries) {
-                            const targetElement = entry.target
-                            const rowId = targetElement.dataset.rowId
+                            const target = entry.target
+                            const rowId = target.dataset.rowId
                             if (rowId) {
-                                const newHeight = entry.borderBoxSize ? entry.borderBoxSize[0].blockSize : targetElement.getBoundingClientRect().height
-                                if (heightCache.value[rowId] !== newHeight) {
-                                    heightCache.value[rowId] = newHeight
+                                const rectHeight = entry.borderBoxSize ? entry.borderBoxSize[0].blockSize : target.getBoundingClientRect().height
+                                const margin = window.innerWidth < 640 ? 16 : 0
+                                const newHeight = rectHeight + margin
+
+                                if (heightCache[rowId] !== newHeight) {
+                                    heightCache[rowId] = newHeight
+                                    heightChanged = true
                                 }
+                            }
+                        }
+                        if (heightChanged) {
+                            const keys = Object.keys(heightCache)
+                            if (keys.length > 0) {
+                                let sum = 0
+                                const sampleSize = Math.min(keys.length, 20)
+                                for(let i = 0; i < sampleSize; i++) {
+                                    sum += heightCache[keys[i]]
+                                }
+                                averageRowHeight = sum / sampleSize
                             }
                         }
                     })
@@ -5473,8 +5498,6 @@
                     initChartColumns()
                     refreshYearFilters()
                     initGlobalTooltip()
-                    window.addEventListener('keydown', handleKeydown)
-                    window.addEventListener('mouseup', handleMouseUp)
 
                     if ('speechSynthesis' in globalThis) {
                         speechSynthesis.speak(new SpeechSynthesisUtterance(""))
