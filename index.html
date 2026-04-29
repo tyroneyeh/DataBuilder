@@ -419,7 +419,7 @@
                     </tr>
                 </tbody>
 
-                <tbody v-for="(row, index) in visibleRows" :key="'data-' + currentStorageKey + '-' + row.id" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
+                <tbody v-for="(row, index) in visibleRows" :key="'data-' + currentStorageKey + '-' + row.id + '-' + (windowStart + index)" class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none">
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative"
                         :data-id="row.id"
                         :ref="(el) => observeRow(el, row.id)"
