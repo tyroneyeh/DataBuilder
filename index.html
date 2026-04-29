@@ -1720,6 +1720,7 @@
                 const isDragging = ref(false)
                 const startCell = ref(null)
                 const endCell = ref(null)
+                const isCopied = ref(false)
 
                 let isInitializing = true
                 let scrollRAF
@@ -5029,6 +5030,15 @@
 
                     if (e.key === 'Escape' && isFullscreen.value) {
                         toggleFullscreen()
+                        if (isCopied.value) {
+                            isCopied.value = false
+                            return
+                        }
+                        if (selectedBox.value) {
+                            startCell.value = null
+                            endCell.value = null
+                            return
+                        }
                     }
 
                     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBox.value) {
@@ -5066,9 +5076,43 @@
 
                         try {
                             await navigator.clipboard.writeText(finalClipboardText)
+                            isCopied.value = true
                             console.log('Copy successful')
                         } catch (err) {
                             console.error('Copy failed:', err)
+                        }
+                    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
+                        if (!selectedBox.value) return
+                        e.preventDefault()
+
+                        const { minRow, maxRow, minCol, maxCol } = selectedBox.value
+                        const tsvLines = []
+
+                        for (let r = minRow; r <= maxRow; r++) {
+                            const rowData = []
+                            for (let c = minCol; c <= maxCol; c++) {
+                                const colId = columns.value[c].id
+                                let cellValue = rows.value[r][colId]
+
+                                if (cellValue === undefined || cellValue === null) {
+                                    cellValue = ''
+                                } else {
+                                    cellValue = String(cellValue).replace(/\r?\n/g, ' ')
+                                }
+
+                                rowData.push(cellValue)
+                            }
+                            tsvLines.push(rowData.join('\t'))
+                        }
+
+                        const finalClipboardText = tsvLines.join('\n')
+
+                        try {
+                            await navigator.clipboard.writeText(finalClipboardText)
+                            handleDelete()
+                            isCopied.value = true
+                        } catch (err) {
+                            console.error('Cut failed:', err)
                         }
                     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
                         if (!selectedBox.value && !startCell.value) return
@@ -5231,15 +5275,61 @@
 
                     let classes = 'bg-blue-100 dark:bg-blue-900/40 relative z-10 '
 
-                    let shadows = []
+                    if (isCopied.value) {
+                        let bgImages = []
+                        let bgPositions = []
+                        let bgSizes = []
+                        let bgRepeats = []
 
-                    if (rowIndex === minRow) shadows.push('inset 0 2px 0 0 #3b82f6')
-                    if (rowIndex === maxRow) shadows.push('inset 0 -2px 0 0 #3b82f6')
-                    if (colIndex === minCol) shadows.push('inset 2px 0 0 0 #3b82f6')
-                    if (colIndex === maxCol) shadows.push('inset -2px 0 0 0 #3b82f6')
-                    return {
-                        class: classes,
-                        style: shadows.length > 0 ? `box-shadow: ${shadows.join(', ')};` : ''
+                        const dashColor = '#3b82f6'
+                        const dashSize = '10px'
+                        const strokeWidth = '2px'
+
+                        if (rowIndex === minRow) {
+                            bgImages.push(`linear-gradient(90deg, ${dashColor} 50%, transparent 50%)`)
+                            bgPositions.push('top left')
+                            bgSizes.push(`${dashSize} ${strokeWidth}`)
+                            bgRepeats.push('repeat-x')
+                        }
+                        if (rowIndex === maxRow) {
+                            bgImages.push(`linear-gradient(90deg, ${dashColor} 50%, transparent 50%)`)
+                            bgPositions.push('bottom left')
+                            bgSizes.push(`${dashSize} ${strokeWidth}`)
+                            bgRepeats.push('repeat-x')
+                        }
+                        if (colIndex === minCol) {
+                            bgImages.push(`linear-gradient(180deg, ${dashColor} 50%, transparent 50%)`)
+                            bgPositions.push('top left')
+                            bgSizes.push(`${strokeWidth} ${dashSize}`)
+                            bgRepeats.push('repeat-y')
+                        }
+                        if (colIndex === maxCol) {
+                            bgImages.push(`linear-gradient(180deg, ${dashColor} 50%, transparent 50%)`)
+                            bgPositions.push('top right')
+                            bgSizes.push(`${strokeWidth} ${dashSize}`)
+                            bgRepeats.push('repeat-y')
+                        }
+
+                        return {
+                            class: classes,
+                            style: bgImages.length > 0 ? `
+                                background-image: ${bgImages.join(', ')};
+                                background-position: ${bgPositions.join(', ')};
+                                background-size: ${bgSizes.join(', ')};
+                                background-repeat: ${bgRepeats.join(', ')};
+                            ` : ''
+                        }
+                    } else {
+                        let shadows = []
+                        if (rowIndex === minRow) shadows.push('inset 0 2px 0 0 #3b82f6')
+                        if (rowIndex === maxRow) shadows.push('inset 0 -2px 0 0 #3b82f6')
+                        if (colIndex === minCol) shadows.push('inset 2px 0 0 0 #3b82f6')
+                        if (colIndex === maxCol) shadows.push('inset -2px 0 0 0 #3b82f6')
+
+                        return {
+                            class: classes,
+                            style: shadows.length > 0 ? `box-shadow: ${shadows.join(', ')};` : ''
+                        }
                     }
                 }
 
@@ -5261,6 +5351,7 @@
                 }
 
                 const handleMouseDown = (rowIndex, colIndex, e) => {
+                    isCopied.value = false
                     if (e && e.shiftKey) {
                         e.preventDefault()
                         if (startCell.value) {
@@ -5535,6 +5626,7 @@
                     isCellSelected,
                     handleMouseDown,
                     handleMouseEnter,
+                    isCopied
                 }
             }
         }).mount('#app')
