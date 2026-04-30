@@ -2578,7 +2578,7 @@
 
                 const addRow = async () => {
                     const newRowId = generateId()
-                    const newRow = {id: newRowId, note: '', isExpanded: false}
+                    const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
                     const {todayDate, currentTime} = getDate()
 
                     columns.value.forEach(col => {
@@ -2821,7 +2821,7 @@
 
                     if (!originalRow) return
 
-                    const clonedRow = JSON.parse(JSON.stringify(originalRow))
+                    const clonedRow = structuredClone(originalRow)
                     clonedRow.id = generateId()
                     const isAppendToEnd = ignoreDate || !columns.value.some(col => col.type === 'date')
 
