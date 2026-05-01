@@ -2540,6 +2540,8 @@
                     }
 
                     columns.value.push(newColData)
+                    colCount.value++
+                    onDataEdited()
                     updateColumns()
                     rows.value.forEach(row => { if (!newColType.value.startsWith('multiply') || !newColType.value.startsWith('minus')) row[newColId] = newColType.value === 'number' ? null : '' })
                     newColLabel.value = ''
