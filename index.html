@@ -2371,14 +2371,13 @@
                     }
 
                     if (hashData) {
+                        currentStorageKey.value = hashData.workspace || currentStorageKey.value
                         columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                         const localRows = localData.rows || []
                         const incomingRows = hashData.rows || []
 
-                        let mergeCounter = 0
                         rows.value = [...localRows, ...incomingRows].map(row => {
-                            mergeCounter++
-                            return { ...row, id: `row_${mergeCounter}` }
+                            return { ...row, id: generateId() }
                         })
 
                         if (await showConfirm(translate('Do you want to merge duplicates?'))) mergeDuplicates(true)
@@ -4605,7 +4604,7 @@
                         } else {
 
                             const photoCol = columns.value.find(col => col.type === 'photo')
-                            const payload = { title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value }
+                            const payload = { workspace: currentStorageKey.value, title: tableTitle.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value }
                             if (photoCol) {
                                 payload.rows = payload.rows.map(({[photoCol.id]: photos, ...rest }) => rest)
                             }
