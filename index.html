@@ -5055,9 +5055,8 @@
                 }
 
                 const handleKeydown = async (e) => {
-                    const isMultiSelected = selectedBox.value && (selectedBox.value.minRow !== selectedBox.value.maxRow || selectedBox.value.minCol !== selectedBox.value.maxCol)
                     const activeTag = document.activeElement?.tagName
-                    if ((activeTag === 'INPUT' || activeTag === 'TEXTAREA') && !isMultiSelected) return
+                    if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
                     if (e.key === 'Escape' && isFullscreen.value) {
                         toggleFullscreen()
@@ -5073,8 +5072,6 @@
                     }
 
                     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBox.value) {
-                        const activeTag = document.activeElement?.tagName
-                        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
                         handleDelete()
                         e.preventDefault()
                     }
