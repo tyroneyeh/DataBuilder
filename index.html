@@ -2601,15 +2601,12 @@
                     setTimeout(() => {
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
-                            const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
-                            if (targetInput) {
-                                targetInput.focus({ preventScroll: true })
-                            } else {
-                                const fallbackInput = inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]
-                                if (fallbackInput) {
-                                    fallbackInput.focus({ preventScroll: true })
-                                }
+                            let targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
+                            if (!targetInput) {
+                                targetInput = inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]
                             }
+                            targetInput.focus({ preventScroll: true })
+                            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
                         }
                     }, 150)
                 }
