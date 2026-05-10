@@ -633,9 +633,9 @@
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
                                         :value="activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0))"
                                         @focus="activeFilterCol = col.id; draftFilterText = columnFilters[col.id] || ''"
+                                        @blur="columnFilters[col.id] = $event.target.value; activeFilterCol = null"
                                         @input="draftFilterText = $event.target.value"
                                         @keyup.enter="columnFilters[col.id] = draftFilterText; $event.target.blur()"
-                                        @blur="columnFilters[col.id] = $event.target.value; activeFilterCol = null"
                                     >
                                     <button
                                         v-show="columnFilters[col.id]"
@@ -649,7 +649,7 @@
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
-                                        @click.stop="openGlobalMenu($event, null, col)"
+                                        @click.stop="openGlobalMenu($event, {[col.id]: $event.target.value}, col)"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
@@ -1123,7 +1123,6 @@
                 v-if="photoViewer.currentIndex > 0"
                 @click.stop="photoViewer.currentIndex--"
                 class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-blue-400 transition-colors bg-black/40 hover:bg-black/70 rounded-full p-2 z-10"
-                title="上一張"
             >
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
@@ -1631,7 +1630,6 @@
                 const windowStart = ref(0)
                 const windowEnd = ref(50)
                 const bottomSentinel = ref(null)
-                const rowElementsCache = new Map()
                 const isPrinting = ref(false)
                 const isDark = ref(
                     localStorage.getItem('theme') === 'dark' ||
@@ -2072,7 +2070,7 @@
                     endCell.value = null
                     selectedBox.value = null
                     activeDropdownIndex.value = -1
-                    if (typeof activeRow !== 'undefined') activeRow.value = null
+                    if (activeRow !== undefined) activeRow.value = null
                     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
                         document.activeElement.blur()
                     }
