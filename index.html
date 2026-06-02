@@ -649,7 +649,7 @@
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
-                                        @click.stop="openGlobalMenu($event, {[col.id]: $event.target.value}, col)"
+                                        @click.stop="openGlobalMenu($event, null, col)"
                                         :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
