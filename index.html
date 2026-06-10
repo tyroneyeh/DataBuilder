@@ -2995,11 +2995,7 @@
 
                         rows.value = []
                         window.history.replaceState(null, null, window.location.pathname)
-                        if (heightCache.value.clear) {
-                            heightCache.value.clear()
-                        } else {
-                            heightCache.value = {}
-                        }
+                        heightCache = {}
                         windowStart.value = 0
                         windowEnd.value = 50
                         paddingTop.value = 0
@@ -3211,12 +3207,7 @@
                         if (addCount > 0) {
                             onDataEdited('both')
                             await nextTick()
-                            if (heightCache.value.clear) {
-                                heightCache.value.clear()
-                            } else {
-                                heightCache.value = {}
-                            }
-
+                            heightCache = {}
                             windowStart.value = 0
                             windowEnd.value = Math.min(50, rows.value.length)
                             paddingTop.value = 0
@@ -5460,12 +5451,14 @@
 
                     resizeObserver = new ResizeObserver((entries) => {
                         let heightChanged = false
+                        const margin = window.innerWidth < 640 ? 16 : 0
+
                         for (let entry of entries) {
                             const target = entry.target
                             const rowId = target.dataset.rowId
                             if (rowId) {
-                                const rectHeight = entry.borderBoxSize ? entry.borderBoxSize[0].blockSize : target.getBoundingClientRect().height
-                                const margin = window.innerWidth < 640 ? 16 : 0
+                                const rectHeight = target.offsetHeight || target.getBoundingClientRect().height
+                                if (!rectHeight) continue
                                 const newHeight = rectHeight + margin
 
                                 if (heightCache[rowId] !== newHeight) {
