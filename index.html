@@ -795,7 +795,7 @@
             ></div>
             <div
                 v-if="activeMenuRow"
-                class="absolute right-6 sm:right-0 top-10 sm:top-full mt-1 w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+                class="absolute right-6 sm:right-0 w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
             >
                 <button @click="ExpandNote"
                     :class="[
@@ -2104,10 +2104,11 @@
                 }
 
                 const toggleActionMenu = (event, row) => {
-                    activeMenuRow.value = row
+                    if (row) {
+                        activeMenuRow.value = row
+                    }
 
-                    const inputEl = event.target
-                    const rect = inputEl.getBoundingClientRect()
+                    const rect = event.target.getBoundingClientRect()
 
                     menuStyle.value = {
                         top: `${rect.bottom + window.scrollY}px`,
@@ -3904,6 +3905,10 @@
 
                 const handleTableScroll = (e) => {
                     isScrolling.value = true
+
+                    activeRow.value = null
+                    activeDropdownIndex.value = -1
+
                     clearTimeout(scrollHideTimer)
                     scrollHideTimer = setTimeout(() => {
                         isScrolling.value = false
@@ -3975,7 +3980,6 @@
                         }
                         pTop = Math.max(0, pTop)
 
-                        const remainingItems = total - newEnd
                         let pBottom = 0
                         for (let i = newEnd; i < total; i++) {
                             pBottom += getRowHeight(i)
