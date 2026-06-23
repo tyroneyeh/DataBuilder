@@ -555,7 +555,7 @@
                             <div class="flex items-center justify-center space-x-2">
                                 <button
                                     @click="toggleActionMenu($event, row)"
-                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors text-2xl sm:text-xl font-bold leading-none rotate-90 outline-none relative"
+                                    class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors font-bold leading-none rotate-90 outline-none relative"
                                     :class="{'text-indigo-600 dark:text-indigo-400': row.note && row.note.trim() !== '' && !row.isExpanded}"
                                 >•••</button>
                             </div>
@@ -1173,7 +1173,7 @@
                 class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :data-tooltip="translate('Click to add a row')"
             >
-                <span class="text-green-600 dark:text-green-500 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
+                <span class="text-green-600 dark:text-green-500 font-bold text-2xl group-hover:scale-125 transition-transform">+</span>
             </button>
             <button
                 v-show="!isAtTop"
@@ -1181,7 +1181,7 @@
                 class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :data-tooltip="translate('Scroll to Top')"
             >
-                <span class="text-xl leading-none rotate-90"><</span>
+                <span class="leading-none">⌅</span>
             </button>
 
             <button
@@ -1190,7 +1190,7 @@
                 class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :data-tooltip="translate('Scroll to Bottom')"
             >
-                <span class="text-xl leading-none rotate-90">></span>
+                <span class="leading-none rotate-180">⌅</span>
             </button>
         </div>
         <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4 transition-colors">
