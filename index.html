@@ -4116,18 +4116,15 @@
                 const closeScanner = () => {
                     stopAutoCaptureLoop()
                     scanningTarget.value = null
+                    isScannerOpen.value = false
                     if (html5QrCode) {
                         html5QrCode.stop().then(() => {
                             html5QrCode.clear()
                             html5QrCode = null
-                            isScannerOpen.value = false
                         }).catch(err => {
                             console.error("close scanner error", err)
                             alert("Scanner error: " + err)
-                            isScannerOpen.value = false
                         })
-                    } else {
-                        isScannerOpen.value = false
                     }
                 }
 
