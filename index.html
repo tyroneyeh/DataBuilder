@@ -2417,6 +2417,7 @@
                     const newRowId = generateId()
                     const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
                     const {todayDate, currentTime} = getDate()
+                    scrollToPosition()
 
                     columns.value.forEach(col => {
                         if (col.type === 'date') newRow[col.id] = todayDate
