@@ -2400,17 +2400,8 @@
                         return
                     }
 
+                    await nextTick()
                     tableContainer.value.scrollTop = tableContainer.value.scrollHeight
-                    setTimeout(() => {
-                        if (!tableContainer.value) return
-                        tableContainer.value.scrollTop = tableContainer.value.scrollHeight
-                    }, 80)
-
-                    setTimeout(() => {
-                        if (tableContainer.value) {
-                            tableContainer.value.scrollTop = tableContainer.value.scrollHeight
-                        }
-                    }, 200)
                 }
 
                 const addRow = async () => {
