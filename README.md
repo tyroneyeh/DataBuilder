@@ -1,4 +1,4 @@
-# 📊 TY's Data Builder (TY的資料表)
+# 📊 TY Data Builder (TY資料表)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange.svg)](https://en.wikipedia.org/wiki/Progressive_web_app)
@@ -8,7 +8,7 @@
 
 **🔗 立即使用 (Live Demo): [https://ty-db.pages.dev](https://ty-db.pages.dev)**
 
-![TY's Data Builder - TY的資料表](https://ty-db.pages.dev/databuilder.png)
+![TY Data Builder - TY資料表](https://ty-db.pages.dev/databuilder.png)
 
 ---
 
@@ -67,7 +67,7 @@
 
 ---
 
-# 📊 TY's Data Builder (English Version)
+# 📊 TY Data Builder (English Version)
 
 A powerful, ultra-lightweight, and **100% Serverless** single-page dynamic table and data visualization application. Just one HTML file, open it in your browser and start building! Perfect for temporary data collection, group buying statistics, expense tracking, and rapid invoice generation.
 

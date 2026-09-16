@@ -13,15 +13,15 @@
     <meta name="author" content="TY">
     <meta name="theme-color" content="#2563eb">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ty-db.pages.dev/"> <meta property="og:title" content="TY's Data Builder | 一鍵生成、無伺服器分享的動態資料表">
+    <meta property="og:url" content="https://ty-db.pages.dev/"> <meta property="og:title" content="TY Data Builder | 一鍵生成、無伺服器分享的動態資料表">
     <meta property="og:description" content="TY資料表免安裝、點開即用!輕鬆建立自訂表單、自動加總計算, 並透過專屬 QR Code 或短連結與朋友共享資料.">
     <meta property="og:image" content="https://ty-db.pages.dev/databuilder.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://ty-db.pages.dev/"> <meta name="twitter:title" content="TY's Data Builder | 輕量級動態資料表與資料生成器">
+    <meta name="twitter:url" content="https://ty-db.pages.dev/"> <meta name="twitter:title" content="TY Data Builder | 輕量級動態資料表與資料生成器">
     <meta name="twitter:description" content="TY資料表純前端動態資料表工具!免註冊、支援自訂欄位、CSV 匯入匯出與 QR Code 無伺服器分享.">
     <meta name="twitter:image" content="https://ty-db.pages.dev/databuilder.png">
     <meta name="robots" content="index, follow">
-    <title>TY資料表 - TY's Data Builder</title>
+    <title>TY資料表 - TY Data Builder</title>
     <style>
         @media screen {
             html, body {
@@ -1191,7 +1191,7 @@
             </button>
         </div>
         <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4 transition-colors">
-            &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY's Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
+            &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
             <div class="flex w-full justify-end">
             <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex" target="_blank">
                 <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" class="dark:invert"/>
@@ -1875,7 +1875,7 @@
                 }
 
                 const updateTitle = () => {
-                    document.title = (tableTitle.value || translate('My Data Sheets')) + ` - ${translate("TY's Data Builder")}`
+                    document.title = (tableTitle.value || translate('My Data Sheets')) + ` - ${translate("TY Data Builder")}`
                 }
 
                 const initStorageKeys = () => {
@@ -3888,7 +3888,7 @@
                     }
 
                     const gistBody = {
-                        description: `TY's Data Builder Backup - ${storageKey}`,
+                        description: `TY Data Builder Backup - ${storageKey}`,
                         public: false,
                         files: {
                             [`${storageKey}.json`]: {
