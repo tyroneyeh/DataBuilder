@@ -5021,10 +5021,9 @@
                     }
 
                     e.preventDefault()
-                    const pastedRows = pasteData.split(/\r?\n/)
-                    if (pastedRows[pastedRows.length - 1] === '') {
-                        pastedRows.pop()
-                    }
+                    const pastedRows = pasteData
+                    .split(/\r\n|\n|\r/)
+                    .filter(row => row.trim() !== '')
 
                     const currentOffset = windowStart?.value || 0
                     const newRows = [...rows.value]
@@ -5061,11 +5060,14 @@
                         const startColIndex = columns.value.findIndex(c => c.id === startColId)
                         if (startColIndex === -1) return
 
-                        const absoluteStartRow = currentOffset + index
+                        const absoluteStartRow = (index >= currentOffset && currentOffset > 0)
+                            ? index
+                            : currentOffset + index
 
                         const neededRows = (absoluteStartRow + pastedRows.length) - newRows.length
                         if (neededRows > 0) {
-                            for (let i = 0; i < neededRows; i++) {
+                            const safeNeededRows = Math.min(neededRows, 1000)
+                            for (let i = 0; i < safeNeededRows; i++) {
                                 const newRow = { id: generateId(), note: '', isExpanded: false }
                                 columns.value.forEach(col => {
                                     if (col.type === 'number') newRow[col.id] = null
@@ -5078,6 +5080,7 @@
 
                         pastedRows.forEach((rowString, i) => {
                             const targetRowIndex = absoluteStartRow + i
+                            if (!newRows[targetRowIndex]) return
                             newRows[targetRowIndex] = { ...newRows[targetRowIndex] }
                             const cells = rowString.split('\t')
 
@@ -5087,9 +5090,30 @@
                                     const targetColId = columns.value[targetColIndex].id
                                     const colType = columns.value[targetColIndex].type
                                     if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
-                                        const newVal = cellValue.trim()
-                                        if (newRows[targetRowIndex][targetColId] !== newVal) {
-                                            newRows[targetRowIndex][targetColId] = newVal
+                                        let finalVal = cellValue.trim()
+                                        const mixedMatch = finalVal.match(/^(.*?[^\d\s])\s*(\d+(?:\.\d+)?)\s*$/)
+                                        if (mixedMatch) {
+                                            const parsedText = mixedMatch[1].trim()
+                                            const parsedNumber = mixedMatch[2]
+                                            if (colType === 'number') {
+                                                finalVal = parsedNumber
+                                                const textCol = columns.value.find(c => c.type === 'text') || columns.value.find(c => c.type === 'category') || columns.value.find(c => c.type === 'note')
+                                                if (textCol && newRows[targetRowIndex][textCol.id] !== parsedText) {
+                                                    newRows[targetRowIndex][textCol.id] = parsedText
+                                                    hasChanges = true
+                                                }
+                                            } else {
+                                                finalVal = parsedText
+                                                const numCol = columns.value.find(c => c.type === 'number')
+                                                if (numCol && newRows[targetRowIndex][numCol.id] !== parsedNumber) {
+                                                    newRows[targetRowIndex][numCol.id] = parsedNumber
+                                                    hasChanges = true
+                                                }
+                                            }
+                                        }
+
+                                        if (newRows[targetRowIndex][targetColId] !== finalVal) {
+                                            newRows[targetRowIndex][targetColId] = finalVal
                                             hasChanges = true
                                         }
                                     }
