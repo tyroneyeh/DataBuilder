@@ -737,6 +737,28 @@
 
                         <td v-if="!isPrinting" class="hidden text-center sm:table-cell sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 bg-gray-100 dark:bg-gray-800"></td>
                     </tr>
+                    <tr v-if="!isPrinting" class="block sm:table-row print:hidden">
+                    <td class="sm:sticky left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] block sm:table-cell">
+                        <span class="text-sm font-bold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ translate('Note') }}</span>
+                    </td>
+                    <td :colspan="columns.length + 1" class="border-b sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 p-0 bg-white sm:bg-gray-100 dark:bg-gray-800 block sm:table-cell relative">
+                        <div class="flex w-full h-full">
+                            <input
+                                type="text"
+                                enterkeyhint="search"
+                                v-model="columnFilters['note']"
+                                :placeholder="'🔍 ' + translate('Filter...')"
+                                class="w-full h-full min-h-[44px] px-4 py-2 bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors pr-10"
+                            >
+                            <button
+                                v-show="columnFilters['note']"
+                                @click="columnFilters['note'] = ''"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                :title="translate('Clear filter')"
+                            >✖</button>
+                        </div>
+                    </td>
+                </tr>
                 </tfoot>
             </table>
             <Teleport to="body">
@@ -1782,6 +1804,12 @@
                     if (activeFilters.length > 0) {
                         result = result.filter(row => {
                             return activeFilters.every(([colId, filterText]) => {
+                                if (colId === 'note') {
+                                    const cellValue = String(row.note || '').toLowerCase()
+                                    const keyword = String(filterText).toLowerCase().trim()
+                                    return cellValue.includes(keyword)
+                                }
+
                                 const colDef = columns.value.find(c => c.id === colId)
                                 if (!colDef) return true
 
