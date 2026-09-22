@@ -1034,8 +1034,18 @@
                         <button @click="generateShareLink" class="flex bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
                         <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                         <div class="flex w-full gap-2">
-                            <button @click="backupToGist" v-if="githubToken" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">⬆️ {{ translate('Backup to Cloud') }}</button>
-                            <button @click="restoreFromGist" v-if="gistId" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">⬇️ {{ translate('Restore from Cloud') }}</button>
+                            <button @click="backupToGist" v-if="githubToken" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none"><template v-if="isProcessing">
+                                <svg class="animate-spin h-5 w-5 text-gray-500 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </template>
+                            <template v-else>
+                                ⬆️ {{ translate('Backup to Cloud') }}
+                            </template></button>
+                            <button @click="restoreFromGist" v-if="gistId" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none"><template v-if="isProcessing">
+                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </template>
+                            <template v-else>
+                                ⬇️ {{ translate('Restore from Cloud') }}
+                            </template></button>
                         </div>
                     </div>
 
@@ -4000,7 +4010,6 @@
                     const sizeInBytes = new Blob([fileContent]).size
                     const ONE_MB = 1000 * 1000
                     if (sizeInBytes > ONE_MB) {
-                        isProcessing.value = false
                         const sizeInMB = (sizeInBytes / ONE_MB).toFixed(2)
                         alert(translate(`Backup failed: Data size (${sizeInMB}MB) exceeds the 1MB limit.`))
                         return
@@ -4044,54 +4053,57 @@
                     if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
                     isProcessing.value = true
 
-                    const result = await fetchGistAPI('GET', `/${cleanGistId}`)
-                    if (!result || !result.files) return
+                    try {
+                        const result = await fetchGistAPI('GET', `/${cleanGistId}`)
+                        if (!result || !result.files) return
 
-                    let importedCount = 0
-                    let lastImportedKey = ''
-                    let hasCurrentKey = false
+                        let importedCount = 0
+                        let lastImportedKey = ''
+                        let hasCurrentKey = false
 
-                    for (const filename in result.files) {
-                        if (!filename.endsWith('.json')) continue
-                        const storageKey = filename.replace('.json', '')
-                        try {
-                            const fileObj = result.files[filename]
-                            if (!fileObj.content.startsWith('{')) fileObj.content = await decompressFromBase64(fileObj.content)
-                            const data = JSON.parse(fileObj.content)
-                            let i = 1
-                            data.rows.forEach(row => row.id = i++)
-                            db.set(storageKey, data)
-                            if (!savedKeysList.value.includes(storageKey)) {
-                                savedKeysList.value.push(storageKey)
+                        for (const filename in result.files) {
+                            if (!filename.endsWith('.json')) continue
+                            const storageKey = filename.replace('.json', '')
+                            try {
+                                const fileObj = result.files[filename]
+                                if (!fileObj.content.startsWith('{')) fileObj.content = await decompressFromBase64(fileObj.content)
+                                const data = JSON.parse(fileObj.content)
+                                let i = 1
+                                data.rows.forEach(row => row.id = i++)
+                                db.set(storageKey, data)
+                                if (!savedKeysList.value.includes(storageKey)) {
+                                    savedKeysList.value.push(storageKey)
+                                }
+                                importedCount++
+                                lastImportedKey = storageKey
+                                if (storageKey === currentStorageKey.value) hasCurrentKey = true
+
+                            } catch (e) {
+                                console.warn(`Failed to parse ${filename}:`, e)
                             }
-                            importedCount++
-                            lastImportedKey = storageKey
-                            if (storageKey === currentStorageKey.value) hasCurrentKey = true
-
-                        } catch (e) {
-                            console.warn(`Failed to parse ${filename}:`, e)
                         }
+                        if (importedCount > 0) {
+                            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                            if (!hasCurrentKey && lastImportedKey) {
+                                currentStorageKey.value = lastImportedKey
+                            }
+                            const data = await db.get(currentStorageKey.value)
+                            if (data) {
+                                tableTitle.value = data.title || ''
+                                columns.value = data.columns || []
+                                rows.value = data.rows || []
+                                globalNotes.value = data.note || ''
+                                hasDateColumn.value = columns.value.some(column => column.type === 'date')
+                                hasNumberColumn.value = columns.value.some(column => column.type === 'number')
+                            }
+                            onDataEdited('both')
+                            alert(translate('Restored from GitHub Gist successfully!'))
+                        } else {
+                            alert(translate('No matching data found in this Gist. Invalid JSON.'))
+                        }
+                    } finally {
+                        isProcessing.value = false
                     }
-                    if (importedCount > 0) {
-                        localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
-                        if (!hasCurrentKey && lastImportedKey) {
-                            currentStorageKey.value = lastImportedKey
-                        }
-                        const data = await db.get(currentStorageKey.value)
-                        if (data) {
-                            tableTitle.value = data.title || ''
-                            columns.value = data.columns || []
-                            rows.value = data.rows || []
-                            globalNotes.value = data.note || ''
-                            hasDateColumn.value = columns.value.some(column => column.type === 'date')
-                            hasNumberColumn.value = columns.value.some(column => column.type === 'number')
-                        }
-                        onDataEdited('both')
-                        alert(translate('Restored from GitHub Gist successfully!'))
-                    } else {
-                        alert(translate('No matching data found in this Gist. Invalid JSON.'))
-                    }
-                    isProcessing.value = false
                 }
 
                 const getDateGroupKey = (dateStr, unit) => {
