@@ -122,16 +122,20 @@
                                 ></span>
 
                                 <span
-                                    class="text-gray-700 dark:text-gray-200 font-medium truncate w-full"
-                                    :class="{ 'line-through text-gray-400 dark:text-gray-500': item.hidden }"
+                                    class="flex items-center gap-2 w-full truncate"
+                                    :class="{ 'line-through opacity-50': item.hidden }"
                                     :data-tooltip="item.text"
                                 >
-                                    {{ item.text }}
+                                    <span class="text-gray-700 dark:text-gray-200 font-medium truncate">{{ item.text }}</span>
+
+                                    <span class="text-xs bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300 px-1.5 py-0.5 rounded-md font-normal flex-shrink-0 shadow-sm">
+                                        {{ item.count }} {{ translate('Items') }}
+                                    </span>
                                 </span>
                             </div>
                             <div v-if="item.budget" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
-                                <div class="h-full rounded-full transition-all duration-500" 
-                                    :class="item.value > item.budget ? 'bg-red-500' : 'bg-emerald-500'" 
+                                <div class="h-full rounded-full transition-all duration-500"
+                                    :class="item.value > item.budget ? 'bg-red-500' : 'bg-emerald-500'"
                                     :style="{ width: Math.min((item.value / item.budget) * 100, 100) + '%' }"
                                     :data-tooltip="((item.value / item.budget) * 100).toFixed(1) + '%'">
                                 </div>
@@ -228,7 +232,7 @@
                     </div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 mt-4 print:hidden" :class="{'print:hidden': !isBudgetOpen}">
-                <div 
+                <div
                     @click="toggleBudget"
                     class="px-2 py-3 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer select-none"
                 >
@@ -1552,6 +1556,7 @@
                 const isTorchOn = ref(false)
                 const isBudgetOpen = ref(localStorage.getItem('ty_budget_open') === 'true')
                 const categoryBudgets = ref({})
+                const categoryCounts = ref({})
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -3191,6 +3196,7 @@
                     const dateColIdForFilter = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
 
                     const totals = {}
+                    const counts = {}
                     data.forEach(row => {
                         if (dateColIdForFilter && row[dateColIdForFilter]) {
                             const dateObj = new Date(row[dateColIdForFilter])
@@ -3223,8 +3229,14 @@
 
                         if (val !== 0) {
                             totals[label] = (totals[label] || 0) + val
+                            counts[label] = (counts[label] || 0) + 1
                         }
                     })
+
+                    if (type === 'category') {
+                        categoryCounts.value = counts
+                    }
+
                     return totals
                 }
 
@@ -3423,7 +3435,8 @@
                                 percentage: percentage,
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index),
-                                budget: budgetAmount
+                                budget: budgetAmount,
+                                count: categoryCounts.value[label] || 0
                             }
                         })
                         rawItems.sort((a, b) => b.value - a.value)
