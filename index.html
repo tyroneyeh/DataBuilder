@@ -1839,7 +1839,10 @@
                         )
                         if (hiddenCategories.size > 0) {
                             result = result.filter(row => {
-                                const catValue = row[catColId]?.trim() || translate('Uncategorized')
+                                const rawVal = row[catColId]
+                                const catValue = rawVal && String(rawVal).trim() !== ''
+                                    ? String(rawVal).trim()
+                                    : translate('Uncategorized')
                                 return !hiddenCategories.has(catValue)
                             })
                         }
@@ -1929,6 +1932,10 @@
                 }, 300)
 
                 watch(filteredRows, async () => {
+                    windowStart.value = 0
+                    windowEnd.value = Math.min(50, filteredRows.value.length)
+                    paddingTop.value = 0
+                    paddingBottom.value = 0
                     debouncedUpdateChart()
                     await nextTick()
                     if (tableContainer.value) {
