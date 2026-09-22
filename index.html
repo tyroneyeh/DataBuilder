@@ -1879,31 +1879,32 @@
                     if (activeFilters.length > 0) {
                         result = result.filter(row => {
                             return activeFilters.every(([colId, filterText]) => {
-                                if (colId === 'note') {
-                                    const cellValue = String(row.note || '').toLowerCase()
-                                    const keyword = String(filterText).toLowerCase().trim()
-                                    return cellValue.includes(keyword)
+                                const filterTextStr = String(filterText).toLowerCase().trim()
+                                const rawValue = colId === 'note' ? row.note : row[colId]
+                                const isEmptyCell = rawValue === null || rawValue === undefined || String(rawValue).trim() === ''
+                                if (filterTextStr === translate('empty') || filterTextStr === '""' || filterTextStr === "''") {
+                                    return isEmptyCell
                                 }
-
+                                if (colId === 'note') {
+                                    if (isEmptyCell) return false
+                                    return String(rawValue).toLowerCase().includes(filterTextStr)
+                                }
                                 const colDef = columns.value.find(c => c.id === colId)
                                 if (!colDef) return true
-
                                 if (colDef.type === 'photo') {
-                                    const hasPhoto = Array.isArray(row[colId]) && row[colId].length > 0
-                                    if (filterText === 'has_photo') return hasPhoto
-                                    if (filterText === 'no_photo') return !hasPhoto
+                                    const hasPhoto = Array.isArray(rawValue) && rawValue.length > 0
+                                    if (filterTextStr === 'has_photo') return hasPhoto
+                                    if (filterTextStr === 'no_photo') return !hasPhoto
                                     return true
                                 }
-
                                 if (['number', 'multiply', 'minus'].includes(colDef.type)) {
                                     const condition = parseFilterCondition(filterText)
                                     if (condition) {
-                                        const rawValue = row[colId] || columnTotals.value[colId]
-                                        if (rawValue === null || rawValue === undefined || rawValue === '') {
-                                            return false
-                                        }
+                                        if (isEmptyCell) return false
+
                                         const cellValue = parseFloat(rawValue)
                                         if (isNaN(cellValue)) return false
+
                                         switch (condition.operator) {
                                             case '>':  return cellValue > condition.value
                                             case '>=': return cellValue >= condition.value
@@ -1916,9 +1917,8 @@
                                     }
                                 }
 
-                                const cellValue = String(row[colId] || '').toLowerCase()
-                                const keyword = String(filterText).toLowerCase().trim()
-                                return cellValue.includes(keyword)
+                                if (isEmptyCell) return false
+                                return String(rawValue).toLowerCase().includes(filterTextStr)
                             })
                         })
                     }
