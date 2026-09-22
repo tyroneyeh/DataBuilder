@@ -4070,7 +4070,9 @@
                                 const data = JSON.parse(fileObj.content)
                                 let i = 1
                                 data.rows.forEach(row => row.id = i++)
-                                db.set(storageKey, data)
+                                if (storageKey == currentStorageKey.value) {
+                                    db.set(storageKey, data)
+                                }
                                 if (!savedKeysList.value.includes(storageKey)) {
                                     savedKeysList.value.push(storageKey)
                                 }
