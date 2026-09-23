@@ -100,9 +100,9 @@
     <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300" v-cloak>
 
         <div v-if="!isPrinting" class="flex flex-col sm:flex-row bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <div class="flex sm:flex-row flex-wrap w-full sm:w-auto sm:flex-1">
-                <div class="flex mx-2 w-full sm:w-auto">
-                    <div class="flex flex-col w-full sm:w-auto">
+            <div class="flex sm:flex-row flex-wrap w-full sm:flex-1">
+                <div class="flex mx-2 w-full">
+                    <div class="flex flex-col w-full">
                         <input
                             type="text"
                             v-model="currentStorageKey"
@@ -117,93 +117,9 @@
                         </datalist>
                     </div>
                 </div>
-                <div
-                    @click="toggleMenu"
-                    class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                    <span class="flex items-center">☰ {{ translate('Columns') }}</span>
-                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
-                        <span class="transform transition-transform duration-300" :class="isMenuOpen ? 'rotate-180' : 'rotate-0'">▼</span>
-                    </div>
-                </div>
-                <div
-                    class="flex flex-wrap gap-4 mx-2"
-                    :class="{'hidden': !isMenuOpen}"
-                >
-                    <div class="flex flex-col w-full sm:w-auto">
-                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Column Name') }}</span>
-                        <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400">
-                    </div>
 
-                    <div class="flex flex-col w-full sm:w-auto">
-                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Data Type') }}</span>
-                        <select v-model="newColType" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white w-full sm:w-auto text-base">
-                            <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                        </select>
-                    </div>
-
-                    <div v-if="newColType?.startsWith('multiply') || newColType === 'minus'" class="flex items-center mt-6 gap-2 bg-blue-50 dark:bg-blue-900/30 px-2 rounded border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
-                        <select v-model="formulaA" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
-                            <option value="" disabled>{{ translate('Column A') }}</option>
-                            <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
-                        </select>
-                        <span class="text-gray-500 dark:text-gray-400 font-bold">×</span>
-                        <select v-model="formulaB" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
-                            <option value="" disabled>{{ translate('Column B') }}</option>
-                            <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
-                        </select>
-                        <span v-if="newColType === 'multiply3'">
-                            <span class="text-gray-500 dark:text-gray-400 font-bold pr-2">×</span>
-                            <select v-model="formulaC" class="border border-gray-300 dark:border-gray-600 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
-                                <option value="" disabled>{{ translate('Column C') }}</option>
-                                <option v-for="c in numberColumns" :key="'C'+c.id" :value="c.id">{{ c.label }}</option>
-                            </select>
-                        </span>
-                    </div>
-
-                    <div class="flex flex-col justify-end w-full sm:w-auto">
-                        <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white text-nowrap p-2 rounded-md transition-colors font-medium shadow-sm w-full">
-                            {{ translate('Add') }}
-                        </button>
-                    </div>
-                </div>
             </div>
-            <div v-if="!isPrinting" class="justify-end top-0 right-0 z-10 flex items-center gap-2 p-2">
-                <button
-                    @click="toggleDarkMode"
-                    class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none"
-                    :data-tooltip="isDark ? translate('Switch to Light Mode') : translate('Switch to Dark Mode')"
-                >
-                    {{ isDark ? '🌞' : '🌙' }}
-                </button>
-                <select v-model="currentLanguage" class="border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700">
-                    <option value="en">English</option>
-                    <option value="zh-TW">繁體中文</option>
-                    <option value="zh-CN">简体中文</option>
-                    <option value="ja">日本語</option>
-                    <option value="ko">한국어</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="nl">Nederlands</option>
-                    <option value="hi">हिन्दी</option>
-                    <option value="tl">Tagalog</option>
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="th">ภาษาไทย</option>
-                    <option value="id">Bahasa Indonesia</option>
-                    <option value="ms">Bahasa Melayu</option>
-                    <option value="ru">Русский</option>
-                    <option value="pt">Português</option>
-                    <option value="es">Español</option>
-                    <option value="it">Italiano</option>
-                    <option value="pl">Polski</option>
-                    <option value="tr">Türkçe</option>
-                    <option value="sv">Svenska</option>
-                    <option value="cs">Czech</option>
-                    <option value="ta">Tamil</option>
-                    <option value="uk">Українська</option>
-                    <option value="ar">العربية</option>
-                </select>
-            </div>
+
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 print:mb-8 print:border-none print:shadow-none" v-show="!isPrinting || isChartOpen">
@@ -1095,6 +1011,93 @@
                 </div>
                 <div class="grid transition-all duration-500 ease-in-out" :class="isSettingsOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'">
                     <div class="overflow-hidden">
+
+                        <div v-if="!isPrinting" class="justify-end top-0 right-0 z-10 flex items-center gap-2 p-2">
+                            <button
+                                @click="toggleDarkMode"
+                                class="p-1 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none"
+                                :data-tooltip="isDark ? translate('Switch to Light Mode') : translate('Switch to Dark Mode')"
+                            >
+                                {{ isDark ? '🌞' : '🌙' }}
+                            </button>
+                            <select v-model="currentLanguage" class="border border-gray-300 dark:border-gray-600 px-2 py-1 rounded text-sm text-gray-600 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700">
+                                <option value="en">English</option>
+                                <option value="zh-TW">繁體中文</option>
+                                <option value="zh-CN">简体中文</option>
+                                <option value="ja">日本語</option>
+                                <option value="ko">한국어</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="nl">Nederlands</option>
+                                <option value="hi">हिन्दी</option>
+                                <option value="tl">Tagalog</option>
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="th">ภาษาไทย</option>
+                                <option value="id">Bahasa Indonesia</option>
+                                <option value="ms">Bahasa Melayu</option>
+                                <option value="ru">Русский</option>
+                                <option value="pt">Português</option>
+                                <option value="es">Español</option>
+                                <option value="it">Italiano</option>
+                                <option value="pl">Polski</option>
+                                <option value="tr">Türkçe</option>
+                                <option value="sv">Svenska</option>
+                                <option value="cs">Czech</option>
+                                <option value="ta">Tamil</option>
+                                <option value="uk">Українська</option>
+                                <option value="ar">العربية</option>
+                            </select>
+                        </div>
+                        <div
+                            @click="toggleMenu"
+                            class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                            <span class="flex items-center">☰ {{ translate('Columns') }}</span>
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                                <span class="transform transition-transform duration-300" :class="isMenuOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+                            </div>
+                        </div>
+                        <div
+                            class="flex flex-wrap gap-4 mx-2"
+                            :class="{'hidden': !isMenuOpen}"
+                        >
+                            <div class="flex flex-col w-full sm:w-auto">
+                                <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Column Name') }}</span>
+                                <input v-model="newColLabel" type="text" :placeholder="translate('e.g., Discount')" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-40 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400">
+                            </div>
+
+                            <div class="flex flex-col w-full sm:w-auto">
+                                <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Data Type') }}</span>
+                                <select v-model="newColType" class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white w-full sm:w-auto text-base">
+                                    <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                </select>
+                            </div>
+
+                            <div v-if="newColType?.startsWith('multiply') || newColType === 'minus'" class="flex items-center mt-6 gap-2 bg-blue-50 dark:bg-blue-900/30 px-2 rounded border border-blue-200 dark:border-blue-800 w-full sm:w-auto">
+                                <select v-model="formulaA" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
+                                    <option value="" disabled>{{ translate('Column A') }}</option>
+                                    <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
+                                </select>
+                                <span class="text-gray-500 dark:text-gray-400 font-bold">×</span>
+                                <select v-model="formulaB" class="border border-gray-300 dark:border-gray-600 px-2 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
+                                    <option value="" disabled>{{ translate('Column B') }}</option>
+                                    <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
+                                </select>
+                                <span v-if="newColType === 'multiply3'">
+                                    <span class="text-gray-500 dark:text-gray-400 font-bold pr-2">×</span>
+                                    <select v-model="formulaC" class="border border-gray-300 dark:border-gray-600 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base w-full sm:w-32">
+                                        <option value="" disabled>{{ translate('Column C') }}</option>
+                                        <option v-for="c in numberColumns" :key="'C'+c.id" :value="c.id">{{ c.label }}</option>
+                                    </select>
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col justify-end w-full sm:w-auto">
+                                <button @click="addColumn" class="bg-blue-600 hover:bg-blue-700 text-white text-nowrap p-2 rounded-md transition-colors font-medium shadow-sm w-full">
+                                    {{ translate('Add') }}
+                                </button>
+                            </div>
+                        </div>
                         <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
                         <div class="p-4 sm:p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
