@@ -336,8 +336,8 @@
             </div>
         </div>
 
-        <div v-if="!isPrinting" class="flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700 gap-4 transition-colors duration-300">
-            <div class="flex sm:flex-row flex-wrap items-start sm:items-end gap-4">
+        <div v-if="!isPrinting" class="flex flex-col sm:flex-row items-start sm:items-end justify-between bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div class="flex sm:flex-row flex-wrap items-start sm:items-end w-full sm:w-auto sm:flex-1">
                 <div
                     @click="toggleMenu"
                     class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 cursor-pointer flex justify-between items-center select-none touch-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -388,9 +388,8 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex w-auto mx-2 w-full sm:w-auto">
+                <div class="flex mx-2 w-full sm:w-auto">
                     <div class="flex flex-col w-full sm:w-auto">
-                        <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">{{ translate('Workspace') }}</span>
                         <input
                             type="text"
                             v-model="currentStorageKey"
@@ -404,25 +403,9 @@
                             <option v-for="key in savedKeysList" :key="key" :value="key"></option>
                         </datalist>
                     </div>
-                    <div class="flex flex-col justify-end">
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white text-nowrap p-2 rounded-md transition-colors font-medium shadow-sm">
-                            {{ translate('OK') }}
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <div class="w-full sm:w-auto text-right sm:text-left flex flex-wrap justify-end sm:justify-start gap-1">
-                <button @click="mergeDuplicates" class="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline transition-colors p-2 whitespace-nowrap">
-                    {{ translate('Merge Duplicates') }}
-                </button>
-                <button @click="toggleAllNotes" class="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors p-2 whitespace-nowrap">
-                    {{ areAllExpanded ? translate('Collapse All Notes') : translate('Expand All Notes') }}
-                </button>
-                <button @click="clearStorage" class="text-sm text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 underline transition-colors p-2 whitespace-nowrap">
-                    {{ translate('Clear Data') }}
-                </button>
-            </div>
         </div>
 
         <div
@@ -1076,6 +1059,18 @@
                             <template v-else>
                                 ⬇️ {{ translate('Restore from Cloud') }}
                             </template></button>
+                        </div>
+
+                        <div class="w-full text-right sm:text-left flex flex-wrap justify-center sm:justify-end gap-1">
+                            <button @click="mergeDuplicates" class="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline transition-colors p-2 whitespace-nowrap">
+                                {{ translate('Merge Duplicates') }}
+                            </button>
+                            <button @click="toggleAllNotes" class="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline transition-colors p-2 whitespace-nowrap">
+                                {{ areAllExpanded ? translate('Collapse All Notes') : translate('Expand All Notes') }}
+                            </button>
+                            <button @click="clearStorage" class="text-sm text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 underline transition-colors p-2 whitespace-nowrap">
+                                {{ translate('Clear Data') }}
+                            </button>
                         </div>
                     </div>
 
@@ -2134,8 +2129,12 @@
 
                 const generateId = () => 'row_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)
 
-                const mergeDuplicates = async (silent = false) => {
-                    const isSilent = silent === true
+                const mergeDuplicates = async (isSilent = false) => {
+
+                    if (!await showConfirm(translate('Are you sure you want to merge duplicates?'))) {
+                        return
+                    }
+
                     const keyCol = columns.value.find(col => ['text', 'category'].includes(col.type))
                     if (!keyCol) {
                         if (!isSilent) alert(translate('Cannot find a text column to merge by.'))
