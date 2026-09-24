@@ -1968,10 +1968,12 @@
                 }, 300)
 
                 watch(filteredRows, async () => {
-                    windowStart.value = 0
-                    windowEnd.value = Math.min(50, filteredRows.value.length)
-                    paddingTop.value = 0
-                    paddingBottom.value = 0
+                    if (windowStart.value >= total || total === 0) {
+                        windowStart.value = 0
+                        windowEnd.value = Math.min(50, filteredRows.value.length)
+                        paddingTop.value = 0
+                        paddingBottom.value = 0
+                    }
                     debouncedUpdateChart()
                     await nextTick()
                     if (tableContainer.value) {
