@@ -800,7 +800,7 @@
                         activeMenuRow.note && activeMenuRow.note.trim() !== '' ? 'text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 shadow-sm' : 'text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700'
                     ]"
                     class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ activeMenuRow.note && activeMenuRow.note.trim() !== '' && !activeMenuRow.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
-                <button @click="copyRow(0)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
+                <button @click="addRow()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">➕ {{ translate('Add') }}</button><button @click="copyRow(0)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
                 <button v-if="hasDateColumn" @click="copyRow(1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy no date') }}</button>
                 <button @click="shareRow" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors font-medium">🔗 {{ translate('Share') }}</button>
                 <button @click="removeRow()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
@@ -2556,7 +2556,7 @@
                     const newRowId = generateId()
                     const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
                     const {todayDate, currentTime} = getDate()
-                    scrollToPosition()
+                    if (!activeMenuRow.value) scrollToPosition()
 
                     columns.value.forEach(col => {
                         if (col.type === 'date') newRow[col.id] = todayDate
@@ -2567,7 +2567,21 @@
 
                     Object.keys(columnFilters.value).forEach(key => columnFilters.value[key] = '')
 
-                    rows.value = [...rows.value, newRow]
+                    if (activeMenuRow.value && activeMenuRow.value.id) {
+                        const index = rows.value.findIndex(r => r.id === activeMenuRow.value.id)
+                        if (index !== -1) {
+                            rows.value = [
+                                ...rows.value.slice(0, index + 1),
+                                newRow,
+                                ...rows.value.slice(index + 1)
+                            ]
+                        } else {
+                            rows.value = [...rows.value, newRow]
+                        }
+                        activeMenuRow.value = null
+                    } else {
+                        rows.value = [...rows.value, newRow]
+                    }
                     onDataEdited()
                     if (windowEnd.value < rows.value.length) {
                         windowEnd.value = rows.value.length
@@ -2578,11 +2592,10 @@
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
                             let targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
-                            if (!targetInput) {
-                                targetInput = inputRefs.value[`${rows.value[rows.value.length - 1].id}-${firstInputCol.id}`]
+                            if (targetInput) {
+                                targetInput.focus({ preventScroll: true })
+                                targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
                             }
-                            targetInput.focus({ preventScroll: true })
-                            targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
                         }
                     }, 150)
                 }
