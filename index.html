@@ -1968,9 +1968,10 @@
                 }, 300)
 
                 watch(filteredRows, async () => {
+                    const total = filteredRows.value.length
                     if (windowStart.value >= total || total === 0) {
                         windowStart.value = 0
-                        windowEnd.value = Math.min(50, filteredRows.value.length)
+                        windowEnd.value = Math.min(50, total)
                         paddingTop.value = 0
                         paddingBottom.value = 0
                     }
