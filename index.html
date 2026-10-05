@@ -595,7 +595,7 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </span>
-                                <div v-else-if="['text', 'time'].includes(col.type) && !isPrinting" class="flex relative">
+                                <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="flex relative">
                                     <input
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
