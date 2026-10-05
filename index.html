@@ -428,7 +428,20 @@
                                     </button>
                                 </template>
                             </div>
-                            <div v-else class="flex items-center w-full relative justify-end sm:justify-start print:justify-start">
+
+                            <div v-else class="flex items-center w-full h-full relative justify-end sm:justify-start print:justify-start">
+                                <template v-if="!isPrinting && col.type === 'category' && categoryBudgetMap[row[col.id]] && categoryBudgetMap[row[col.id]].budget > 0">
+                                    <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 rounded pointer-events-none"
+                                        :class="categoryBudgetMap[row[col.id]].isOver ? 'bg-red-500' : ''"
+                                        :style="{
+                                            width: categoryBudgetMap[row[col.id]].percentage + '%',
+                                            backgroundColor: categoryBudgetMap[row[col.id]].isOver ? undefined : categoryBudgetMap[row[col.id]].color
+                                        }"></div>
+                                    <span class="absolute right-8 sm:right-6 z-10 text-xs font-bold pointer-events-none"
+                                        :class="categoryBudgetMap[row[col.id]].isOver ? 'text-red-600 dark:text-red-400' : 'text-gray-500'">
+                                        {{ Math.round((categoryBudgetMap[row[col.id]].spent / categoryBudgetMap[row[col.id]].budget) * 100) }}%
+                                    </span>
+                                </template>
 
                                 <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap">
                                     {{ row[col.id] }}
@@ -442,7 +455,7 @@
                                         :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
                                         :data-tooltip="row[col.id]"
                                         :placeholder="col.type === 'number' ? '0' : '...'"
-                                        class="w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
+                                        class="relative z-10 w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
                                         :class="{
                                             'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                             'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
@@ -582,7 +595,7 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </span>
-                                <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="flex relative">
+                                <div v-else-if="['text', 'time'].includes(col.type) && !isPrinting" class="flex relative">
                                     <input
                                         :type="col.type === 'time' ? 'time' : 'text'"
                                         enterkeyhint="search"
@@ -1947,6 +1960,48 @@
                         })
                     }
                     return result
+                })
+
+                const categoryBudgetMap = computed(() => {
+                    const map = {}
+
+                    const palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+
+                    const catColId = selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
+                    const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))
+
+                    if (!catColId || !numCol) return map;
+
+                    const totals = {}
+                    filteredRows.value.forEach(row => {
+                        let catLabel = translate('Uncategorized')
+                        const rawCat = row[catColId]
+                        if (rawCat && String(rawCat).trim() !== '') catLabel = String(rawCat).trim()
+
+                        let val = parseFloat(row[numCol.id]) || 0
+                        if (numCol.type === 'multiply') val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
+                        else if (numCol.type === 'multiply3') val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB]) * calcValue(row[numCol.opC])
+                        else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
+
+                        if (val !== 0) {
+                            totals[catLabel] = (totals[catLabel] || 0) + val
+                        }
+                    })
+
+                    const sortedCats = Object.entries(totals).sort((a, b) => b[1] - a[1])
+
+                    sortedCats.forEach(([catLabel, spent], index) => {
+                        const budget = categoryBudgets.value[catLabel]?.amount || 0
+                        map[catLabel] = {
+                            spent: spent,
+                            budget: budget,
+                            percentage: budget > 0 ? Math.min(100, (spent / budget) * 100) : 0,
+                            isOver: budget > 0 ? spent > budget : false,
+                            color: palette[index % palette.length]
+                        }
+                    })
+
+                    return map
                 })
 
                 const debouncedUpdateChart = debounce(async () => {
@@ -5706,7 +5761,8 @@
                     handleMouseEnter,
                     isCopied,
                     observeRow,
-                    calcValue
+                    calcValue,
+                    categoryBudgetMap
                 }
             }
         }).mount('#app')
