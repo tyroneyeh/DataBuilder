@@ -437,7 +437,7 @@
                                             width: categoryBudgetMap[row[col.id]].percentage + '%',
                                             backgroundColor: categoryBudgetMap[row[col.id]].isOver ? undefined : categoryBudgetMap[row[col.id]].color
                                         }"></div>
-                                    <span class="absolute right-8 sm:right-6 z-10 text-xs font-bold pointer-events-none"
+                                    <span class="absolute left-2 sm:left-auto right-auto sm:right-6 z-10 text-xs font-bold pointer-events-none"
                                         :class="categoryBudgetMap[row[col.id]].isOver ? 'text-red-600 dark:text-red-400' : 'text-gray-500'">
                                         {{ Math.round((categoryBudgetMap[row[col.id]].spent / categoryBudgetMap[row[col.id]].budget) * 100) }}%
                                     </span>
