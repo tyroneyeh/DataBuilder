@@ -948,9 +948,25 @@
                             </thead>
                             <tbody>
                                 <tr v-for="stat in budgetStats" :key="stat.name" class="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                    <td class="p-3 text-gray-800 dark:text-gray-200 font-bold">{{ stat.name }}</td>
-                                    <td class="p-3 text-right">
-                                        <input type="number" v-model.number="stat.budget.amount" @change="onDataEdited('none')" class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 text-gray-700 dark:text-gray-200 transition-colors" placeholder="0">
+                                    <td class="p-3 text-gray-800 dark:text-gray-200 font-bold">
+                                        <label
+                                            class="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 flex items-center select-none"
+                                            @click.stop="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
+                                        >
+                                            {{ stat.name }}
+                                            <span class="text-xs ml-2 opacity-50">▼</span>
+                                        </label>
+                                    </td>
+                                    <td class="w-100 p-3 text-right">
+                                        <input 
+                                            :ref="(el) => { if (el) inputRefs[`${stat.budget.id}-amount`] = el; else delete inputRefs[`${stat.budget.id}-amount`] }"
+                                            type="text"
+                                            :value="stat.budget.amount"
+                                            @focus="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
+                                            @change="stat.budget.amount = calcValue($event.target.value); onDataEdited('none')"
+                                            class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 text-gray-700 dark:text-gray-200 transition-colors"
+                                            :placeholder="translate('e.g., 5000 or 12000/12')"
+                                        >
                                     </td>
                                 </tr>
                             </tbody>
@@ -1618,6 +1634,7 @@
                         if (!categoryBudgets.value[cat]) {
                             categoryBudgets.value[cat] = { amount: null }
                         }
+                        categoryBudgets.value[cat].id = 'budget_' + cat
                         stats.push({ name: cat, budget: categoryBudgets.value[cat] })
                     })
                     return stats
@@ -1739,7 +1756,7 @@
                     }
                     localStorage.setItem('ty_gist_id', gistId.value.trim())
                 })
-                watch([columns, rows, globalNotes], () => {
+                watch([columns, rows, globalNotes, categoryBudgets], () => {
                     if (isInitializing) return
                     debouncedSave()
                     updateTitle()
@@ -3540,7 +3557,7 @@
 
                             const meta = chart.getDatasetMeta(0)
                             const style = meta.controller.getStyle(index)
-                            const budgetAmount = categoryBudgets.value[label]?.amount || 0
+                            const budgetAmount = calcValue(categoryBudgets.value[label]?.amount)
 
                             return {
                                 index: index,
