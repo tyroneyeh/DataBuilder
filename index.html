@@ -2099,6 +2099,19 @@
                     } catch (e) {
                         savedKeysList.value = ['ty-db']
                     }
+                    const hashStr = window.location.hash.slice(1)
+                    if (hashStr && hashStr.startsWith('ws:')) {
+                        const wsName = decodeURIComponent(hashStr.slice(3))
+                        if (wsName) {
+                            currentStorageKey.value = wsName
+                            savedKeysList.value = savedKeysList.value.filter(key => key !== wsName)
+                            savedKeysList.value.unshift(wsName)
+                            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                        }
+                    } else {
+                        currentStorageKey.value = savedKeysList.value[0]
+                    }
+                    window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
                     currentStorageKey.value = savedKeysList.value[0]
                     loadChartCols()
                 }
@@ -2126,6 +2139,8 @@
                     savedKeysList.value = savedKeysList.value.filter(key => key !== newKey)
                     savedKeysList.value.unshift(newKey)
                     localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+
+                    window.history.replaceState(null, null, '#ws:' + encodeURIComponent(newKey))
 
                     loadChartCols()
 
@@ -2402,10 +2417,10 @@
                                 const safeBase64 = decodeURIComponent(hashStr.slice(5))
                                 const jsonString = await decompressFromBase64(safeBase64)
                                 hashData = JSON.parse(jsonString)
-                                window.history.replaceState(null, null, window.location.pathname)
+                                window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
                             } else if (hashStr.startsWith('gist:')) {
                                 gistId.value = hashStr.slice(5)
-                                window.history.replaceState(null, null, window.location.pathname)
+                                window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
                                 restoreFromGist()
                                 return
                             }
@@ -3058,7 +3073,7 @@
                         }
 
                         rows.value = []
-                        window.history.replaceState(null, null, window.location.pathname)
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
                         heightCache = {}
                         windowStart.value = 0
                         windowEnd.value = 50
@@ -5559,6 +5574,16 @@
                     })
                     window.addEventListener('keydown', handleKeydown)
                     window.addEventListener('mouseup', handleMouseUp)
+                    window.addEventListener('hashchange', () => {
+                        const hashStr = window.location.hash.slice(1)
+                        if (hashStr.startsWith('ws:')) {
+                            const wsName = decodeURIComponent(hashStr.slice(3))
+                            if (wsName && wsName !== currentStorageKey.value) {
+                                currentStorageKey.value = wsName
+                                changeStorageKey()
+                            }
+                        }
+                    })
 
                     resizeObserver = new ResizeObserver((entries) => {
                         let heightChanged = false
