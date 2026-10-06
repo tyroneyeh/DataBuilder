@@ -2687,7 +2687,7 @@
                     try {
                         const result = new Function('return ' + safeString)()
                         if (!isFinite(result)) return originalString
-                        return Number(result.toFixed(6))
+                        return Number(result.toFixed(0))
                     } catch (e) {
                     }
                     return originalString
