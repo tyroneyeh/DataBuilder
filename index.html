@@ -444,29 +444,37 @@
                                 </template>
 
                                 <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap">
-                                    {{ row[col.id] }}
+                                    {{ row[col.id] }}{{ col.type === 'date' && row[col.id] ? getWeekdayStr(row[col.id]) : '' }}
                                 </span>
 
                                 <template v-else>
-                                    <input
-                                        :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
-                                        v-model="row[col.id]"
-                                        :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
-                                        :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
-                                        :data-tooltip="row[col.id]"
-                                        :placeholder="col.type === 'number' ? '0' : '...'"
-                                        class="relative z-10 w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
-                                        :class="{
-                                            'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
-                                            'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
-                                        }"
-                                        @paste="handlePaste($event, windowStart + index, col.id)"
-                                        @input="formatNumberInput(row, col)"
-                                        @click.stop="enterInput(row, col, $event)"
-                                        @focus="openGlobalMenu($event, row, col)"
-                                        @blur="saveInput(row, col)"
-                                        @keydown="focusNextInput($event, row.id, col.id)"
-                                    >
+                                    <div class="relative w-full flex items-center justify-end sm:justify-start">
+                                        <input
+                                            :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                            v-model="row[col.id]"
+                                            :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
+                                            :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
+                                            :data-tooltip="row[col.id] + getWeekdayStr(row[col.id])"
+                                            :placeholder="col.type === 'number' ? '0' : '...'"
+                                            class="relative z-10 w-full min-w-0 text-right sm:text-left print:text-left truncate bg-transparent outline-none focus:border-b-2 focus:border-blue-500 px-1 py-2 text-base print:py-0 print:text-sm text-gray-800 dark:text-white dark:placeholder-gray-500"
+                                            :class="{
+                                                'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
+                                                'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
+                                                'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id]
+                                            }"
+                                            @paste="handlePaste($event, windowStart + index, col.id)"
+                                            @input="formatNumberInput(row, col)"
+                                            @click.stop="enterInput(row, col, $event)"
+                                            @focus="openGlobalMenu($event, row, col)"
+                                            @blur="saveInput(row, col)"
+                                            @keydown="focusNextInput($event, row.id, col.id)"
+                                        >
+                                        <span v-if="col.type === 'date' && row[col.id]"
+                                            class="absolute z-0 text-gray-400 dark:text-gray-500 text-sm pointer-events-none select-none"
+                                            :class="'right-1 sm:right-auto sm:left-1'">
+                                            {{ getWeekdayStr(row[col.id]) }}
+                                        </span>
+                                    </div>
                                     <button v-if="!isPrinting && !['number', 'date', 'time'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row, col }"
@@ -958,7 +966,7 @@
                                         </label>
                                     </td>
                                     <td class="w-100 p-3 text-right">
-                                        <input 
+                                        <input
                                             :ref="(el) => { if (el) inputRefs[`${stat.budget.id}-amount`] = el; else delete inputRefs[`${stat.budget.id}-amount`] }"
                                             type="text"
                                             :value="stat.budget.amount"
@@ -4248,6 +4256,16 @@
                     }
                 }
 
+                const getWeekdayStr = (dateStr) => {
+                    const d = new Date(dateStr)
+                    if (isNaN(d.getTime())) return ''
+                    let weekday = new Intl.DateTimeFormat(currentLanguage.value, { weekday: 'short' }).format(d)
+                    if (currentLanguage.value.startsWith('zh')) {
+                        weekday = weekday.slice(-1)
+                    }
+                    return ` (${weekday})`
+                }
+
                 const getDateGroupKey = (dateStr, unit) => {
                     if (!dateStr) return translate('Uncategorized')
                     const d = new Date(dateStr)
@@ -4273,8 +4291,7 @@
                     } else if (unit === 'year') {
                         return `${y}`
                     }
-
-                    return `${y}-${m}-${day}`
+                    return `${y}-${m}-${day}${getWeekdayStr(dateStr)}`
                 }
 
                 const initGlobalTooltip = () => {
@@ -5804,7 +5821,8 @@
                     isCopied,
                     observeRow,
                     calcValue,
-                    categoryBudgetMap
+                    categoryBudgetMap,
+                    getWeekdayStr
                 }
             }
         }).mount('#app')
