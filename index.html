@@ -5192,7 +5192,7 @@
                             const rowData = []
                             for (let c = minCol; c <= maxCol; c++) {
                                 const colId = columns.value[c].id
-                                let cellValue = rows.value[r][colId]
+                                let cellValue = filteredRows.value[r] ? filteredRows.value[r][colId] : ''
 
                                 if (cellValue === undefined || cellValue === null) {
                                     cellValue = ''
@@ -5225,7 +5225,7 @@
                             const rowData = []
                             for (let c = minCol; c <= maxCol; c++) {
                                 const colId = columns.value[c].id
-                                let cellValue = rows.value[r][colId]
+                                let cellValue = filteredRows.value[r] ? filteredRows.value[r][colId] : ''
 
                                 if (cellValue === undefined || cellValue === null) {
                                     cellValue = ''
@@ -5309,11 +5309,8 @@
                     }
 
                     e.preventDefault()
-                    const pastedRows = pasteData
-                    .split(/\r\n|\n|\r/)
-                    .filter(row => row.trim() !== '')
+                    const pastedRows = pasteData.split(/\r\n|\n|\r/).filter(row => row.trim() !== '')
 
-                    const currentOffset = windowStart?.value || 0
                     const newRows = [...rows.value]
                     let hasChanges = false
 
@@ -5322,7 +5319,12 @@
                         const isSingleValue = pastedRows.length === 1 && !pastedRows[0].includes('\t')
                         const singleValue = pastedRows[0].trim()
                         for (let r = minRow; r <= maxRow; r++) {
-                            newRows[r] = { ...newRows[r] }
+                            const targetFilteredRow = filteredRows.value[r]
+                            if (!targetFilteredRow) continue
+                            const actualIndex = newRows.findIndex(row => row.id === targetFilteredRow.id)
+                            if (actualIndex === -1) continue
+
+                            newRows[actualIndex] = { ...newRows[actualIndex] }
                             const pasteRowIdx = (r - minRow) % pastedRows.length
                             const cells = pastedRows[pasteRowIdx].split('\t')
                             for (let c = minCol; c <= maxCol; c++) {
@@ -5337,8 +5339,8 @@
                                         newVal = (cells[pasteColIdx] || '').trim()
                                     }
 
-                                    if (newRows[r][colId] !== newVal) {
-                                        newRows[r][colId] = newVal
+                                    if (newRows[actualIndex][colId] !== newVal) {
+                                        newRows[actualIndex][colId] = newVal
                                         hasChanges = true
                                     }
                                 }
@@ -5347,15 +5349,15 @@
                     } else {
                         const startColIndex = columns.value.findIndex(c => c.id === startColId)
                         if (startColIndex === -1) return
+                        const absoluteStartRow = index
 
-                        const absoluteStartRow = (index >= currentOffset && currentOffset > 0)
-                            ? index
-                            : currentOffset + index
-
-                        const neededRows = (absoluteStartRow + pastedRows.length) - newRows.length
-                        if (neededRows > 0) {
-                            const safeNeededRows = Math.min(neededRows, 1000)
-                            for (let i = 0; i < safeNeededRows; i++) {
+                        pastedRows.forEach((rowString, i) => {
+                            const targetFilteredIndex = absoluteStartRow + i
+                            let targetFilteredRow = filteredRows.value[targetFilteredIndex]
+                            let actualIndex = -1
+                            if (targetFilteredRow) {
+                                actualIndex = newRows.findIndex(row => row.id === targetFilteredRow.id)
+                            } else {
                                 const newRow = { id: generateId(), note: '', isExpanded: false }
                                 columns.value.forEach(col => {
                                     if (col.type === 'number') newRow[col.id] = null
@@ -5363,13 +5365,12 @@
                                     else newRow[col.id] = ''
                                 })
                                 newRows.push(newRow)
+                                actualIndex = newRows.length - 1
                             }
-                        }
 
-                        pastedRows.forEach((rowString, i) => {
-                            const targetRowIndex = absoluteStartRow + i
-                            if (!newRows[targetRowIndex]) return
-                            newRows[targetRowIndex] = { ...newRows[targetRowIndex] }
+                            if (actualIndex === -1) return
+
+                            newRows[actualIndex] = { ...newRows[actualIndex] }
                             const cells = rowString.split('\t')
 
                             cells.forEach((cellValue, j) => {
@@ -5386,22 +5387,22 @@
                                             if (colType === 'number') {
                                                 finalVal = parsedNumber
                                                 const textCol = columns.value.find(c => c.type === 'text') || columns.value.find(c => c.type === 'category') || columns.value.find(c => c.type === 'note')
-                                                if (textCol && newRows[targetRowIndex][textCol.id] !== parsedText) {
-                                                    newRows[targetRowIndex][textCol.id] = parsedText
+                                                if (textCol && newRows[actualIndex][textCol.id] !== parsedText) {
+                                                    newRows[actualIndex][textCol.id] = parsedText
                                                     hasChanges = true
                                                 }
                                             } else {
                                                 finalVal = parsedText
                                                 const numCol = columns.value.find(c => c.type === 'number')
-                                                if (numCol && newRows[targetRowIndex][numCol.id] !== parsedNumber) {
-                                                    newRows[targetRowIndex][numCol.id] = parsedNumber
+                                                if (numCol && newRows[actualIndex][numCol.id] !== parsedNumber) {
+                                                    newRows[actualIndex][numCol.id] = parsedNumber
                                                     hasChanges = true
                                                 }
                                             }
                                         }
 
-                                        if (newRows[targetRowIndex][targetColId] !== finalVal) {
-                                            newRows[targetRowIndex][targetColId] = finalVal
+                                        if (newRows[actualIndex][targetColId] !== finalVal) {
+                                            newRows[actualIndex][targetColId] = finalVal
                                             hasChanges = true
                                         }
                                     }
@@ -5549,10 +5550,11 @@
                     const isWholeRowSelected = minCol === 0 && maxCol === columns.value.length - 1
 
                     if (isWholeRowSelected) {
-                        const deleteCount = maxRow - minRow + 1
-                        const newRows = [...rows.value]
-                        newRows.splice(minRow, deleteCount)
-                        rows.value = newRows
+                        const idsToDelete = new Set()
+                        for (let r = minRow; r <= maxRow; r++) {
+                            if (filteredRows.value[r]) idsToDelete.add(filteredRows.value[r].id)
+                        }
+                        rows.value = rows.value.filter(row => !idsToDelete.has(row.id))
                         selectedBox.value = null
                         startCell.value = null
                         endCell.value = null
@@ -5562,8 +5564,8 @@
                         for (let r = minRow; r <= maxRow; r++) {
                             for (let c = minCol; c <= maxCol; c++) {
                                 const colId = columns.value[c].id
-                                if (!['multiply', 'photo', 'multiply3', 'minus'].includes(columns.value[c].type)) {
-                                    rows.value[r][colId] = ''
+                                if (!['multiply', 'photo', 'multiply3', 'minus'].includes(columns.value[c].type) && filteredRows.value[r]) {
+                                    filteredRows.value[r][colId] = ''
                                 }
                             }
                         }
