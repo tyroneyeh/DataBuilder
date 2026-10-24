@@ -5350,6 +5350,7 @@
                         const startColIndex = columns.value.findIndex(c => c.id === startColId)
                         if (startColIndex === -1) return
                         const absoluteStartRow = index
+                        const { todayDate, currentTime } = getDate()
 
                         pastedRows.forEach((rowString, i) => {
                             const targetFilteredIndex = absoluteStartRow + i
@@ -5362,6 +5363,8 @@
                                 columns.value.forEach(col => {
                                     if (col.type === 'number') newRow[col.id] = null
                                     else if (col.type === 'photo') newRow[col.id] = []
+                                    else if (col.type === 'date') newRow[col.id] = todayDate
+                                    else if (col.type === 'time') newRow[col.id] = currentTime
                                     else newRow[col.id] = ''
                                 })
                                 newRows.push(newRow)
