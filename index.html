@@ -1013,7 +1013,7 @@
                                 class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-5 rounded-lg transition-all font-bold shadow-sm active:scale-95 whitespace-nowrap flex items-center justify-center"
                             >
                                 <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
-                                <span v-else>🔄 {{ translate('Sync From Sheets') }}</span>
+                                <span v-else>🔄 {{ translate('Sync Sheets') }}</span>
                             </button>
                         </div>
                         <div class="w-full text-right sm:text-left flex flex-wrap justify-center sm:justify-end gap-1">
@@ -5646,6 +5646,92 @@
                     }
                 }
 
+                const executeExportToSheets = async () => {
+                    isProcessing.value = true
+                    try {
+                        const token = googleAccessToken.value
+                        const tabName = `'${currentStorageKey.value}'`
+                        const safeRange = `${tabName}!A1`
+
+                        const cleanData = getCleanData()
+                        const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
+
+                        const rows2D = cleanData.map(rowObj => {
+                            const rowArray = [rowObj.id]
+                            columns.value.forEach(c => rowArray.push(rowObj[c.label]))
+                            rowArray.push(rowObj[translate('Note')])
+                            return rowArray
+                        })
+
+                        const totalRow = [translate('Total')]
+                        columns.value.forEach(col => {
+                            if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
+                                totalRow.push(columnTotals.value[col.id] || 0)
+                            } else {
+                                totalRow.push('')
+                            }
+                        })
+                        totalRow.push('')
+
+                        const sheetDataValues = [headers, ...rows2D, totalRow]
+
+                        let spreadsheetId = ''
+                        const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
+
+                        if (match) {
+                            spreadsheetId = match[1]
+
+                            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}:clear`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            })
+                        } else {
+                            const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    properties: { title: 'TY-DB' },
+                                    sheets: [
+                                        { properties: { title: currentStorageKey.value } }
+                                    ]
+                                })
+                            })
+                            if (!createRes.ok) throw new Error('Failed to create spreadsheet')
+                            const createData = await createRes.json()
+                            spreadsheetId = createData.spreadsheetId
+
+                            sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+                        }
+
+                        const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(safeRange)}!A1?valueInputOption=USER_ENTERED`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                range: safeRange,
+                                majorDimension: 'ROWS',
+                                values: sheetDataValues
+                            })
+                        })
+
+                        if (!updateRes.ok) throw new Error('Failed to write data to spreadsheet')
+
+                        alert(translate('🚀 Successfully synced TO Google Sheets!'))
+
+                    } catch (error) {
+                        console.error('Google Sheets Push Error:', error)
+                        alert('Sync failed. Token might be expired or file missing.')
+                        googleAccessToken.value = ''
+                    } finally {
+                        isProcessing.value = false
+                    }
+                }
+
                 const executeImportFromSheets = async (spreadsheetId) => {
                     if (!spreadsheetId) {
                         const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
@@ -5654,7 +5740,9 @@
 
                     try {
                         const token = googleAccessToken.value
-                        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1`, {
+                        const tabName = `'${currentStorageKey.value}'`
+
+                        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         })
 
@@ -5673,8 +5761,9 @@
                             const rowArray = values[i]
 
                             if (rowArray[0] === translate('Total')) continue
-
-                            const newRow = { id: generateId(), note: '', isExpanded: areAllExpanded.value }
+                            const idIndex = headers.indexOf('ID')
+                            const rowId = (idIndex !== -1 && rowArray[idIndex]) ? rowArray[idIndex] : generateId()
+                            const newRow = { id: rowId, note: '', isExpanded: areAllExpanded.value }
 
                             columns.value.forEach(col => {
                                 const colIndex = headers.indexOf(col.label)
@@ -5701,7 +5790,6 @@
 
                         rows.value = newRows
                         onDataEdited()
-
                         alert(translate('🎉 Successfully synced data from Google Sheets!'))
 
                     } catch (error) {
