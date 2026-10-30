@@ -1009,7 +1009,7 @@
                             </button>
                             <button
                                 @click="exportToGoogleSheets"
-                                :disabled="isProcessing || !sheetExportUrl"
+                                :disabled="isProcessing || !sheetImportUrl"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <span v-if="pendingGoogleAction === 'export' && isProcessing" class="animate-spin text-lg">⏳</span>
@@ -1185,7 +1185,7 @@
                                 <input
                                     type="text"
                                     v-model="sheetImportUrl"
-                                    placeholder="貼上 Google Sheets 網址以同步回系統..."
+                                    placeholder="{{ translate('Google Sheet Import URL') }}"
                                     class="flex-1 w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
                                 >
                                 <input
@@ -1199,13 +1199,13 @@
                                 </button>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">
-                                供 Google Sheets 雙向同步使用。金鑰將安全地儲存於本機瀏覽器中。
+                                {{ translate('Private key will be stored safely in your browser.') }}
                             </p>
                         </div>
 
                         <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API {{ translate('Text recognized') }}</h4>
+                                <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ {{ translate('Google Vision API') }} {{ translate('Text recognized') }}</h4>
                             </div>
                             <div class="flex flex-col">
                                 <input v-model="googleVisionKey" type="password" placeholder="AIzaSy..." class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
