@@ -999,20 +999,23 @@
                         <button @click="generateShareLink" class="flex bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
                         <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                         <div class="flex w-full gap-2">
-                            <button @click="backupToGist" v-if="githubToken" :disabled="isProcessing" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none"><template v-if="isProcessing">
-                                <svg class="animate-spin h-5 w-5 text-gray-500 dark:text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </template>
-                            <template v-else>
-                                ⬆️ {{ translate('Backup to Cloud') }}
-                            </template></button>
-                            <button @click="restoreFromGist" v-if="gistId" :disabled="isProcessing" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none"><template v-if="isProcessing">
-                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </template>
-                            <template v-else>
-                                ⬇️ {{ translate('Restore from Cloud') }}
-                            </template></button>
+                            <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 disabled:bg-gray-400 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
+                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
+                                <span v-else>⬆️ {{ translate('Backup to Cloud') }}</span>
+                            </button>
+                            <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
+                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
+                                <span v-else>⬇️ {{ translate('Restore from Cloud') }}</span>
+                            </button>
+                            <button
+                                @click="importFromGoogleSheets"
+                                :disabled="isProcessing || !sheetImportUrl"
+                                class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-5 rounded-lg transition-all font-bold shadow-sm active:scale-95 whitespace-nowrap flex items-center justify-center"
+                            >
+                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
+                                <span v-else>🔄 {{ translate('Sync From Sheets') }}</span>
+                            </button>
                         </div>
-
                         <div class="w-full text-right sm:text-left flex flex-wrap justify-center sm:justify-end gap-1">
                             <button @click="mergeDuplicates" class="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline transition-colors p-2 whitespace-nowrap">
                                 {{ translate('Merge Duplicates') }}
@@ -1165,7 +1168,34 @@
                                 </ol>
                             </div>
                         </div>
-                        <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+
+                        <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Google Client ID (OAuth)
+                            </label>
+                            <div class="flex gap-2">
+                                <input
+                                    type="text"
+                                    v-model="sheetImportUrl"
+                                    placeholder="貼上 Google Sheets 網址以同步回系統..."
+                                    class="flex-1 w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
+                                >
+                                <input
+                                    type="text"
+                                    v-model="googleClientId"
+                                    placeholder="e.g., xxxxxxxx.apps.googleusercontent.com"
+                                    class="flex-1 min-w-0 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
+                                >
+                                <button v-if="googleClientId" @click="googleClientId = ''" class="px-3 py-2 text-gray-400 hover:text-red-500 transition-colors" title="清除">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                供 Google Sheets 雙向同步使用。金鑰將安全地儲存於本機瀏覽器中。
+                            </p>
+                        </div>
+
+                        <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center justify-between mb-2">
                                 <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ Google Vision API {{ translate('Text recognized') }}</h4>
                             </div>
@@ -1618,6 +1648,11 @@
                 const isBudgetOpen = ref(localStorage.getItem('ty_budget_open') === 'true')
                 const categoryBudgets = ref({})
                 const categoryCounts = ref({})
+                const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
+                const googleAccessToken = ref('')
+                let tokenClient = null
+                let pendingGoogleAction = null
+                const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -1669,8 +1704,8 @@
                     },
                     {
                         id: 'OCR_PLATE',
-                        label: '🪪 文字辨識 (OCR)',
-                        description: '手動拍照截圖辨識.可以設定 Google Vision API Key 或用 Tesseract.js'
+                        label: '🪪 '+ translate('OCR'),
+                        description: translate('Manually capture and identify images. You can set a Google Vision API Key or use Tesseract.js')
                     }
                 ]
 
@@ -1847,6 +1882,15 @@
                     if (newValue !== oldValue) {
                         activeDropdownIndex.value = -1
                     }
+                })
+
+                watch(sheetImportUrl, (newVal) => {
+                    localStorage.setItem('TY_SHEET_IMPORT_URL', newVal.trim())
+                })
+
+                watch(googleClientId, (newVal) => {
+                    localStorage.setItem('TY_GOOGLE_CLIENT_ID', newVal.trim())
+                    tokenClient = null
                 })
 
                 const toggleDarkMode = () => {
@@ -5602,6 +5646,120 @@
                     }
                 }
 
+                const executeImportFromSheets = async (spreadsheetId) => {
+                    if (!spreadsheetId) {
+                        const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                        spreadsheetId = match[1]
+                    }
+
+                    try {
+                        const token = googleAccessToken.value
+                        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+
+                        if (!res.ok) throw new Error('Failed to read data. Check URL or permissions.')
+                        const data = await res.json()
+                        const values = data.values
+
+                        if (!values || values.length < 2) {
+                            return alert(translate('No sufficient data found in the spreadsheet!'))
+                        }
+
+                        const headers = values[0]
+                        const newRows = []
+
+                        for (let i = 1; i < values.length; i++) {
+                            const rowArray = values[i]
+
+                            if (rowArray[0] === translate('Total')) continue
+
+                            const newRow = { id: generateId(), note: '', isExpanded: areAllExpanded.value }
+
+                            columns.value.forEach(col => {
+                                const colIndex = headers.indexOf(col.label)
+                                if (colIndex !== -1 && rowArray[colIndex] !== undefined && rowArray[colIndex] !== '') {
+                                    let val = rowArray[colIndex]
+                                    if (col.type === 'number') {
+                                        val = parseFloat(val.toString().replace(/,/g, '')) || null
+                                    } else if (col.type === 'photo') {
+                                        val = []
+                                    }
+                                    newRow[col.id] = val
+                                } else {
+                                    newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
+                                }
+                            })
+
+                            const noteIndex = headers.indexOf(translate('Note'))
+                            if (noteIndex !== -1 && rowArray[noteIndex]) {
+                                newRow.note = rowArray[noteIndex]
+                            }
+
+                            newRows.push(newRow)
+                        }
+
+                        rows.value = newRows
+                        onDataEdited()
+
+                        alert(translate('🎉 Successfully synced data from Google Sheets!'))
+
+                    } catch (error) {
+                        console.error('Google Sheets Import Error:', error)
+                        alert('Sync failed. You might not have permission, or token expired.')
+                        googleAccessToken.value = ''
+                    } finally {
+                        isProcessing.value = false
+                    }
+                }
+
+                const initGoogleClient = async () => {
+                    if (!googleClientId.value.trim()) {
+                        alert(translate('Please enter Google Client ID.'))
+                        return false
+                    }
+                    if (tokenClient) return true
+
+                    return new Promise((resolve) => {
+                        loadScript('https://accounts.google.com/gsi/client').then(() => {
+                            tokenClient = google.accounts.oauth2.initTokenClient({
+                                client_id: googleClientId.value.trim(),
+                                scope: 'https://www.googleapis.com/auth/spreadsheets',
+                                callback: (tokenResponse) => {
+                                    if (tokenResponse && tokenResponse.access_token) {
+                                        googleAccessToken.value = tokenResponse.access_token
+                                        if (pendingGoogleAction === 'export') executeExportToSheets()
+                                        else if (pendingGoogleAction === 'import') executeImportFromSheets()
+                                    }
+                                },
+                            })
+                            resolve(true)
+                        }).catch(err => {
+                            console.warn("Failed to load Google GIS", err)
+                            alert(translate('Failed to load Google GIS.'))
+                            resolve(false)
+                        })
+                    })
+                }
+
+                const importFromGoogleSheets = async () => {
+                    if (!sheetImportUrl.value) return alert(translate('Please enter a Google Sheets URL first!'))
+                    const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) return alert(translate('Invalid Google Sheets URL!'))
+
+                    const isReady = await initGoogleClient()
+                    if (!isReady) return
+
+                    pendingGoogleAction = 'import'
+                    isProcessing.value = true
+
+                    if (!googleAccessToken.value) {
+                        tokenClient.requestAccessToken({prompt: 'consent'})
+                    } else {
+                        executeImportFromSheets(match[1])
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -5844,7 +6002,10 @@
                     observeRow,
                     calcValue,
                     categoryBudgetMap,
-                    getWeekdayStr
+                    getWeekdayStr,
+                    googleClientId,
+                    sheetImportUrl,
+                    importFromGoogleSheets
                 }
             }
         }).mount('#app')
