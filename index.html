@@ -1001,19 +1001,27 @@
                         <div class="flex w-full gap-2">
                             <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 disabled:bg-gray-400 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
                                 <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
-                                <span v-else>⬆️ {{ translate('Backup to Cloud') }}</span>
+                                <span v-else>⬆️ {{ translate('Push to gists') }}</span>
                             </button>
                             <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
                                 <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
-                                <span v-else>⬇️ {{ translate('Restore from Cloud') }}</span>
+                                <span v-else>⬇️ {{ translate('Pull from gists') }}</span>
+                            </button>
+                            <button
+                                @click="exportToGoogleSheets"
+                                :disabled="isProcessing || !sheetExportUrl"
+                                class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <span v-if="pendingGoogleAction === 'export' && isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-else>⬆️ {{ translate('Push to Sheets') }}</span>
                             </button>
                             <button
                                 @click="importFromGoogleSheets"
                                 :disabled="isProcessing || !sheetImportUrl"
-                                class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-5 rounded-lg transition-all font-bold shadow-sm active:scale-95 whitespace-nowrap flex items-center justify-center"
+                                class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
-                                <span v-else>🔄 {{ translate('Sync Sheets') }}</span>
+                                <span v-if="pendingGoogleAction === 'import' && isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-else>⬇️ {{ translate('Pull from Sheets') }}</span>
                             </button>
                         </div>
                         <div class="w-full text-right sm:text-left flex flex-wrap justify-center sm:justify-end gap-1">
@@ -5830,6 +5838,19 @@
                     })
                 }
 
+                const exportToGoogleSheets = async () => {
+                    const isReady = await initGoogleClient()
+                    if (!isReady) return
+
+                    pendingGoogleAction = 'export'
+                    isProcessing.value = true
+
+                    if (!googleAccessToken.value) {
+                        tokenClient.requestAccessToken({prompt: 'consent'})
+                    } else {
+                        executeExportToSheets()
+                    }
+                }
                 const importFromGoogleSheets = async () => {
                     if (!sheetImportUrl.value) return alert(translate('Please enter a Google Sheets URL first!'))
                     const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
@@ -6093,7 +6114,8 @@
                     getWeekdayStr,
                     googleClientId,
                     sheetImportUrl,
-                    importFromGoogleSheets
+                    importFromGoogleSheets,
+                    exportToGoogleSheets
                 }
             }
         }).mount('#app')
