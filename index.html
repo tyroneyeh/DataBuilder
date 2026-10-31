@@ -1785,6 +1785,7 @@
                 let isCarLocked = false
                 let cameraTrack
                 let scanCooldownTimer
+                let currentMaxRowId = 0
 
                 const debouncedSave = debounce(async () => {
                     try {
@@ -2264,7 +2265,73 @@
                     onDataEdited()
                 }
 
-                const generateId = () => 'row_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)
+                const syncMaxRowId = (forceReindexAll = false) => {
+                    if (!rows.value || rows.value.length === 0) {
+                        currentMaxRowId = 0
+                        return
+                    }
+
+                    let hasLegacy = false
+                    let currentMax = 0
+
+                    for (let i = 0; i < rows.value.length; i++) {
+                        const idVal = rows.value[i].id
+                        const isNumeric = typeof idVal === 'number' || (typeof idVal === 'string' && /^\d+$/.test(idVal))
+
+                        if (forceReindexAll || !isNumeric || idVal === undefined || idVal === null) {
+                            hasLegacy = true
+                        } else {
+                            const num = Number(idVal)
+                            if (num > currentMax) currentMax = num
+                        }
+                    }
+
+                    if (hasLegacy) {
+                        let nextId = currentMax
+                        let modified = false
+
+                        rows.value = rows.value.map((row, index) => {
+                            const idVal = row.id
+                            const isNumeric = typeof idVal === 'number' || (typeof idVal === 'string' && /^\d+$/.test(idVal))
+
+                            if (forceReindexAll) {
+                                modified = true
+                                return { ...row, id: index + 1 }
+                            }
+
+                            if (!isNumeric || idVal === undefined || idVal === null) {
+                                modified = true
+                                return { ...row, id: ++nextId }
+                            }
+
+                            return row
+                        })
+
+                        if (forceReindexAll) {
+                            currentMax = rows.value.length
+                        } else {
+                            currentMax = nextId
+                        }
+
+                        if (modified) {
+                            if (heightCache !== undefined) {
+                                Object.keys(heightCache).forEach(k => delete heightCache[k])
+                            }
+                            if (inputRefs !== undefined) {
+                                inputRefs.value = {}
+                            }
+                            if (typeof onDataEdited === 'function') {
+                                onDataEdited()
+                            }
+                        }
+                    }
+
+                    currentMaxRowId = currentMax
+                }
+
+                const generateId = () => {
+                    return ++currentMaxRowId
+                }
 
                 const mergeDuplicates = async (isSilent = false) => {
 
@@ -2532,6 +2599,7 @@
 
                     updateColumns()
                     updateTitle()
+                    syncMaxRowId()
 
                     onDataEdited('both')
 
@@ -4315,6 +4383,7 @@
                                 hasDateColumn.value = columns.value.some(column => column.type === 'date')
                                 hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                             }
+                            syncMaxRowId()
                             onDataEdited('both')
                             alert(translate('Restored from GitHub Gist successfully!'))
                         } else {
@@ -5830,6 +5899,7 @@
                         }
 
                         rows.value = newRows
+                        syncMaxRowId()
                         onDataEdited()
                         alert(translate('🎉 Successfully synced data from Google Sheets!'))
 
