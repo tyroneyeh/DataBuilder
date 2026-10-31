@@ -1657,10 +1657,8 @@
                 const categoryBudgets = ref({})
                 const categoryCounts = ref({})
                 const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
-                const googleAccessToken = ref('')
-                let tokenClient = null
-                let pendingGoogleAction = null
                 const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
+                const googleAccessToken = ref('')
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -1786,6 +1784,11 @@
                 let cameraTrack
                 let scanCooldownTimer
                 let currentMaxRowId = 0
+                let tokenClient = null
+                let pendingGoogleAction = null
+                let tokenExpiresAt = 0
+                let pendingTokenResolve = null
+                let pendingTokenReject = null
 
                 const debouncedSave = debounce(async () => {
                     try {
@@ -5849,7 +5852,7 @@
                     }
 
                     try {
-                        const token = googleAccessToken.value
+                        const token = await getValidGoogleToken()
                         const tabName = `'${currentStorageKey.value}'`
 
                         const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
@@ -5920,55 +5923,99 @@
                     if (tokenClient) return true
 
                     return new Promise((resolve) => {
-                        loadScript('https://accounts.google.com/gsi/client').then(() => {
-                            tokenClient = google.accounts.oauth2.initTokenClient({
-                                client_id: googleClientId.value.trim(),
-                                scope: 'https://www.googleapis.com/auth/spreadsheets',
-                                callback: (tokenResponse) => {
-                                    if (tokenResponse && tokenResponse.access_token) {
-                                        googleAccessToken.value = tokenResponse.access_token
-                                        if (pendingGoogleAction === 'export') executeExportToSheets()
-                                        else if (pendingGoogleAction === 'import') executeImportFromSheets()
+                        loadScript('https://accounts.google.com/gsi/client')
+                            .then(() => {
+                                tokenClient = google.accounts.oauth2.initTokenClient({
+                                    client_id: googleClientId.value.trim(),
+                                    scope: 'https://www.googleapis.com/auth/spreadsheets',
+                                    callback: (tokenResponse) => {
+                                        if (tokenResponse && tokenResponse.access_token) {
+                                            googleAccessToken.value = tokenResponse.access_token
+                                            const expiresInSec = parseInt(tokenResponse.expires_in, 10) || 3600
+                                            tokenExpiresAt = Date.now() + (expiresInSec * 1000)
+
+                                            if (pendingTokenResolve) {
+                                                pendingTokenResolve(tokenResponse.access_token)
+                                                pendingTokenResolve = null
+                                                pendingTokenReject = null
+                                            }
+                                        } else if (tokenResponse && tokenResponse.error) {
+                                            console.warn('GIS Token Callback Error:', tokenResponse)
+                                            if (pendingTokenReject) {
+                                                pendingTokenReject(new Error(tokenResponse.error))
+                                                pendingTokenResolve = null
+                                                pendingTokenReject = null
+                                            }
+                                        }
+                                    },
+                                    error_callback: (err) => {
+                                        console.error('GIS Client Error:', err)
+                                        if (pendingTokenReject) {
+                                            pendingTokenReject(err)
+                                            pendingTokenResolve = null
+                                            pendingTokenReject = null
+                                        }
                                     }
-                                },
+                                })
+                                resolve(true)
                             })
-                            resolve(true)
-                        }).catch(err => {
-                            console.warn("Failed to load Google GIS", err)
-                            alert(translate('Failed to load Google GIS.'))
-                            resolve(false)
-                        })
+                            .catch((err) => {
+                                console.error('Failed to load Google GIS script:', err)
+                                alert(translate('Failed to load Google GIS.'))
+                                resolve(false)
+                            })
                     })
                 }
 
-                const exportToGoogleSheets = async () => {
+                const requestGisToken = (promptType = '') => {
+                    return new Promise((resolve, reject) => {
+                        pendingTokenResolve = resolve
+                        pendingTokenReject = reject
+                        tokenClient.requestAccessToken({ prompt: promptType })
+                    })
+                }
+
+                const getValidGoogleToken = async () => {
                     const isReady = await initGoogleClient()
-                    if (!isReady) return
+                    if (!isReady) throw new Error('Google Client not initialized.')
 
-                    pendingGoogleAction = 'export'
-                    isProcessing.value = true
+                    const now = Date.now()
+                    if (googleAccessToken.value && now < (tokenExpiresAt - 120000)) {
+                        return googleAccessToken.value
+                    }
 
-                    if (!googleAccessToken.value) {
-                        tokenClient.requestAccessToken({prompt: 'consent'})
-                    } else {
-                        executeExportToSheets()
+                    try {
+                        const token = await requestGisToken('')
+                        return token
+                    } catch (silentErr) {
+                        console.warn('Silent token refresh failed, falling back to interactive consent:', silentErr)
+                    }
+
+                    try {
+                        const token = await requestGisToken('consent')
+                        return token
+                    } catch (interactiveErr) {
+                        throw new Error('Google authorization was cancelled or failed.')
                     }
                 }
+
+                const exportToGoogleSheets = async () => {
+                    try {
+                        await executeExportToSheets()
+                    } catch (err) {
+                        console.error('Export Action Failed:', err)
+                    }
+                }
+
                 const importFromGoogleSheets = async () => {
                     if (!sheetImportUrl.value) return alert(translate('Please enter a Google Sheets URL first!'))
                     const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
                     if (!match) return alert(translate('Invalid Google Sheets URL!'))
 
-                    const isReady = await initGoogleClient()
-                    if (!isReady) return
-
-                    pendingGoogleAction = 'import'
-                    isProcessing.value = true
-
-                    if (!googleAccessToken.value) {
-                        tokenClient.requestAccessToken({prompt: 'consent'})
-                    } else {
-                        executeImportFromSheets(match[1])
+                    try {
+                        await executeImportFromSheets(match[1])
+                    } catch (err) {
+                        console.error('Import Action Failed:', err)
                     }
                 }
 
