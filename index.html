@@ -1012,7 +1012,7 @@
                                 :disabled="isProcessing || !sheetImportUrl"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <span v-if="pendingGoogleAction === 'export' && isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-if="isProcessing" class="animate-spin text-lg">⏳</span>
                                 <span v-else>⬆️ {{ translate('Push to Sheets') }}</span>
                             </button>
                             <button
@@ -1020,7 +1020,7 @@
                                 :disabled="isProcessing || !sheetImportUrl"
                                 class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <span v-if="pendingGoogleAction === 'import' && isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-if="isProcessing" class="animate-spin text-lg">⏳</span>
                                 <span v-else>⬇️ {{ translate('Pull from Sheets') }}</span>
                             </button>
                         </div>
@@ -1194,7 +1194,7 @@
                                     placeholder="e.g., xxxxxxxx.apps.googleusercontent.com"
                                     class="flex-1 min-w-0 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
                                 >
-                                <button v-if="googleClientId" @click="googleClientId = ''" class="px-3 py-2 text-gray-400 hover:text-red-500 transition-colors" title="清除">
+                                <button v-if="googleClientId" @click="googleClientId = ''" class="px-3 py-2 text-gray-400 hover:text-red-500 transition-colors" :title="translate('Clear')">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                             </div>
@@ -1785,7 +1785,6 @@
                 let scanCooldownTimer
                 let currentMaxRowId = 0
                 let tokenClient = null
-                let pendingGoogleAction = null
                 let tokenExpiresAt = 0
                 let pendingTokenResolve = null
                 let pendingTokenReject = null
@@ -2710,8 +2709,7 @@
                     if (newColType.value.startsWith('multiply') || newColType.value === 'minus') {
                         if (newColType.value === 'multiply3' && !formulaC.value) return alert(translate('Please select columns A, B and C!'))
                         else if (!formulaA.value || !formulaB.value) return alert(translate('Please select columns A and B!'))
-                        if (newColType.value === 'multiply3' && formulaA.value === formulaB.value || formulaA.value === formulaC.value || formulaB.value === formulaC.value) return alert(translate('Source columns cannot be the same!'))
-                        else if (formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
+                        if (newColType.value === 'multiply3' && formulaA.value === formulaB.value || formulaA.value === formulaC.value || formulaB.value === formulaC.value || formulaA.value === formulaB.value) return alert(translate('Source columns cannot be the same!'))
                     }
 
                     if (!colCount.value) colCount.value = columns.value.length
