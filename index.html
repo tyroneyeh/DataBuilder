@@ -5766,7 +5766,7 @@
 
                     } catch (error) {
                         console.error('Google Sheets Push Error:', error)
-                        alert('Sync failed. Token might be expired or file missing.')
+                        alert(`Sync failed: ${error.message || error}`)
                         googleAccessToken.value = ''
                     } finally {
                         isProcessing.value = false
