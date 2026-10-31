@@ -5729,7 +5729,7 @@
                 const executeExportToSheets = async () => {
                     isProcessing.value = true
                     try {
-                        const token = googleAccessToken.value
+                        const token = await getValidGoogleToken()
                         const tabName = `'${currentStorageKey.value}'`
                         const safeRange = `${tabName}!A1`
 
@@ -5768,7 +5768,11 @@
                             const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
                                 headers: { 'Authorization': `Bearer ${token}` }
                             })
-                            if (!metaRes.ok) throw new Error('Failed to fetch spreadsheet metadata')
+                            if (!metaRes.ok) {
+                                const errData = await metaRes.json().catch(() => ({}))
+                                const detailMsg = errData.error?.message || metaRes.statusText
+                                throw new Error(`Metadata error (${metaRes.status}): ${detailMsg}`)
+                            }
 
                             const metaData = await metaRes.json()
                             const existingSheets = metaData.sheets?.map(s => s.properties.title) || []
@@ -5793,7 +5797,7 @@
                                 })
                                 if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
                             } else {
-                                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}:clear`, {
+                                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
                                     method: 'POST',
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 })
@@ -5812,7 +5816,10 @@
                                     ]
                                 })
                             })
-                            if (!createRes.ok) throw new Error('Failed to create spreadsheet')
+                            if (!createRes.ok) {
+                                const errData = await createRes.json().catch(() => ({}))
+                                throw new Error(`Create spreadsheet error: ${errData.error?.message || createRes.statusText}`)
+                            }
                             const createData = await createRes.json()
                             spreadsheetId = createData.spreadsheetId
 
@@ -5832,7 +5839,10 @@
                             })
                         })
 
-                        if (!updateRes.ok) throw new Error('Failed to write data to spreadsheet')
+                        if (!updateRes.ok) {
+                            const errData = await updateRes.json().catch(() => ({}))
+                            throw new Error(`Write data error: ${errData.error?.message || updateRes.statusText}`)
+                        }
 
                         alert(translate('🚀 Successfully synced TO Google Sheets!'))
 
@@ -5840,6 +5850,7 @@
                         console.error('Google Sheets Push Error:', error)
                         alert(`Sync failed: ${error.message || error}`)
                         googleAccessToken.value = ''
+                        tokenExpiresAt = 0
                     } finally {
                         isProcessing.value = false
                     }
