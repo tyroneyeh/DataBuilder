@@ -30,6 +30,8 @@
     * 支援雙擊圖例「孤立顯示」，並擁有智慧 Hover 統計與無縫縮放體驗。
 * **🐙 GitHub Gist 雲端同步 (BYOD)**：
     * **Bring Your Own Database**：使用者可綁定私人的 GitHub Token，將資料加密備份至個人 Gist 空間，支援跨裝置還原，完全隱私且免費。
+* **Google Sheets 雙向同步 (BYOD)**：
+    * 支援自帶 Client ID (BYOK) 與 GIS 靜默授權，各工作區自動對應專屬分頁，實現本地即時操作與雲端無縫備份。
 * **🧩 智慧品項合併**：一鍵將同名品項合併，自動加總數字欄位並無縫串接所有備註，團購對帳神器。
 * **🗂️ 多工作區與國際化**：內建 LocalStorage 多工作區切換，並完整支援高達 22 國語言介面。
 * **🖨️ 專業列印模式**：專屬 `@media print` 樣式，一鍵輸出乾淨、無按鈕干擾的 PDF 報表。
@@ -89,6 +91,8 @@ A powerful, ultra-lightweight, and **100% Serverless** single-page dynamic table
     * Features "Double-click to Isolate" legends and smart hover statistics.
 * **🐙 GitHub Gist Sync (BYOD)**:
     * **Bring Your Own Database**: Securely backup and sync your data across devices using your own GitHub Token and Gist. Fully private and free.
+* **Bi-directional Google Sheets Synchronization (BYOD)**:
+    * Client-side BYOK integration leveraging Google Identity Services (GIS) for silent token renewal, multi-workspace tab isolation, and high-performance local-first state persistence.
 * **🧩 Smart Merge**: One-click to merge duplicate items, summing up numeric fields while seamlessly concatenating all notes.
 * **🗂️ Workspaces & i18n**: Built-in LocalStorage workspace switching and full support for up to 22 languages.
 * **🖨️ Print-Ready**: Optimized `@media print` styles. Generate clean PDF reports with a single click.
