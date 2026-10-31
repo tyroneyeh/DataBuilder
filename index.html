@@ -5661,13 +5661,17 @@
                         const tabName = `'${currentStorageKey.value}'`
                         const safeRange = `${tabName}!A1`
 
-                        const cleanData = getCleanData()
                         const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
 
-                        const rows2D = cleanData.map(rowObj => {
-                            const rowArray = [rowObj.id]
-                            columns.value.forEach(c => rowArray.push(rowObj[c.label]))
-                            rowArray.push(rowObj[translate('Note')])
+                        const rows2D = rows.value.map(row => {
+                            const rowId = row.id || generateId()
+                            const rowArray = [rowId]
+
+                            columns.value.forEach(c => {
+                                rowArray.push(row[c.id] ?? '')
+                            })
+
+                            rowArray.push(row.note || '')
                             return rowArray
                         })
 
@@ -5689,10 +5693,39 @@
                         if (match) {
                             spreadsheetId = match[1]
 
-                            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}:clear`, {
-                                method: 'POST',
+                            const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
                                 headers: { 'Authorization': `Bearer ${token}` }
                             })
+                            if (!metaRes.ok) throw new Error('Failed to fetch spreadsheet metadata')
+
+                            const metaData = await metaRes.json()
+                            const existingSheets = metaData.sheets?.map(s => s.properties.title) || []
+                            const sheetExists = existingSheets.includes(rawTabName)
+
+                            if (!sheetExists) {
+                                const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        requests: [
+                                            {
+                                                addSheet: {
+                                                    properties: { title: rawTabName }
+                                                }
+                                            }
+                                        ]
+                                    })
+                                })
+                                if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
+                            } else {
+                                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}:clear`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                })
+                            }
                         } else {
                             const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
                                 method: 'POST',
@@ -5703,7 +5736,7 @@
                                 body: JSON.stringify({
                                     properties: { title: 'TY-DB' },
                                     sheets: [
-                                        { properties: { title: currentStorageKey.value } }
+                                        { properties: { title: rawTabName } }
                                     ]
                                 })
                             })
