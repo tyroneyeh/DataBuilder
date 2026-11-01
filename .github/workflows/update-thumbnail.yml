@@ -38,7 +38,7 @@ jobs:
           npx -y playwright@latest install chromium
 
           # 2. 執行截圖，設定解析度為 1280x720
-          npx -y playwright@latest screenshot https://ty-db.pages.dev thumbnail.png \
+          npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png \
             --viewport-size="1280,720" \
             --timeout=15000 \
             --wait-for-timeout=3000
