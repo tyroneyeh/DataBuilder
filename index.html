@@ -1004,6 +1004,9 @@
                             <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 <tr>
                                     <th class="p-3 text-left font-semibold border-b border-gray-200 dark:border-gray-600">{{ translate('Category') }}</th>
+                                    <th class="p-3 text-center font-semibold border-b border-gray-200 dark:border-gray-600 w-24">
+                                        {{ translate('Type') }}
+                                    </th>
                                     <th class="p-3 text-right font-semibold border-b border-gray-200 dark:border-gray-600 w-40">{{ translate('Budget amount') }} ($)</th>
                                 </tr>
                             </thead>
@@ -1018,14 +1021,31 @@
                                             <span class="text-xs ml-2 opacity-50">▼</span>
                                         </label>
                                     </td>
-                                    <td class="w-100 p-3 text-right">
+
+                                    <td class="p-3 text-center">
+                                        <select 
+                                            v-model="stat.budget.type" 
+                                            @change="stat.budget.type = $event.target.value; onDataEdited('none')"
+                                            class="text-xs px-2 py-1 rounded border outline-none font-bold transition-colors cursor-pointer"
+                                            :class="(!stat.budget.type || stat.budget.type === 'expense') ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' : 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'"
+                                        >
+                                            <option value="expense">➖ {{ translate('Expense') }}</option>
+                                            <option value="income">➕ {{ translate('Income') }}</option>
+                                        </select>
+                                    </td>
+
+                                    <td class="w-100 p-3 text-right relative">
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold" 
+                                            :class="(!stat.budget.type || stat.budget.type === 'expense') ? 'text-red-500' : 'text-green-500'">
+                                            {{ (!stat.budget.type || stat.budget.type === 'expense') ? '-' : '+' }}
+                                        </span>
                                         <input
                                             :ref="(el) => { if (el) inputRefs[`${stat.budget.id}-amount`] = el; else delete inputRefs[`${stat.budget.id}-amount`] }"
                                             type="text"
                                             :value="stat.budget.amount"
                                             @focus="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
                                             @change="stat.budget.amount = calcValue($event.target.value); onDataEdited('none')"
-                                            class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 text-gray-700 dark:text-gray-200 transition-colors"
+                                            class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 pl-6 text-gray-700 dark:text-gray-200 transition-colors font-mono"
                                             :placeholder="translate('e.g., 5000 or 12000/12')"
                                         >
                                     </td>
@@ -1733,13 +1753,22 @@
                     const stats = []
                     uniqueCategories.value.forEach(cat => {
                         if (!categoryBudgets.value[cat]) {
-                            categoryBudgets.value[cat] = { amount: null }
+                            categoryBudgets.value[cat] = {
+                                amount: null,
+                                type: 'expense'
+                            }
+                        } else if (!categoryBudgets.value[cat].type) {
+                            categoryBudgets.value[cat].type = 'expense'
                         }
                         categoryBudgets.value[cat].id = 'budget_' + cat
-                        stats.push({ name: cat, budget: categoryBudgets.value[cat] })
+                        stats.push({
+                            name: cat,
+                            budget: categoryBudgets.value[cat]
+                        })
                     })
                     return stats
                 })
+
                 const scanModeOptions = [
                     {
                         id: 'ALL',
@@ -3569,13 +3598,19 @@
                         const rawVal = row[colId]
 
                         let label
+                        let catLabelForType
                         if (type === 'date') {
                             if (!rawVal) return
                             label = getDateGroupKey(rawVal, timeUnit.value)
+                            const catCol = selectedChartCatColId.value
+                            catLabelForType = (catCol && row[catCol] && String(row[catCol]).trim() !== '')
+                                ? String(row[catCol]).trim()
+                                : translate('Uncategorized')
                         } else {
                             label = rawVal && String(rawVal).trim() !== ''
                                 ? String(rawVal).trim()
                                 : translate('Uncategorized')
+                            catLabelForType = label
                         }
 
                         let val = parseFloat(row[numCol.id]) || 0
@@ -3583,7 +3618,11 @@
                         else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
 
                         if (val !== 0) {
-                            totals[label] = (totals[label] || 0) + val
+                            const budgetConfig = categoryBudgets.value[catLabelForType]
+                            const isExpense = !budgetConfig || budgetConfig.type === 'expense'
+                            const adjustedVal = isExpense ? -Math.abs(val) : Math.abs(val)
+
+                            totals[label] = (totals[label] || 0) + adjustedVal
                             counts[label] = (counts[label] || 0) + 1
                         }
                     })
@@ -3621,9 +3660,13 @@
                         }
                         const dateLabel = getDateGroupKey(dateVal, timeUnit.value)
                         let catLabel = translate('Uncategorized')
+                        let originalCatLabel = catLabel
                         if (catColId) {
                             const rawCat = row[catColId]
-                            if (rawCat && String(rawCat).trim() !== '') catLabel = String(rawCat).trim()
+                            if (rawCat && String(rawCat).trim() !== '') {
+                                originalCatLabel = String(rawCat).trim()
+                                catLabel = originalCatLabel
+                            }
                         }
                         if (topCategoriesSet && topCategoriesSet.size > 0 && !topCategoriesSet.has(catLabel)) {
                             catLabel = otherLabel
@@ -3632,8 +3675,12 @@
                         if (numCol.type.startsWith('multiply')) val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
                         else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
                         if (val !== 0) {
+                            const budgetConfig = categoryBudgets.value[originalCatLabel]
+                            const isExpense = !budgetConfig || budgetConfig.type === 'expense'
+                            const adjustedVal = isExpense ? -Math.abs(val) : Math.abs(val)
+
                             if (!trendData[dateLabel]) trendData[dateLabel] = {}
-                            trendData[dateLabel][catLabel] = (trendData[dateLabel][catLabel] || 0) + val
+                            trendData[dateLabel][catLabel] = (trendData[dateLabel][catLabel] || 0) + adjustedVal
                             allCategories.add(catLabel)
                         }
                     })
@@ -3678,9 +3725,10 @@
                         }
 
                         cachedTotalSum = 0
-                        dataset.data.forEach((val, index) => {
+                        const rawData = dataset.rawValues || dataset.data
+                        rawData.forEach((val, index) => {
                             if (chart.getDataVisibility(index)) {
-                                cachedTotalSum += val
+                                cachedTotalSum += val 
                             }
                         })
                         ctx.textBaseline = 'middle'
@@ -3697,7 +3745,9 @@
                         ctx.fillText(labelText, centerX, centerY - 20)
                         const fontSize = (height / 110).toFixed(2)
                         ctx.font = `bold ${fontSize}em sans-serif`
-                        ctx.fillStyle = isDarkMode ? '#f3f4f6' : '#1f2937'
+                        ctx.fillStyle = cachedTotalSum < 0 
+                            ? (isDarkMode ? '#f87171' : '#dc2626') 
+                            : (isDarkMode ? '#f3f4f6' : '#1f2937')
                         ctx.fillText(formatNumber(cachedTotalSum), centerX, centerY + 15)
                         ctx.restore()
                     },
@@ -3774,9 +3824,11 @@
                         if (!dataset || !dataset.data) return
 
                         const total = dataset.data.reduce((sum, val) => sum + val, 0)
+                        const rawValues = dataset.rawValues || dataset.data
 
                         const rawItems = chart.data.labels.map((label, index) => {
                             let value = dataset.data[index]
+                            let realValue = rawValues[index]
                             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
 
                             const meta = chart.getDatasetMeta(0)
@@ -3786,7 +3838,7 @@
                             return {
                                 index: index,
                                 text: label,
-                                value: value,
+                                value: realValue,
                                 percentage: percentage,
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index),
@@ -3794,7 +3846,7 @@
                                 count: categoryCounts.value[label] || 0
                             }
                         })
-                        rawItems.sort((a, b) => b.value - a.value)
+                        rawItems.sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
                         const newItemsStr = JSON.stringify(rawItems)
                         if (chart.$lastLegendStr !== newItemsStr) {
                             customLegendItems.value = rawItems
@@ -3844,9 +3896,11 @@
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
+                    const absValues = values.map(v => Math.abs(v))
                     if (expenseChart.value) {
                         expenseChart.value.data.labels = labels
-                        expenseChart.value.data.datasets[0].data = values
+                        expenseChart.value.data.datasets[0].data = absValues
+                        expenseChart.value.data.datasets[0].rawValues = values
                         expenseChart.value.update()
                     } else {
                         expenseChart.value = markRaw(new Chart(ctx, {
@@ -3854,7 +3908,8 @@
                             data: {
                                 labels: labels,
                                 datasets: [{
-                                    data: values,
+                                    data: absValues,
+                                    rawValues: values,
                                     backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'],
                                     borderWidth: 2,
                                     borderColor: isDark.value ? '#1f2937' : '#ffffff'
@@ -3869,11 +3924,13 @@
                                     tooltip: {
                                         callbacks: {
                                             label: (context) => {
-                                                const value = context.raw || 0
                                                 const dataset = context.chart.data.datasets[0]
+                                                const realValue = dataset.rawValues ? dataset.rawValues[context.dataIndex] : context.raw
+                                                const value = context.raw || 0
                                                 const total = dataset.data.reduce((sum, val) => sum + val, 0)
                                                 const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
-                                                return `${value.toLocaleString()} (${percentage}%)`
+                                                const sign = realValue > 0 ? '+' : ''
+                                                return `${sign}${realValue.toLocaleString()} (${percentage}%)`
                                             }
                                         }
                                     }
@@ -4004,7 +4061,8 @@
                                                     total += tooltipItem.parsed.y
                                                 })
 
-                                                return translate('Total') +': ' + total.toLocaleString()
+                                                const sign = total > 0 ? '+' : ''
+                                                return translate('Total') +': ' + sign + total.toLocaleString()
                                             }
                                         }
                                     }
@@ -4049,7 +4107,7 @@
                     await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
 
                     if (categoryData && ctxDoughnut) {
-                        const sortedEntries = Object.entries(categoryData).sort((a, b) => b[1] - a[1])
+                        const sortedEntries = Object.entries(categoryData).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
                         const MAX_CAT = 12
                         const finalData = {}
                         sortedEntries.forEach((item, index) => {
