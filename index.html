@@ -1951,7 +1951,7 @@
                     debouncedSave()
                     updateTitle()
                     refreshYearFilters()
-                    updateChart()
+                    debouncedUpdateChart()
                 }, { deep: true })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
@@ -1962,7 +1962,7 @@
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
                     selectedChartDateColId.value ? localStorage.setItem(`${currentStorageKey.value}_chartDateColId`, selectedChartDateColId.value) : localStorage.removeItem(`${currentStorageKey.value}_chartDateColId`)
                     await nextTick()
-                    updateChart()
+                    debouncedUpdateChart()
                 })
 
                 watch(isDark, (val) => {
@@ -3668,7 +3668,7 @@
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
                     if (isChartOpen.value) {
-                        updateChart()
+                        debouncedUpdateChart()
                         await nextTick()
                         if (expenseChart.value) expenseChart.value.resize()
                     }
@@ -4259,7 +4259,7 @@
                 const toggleChartViewMode = async () => {
                     chartViewMode.value = chartViewMode.value === 'expense' ? 'income' : 'expense'
                     await nextTick()
-                    updateChart()
+                    debouncedUpdateChart()
                 }
 
                 const toggleFilter = async (type, value) => {
@@ -4281,7 +4281,7 @@
                                 item.active = !item.active
                             }
                             await nextTick()
-                            updateChart()
+                            debouncedUpdateChart()
                         }, 250)
                     } else if (filterClickCount === 2) {
                         clearTimeout(filterClickTimer)
@@ -4299,7 +4299,7 @@
                             }
                         })
                         await nextTick()
-                        updateChart()
+                        debouncedUpdateChart()
                     }
                 }
 
@@ -5105,7 +5105,7 @@
                 const toggleTrendChartType = async () => {
                     trendChartType.value = trendChartType.value === 'line' ? 'bar' : 'line'
                     await nextTick()
-                    updateChart()
+                    debouncedUpdateChart()
                 }
 
                 const onScrollBtnsEnter = () => {
