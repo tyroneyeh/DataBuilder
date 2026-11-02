@@ -274,32 +274,32 @@
                             :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }} </div>
                     </div>
                     <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
-                        <button @click="updateChart('day')"
+                        <button @click="debouncedUpdateChart('day')"
                                 :class="timeUnit === 'day' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Daily') }}
                         </button>
-                        <button @click="updateChart('week')"
+                        <button @click="debouncedUpdateChart('week')"
                                 :class="timeUnit === 'week' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Weekly') }}
                         </button>
-                        <button v-if="monthFilters.length > 1" @click="updateChart('month')"
+                        <button v-if="monthFilters.length > 1" @click="debouncedUpdateChart('month')"
                                 :class="timeUnit === 'month' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Monthly') }}
                         </button>
-                        <button v-if="monthFilters.length > 3" @click="updateChart('quarter')"
+                        <button v-if="monthFilters.length > 3" @click="debouncedUpdateChart('quarter')"
                                 :class="timeUnit === 'quarter' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Quarterly') }}
                         </button>
-                        <button v-if="monthFilters.length > 5" @click="updateChart('halfyear')"
+                        <button v-if="monthFilters.length > 5" @click="debouncedUpdateChart('halfyear')"
                                 :class="timeUnit === 'halfyear' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Half-Yearly') }}
                         </button>
-                        <button v-if="yearFilters.length > 1" @click="updateChart('year')"
+                        <button v-if="yearFilters.length > 1" @click="debouncedUpdateChart('year')"
                                 :class="timeUnit === 'year' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'"
                                 class="px-3 py-1 text-xs rounded-md transition-colors">
                             {{ translate('Yearly') }}
@@ -1677,6 +1677,8 @@
 
         }
 
+        const defaultColurs = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e', '#84cc16']
+
         const app = createApp({
             setup() {
                 const window = globalThis
@@ -1956,12 +1958,11 @@
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
                 })
-                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], async () => {
+                watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
                     if (isInitializing) return
                     if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
                     if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
                     selectedChartDateColId.value ? localStorage.setItem(`${currentStorageKey.value}_chartDateColId`, selectedChartDateColId.value) : localStorage.removeItem(`${currentStorageKey.value}_chartDateColId`)
-                    await nextTick()
                     debouncedUpdateChart()
                 })
 
@@ -2255,13 +2256,13 @@
                     return map
                 })
 
-                const debouncedUpdateChart = debounce(async () => {
+                const debouncedUpdateChart = debounce(async(unit) => {
                     if (isInitializing) return
                     await nextTick()
-                    updateChart()
+                    updateChart(unit)
                 }, 300)
 
-                watch(filteredRows, async () => {
+                watch(filteredRows, () => {
                     const total = filteredRows.value.length
                     if (windowStart.value >= total || total === 0) {
                         windowStart.value = 0
@@ -2270,7 +2271,6 @@
                         paddingBottom.value = 0
                     }
                     debouncedUpdateChart()
-                    await nextTick()
                     if (tableContainer.value) {
                         const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
                         if (tableContainer.value.scrollTop > maxScroll + 50) {
@@ -3663,13 +3663,12 @@
                     }
                 }
 
-                const toggleChart = async () => {
+                const toggleChart = () => {
                     if (!columns.value.length) return
                     isChartOpen.value = !isChartOpen.value
                     isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
                     if (isChartOpen.value) {
                         debouncedUpdateChart()
-                        await nextTick()
                         if (expenseChart.value) expenseChart.value.resize()
                     }
                 }
@@ -4002,7 +4001,7 @@
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
-                    const bgColors = labels.map(label => categoryBudgets.value[label]?.color || '#9ca3af')
+                    const bgColors = labels.map(label => categoryBudgets.value[label]?.color) || defaultColors
                     const absValues = values.map(v => Math.abs(v))
                     if (expenseChart.value) {
                         expenseChart.value.data.labels = labels
@@ -4052,9 +4051,10 @@
 
                 const updateTrend = (ctx, labels, trendObj) => {
                     const isLine = trendChartType.value === 'line'
-                    const palette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e', '#84cc16']
+                    const bgColors = labels.map(label => categoryBudgets.value[label]?.color) || defaultColors
+
                     const datasets = trendObj.categories.map((cat, index) => {
-                        const color = palette[index % palette.length]
+                        const color = bgColors[index % bgColors.length]
                         const dataValues = labels.map(dateLabel => {
                             return trendObj.trendData[dateLabel][cat] || 0
                         })
@@ -4256,13 +4256,12 @@
                     }
                 }
 
-                const toggleChartViewMode = async () => {
+                const toggleChartViewMode = () => {
                     chartViewMode.value = chartViewMode.value === 'expense' ? 'income' : 'expense'
-                    await nextTick()
                     debouncedUpdateChart()
                 }
 
-                const toggleFilter = async (type, value) => {
+                const toggleFilter = (type, value) => {
                     const currentClick = `${type}-${value}`
                     if (lastFilterClick !== currentClick) {
                         clearTimeout(filterClickTimer)
@@ -4280,8 +4279,6 @@
                             if (item) {
                                 item.active = !item.active
                             }
-                            await nextTick()
-                            debouncedUpdateChart()
                         }, 250)
                     } else if (filterClickCount === 2) {
                         clearTimeout(filterClickTimer)
@@ -4298,9 +4295,8 @@
                                 x.active = (x[matchKey] === value)
                             }
                         })
-                        await nextTick()
-                        debouncedUpdateChart()
                     }
+                    debouncedUpdateChart()
                 }
 
                 const refreshYearFilters = () => {
@@ -5102,9 +5098,8 @@
                     return hasTextFilter || hasDateFilter || hasChartDateFilter || hasLegendFilter
                 })
 
-                const toggleTrendChartType = async () => {
+                const toggleTrendChartType = () => {
                     trendChartType.value = trendChartType.value === 'line' ? 'bar' : 'line'
-                    await nextTick()
                     debouncedUpdateChart()
                 }
 
@@ -6495,7 +6490,7 @@
                     isTitleOpen,
                     customLegendItems,
                     toggleLegend,
-                    updateChart,
+                    debouncedUpdateChart,
                     selectedChartCatColId,
                     selectedChartNumColId,
                     selectedChartDateColId,
