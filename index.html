@@ -1042,6 +1042,7 @@
                             <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 <tr>
                                     <th class="p-3 text-left font-semibold border-b border-gray-200 dark:border-gray-600">{{ translate('Category') }}</th>
+                                    <th class="p-3 text-center font-semibold border-b border-gray-200 dark:border-gray-600 w-16">🎨</th>
                                     <th class="p-3 text-center font-semibold border-b border-gray-200 dark:border-gray-600 w-24">
                                         {{ translate('Type') }}
                                     </th>
@@ -1059,10 +1060,20 @@
                                             <span class="text-xs ml-2 opacity-50">▼</span>
                                         </label>
                                     </td>
-
                                     <td class="p-3 text-center">
-                                        <select 
-                                            v-model="stat.budget.type" 
+                                        <div class="relative w-7 h-7 mx-auto rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 shadow-sm hover:scale-110 transition-transform cursor-pointer">
+                                            <input
+                                                type="color"
+                                                v-model="stat.budget.color"
+                                                @change="onDataEdited()"
+                                                class="absolute -top-2 -left-2 w-12 h-12 cursor-pointer p-0 border-0"
+                                                :title="translate('Change Color')"
+                                            >
+                                        </div>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <select
+                                            v-model="stat.budget.type"
                                             @change="stat.budget.type = $event.target.value; onDataEdited('none')"
                                             class="text-xs px-2 py-1 rounded border outline-none font-bold transition-colors cursor-pointer"
                                             :class="(!stat.budget.type || stat.budget.type === 'expense') ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' : 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'"
@@ -1073,7 +1084,7 @@
                                     </td>
 
                                     <td class="w-100 p-3 text-right relative">
-                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold" 
+                                        <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold"
                                             :class="(!stat.budget.type || stat.budget.type === 'expense') ? 'text-red-500' : 'text-green-500'">
                                             {{ (!stat.budget.type || stat.budget.type === 'expense') ? '-' : '+' }}
                                         </span>
@@ -1790,15 +1801,21 @@
 
                 const budgetStats = computed(() => {
                     const stats = []
-                    uniqueCategories.value.forEach(cat => {
+                    const defaultPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+                    uniqueCategories.value.forEach((cat, index) => {
                         if (!categoryBudgets.value[cat]) {
                             categoryBudgets.value[cat] = {
                                 amount: null,
-                                type: 'expense'
+                                type: 'expense',
+                                color: defaultPalette[index % defaultPalette.length]
                             }
                         } else if (!categoryBudgets.value[cat].type) {
                             categoryBudgets.value[cat].type = 'expense'
                         }
+                        if (!categoryBudgets.value[cat].color) {
+                            categoryBudgets.value[cat].color = defaultPalette[index % defaultPalette.length]
+                        }
+
                         categoryBudgets.value[cat].id = 'budget_' + cat
                         stats.push({
                             name: cat,
@@ -3986,11 +4003,13 @@
                 }
 
                 const updateDoughnut = (ctx, labels, values) => {
+                    const bgColors = labels.map(label => categoryBudgets.value[label]?.color || '#9ca3af')
                     const absValues = values.map(v => Math.abs(v))
                     if (expenseChart.value) {
                         expenseChart.value.data.labels = labels
                         expenseChart.value.data.datasets[0].data = absValues
                         expenseChart.value.data.datasets[0].rawValues = values
+                        expenseChart.value.data.datasets[0].backgroundColor = bgColors
                         expenseChart.value.update()
                     } else {
                         expenseChart.value = markRaw(new Chart(ctx, {
@@ -4000,7 +4019,7 @@
                                 datasets: [{
                                     data: absValues,
                                     rawValues: values,
-                                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'],
+                                    backgroundColor: bgColors,
                                     borderWidth: 2,
                                     borderColor: isDark.value ? '#1f2937' : '#ffffff'
                                 }]
