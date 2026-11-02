@@ -688,6 +688,28 @@
                                     >✖</button>
                                 </div>
                                 <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative flex flex-col gap-2">
+                                    <div
+                                        class="flex flex-col items-center sm:items-start justify-center w-full mx-auto sm:mx-0 cursor-pointer"
+                                        :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
+                                        @click.stop="showProgressToast(col.id, col.label)"
+                                    >
+                                        <span
+                                            class="text-xs sm:text-sm transition-colors duration-300 font-medium"
+                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
+                                        >
+                                            {{ columnTotals[col.id] || '0 / 0' }}
+                                        </span>
+                                        <div
+                                            v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
+                                            class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                                        >
+                                            <div
+                                                class="h-full transition-all duration-500 ease-out"
+                                                :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
+                                                :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
+                                            ></div>
+                                        </div>
+                                    </div>
                                     <div class="relative">
                                         <select
                                             v-model="columnFilters[col.id]"
@@ -703,28 +725,6 @@
                                             class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
                                             :title="translate('Clear filter')"
                                         >✖</button>
-                                    </div>
-                                    <div
-                                        class="flex flex-col items-center sm:items-start justify-center w-full max-w-[80px] mx-auto sm:mx-0 cursor-pointer sm:cursor-help"
-                                        :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
-                                        @click.stop="showProgressToast(col.id, col.label)"
-                                    >
-                                        <span
-                                            class="text-xs sm:text-sm transition-colors duration-300 font-medium"
-                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
-                                        >
-                                            {{ columnTotals[col.id] || '0 / 0' }}
-                                        </span>
-                                        <div
-                                            v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
-                                            class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
-                                        >
-                                            <div 
-                                                class="h-full transition-all duration-500 ease-out"
-                                                :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
-                                                :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
-                                            ></div>
-                                        </div>
                                     </div>
                                 </div>
 
