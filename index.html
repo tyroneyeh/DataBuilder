@@ -583,7 +583,7 @@
                             ]">
 
                             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 text-nowrap">{{ col.label }}</span>
-                            <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
+                            <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
 
                                 <span v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                                     <input
@@ -687,8 +687,29 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </div>
-                                <div v-else-if="['number', 'multiply', 'minus'].includes(col.type)" class="relative">
-                                    {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0)) }}
+                                <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative">
+                                    <select
+                                        v-model="columnFilters[col.id]"
+                                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
+                                    >
+                                        <option value="">{{ translate('All') }}</option>
+                                        <option value="true">✅ {{ translate('Checked') }}</option>
+                                        <option value="false">⬜ {{ translate('Unchecked') }}</option>
+                                    </select>
+                                    <button
+                                        v-show="columnFilters[col.id]"
+                                        @click="columnFilters[col.id] = ''"
+                                        class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                                        :title="translate('Clear filter')"
+                                    >✖</button>
+                                </div>
+                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+                                    <template v-if="col.type === 'checkbox'">
+                                        {{ columnTotals[col.id] || '' }}
+                                    </template>
+                                    <template v-else>
+                                        {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0)) }}
+                                    </template>
                                 </div>
                             </div>
                         </td>
