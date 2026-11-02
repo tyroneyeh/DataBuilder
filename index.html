@@ -2204,14 +2204,36 @@
                 const columnTotals = computed(() => {
                     JSON.stringify(rows.value)
                     const totals = {}
+                    const catColId = selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
+
                     columns.value.forEach(col => {
-                        if (col.type === 'number') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + calcValue(row[col.id]), 0)
-                        else if (col.type === 'multiply') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) * calcValue(row[col.opB])), 0)
-                        else if (col.type === 'multiply3') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])), 0)
-                        else if (col.type === 'minus') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) - calcValue(row[col.opB])), 0)
-                        else if (col.type === 'checkbox') {
+                        if (col.type === 'checkbox') {
                             const checkedCount = filteredRows.value.filter(row => Boolean(row[col.id])).length
                             totals[col.id] = `${checkedCount} / ${filteredRows.value.length}`
+                            return
+                        }
+
+                        if (['number', 'multiply', 'multiply3', 'minus'].includes(col.type)) {
+                            let sum = 0
+                            filteredRows.value.forEach(row => {
+                                let val = 0
+                                if (col.type === 'number') val = calcValue(row[col.id])
+                                else if (col.type === 'multiply') val = calcValue(row[col.opA]) * calcValue(row[col.opB])
+                                else if (col.type === 'multiply3') val = calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])
+                                else if (col.type === 'minus') val = calcValue(row[col.opA]) - calcValue(row[col.opB])
+
+                                if (col.id === selectedChartNumColId.value && catColId) {
+                                    const rawCat = row[catColId]
+                                    const catLabel = rawCat && String(rawCat).trim() !== '' ? String(rawCat).trim() : translate('Uncategorized')
+                                    const budgetConfig = categoryBudgets.value[catLabel]
+                                    if (val !== 0) {
+                                        const isExpense = !budgetConfig || budgetConfig.type === 'expense'
+                                        val = isExpense ? -Math.abs(val) : Math.abs(val)
+                                    }
+                                }
+                                sum += val
+                            })
+                            totals[col.id] = sum
                         }
                     })
                     return totals
