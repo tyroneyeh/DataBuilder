@@ -1000,11 +1000,11 @@
                         <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                         <div class="flex w-full gap-2">
                             <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
-                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
+                                <span v-if="isProcessing == -1" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬆️ {{ translate('Push to gists') }}</span>
                             </button>
                             <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
-                                <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
+                                <span v-if="isProcessing == -2" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬇️ {{ translate('Pull from gists') }}</span>
                             </button>
                             <button
@@ -1012,7 +1012,7 @@
                                 :disabled="isProcessing || !sheetImportUrl"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <span v-if="isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-if="isProcessing == -3" class="animate-spin text-lg">⏳</span>
                                 <span v-else>⬆️ {{ translate('Push to Sheets') }}</span>
                             </button>
                             <button
@@ -1020,7 +1020,7 @@
                                 :disabled="isProcessing || !sheetImportUrl"
                                 class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <span v-if="isProcessing" class="animate-spin text-lg">⏳</span>
+                                <span v-if="isProcessing == -4" class="animate-spin text-lg">⏳</span>
                                 <span v-else>⬇️ {{ translate('Pull from Sheets') }}</span>
                             </button>
                         </div>
@@ -1566,7 +1566,7 @@
                     y: 0
                 })
 
-                const isProcessing = ref(false)
+                const isProcessing = ref(0)
                 const db = new SimpleDB()
                 const currentStorageKey = ref('')
                 const columnFilters = ref({})
@@ -3420,7 +3420,7 @@
                     const files = event.target.files
                     if (!files || !files.length) return
 
-                    isProcessing.value = true
+                    isProcessing.value = 1
 
                     try {
                         let addCount = 0
@@ -3448,7 +3448,7 @@
                         alert(translate('Failed to read file.'))
                     } finally {
                         event.target.value = ''
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -4219,7 +4219,7 @@
                 }
 
                 const triggerPrint = async () => {
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     isPrinting.value = true
 
                     document.documentElement.classList.remove('dark')
@@ -4237,7 +4237,7 @@
                             setTimeout(() => {
                                 isPrinting.value = false
                                 if (isDark.value) document.documentElement.classList.add('dark')
-                                isProcessing.value = false
+                                isProcessing.value = 0
 
                                 nextTick(() => {
                                     if (expenseChart.value) expenseChart.value.resize()
@@ -4283,7 +4283,7 @@
                 }
 
                 const backupToGist = async () => {
-                    isProcessing.value = true
+                    isProcessing.value = -1
                     const rowsValues = rows.value.map(({id, ...rest}) => rest)
                     const payload = {
                         title: currentStorageKey.value,
@@ -4330,7 +4330,7 @@
                         console.error("Gist backup error:", error)
                         alert(translate('Backup failed. Please try again.'))
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -4338,7 +4338,7 @@
                     const cleanGistId = gistId.value.trim()
 
                     if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
-                    isProcessing.value = true
+                    isProcessing.value = -2
 
                     try {
                         const result = await fetchGistAPI('GET', `/${cleanGistId}`)
@@ -4391,7 +4391,7 @@
                             alert(translate('No matching data found in this Gist. Invalid JSON.'))
                         }
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -4551,7 +4551,7 @@
 
                 const processScannedText = async (decodedText) => {
                     if (isProcessing.value || decodedText === lastScannedText.value) return
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     lastScannedText.value = decodedText
                     try {
                         if (!speakFeedback(decodedText)) playBeep()
@@ -4581,7 +4581,7 @@
                         alert(error.message)
                     } finally {
                         setTimeout(() => {
-                            isProcessing.value = false
+                            isProcessing.value = 0
                         }, 300)
                         if (scanCooldownTimer) clearTimeout(scanCooldownTimer)
                         scanCooldownTimer = setTimeout(() => {
@@ -4591,7 +4591,7 @@
                 }
 
                 const openScanner = async () => {
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js')
                     initAudioFromRef()
                     playBeep()
@@ -4648,7 +4648,7 @@
                         alert("Scanner error: " + err)
                         closeScanner()
                     }).finally(() => {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     })
                 }
 
@@ -4667,7 +4667,7 @@
                     sharedFileInput.onchange = async (e) => {
                         const file = e.target.files[0]
                         if (!file) return
-                        isProcessing.value = false
+                        isProcessing.value = 0
                         let decodedText = null
 
                         try {
@@ -4839,7 +4839,7 @@
                 }
 
                 const generateShareLink = async () => {
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
 
                     try {
@@ -4873,14 +4873,14 @@
                     } catch (e) {
                         alert(translate('Failed to generate link.'))
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
                 const shareRow = async () => {
                     const row = activeMenuRow.value
                     closeActionMenu()
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
 
                     try {
@@ -4914,13 +4914,13 @@
                     } catch (e) {
                         alert(translate('Failed to generate link.'))
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
                 const processOCR = async (base64Image) => {
                     const apiKey = googleVisionKey.value.trim()
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     try {
                         const base64Data = base64Image.split(',')[1]
                         const payload = {
@@ -4972,7 +4972,7 @@
                         console.error("OCR API Error:", error)
                         showConfirm('OCR API Error:' + error.message, true)
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -5037,7 +5037,7 @@
                         return
                     }
 
-                    isProcessing.value = true
+                    isProcessing.value = 1
                     try {
                         if (!window.tf) {
                             await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs')
@@ -5052,7 +5052,7 @@
                     } catch (error) {
                         alert(translate('AI Model load failed: ' + error.message))
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -5751,7 +5751,6 @@
                 }
 
                 const executeExportToSheets = async () => {
-                    isProcessing.value = true
                     try {
                         const token = await getValidGoogleToken()
                         const tabName = `'${currentStorageKey.value}'`
@@ -5876,7 +5875,7 @@
                         googleAccessToken.value = ''
                         tokenExpiresAt = 0
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -5948,7 +5947,7 @@
                         alert('Sync failed. You might not have permission, or token expired.')
                         googleAccessToken.value = ''
                     } finally {
-                        isProcessing.value = false
+                        isProcessing.value = 0
                     }
                 }
 
@@ -6038,6 +6037,7 @@
 
                 const exportToGoogleSheets = async () => {
                     try {
+                        isProcessing.value = -3
                         await executeExportToSheets()
                     } catch (err) {
                         console.error('Export Action Failed:', err)
@@ -6050,6 +6050,7 @@
                     if (!match) return alert(translate('Invalid Google Sheets URL!'))
 
                     try {
+                        isProcessing.value = -4
                         await executeImportFromSheets(match[1])
                     } catch (err) {
                         console.error('Import Action Failed:', err)
