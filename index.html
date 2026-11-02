@@ -4163,7 +4163,11 @@
                         expenseChart.value = null
                     }
                     if (!values.length) {
-                        isChartOpen.value = false
+                        if (trendChart.value) {
+                            trendChart.value.destroy()
+                            trendChart.value = null
+                        }
+                        hasTrendData.value = false
                         return
                     }
                     const trendObj = getTrendChartData(topCategories)
