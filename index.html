@@ -596,7 +596,6 @@
 
                             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 text-nowrap">{{ col.label }}</span>
                             <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
-
                                 <span v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="text-blue-700 dark:text-blue-400 print:text-black text-lg print:text-base font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                                     <input
                                         type="text"
@@ -615,16 +614,16 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </span>
-                                <div v-else-if="['text', 'category', 'time'].includes(col.type) && !isPrinting" class="flex relative">
+                                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="flex relative">
                                     <input
-                                        :type="col.type === 'time' ? 'time' : 'text'"
+                                        type="text"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
                                         @click.stop="openGlobalMenu($event, null, col)"
-                                        :placeholder="col.type === 'time' ? '' : '🔍 ' + translate('Filter...')"
+                                        :placeholder="'🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
-                                    <button v-if="!['number', 'time'].includes(col.type)"
+                                    <button v-if="!['number'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row: null, col }"
                                         class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
@@ -642,45 +641,41 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </div>
-                                <div v-else-if="col.type === 'date' && !isPrinting" class="relative">
-
-                                    <div v-if="activeDateFilterCol === col.id"
-                                        @click="activeDateFilterCol = null"
+                                <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                                    <div v-if="dateRangeOpenState[col.id]"
+                                        @click.stop="toggleDateFilter(col.id, false)"
                                         class="fixed inset-0 z-40 cursor-default"
                                         style="-webkit-tap-highlight-color: transparent">
                                     </div>
-
                                     <div class="relative z-50">
                                         <input
-                                            type="date"
+                                            :type="col.type"
                                             :value="dateRangeFilters[col.id]?.start || ''"
                                             @input="updateDateRange(col.id, 'start', $event.target.value)"
-                                            @click="activeDateFilterCol = col.id"
-                                            class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8"
+                                            @click.stop="toggleDateFilter(col.id, true)"
+                                            class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 w-full cursor-pointer"
                                         >
                                         <button
                                             v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
                                             @click.stop="clearDateRange(col.id)"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700"
+                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
                                             :title="translate('Clear filter')"
                                         >✖</button>
                                     </div>
-
-                                    <div v-if="activeDateFilterCol === col.id"
+                                    <div v-if="dateRangeOpenState[col.id]"
                                         class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
                                     >
                                         <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">
                                             {{ translate('To') }}
                                         </label>
                                         <input
-                                            type="date"
+                                            :type="col.type"
                                             :min="dateRangeFilters[col.id]?.start || ''"
                                             :value="dateRangeFilters[col.id]?.end || ''"
                                             @input="updateDateRange(col.id, 'end', $event.target.value)"
-                                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner"
+                                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
                                         >
                                     </div>
-
                                 </div>
                                 <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
                                     <select
@@ -691,7 +686,6 @@
                                         <option value="has_photo">🖼️ {{ translate('Photo') }}</option>
                                         <option value="no_photo">🚫 {{ translate('No Photo') }}</option>
                                     </select>
-
                                     <button
                                         v-show="columnFilters[col.id]"
                                         @click="columnFilters[col.id] = ''"
@@ -700,28 +694,6 @@
                                     >✖</button>
                                 </div>
                                 <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative flex flex-col gap-2">
-                                    <div
-                                        class="flex flex-col items-center sm:items-start justify-center w-full mx-auto sm:mx-0 cursor-pointer"
-                                        :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
-                                        @click.stop="showProgressToast(col.id, col.label)"
-                                    >
-                                        <span
-                                            class="text-xs sm:text-sm transition-colors duration-300 font-medium"
-                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
-                                        >
-                                            {{ columnTotals[col.id] || '0 / 0' }}
-                                        </span>
-                                        <div
-                                            v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
-                                            class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
-                                        >
-                                            <div
-                                                class="h-full transition-all duration-500 ease-out"
-                                                :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
-                                                :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
-                                            ></div>
-                                        </div>
-                                    </div>
                                     <div class="relative">
                                         <select
                                             v-model="columnFilters[col.id]"
@@ -738,16 +710,18 @@
                                             :title="translate('Clear filter')"
                                         >✖</button>
                                     </div>
-                                </div>
-
-                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
-                                    <template v-if="col.type === 'checkbox'">
-                                        <span
-                                            class="text-sm print:text-gray-600 font-medium"
-                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
-                                        >
+                                    <div class="flex flex-col items-center sm:items-start justify-center w-full mx-auto sm:mx-0 cursor-pointer" :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'" @click.stop="showProgressToast(col.id, col.label)">
+                                        <span class="text-xs sm:text-sm transition-colors duration-300 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">
                                             {{ columnTotals[col.id] || '0 / 0' }}
                                         </span>
+                                        <div v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0" class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div class="h-full transition-all duration-500 ease-out" :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))" :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+                                    <template v-if="col.type === 'checkbox'">
+                                        <span class="text-sm print:text-gray-600 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
                                     </template>
                                     <template v-else>
                                         <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
@@ -1820,7 +1794,7 @@
                     start: '',
                     end: ''
                 })
-                const activeDateFilterCol = ref(null)
+                const dateRangeOpenState = ref({})
                 const activeFilterCol = ref(null)
                 const draftFilterText = ref('')
                 const shareModal = ref({
@@ -2066,6 +2040,11 @@
                                 const rowDate = row[colId]
                                 if (!rowDate) return false
                                 let isValid = true
+                                let compareVal = rowDate
+                                const colDef = columns.value.find(c => c.id === colId)
+                                if (colDef && colDef.type === 'time') {
+                                    compareVal = normalizeTimeString(rowDate) || rowDate
+                                }
                                 if (range.start) isValid = isValid && (rowDate >= range.start)
                                 if (range.end) isValid = isValid && (rowDate <= range.end)
                                 return isValid
@@ -4965,6 +4944,19 @@
                     sharedFileInput.click()
                 }
 
+                const toggleDateFilter = (colId, forceState) => {
+                    if (forceState !== undefined) {
+                        dateRangeOpenState.value[colId] = forceState
+                    } else {
+                        dateRangeOpenState.value[colId] = !dateRangeOpenState.value[colId]
+                    }
+                    if (dateRangeOpenState.value[colId]) {
+                        Object.keys(dateRangeOpenState.value).forEach(k => {
+                            if (k !== colId) dateRangeOpenState.value[k] = false
+                        })
+                    }
+                }
+
                 const updateDateRange = (colId, field, value) => {
                     if (!dateRangeFilters.value[colId]) {
                         dateRangeFilters.value[colId] = { start: '', end: '' }
@@ -4979,7 +4971,7 @@
                 }
 
                 const clearDateRange = (colId) => {
-                    activeDateFilterCol.value = null
+                    dateRangeOpenState.value[colId] = false
                     if (dateRangeFilters.value[colId]) {
                         dateRangeFilters.value[colId] = { start: '', end: '' }
                     }
@@ -6441,9 +6433,10 @@
                     columnFilters,
                     activeFilterCol,
                     dateRangeFilters,
+                    toggleDateFilter,
                     updateDateRange,
                     clearDateRange,
-                    activeDateFilterCol,
+                    dateRangeOpenState,
                     draftFilterText,
                     toggleTrendChartType,
                     trendChartType,
