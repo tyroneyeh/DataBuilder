@@ -687,46 +687,55 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </div>
-                                <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative">
-                                    <select
-                                        v-model="columnFilters[col.id]"
-                                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
-                                    >
-                                        <option value="">{{ translate('All') }}</option>
-                                        <option value="true">✅ {{ translate('Checked') }}</option>
-                                        <option value="false">⬜ {{ translate('Unchecked') }}</option>
-                                    </select>
-                                    <button
-                                        v-show="columnFilters[col.id]"
-                                        @click="columnFilters[col.id] = ''"
-                                        class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
-                                        :title="translate('Clear filter')"
-                                    >✖</button>
-                                </div>
-                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
-
-                                    <template v-if="col.type === 'checkbox'">
-                                        <div 
-                                            class="flex flex-col items-center sm:items-start justify-center gap-1 w-full max-w-[80px] mx-auto sm:mx-0 cursor-help"
-                                            :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
+                                <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative flex flex-col gap-2">
+                                    <div class="relative">
+                                        <select
+                                            v-model="columnFilters[col.id]"
+                                            class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
                                         >
-                                            <span
-                                                class="text-xs sm:text-sm print:text-gray-600 transition-colors duration-300"
-                                                :class="getCheckboxProgressClass(columnTotals[col.id])"
-                                            >
-                                                {{ columnTotals[col.id] || '0 / 0' }}
-                                            </span>
-                                            <div
-                                                v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
-                                                class="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden print:hidden"
-                                            >
-                                                <div
-                                                    class="h-full transition-all duration-500 ease-out"
-                                                    :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
-                                                    :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
-                                                ></div>
-                                            </div>
+                                            <option value="">{{ translate('All') }}</option>
+                                            <option value="true">✅ {{ translate('Checked') }}</option>
+                                            <option value="false">⬜ {{ translate('Unchecked') }}</option>
+                                        </select>
+                                        <button
+                                            v-show="columnFilters[col.id]"
+                                            @click="columnFilters[col.id] = ''"
+                                            class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                                            :title="translate('Clear filter')"
+                                        >✖</button>
+                                    </div>
+                                    <div
+                                        class="flex flex-col items-center sm:items-start justify-center w-full max-w-[80px] mx-auto sm:mx-0 cursor-pointer sm:cursor-help"
+                                        :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
+                                        @click.stop="showProgressToast(col.id, col.label)"
+                                    >
+                                        <span
+                                            class="text-xs sm:text-sm transition-colors duration-300 font-medium"
+                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
+                                        >
+                                            {{ columnTotals[col.id] || '0 / 0' }}
+                                        </span>
+                                        <div
+                                            v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
+                                            class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                                        >
+                                            <div 
+                                                class="h-full transition-all duration-500 ease-out"
+                                                :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
+                                                :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
+                                            ></div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+                                    <template v-if="col.type === 'checkbox'">
+                                        <span
+                                            class="text-sm print:text-gray-600 font-medium"
+                                            :class="getCheckboxProgressClass(columnTotals[col.id])"
+                                        >
+                                            {{ columnTotals[col.id] || '0 / 0' }}
+                                        </span>
                                     </template>
                                     <template v-else>
                                         <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
