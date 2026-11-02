@@ -999,11 +999,11 @@
                         <button @click="generateShareLink" class="flex bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
                         <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                         <div class="flex w-full gap-2">
-                            <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 disabled:bg-gray-400 text-gray-700 dark:text-gray-200 px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
+                            <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
                                 <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬆️ {{ translate('Push to gists') }}</span>
                             </button>
-                            <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white px-5 py-3 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 focus:outline-none">
+                            <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
                                 <span v-if="isProcessing" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬇️ {{ translate('Pull from gists') }}</span>
                             </button>
