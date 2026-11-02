@@ -1719,6 +1719,7 @@
                 const isChartOpen = ref(localStorage.getItem('ty_chart_open'))
                 const isTitleOpen = ref(localStorage.getItem('ty_title_open'))
                 const customLegendItems = ref([])
+                const hiddenCategoryNames = ref([])
                 const selectedChartCatColId = ref(null)
                 const selectedChartNumColId = ref(null)
                 const selectedChartDateColId = ref('')
@@ -1930,12 +1931,13 @@
                 let pendingTokenResolve = null
                 let pendingTokenReject = null
 
-                const debouncedSave = debounce(async () => {
+                const debouncedSave = debounce(() => {
                     try {
                         if (!currentStorageKey.value) return
                         if (!colCount.value) colCount.value = columns.value.length
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
                         db.set(currentStorageKey.value, data)
+                        debouncedUpdateChart()
                     } catch (e) {
                         alert(e.message)
                     }
@@ -1953,7 +1955,6 @@
                     debouncedSave()
                     updateTitle()
                     refreshYearFilters()
-                    debouncedUpdateChart()
                 }, { deep: true })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
@@ -2085,13 +2086,10 @@
                 const filteredRows = computed(() => {
                     const chartDate = selectedChartDate.value
                     const catColId = selectedChartCatColId.value
-                    const legendItems = customLegendItems.value
                     let result = dateFilteredRows.value
 
-                    if (catColId && legendItems.length) {
-                        const hiddenCategories = new Set(
-                            legendItems.filter(item => item.hidden).map(item => item.text)
-                        )
+                    if (catColId && hiddenCategoryNames.value.length > 0) {
+                        const hiddenCategories = new Set(hiddenCategoryNames.value)
                         if (hiddenCategories.size > 0) {
                             result = result.filter(row => {
                                 const rawVal = row[catColId]
@@ -3954,8 +3952,14 @@
                         rawItems.sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
                         const newItemsStr = JSON.stringify(rawItems)
                         if (chart.$lastLegendStr !== newItemsStr) {
-                            customLegendItems.value = rawItems
                             chart.$lastLegendStr = newItemsStr
+                            const currentHidden = rawItems.filter(i => i.hidden).map(i => i.text)
+                            Promise.resolve().then(() => {
+                                customLegendItems.value = rawItems
+                                if (hiddenCategoryNames.value.join(',') !== currentHidden.join(',')) {
+                                    hiddenCategoryNames.value = currentHidden
+                                }
+                            })
                         }
                     }
                 }
@@ -4004,11 +4008,15 @@
                     const bgColors = labels.map(label => categoryBudgets.value[label]?.color) || defaultColors
                     const absValues = values.map(v => Math.abs(v))
                     if (expenseChart.value) {
+                        const currentLabels = expenseChart.value.data.labels || [];
+                        const isLabelsChanged = currentLabels.length !== labels.length || !currentLabels.every((val, index) => val === labels[index]);
+
                         expenseChart.value.data.labels = labels
                         expenseChart.value.data.datasets[0].data = absValues
                         expenseChart.value.data.datasets[0].rawValues = values
                         expenseChart.value.data.datasets[0].backgroundColor = bgColors
-                        expenseChart.value.update()
+
+                        expenseChart.value.update(isLabelsChanged ? undefined : 'active')
                     } else {
                         expenseChart.value = markRaw(new Chart(ctx, {
                             type: 'doughnut',
@@ -5094,7 +5102,7 @@
                     const hasTextFilter = Object.values(columnFilters.value).some(val => val && String(val).trim() !== '')
                     const hasDateFilter = Object.values(dateRangeFilters.value).some(range => range.start !== '' || range.end !== '')
                     const hasChartDateFilter = selectedChartDate.value !== null
-                    const hasLegendFilter = customLegendItems.value.some(item => item.hidden)
+                    const hasLegendFilter = hiddenCategoryNames.value.length > 0
                     return hasTextFilter || hasDateFilter || hasChartDateFilter || hasLegendFilter
                 })
 
