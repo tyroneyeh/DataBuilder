@@ -1934,8 +1934,6 @@
                         if (!colCount.value) colCount.value = columns.value.length
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
                         db.set(currentStorageKey.value, data)
-                        await nextTick()
-                        updateChart()
                     } catch (e) {
                         alert(e.message)
                     }
@@ -1953,6 +1951,7 @@
                     debouncedSave()
                     updateTitle()
                     refreshYearFilters()
+                    updateChart()
                 }, { deep: true })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
