@@ -1038,9 +1038,24 @@
                                     <th class="p-3 text-left font-semibold border-b border-gray-200 dark:border-gray-600">{{ translate('Category') }}</th>
                                     <th class="p-3 text-center font-semibold border-b border-gray-200 dark:border-gray-600 w-16">🎨</th>
                                     <th class="p-3 text-center font-semibold border-b border-gray-200 dark:border-gray-600 w-24">
-                                        {{ translate('Type') }}
+                                        <select
+                                            @change="applyTypeToAll($event.target.value); $event.target.value = ''"
+                                            class="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 outline-none font-bold transition-colors cursor-pointer bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-200 w-full"
+                                        >
+                                            <option value="" disabled selected>{{ translate('Type') }} ▼</option>
+                                            <option value="expense">➖ {{ translate('Expense') }} ({{ translate('All') }})</option>
+                                            <option value="income">➕ {{ translate('Income') }} ({{ translate('All') }})</option>
+                                        </select>
                                     </th>
-                                    <th class="p-3 text-right font-semibold border-b border-gray-200 dark:border-gray-600 w-40">{{ translate('Budget amount') }} ($)</th>
+                                    <th class="p-3 text-right font-semibold border-b border-gray-200 dark:border-gray-600 w-40">
+                                        <input
+                                            type="text"
+                                            :placeholder="translate('Budget amount') + ' ($) ▼'"
+                                            @change="applyAmountToAll($event.target.value); $event.target.value = ''"
+                                            class="w-full text-right bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded outline-none px-2 py-1 text-gray-700 dark:text-gray-200 transition-colors text-xs font-bold shadow-inner"
+                                            :title="translate('Apply to all')"
+                                        >
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1087,7 +1102,7 @@
                                             type="text"
                                             :value="stat.budget.amount"
                                             @focus="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
-                                            @change="stat.budget.amount = calcValue($event.target.value); onDataEdited('none')"
+                                            @change="stat.budget.amount = calcValue($event.target.value); onDataEdited()"
                                             class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 pl-6 text-gray-700 dark:text-gray-200 transition-colors font-mono"
                                             :placeholder="translate('e.g., 5000 or 12000/12')"
                                         >
@@ -1553,9 +1568,21 @@
         document.documentElement.lang = currentLanguage.value
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
-        const translate = (key) => {
+        const translate = (key, params = null) => {
             const dict = translations[currentLanguage.value]
-            return (dict && dict[key]) ? dict[key] : key
+            let text = (dict && dict[key]) ? dict[key] : key
+            if (params) {
+                if (Array.isArray(params)) {
+                    params.forEach((val, i) => {
+                        text = text.replace(new RegExp(String.raw`\{${i}\}`, 'g'), val)
+                    })
+                } else if (typeof params === 'object') {
+                    Object.keys(params).forEach(k => {
+                        text = text.replace(new RegExp(String.raw`\{${k}\}`, 'g'), params[k])
+                    })
+                }
+            }
+            return text
         }
 
         if ('serviceWorker' in navigator) {
@@ -1783,6 +1810,31 @@
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
                     isBudgetOpen.value ? localStorage.setItem('ty_budget_open', 'true') : localStorage.removeItem('ty_budget_open')
+                }
+
+                const applyTypeToAll = (typeValue) => {
+                    if (!typeValue) return
+                    if (confirm(translate('Are you sure you want to set all categories to {type}?', {type: typeValue === 'income' ? translate('Income') : translate('Expense')}))) {
+                        uniqueCategories.value.forEach(cat => {
+                            if (categoryBudgets.value[cat]) {
+                                categoryBudgets.value[cat].type = typeValue
+                            }
+                        })
+                        onDataEdited()
+                    }
+                }
+
+                const applyAmountToAll = (rawAmount) => {
+                    if (!rawAmount || String(rawAmount).trim() === '') return
+                    const amountValue = calcValue(rawAmount)
+                    if (confirm(translate('Are you sure you want to set all categories budget amount to {amount}?', {amount: amountValue}))) {
+                        uniqueCategories.value.forEach(cat => {
+                            if (categoryBudgets.value[cat]) {
+                                categoryBudgets.value[cat].amount = amountValue
+                            }
+                        })
+                        onDataEdited()
+                    }
                 }
 
                 const uniqueCategories = computed(() => {
@@ -6435,7 +6487,13 @@
                 })
 
                 return {
-                    isBudgetOpen, toggleBudget, categoryBudgets, uniqueCategories, budgetStats,
+                    isBudgetOpen,
+                    toggleBudget,
+                    categoryBudgets,
+                    uniqueCategories,
+                    budgetStats,
+                    applyTypeToAll,
+                    applyAmountToAll,
                     isProcessing,
                     currentLanguage,
                     translate,

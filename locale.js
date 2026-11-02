@@ -9,6 +9,8 @@ export const translations = {
         "Are you sure you want to delete this column?": "確定要刪除此欄嗎?",
         "Are you sure you want to delete this row?": "確定要刪除此列嗎?",
         "Are you sure you want to merge duplicates?": "確定要合併重複資料嗎?",
+        'Are you sure you want to set all categories to {type}?': '確定要將所有類別設為 {type} 嗎?',
+        'Are you sure you want to set all categories budget amount to {amount}?': '確定要將所有類別預算金額設為 {amount} 嗎?',
         "Backup failed: Data size (${sizeInMB}MB) exceeds the 1MB limit.": "備份失敗：資料大小 (${sizeInMB}MB) 超過 1MB 限制.",
         "Backup failed. Please try again.": "備份失敗, 請重試.",
         "Backed up to GitHub Gist successfully!": "成功備份至 GitHub Gist!",
