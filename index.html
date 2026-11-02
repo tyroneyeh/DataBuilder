@@ -704,11 +704,34 @@
                                     >✖</button>
                                 </div>
                                 <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+
                                     <template v-if="col.type === 'checkbox'">
-                                        {{ columnTotals[col.id] || '' }}
+                                        <div 
+                                            class="flex flex-col items-center sm:items-start justify-center gap-1 w-full max-w-[80px] mx-auto sm:mx-0 cursor-help"
+                                            :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'"
+                                        >
+                                            <span
+                                                class="text-xs sm:text-sm print:text-gray-600 transition-colors duration-300"
+                                                :class="getCheckboxProgressClass(columnTotals[col.id])"
+                                            >
+                                                {{ columnTotals[col.id] || '0 / 0' }}
+                                            </span>
+                                            <div
+                                                v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0"
+                                                class="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden print:hidden"
+                                            >
+                                                <div
+                                                    class="h-full transition-all duration-500 ease-out"
+                                                    :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
+                                                    :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"
+                                                ></div>
+                                            </div>
+                                        </div>
                                     </template>
                                     <template v-else>
-                                        {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0)) }}
+                                        <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
+                                            {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id] || 0)) }}
+                                        </span>
                                     </template>
                                 </div>
                             </div>
@@ -2034,6 +2057,12 @@
                                     if (filterTextStr === 'no_photo') return !hasPhoto
                                     return true
                                 }
+                                if (colDef.type === 'checkbox') {
+                                    const isChecked = Boolean(rawValue)
+                                    if (filterTextStr === 'true') return isChecked === true
+                                    if (filterTextStr === 'false') return isChecked === false
+                                    return true
+                                }
                                 if (['number', 'multiply', 'minus'].includes(colDef.type)) {
                                     const condition = parseFilterCondition(filterText)
                                     if (condition) {
@@ -2142,6 +2171,10 @@
                         else if (col.type === 'multiply') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) * calcValue(row[col.opB])), 0)
                         else if (col.type === 'multiply3') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])), 0)
                         else if (col.type === 'minus') totals[col.id] = filteredRows.value.reduce((sum, row) => sum + (calcValue(row[col.opA]) - calcValue(row[col.opB])), 0)
+                        else if (col.type === 'checkbox') {
+                            const checkedCount = filteredRows.value.filter(row => Boolean(row[col.id])).length
+                            totals[col.id] = `${checkedCount} / ${filteredRows.value.length}`
+                        }
                     })
                     return totals
                 })
@@ -6078,6 +6111,28 @@
                     }
                 }
 
+                const getCheckboxProgressClass = (progressStr) => {
+                    if (!progressStr || typeof progressStr !== 'string') return 'text-gray-500 dark:text-gray-400 font-medium'
+                    const [checked, total] = progressStr.split(' / ')
+                    if (total === '0') return 'text-gray-400 dark:text-gray-500 font-medium'
+                    if (checked === total) return 'text-emerald-600 dark:text-emerald-400 font-bold'
+                    if (checked !== '0') return 'text-blue-600 dark:text-blue-400 font-semibold'
+                    return 'text-gray-500 dark:text-gray-400 font-medium'
+                }
+
+                const getCheckboxProgressPercent = (progressStr) => {
+                    if (!progressStr || typeof progressStr !== 'string') return 0
+                    const [checked, total] = progressStr.split(' / ').map(Number)
+                    if (!total || total === 0) return 0
+                    return Math.round((checked / total) * 100)
+                }
+
+                const getProgressBarColor = (percent) => {
+                    if (percent === 100) return 'bg-emerald-500 dark:bg-emerald-400'
+                    if (percent > 0) return 'bg-blue-500 dark:bg-blue-400'
+                    return 'bg-transparent'
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -6324,7 +6379,10 @@
                     googleClientId,
                     sheetImportUrl,
                     importFromGoogleSheets,
-                    exportToGoogleSheets
+                    exportToGoogleSheets,
+                    getCheckboxProgressClass,
+                    getCheckboxProgressPercent,
+                    getProgressBarColor
                 }
             }
         }).mount('#app')
