@@ -116,6 +116,7 @@ export const translations = {
         "QR Code (2D)": "QR Code (2D)",
         "Quantity": "數量",
         "Quarterly": "季",
+        "Quick Add Link copied! Add it to your home screen or bookmarks.": "快速新增網址已複製!請將它加入手機主畫面或瀏覽器書籤.",
         "Rate": "速率",
         "Recognition in progress...": "辨識中...",
         "Remove column": "刪除欄位",

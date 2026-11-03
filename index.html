@@ -1141,6 +1141,7 @@
                         <button @click="exportJson" class="flex bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">{} {{ translate('Export JSON') }}</button>
                         <button @click="exportCsv" class="flex bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">⊞ {{ translate('Export CSV') }}</button>
                         <button @click="generateShareLink" class="flex bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 items-center justify-center gap-2 w-full sm:w-auto">🔗 {{ translate('Share Link & QRCode') }}</button>
+                        <button @click="copyQuickAddLink" class="flex bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">⚡ {{ translate('Quick Add Link') }}</button>
                         <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                         <div class="flex w-full gap-2">
                             <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
@@ -2436,7 +2437,9 @@
                     }
                     const hashStr = window.location.hash.slice(1)
                     if (hashStr && hashStr.startsWith('ws:')) {
-                        const wsName = decodeURIComponent(hashStr.slice(3))
+                        let wsRaw = hashStr.slice(3)
+                        if (wsRaw.endsWith('/add')) wsRaw = wsRaw.slice(0, -4)
+                        const wsName = decodeURIComponent(wsRaw)
                         if (wsName) {
                             currentStorageKey.value = wsName
                             savedKeysList.value = savedKeysList.value.filter(key => key !== wsName)
@@ -2446,7 +2449,9 @@
                     } else {
                         currentStorageKey.value = savedKeysList.value[0]
                     }
-                    window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                    if (!window.location.hash.endsWith('/add')) {
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                    }
                     currentStorageKey.value = savedKeysList.value[0]
                     loadChartCols()
                 }
@@ -5213,6 +5218,15 @@
                     }).catch(() => {})
                 }
 
+                const copyQuickAddLink = () => {
+                    const link = `${window.location.origin}${window.location.pathname}#ws:${encodeURIComponent(currentStorageKey.value)}/add`
+                    navigator.clipboard.writeText(link).then(() => {
+                        alert(translate('Quick Add Link copied! Add it to your home screen or bookmarks.'))
+                    }).catch(() => {
+                        alert('Copy failed')
+                    })
+                }
+
                 const generateShareLink = async () => {
                     isProcessing.value = 1
                     await loadScript('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js')
@@ -6517,6 +6531,13 @@
                     }
 
                     isInitializing = false
+
+                    if (window.location.hash.endsWith('/add')) {
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                        setTimeout(() => {
+                            addRow()
+                        }, 400)
+                    }
                 })
 
                 onUnmounted(() => {
@@ -6668,6 +6689,7 @@
                     shareModal,
                     shareRow,
                     copyShareLink,
+                    copyQuickAddLink,
                     googleVisionKey,
                     captureForOCR,
                     isAutoScanEnabled,
