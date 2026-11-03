@@ -1842,10 +1842,11 @@
                 const applyAmountToAll = (rawAmount) => {
                     if (!rawAmount || String(rawAmount).trim() === '') return
                     const amountValue = calcValue(rawAmount)
-                    if (confirm(translate('Are you sure you want to set all categories budget amount to {amount}?', {amount: amountValue}))) {
+                    if (confirm(translate('Are you sure you want to set all categories budget to {amount} for empty categories?', {amount: amountValue}))) {
                         uniqueCategories.value.forEach(cat => {
-                            if (categoryBudgets.value[cat]) {
-                                categoryBudgets.value[cat].amount = amountValue
+                            const budgetConfig = categoryBudgets.value[cat]
+                            if (budgetConfig && !budgetConfig.amount) {
+                                budgetConfig.amount = amountValue
                             }
                         })
                         onDataEdited()
