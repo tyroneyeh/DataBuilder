@@ -306,10 +306,10 @@
                         </button>
                     </div>
                 </div>
-                <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 print:p-2 print:shadow-none print:border-none rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4 print:mt-2">
+                <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 print:p-2 print:shadow-none print:border-none rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4 print:mt-2 print:break-inside-avoid">
                     <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 print:mb-2 flex items-center">📈 {{ translate('Trend') }}</h4>
-                    <div class="relative w-full h-64 print:h-[200px] overflow-hidden">
-                        <canvas id="trendChart"></canvas>
+                    <div class="relative w-full h-64 print:h-[180px] print:w-[100%] print:mx-auto">
+                        <canvas id="trendChart" class="print:!max-h-[180px] print:!max-w-full print:!w-full"></canvas>
                     </div>
                 </div>
             </div>
@@ -4230,7 +4230,7 @@
                                 scales: {
                                     x: {
                                         stacked: !isLine,
-                                        ticks: { color: isDark.value ? '#9ca3af' : '#6b7280' },
+                                        ticks: { color: isDark.value ? '#9ca3af' : '#6b7280', autoSkip: true },
                                         grid: { display: false }
                                     },
                                     y: {
@@ -6473,6 +6473,10 @@
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
                         document.documentElement.classList.remove('dark')
+                        setTimeout(() => {
+                            if (expenseChart.value) expenseChart.value.resize()
+                            if (trendChart.value) trendChart.value.resize()
+                        }, 10)
                     })
                     window.addEventListener('afterprint', () => {
                         isPrinting.value = false
