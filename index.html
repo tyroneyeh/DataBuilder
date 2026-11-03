@@ -2943,10 +2943,10 @@
                     const targetId = isCol ? parseInt(targetContainer.dataset.colIndex, 10) : targetContainer.dataset.id
                     const sourceId = isCol ? dragSource.index : dragSource.id
 
-                    if (targetId !== undefined && targetId !== sourceId) {
+                    if (targetId !== undefined && String(targetId) !== String(sourceId)) {
                         const dataList = type === 'rows' ? rows : columns
-                        const sourceIdx = isCol ? dragSource.index : dataList.value.findIndex(r => r.id === sourceId)
-                        const targetIdx = isCol ? targetId : dataList.value.findIndex(r => r.id === targetId)
+                        const sourceIdx = isCol ? dragSource.index : dataList.value.findIndex(r => String(r.id) === String(sourceId))
+                        const targetIdx = isCol ? targetId : dataList.value.findIndex(r => String(r.id) === String(targetId))
                         if (sourceIdx !== -1 && targetIdx !== -1) {
                             isSwapping = true
                             const newList = [...dataList.value]
