@@ -1028,10 +1028,7 @@
                     </div>
                 </div>
                 <div v-show="isBudgetOpen" class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700" :class="{'print:hidden': !isBudgetOpen}">
-                    <div v-if="uniqueCategories.length === 0" class="text-gray-500 text-sm text-center py-6 bg-white dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
-                        {{ translate('Please add categories first') }}
-                    </div>
-                    <div v-else class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                         <table class="w-full border-collapse bg-white dark:bg-gray-800 text-sm">
                             <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 <tr>
@@ -1110,6 +1107,22 @@
                                 </tr>
                             </tbody>
                         </table>
+
+                        <div class="p-3 bg-gray-50 dark:bg-gray-700/30 flex gap-2 items-center border-t border-gray-200 dark:border-gray-700">
+                            <input
+                                v-model="newCategoryInput"
+                                type="text"
+                                @keyup.enter="addNewCategory"
+                                :placeholder="translate('New Category')"
+                                class="flex-1 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm"
+                            >
+                            <button
+                                @click="addNewCategory"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md transition-colors font-bold shadow-sm active:scale-95 text-sm whitespace-nowrap"
+                            >
+                                ➕ {{ translate('Add') }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1806,6 +1819,7 @@
                 const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
                 const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
                 const googleAccessToken = ref('')
+                const newCategoryInput = ref('')
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -1837,14 +1851,34 @@
                     }
                 }
 
+                const addNewCategory = () => {
+                    const catName = newCategoryInput.value.trim()
+                    if (!catName) return
+                    if (categoryBudgets.value[catName]) {
+                        alert(translate('Category already exists!'))
+                        return
+                    }
+                    const defaultPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
+                    const colorIndex = Object.keys(categoryBudgets.value).length
+                    categoryBudgets.value[catName] = {
+                        amount: null,
+                        type: 'expense',
+                        color: defaultPalette[colorIndex % defaultPalette.length]
+                    }
+                    newCategoryInput.value = ''
+                    onDataEdited()
+                }
+
                 const uniqueCategories = computed(() => {
                     const catCol = columns.value.find(c => c.type === 'category')
-                    if (!catCol) return []
                     const cats = new Set()
-                    rows.value.forEach(row => {
-                        const val = row[catCol.id]
-                        if (val && String(val).trim()) cats.add(String(val).trim())
-                    })
+                    if (catCol) {
+                        rows.value.forEach(row => {
+                            const val = row[catCol.id]
+                            if (val && String(val).trim()) cats.add(String(val).trim())
+                        })
+                    }
+                    Object.keys(categoryBudgets.value).forEach(cat => cats.add(cat))
                     return Array.from(cats).sort()
                 })
 
@@ -2670,6 +2704,14 @@
                     const timeDiffMap = {}
                     const frequencyMap = {}
                     const validValues = []
+
+                    const isCategoryCol = columns.value.find(c => c.id === colId)?.type === 'category'
+                    if (isCategoryCol) {
+                        Object.keys(categoryBudgets.value).forEach(cat => {
+                            if (cat.trim() !== '') validValues.push(cat)
+                        })
+                    }
+
                     rows.value.forEach(row => {
                         const val = row[colId]
                         if (val !== null && val !== undefined && String(val).trim() !== '') {
@@ -6676,7 +6718,9 @@
                     exportToGoogleSheets,
                     getCheckboxProgressClass,
                     getCheckboxProgressPercent,
-                    getProgressBarColor
+                    getProgressBarColor,
+                    newCategoryInput,
+                    addNewCategory
                 }
             }
         }).mount('#app')

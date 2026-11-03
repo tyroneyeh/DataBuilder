@@ -170,7 +170,6 @@ export const translations = {
         "price": "價",
         "Click to add a row": "點擊新增一列",
         "Budget": "預算",
-        "Please add categories first": "請先新增分類",
         "Budget amount": "預算金額",
         "Items": "筆",
         "empty": "空"
