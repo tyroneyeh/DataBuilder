@@ -4159,7 +4159,7 @@
 
                 const updateTrend = (ctx, labels, trendObj) => {
                     const isLine = trendChartType.value === 'line'
-                    const bgColors = labels.map(label => categoryBudgets.value[label]?.color) || defaultColors
+                    const bgColors = trendObj.categories.map(label => categoryBudgets.value[label]?.color) || defaultColors
 
                     const datasets = trendObj.categories.map((cat, index) => {
                         const color = bgColors[index % bgColors.length]
@@ -4257,9 +4257,7 @@
                                         display: true,
                                         position: 'bottom',
                                         labels: {
-                                            color: isDark.value ? '#9ca3af' : '#6b7280',
-                                            usePointStyle: true,
-                                            boxWidth: 8
+                                            color: isDark.value ? '#9ca3af' : '#6b7280'
                                         }
                                     },
                                     tooltip: {
