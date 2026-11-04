@@ -175,14 +175,19 @@
                     </button>
                 </div>
                 <div class="flex w-full my-2 mx-auto" :class="isPrinting ? 'flex-col max-w-full gap-4' : 'flex-col md:flex-row max-w-[95%] md:max-w-[70%]'">
-                    <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-40 h-10 cursor-pointer select-none mx-auto shadow-inner mb-4 print:hidden" @click="hasIncomeCategories && toggleChartViewMode()">
+                    <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-40 h-10 cursor-pointer select-none mx-auto shadow-inner mb-4 print:hidden" @click="hasIncomeCategories">
                         <div v-if="hasIncomeCategories" class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
                             :class="chartViewMode === 'income' ? 'translate-x-[100%]' : 'translate-x-0'"></div>
-                        <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                        <div @click="chartViewMode = 'budget';debouncedUpdateChart()"
+                            :class="chartViewMode === 'budget' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'"
+                            class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap">
+                            {{ translate('Budget') }}
+                        </div>
+                        <div @click="chartViewMode = 'expense';debouncedUpdateChart()" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                             :class="chartViewMode === 'expense' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
                             ➖ {{ translate('Expense') }}
                         </div>
-                        <div v-if="hasIncomeCategories" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                        <div v-if="hasIncomeCategories" @click="chartViewMode = 'income';debouncedUpdateChart()" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                             :class="chartViewMode === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'">
                             ➕ {{ translate('Income') }}
                         </div>
@@ -3853,6 +3858,7 @@
                     const trendData = {}
                     const allCategories = new Set()
                     const otherLabel = translate('Others')
+                    let totalBudgetAmount = 0
 
                     filteredRows.value.forEach(row => {
                         const dateVal = row[dateColId]
@@ -3894,7 +3900,20 @@
                         }
                     })
 
-                    return { trendData, categories: Array.from(allCategories) }
+                    Object.values(categoryBudgets.value).forEach(config => {
+                        if (config && config.type !== 'income' && config.amount) {
+                            const numAmount = calcValue(config.amount);
+                            if (numAmount > 0) {
+                                totalBudgetAmount += numAmount;
+                            }
+                        }
+                    });
+
+                    return {
+                        trendData,
+                        categories: Array.from(allCategories),
+                        totalBudget: totalBudgetAmount
+                    }
                 }
 
                 const compactFormatter = new Intl.NumberFormat(navigator.language || navigator.userLanguage || 'en-US', {
@@ -4196,6 +4215,24 @@
                             }
                         }
                     })
+
+                    if (trendObj.totalBudget > 0 && !isLine) {
+                        datasets.push({
+                            label: translate('Total Budget'),
+                            data: labels.map(() => -Math.abs(trendObj.totalBudget)),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            backgroundColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            pointHoverRadius: 0,
+                            fill: false,
+                            tension: 0,
+                            order: -1
+                        });
+                    }
+
                     if (trendChart.value && trendChart.value.config.type !== trendChartType.value) {
                         trendChart.value.destroy()
                         trendChart.value = null
@@ -4327,19 +4364,31 @@
                     await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
 
                     if (categoryData && ctxDoughnut) {
-                        const filteredEntries = Object.entries(categoryData).filter(([cat, val]) => {
-                            if (chartViewMode.value === 'expense') return val < 0;
-                            return val > 0;
-                        })
-                        const sortedEntries = filteredEntries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
                         const MAX_CAT = 12
                         const finalData = {}
-                        sortedEntries.forEach((item, index) => {
-                            if (index < MAX_CAT) {
-                                topCategories.add(item[0])
-                            }
-                            finalData[item[0]] = item[1]
-                        })
+                        if (chartViewMode.value === 'budget') {
+                            const budgetEntries = Object.entries(categoryBudgets.value)
+                                .filter(([cat, config]) => config.type !== 'income' && config.amount > 0)
+                                .map(([cat, config]) => [cat, config.amount])
+                                .sort((a, b) => b[1] - a[1])
+                            budgetEntries.forEach((item, index) => {
+                                if (index < MAX_CAT) topCategories.add(item[0])
+                                finalData[item[0]] = item[1]
+                            })
+                        } else {
+                            const filteredEntries = Object.entries(categoryData).filter(([cat, val]) => {
+                                if (chartViewMode.value === 'expense') return val < 0;
+                                return val > 0;
+                            })
+                            const sortedEntries = filteredEntries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+
+                            sortedEntries.forEach((item, index) => {
+                                if (index < MAX_CAT) {
+                                    topCategories.add(item[0])
+                                }
+                                finalData[item[0]] = item[1]
+                            })
+                        }
                         labels = Object.keys(finalData)
                         values = Object.values(finalData)
                         updateDoughnut(ctxDoughnut, labels, values)
@@ -4366,11 +4415,6 @@
                         trendChart.value.destroy()
                         trendChart.value = null
                     }
-                }
-
-                const toggleChartViewMode = () => {
-                    chartViewMode.value = chartViewMode.value === 'expense' ? 'income' : 'expense'
-                    debouncedUpdateChart()
                 }
 
                 const toggleFilter = (type, value) => {
@@ -6704,7 +6748,6 @@
                     toggleTrendChartType,
                     trendChartType,
                     chartViewMode,
-                    toggleChartViewMode,
                     tooltipState,
                     shareModal,
                     shareRow,
