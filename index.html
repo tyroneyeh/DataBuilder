@@ -6451,6 +6451,7 @@
                     if (!sheetImportUrl.value) return alert(translate('Please enter a Google Sheets URL first!'))
                     const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
                     if (!match) return alert(translate('Invalid Google Sheets URL!'))
+                    if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
 
                     try {
                         isProcessing.value = -4
