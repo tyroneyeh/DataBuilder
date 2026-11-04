@@ -446,7 +446,7 @@
                             </div>
 
                             <div v-else class="flex items-center w-full h-full relative justify-end sm:justify-start print:justify-start">
-                                <template v-if="!isPrinting && col.type === 'category' && categoryBudgetMap[row[col.id]] && categoryBudgetMap[row[col.id]].budget > 0">
+                                <template v-if="!isPrinting && col.type === 'category' && col.id === mainCatColId && categoryBudgetMap[row[col.id]] && categoryBudgetMap[row[col.id]].budget > 0">
                                     <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 rounded pointer-events-none"
                                         :class="categoryBudgetMap[row[col.id]].isOver ? 'bg-red-500' : ''"
                                         :style="{
@@ -1875,17 +1875,23 @@
                     onDataEdited()
                 }
 
+                const mainCatColId = computed(() => {
+                    return selectedChartCatColId.value || columns.value.find(c => c.type === 'category')?.id
+                })
+
                 const uniqueCategories = computed(() => {
-                    const catCol = columns.value.find(c => c.type === 'category')
                     const cats = new Set()
-                    if (catCol) {
-                        rows.value.forEach(row => {
-                            const val = row[catCol.id]
-                            if (val && String(val).trim()) cats.add(String(val).trim())
+                    const colId = mainCatColId.value
+                    if (colId) {
+                        filteredRows.value.forEach(row => {
+                            const val = row[colId]
+                            if (val && String(val).trim() !== '') {
+                                cats.add(String(val).trim())
+                            }
                         })
                     }
-                    Object.keys(categoryBudgets.value).forEach(cat => cats.add(cat))
-                    return Array.from(cats).sort()
+                    Object.keys(categoryBudgets.value || {}).forEach(k => cats.add(k))
+                    return Array.from(cats)
                 })
 
                 const budgetStats = computed(() => {
@@ -2717,8 +2723,8 @@
                     const frequencyMap = {}
                     const validValues = []
 
-                    const isCategoryCol = columns.value.find(c => c.id === colId)?.type === 'category'
-                    if (isCategoryCol) {
+                    const isMainCategoryCol = (colId === mainCatColId.value);
+                    if (isMainCategoryCol && categoryBudgets.value) {
                         Object.keys(categoryBudgets.value).forEach(cat => {
                             if (cat.trim() !== '') validValues.push(cat)
                         })
@@ -6563,6 +6569,7 @@
                     toggleBudget,
                     categoryBudgets,
                     uniqueCategories,
+                    mainCatColId,
                     budgetStats,
                     applyTypeToAll,
                     applyAmountToAll,
