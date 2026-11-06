@@ -1355,6 +1355,29 @@
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ translate('Private key will be stored safely in your browser.') }}
                             </p>
+                            <div class="flex items-center justify-between pt-3">
+                                <div>
+                                    <div class="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center">
+                                        <svg class="w-4 h-4 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                        </svg>
+                                        {{ translate('Daily Auto Sync') }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 mr-4 leading-relaxed">
+                                        {{ translate('When enabled, the system will automatically perform a background two-way sync with Google Sheets on your first edit each day to prevent data loss.') }}
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                    <input type="checkbox" :disabled="!sheetImportUrl" v-model="isAutoSyncEnabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+                            <div v-if="isAutoSyncEnabled && lastSyncDate" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                                <svg class="w-3.5 h-3.5 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                {{ translate('Last background sync') }}: {{ lastSyncDate }}
+                            </div>
                         </div>
 
                         <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
@@ -1830,6 +1853,8 @@
                 const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
                 const googleAccessToken = ref('')
                 const newCategoryInput = ref('')
+                const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
+                const lastSyncDate = ref(localStorage.getItem('ty_last_sync_date') || '')
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -2032,6 +2057,7 @@
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
                         db.set(currentStorageKey.value, data)
                         debouncedUpdateChart()
+                        checkAndAutoSync()
                     } catch (e) {
                         alert(e.message)
                     }
@@ -2136,6 +2162,10 @@
                 watch(googleClientId, (newVal) => {
                     localStorage.setItem('TY_GOOGLE_CLIENT_ID', newVal.trim())
                     tokenClient = null
+                })
+
+                watch(isAutoSyncEnabled, (newVal) => {
+                    newVal ? localStorage.setItem('ty_auto_sync', 1) : localStorage.removeItem('ty_auto_sync')
                 })
 
                 const toggleDarkMode = () => {
@@ -6197,82 +6227,183 @@
                     return str
                 }
 
+                const fetchGoogleSheetsData = async (url) => {
+                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) throw new Error('Invalid URL format')
+                    const spreadsheetId = match[1]
+
+                    const token = await getValidGoogleToken()
+                    const tabName = `'${currentStorageKey.value}'`
+
+                    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+
+                    if (res.status === 404 || res.status === 400) {
+                        return { rows: [] }
+                    }
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+
+                    const data = await res.json()
+                    const values = data.values
+
+                    if (!values || values.length < 2) return { rows: [] }
+
+                    const headers = values[0]
+                    const fetchedRows = []
+
+                    for (let i = 1; i < values.length; i++) {
+                        const rowArray = values[i]
+                        if (rowArray[0] === translate('Total')) continue
+
+                        const idIndex = headers.indexOf('ID')
+                        const rowId = (idIndex !== -1 && rowArray[idIndex]) ? rowArray[idIndex] : generateId()
+                        const newRow = { id: rowId, note: '', isExpanded: false }
+
+                        columns.value.forEach(col => {
+                            const colIndex = headers.indexOf(col.label)
+                            if (colIndex !== -1 && rowArray[colIndex] !== undefined && rowArray[colIndex] !== '') {
+                                let val = rowArray[colIndex]
+                                if (col.type === 'number') {
+                                    val = parseFloat(val.toString().replace(/,/g, '')) || null
+                                } else if (col.type === 'photo') {
+                                    val = []
+                                } else if (col.type === 'time') {
+                                    val = normalizeTimeString(val)
+                                }
+                                newRow[col.id] = val
+                            } else {
+                                newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
+                            }
+                        })
+
+                        const noteIndex = headers.indexOf(translate('Note'))
+                        if (noteIndex !== -1 && rowArray[noteIndex]) {
+                            newRow.note = rowArray[noteIndex]
+                        }
+
+                        fetchedRows.push(newRow)
+                    }
+
+                    return { rows: fetchedRows }
+                }
+
+                const pushToGoogleSheets = async (url) => {
+                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) throw new Error('Invalid URL format')
+                    const spreadsheetId = match[1]
+
+                    const token = await getValidGoogleToken()
+                    const tabName = `'${currentStorageKey.value}'`
+                    const safeRange = `${tabName}!A1`
+
+                    const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
+
+                    const rows2D = rows.value.map(row => {
+                        const rowArray = [row.id]
+                        columns.value.forEach(c => {
+                            rowArray.push(row[c.id] ?? '')
+                        })
+                        rowArray.push(row.note || '')
+                        return rowArray
+                    })
+
+                    const totalRow = [translate('Total')]
+                    columns.value.forEach(col => {
+                        if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
+                            totalRow.push(columnTotals.value[col.id] || 0)
+                        } else {
+                            totalRow.push('')
+                        }
+                    })
+                    totalRow.push('')
+
+                    const sheetDataValues = [headers, ...rows2D, totalRow]
+
+                    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    if (!metaRes.ok) throw new Error(`Metadata error (${metaRes.status})`)
+
+                    const metaData = await metaRes.json()
+                    const sheetExists = (metaData.sheets || []).some(s => s.properties.title === currentStorageKey.value)
+
+                    if (!sheetExists) {
+                        const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                requests: [{ addSheet: { properties: { title: currentStorageKey.value } } }]
+                            })
+                        })
+                        if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
+                    } else {
+                        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                    }
+
+                    const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(safeRange)}?valueInputOption=USER_ENTERED`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ range: safeRange, majorDimension: 'ROWS', values: sheetDataValues })
+                    })
+
+                    if (!updateRes.ok) throw new Error(`Write data error (${updateRes.status})`)
+                    return true
+                }
+
+                const checkAndAutoSync = async () => {
+                    if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return
+
+                    const today = new Date().toISOString().slice(0, 10)
+
+                    if (lastSyncDate.value !== today) {
+                        isProcessing.value = 1
+                        console.log('🔄 跨日觸發：開始背景自動同步 Google Sheets...')
+
+                        try {
+                            const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
+
+                            if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
+                                const mergedMap = new Map()
+
+                                rows.value.forEach(r => mergedMap.set(String(r.id), r))
+
+                                cloudData.rows.forEach(r => {
+                                    const existing = mergedMap.get(String(r.id)) || {}
+                                    mergedMap.set(String(r.id), { ...existing, ...r })
+                                })
+
+                                rows.value = Array.from(mergedMap.values())
+
+                                syncMaxRowId()
+                                onDataEdited('both')
+                            }
+
+                            await pushToGoogleSheets(sheetImportUrl.value)
+
+                            lastSyncDate.value = today
+                            localStorage.setItem('ty_last_sync_date', today)
+                            console.log('✅ 自動同步完成！')
+
+                        } catch (error) {
+                            console.error('❌ 自動同步失敗：', error)
+                            if (error.message.includes('authorization') || error.message.includes('token')) {
+                                googleAccessToken.value = ''
+                                tokenExpiresAt = 0
+                            }
+                        } finally {
+                            isProcessing.value = 0
+                        }
+                    }
+                }
+
                 const executeExportToSheets = async () => {
                     try {
-                        const token = await getValidGoogleToken()
-                        const tabName = `'${currentStorageKey.value}'`
-                        const safeRange = `${tabName}!A1`
-
-                        const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
-
-                        const rows2D = rows.value.map(row => {
-                            const rowId = row.id || generateId()
-                            const rowArray = [rowId]
-
-                            columns.value.forEach(c => {
-                                rowArray.push(row[c.id] ?? '')
-                            })
-
-                            rowArray.push(row.note || '')
-                            return rowArray
-                        })
-
-                        const totalRow = [translate('Total')]
-                        columns.value.forEach(col => {
-                            if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
-                                totalRow.push(columnTotals.value[col.id] || 0)
-                            } else {
-                                totalRow.push('')
-                            }
-                        })
-                        totalRow.push('')
-
-                        const sheetDataValues = [headers, ...rows2D, totalRow]
-
-                        let spreadsheetId = ''
-                        const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
-
-                        if (match) {
-                            spreadsheetId = match[1]
-
-                            const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
-                                headers: { 'Authorization': `Bearer ${token}` }
-                            })
-                            if (!metaRes.ok) {
-                                const errData = await metaRes.json().catch(() => ({}))
-                                const detailMsg = errData.error?.message || metaRes.statusText
-                                throw new Error(`Metadata error (${metaRes.status}): ${detailMsg}`)
-                            }
-
-                            const metaData = await metaRes.json()
-                            const existingSheets = metaData.sheets?.map(s => s.properties.title) || []
-                            const sheetExists = existingSheets.includes(currentStorageKey.value)
-
-                            if (!sheetExists) {
-                                const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Authorization': `Bearer ${token}`,
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        requests: [
-                                            {
-                                                addSheet: {
-                                                    properties: { title: currentStorageKey.value }
-                                                }
-                                            }
-                                        ]
-                                    })
-                                })
-                                if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
-                            } else {
-                                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
-                                    method: 'POST',
-                                    headers: { 'Authorization': `Bearer ${token}` }
-                                })
-                            }
-                        } else {
+                        if (!sheetImportUrl.value || !sheetImportUrl.value.includes('/d/')) {
+                            const token = await getValidGoogleToken()
                             const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
                                 method: 'POST',
                                 headers: {
@@ -6281,38 +6412,17 @@
                                 },
                                 body: JSON.stringify({
                                     properties: { title: 'TY-DB' },
-                                    sheets: [
-                                        { properties: { title: currentStorageKey.value } }
-                                    ]
+                                    sheets: [{ properties: { title: currentStorageKey.value } }]
                                 })
                             })
-                            if (!createRes.ok) {
-                                const errData = await createRes.json().catch(() => ({}))
-                                throw new Error(`Create spreadsheet error: ${errData.error?.message || createRes.statusText}`)
-                            }
+                            if (!createRes.ok) throw new Error('Failed to create new spreadsheet')
                             const createData = await createRes.json()
-                            spreadsheetId = createData.spreadsheetId
-
-                            sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+                            sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${createData.spreadsheetId}/edit`
                         }
 
-                        const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(safeRange)}?valueInputOption=USER_ENTERED`, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                range: safeRange,
-                                majorDimension: 'ROWS',
-                                values: sheetDataValues
-                            })
-                        })
-
-                        if (!updateRes.ok) {
-                            const errData = await updateRes.json().catch(() => ({}))
-                            throw new Error(`Write data error: ${errData.error?.message || updateRes.statusText}`)
-                        }
+                        await pushToGoogleSheets(sheetImportUrl.value)
+                        lastSyncDate.value = new Date().toISOString().slice(0, 10)
+                        localStorage.setItem('ty_last_sync_date', lastSyncDate.value)
 
                         alert('🚀 '+ translate('Successfully synced TO Google Sheets!'))
 
@@ -6327,66 +6437,21 @@
                 }
 
                 const executeImportFromSheets = async (spreadsheetId) => {
-                    if (!spreadsheetId) {
-                        const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
-                        spreadsheetId = match[1]
-                    }
-
                     try {
-                        const token = await getValidGoogleToken()
-                        const tabName = `'${currentStorageKey.value}'`
+                        const urlToFetch = spreadsheetId
+                            ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+                            : sheetImportUrl.value
 
-                        const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        })
+                        const cloudData = await fetchGoogleSheetsData(urlToFetch)
 
-                        if (!res.ok) throw new Error('Failed to read data. Check URL or permissions.')
-                        const data = await res.json()
-                        const values = data.values
-
-                        if (!values || values.length < 2) {
+                        if (!cloudData || cloudData.rows.length === 0) {
                             return alert(translate('No sufficient data found in the spreadsheet!'))
                         }
 
-                        const headers = values[0]
-                        const newRows = []
-
-                        for (let i = 1; i < values.length; i++) {
-                            const rowArray = values[i]
-
-                            if (rowArray[0] === translate('Total')) continue
-                            const idIndex = headers.indexOf('ID')
-                            const rowId = (idIndex !== -1 && rowArray[idIndex]) ? rowArray[idIndex] : generateId()
-                            const newRow = { id: rowId, note: '', isExpanded: areAllExpanded.value }
-
-                            columns.value.forEach(col => {
-                                const colIndex = headers.indexOf(col.label)
-                                if (colIndex !== -1 && rowArray[colIndex] !== undefined && rowArray[colIndex] !== '') {
-                                    let val = rowArray[colIndex]
-                                    if (col.type === 'number') {
-                                        val = parseFloat(val.toString().replace(/,/g, '')) || null
-                                    } else if (col.type === 'photo') {
-                                        val = []
-                                    } else if (col.type === 'time') {
-                                        val = normalizeTimeString(val)
-                                    }
-                                    newRow[col.id] = val
-                                } else {
-                                    newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
-                                }
-                            })
-
-                            const noteIndex = headers.indexOf(translate('Note'))
-                            if (noteIndex !== -1 && rowArray[noteIndex]) {
-                                newRow.note = rowArray[noteIndex]
-                            }
-
-                            newRows.push(newRow)
-                        }
-
-                        rows.value = newRows
+                        rows.value = cloudData.rows
                         syncMaxRowId()
-                        onDataEdited()
+                        onDataEdited('both')
+
                         alert('🎉 '+ translate('Successfully synced data from Google Sheets!'))
 
                     } catch (error) {
@@ -6799,6 +6864,8 @@
                     sheetImportUrl,
                     importFromGoogleSheets,
                     exportToGoogleSheets,
+                    isAutoSyncEnabled,
+                    lastSyncDate,
                     getCheckboxProgressClass,
                     getCheckboxProgressPercent,
                     getProgressBarColor,
