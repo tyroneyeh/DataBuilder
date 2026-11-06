@@ -2939,6 +2939,7 @@
                     updateColumns()
                     updateTitle()
                     syncMaxRowId()
+                    checkAndAutoSync();
 
                     onDataEdited('both')
 
@@ -2955,8 +2956,6 @@
 
                     if (hasFixed) {
                         debouncedSave()
-                    } else {
-                        checkAndAutoSync();
                     }
 
                     await nextTick()
