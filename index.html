@@ -2955,6 +2955,8 @@
 
                     if (hasFixed) {
                         debouncedSave()
+                    } else {
+                        checkAndAutoSync();
                     }
 
                     await nextTick()
