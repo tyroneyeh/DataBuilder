@@ -224,9 +224,11 @@
                             </div>
                             <div v-if="item.budget" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
                                 <div class="h-full rounded-full transition-all duration-500"
-                                    :class="item.value > item.budget ? 'bg-red-500' : 'bg-emerald-500'"
-                                    :style="{ width: Math.min((item.value / item.budget) * 100, 100) + '%' }"
-                                    :data-tooltip="((item.value / item.budget) * 100).toFixed(1) + '%'">
+                                    :class="Math.abs(item.value) > Math.abs(item.budget) ? 'bg-red-500' : 'bg-emerald-500'"
+                                    :style="{
+                                        width: item.budget ? Math.min((Math.abs(item.value) / Math.abs(item.budget)) * 100, 100) + '%' : '0%'
+                                    }"
+                                    :data-tooltip="item.budget ? ((Math.abs(item.value) / Math.abs(item.budget)) * 100).toFixed(1) + '%' : 'N/A'">
                                 </div>
                             </div>
                             <div class="text-right pl-4">
@@ -4101,7 +4103,14 @@
 
                             const meta = chart.getDatasetMeta(0)
                             const style = meta.controller.getStyle(index)
-                            const budgetAmount = calcValue(categoryBudgets.value[label]?.amount)
+                            const rawBudget = calcValue(
+                                categoryBudgets.value[label]?.amount ||
+                                categoryBudgets.value[label]?.budget ||
+                                categoryBudgets.value[label] ||
+                                0
+                            )
+                            const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1;
+                            const budgetAmount = rawBudget * multiplier;
 
                             return {
                                 index: index,
