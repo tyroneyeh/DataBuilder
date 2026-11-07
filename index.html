@@ -1449,7 +1449,7 @@
                     {{ confirmModal.message }}
                 </p>
                 <div class="flex justify-end space-x-3 flex-shrink-0">
-                    <button
+                    <button v-if="!confirmModal.onlyOK"
                         ref="confirmCancelBtnRef"
                         @click="onConfirmCancel"
                         accesskey="n"
@@ -1800,7 +1800,7 @@
                     isOpen: false,
                     title: '',
                     message: '',
-                    onlyOK: false,
+                    onlyOK: 0,
                     resolvePromise: null
                 })
                 const confirmCancelBtnRef = ref(null)
@@ -2380,6 +2380,17 @@
                     })
 
                     return map
+                })
+
+                const currentBudgetMultiplier = computed(() => {
+                    switch (timeUnit.value) {
+                        case 'day': return 1 / 30
+                        case 'week': return 1 / 4.33
+                        case 'year': return 12
+                        case 'month':
+                        default:
+                            return 1
+                    }
                 })
 
                 const debouncedUpdateChart = debounce(async(unit) => {
@@ -4245,10 +4256,17 @@
                         }
                     })
 
-                    if (trendObj.totalBudget > 0 && !isLine) {
+                    let currentDisplayBudget = 0
+                    trendObj.categories.forEach(cat => {
+                        const catSettings = categoryBudgets.value[cat]
+                        const budgetVal = catSettings ? (catSettings.budget || catSettings.amount || catSettings || 0) : 0
+                        currentDisplayBudget += Number(budgetVal)
+                    })
+                    const scaledBudget = currentDisplayBudget * currentBudgetMultiplier.value
+                    if (scaledBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
-                            label: translate('Total Budget'),
-                            data: labels.map(() => -Math.abs(trendObj.totalBudget)),
+                            label: translate('Budget'),
+                            data: labels.map(() => -Math.abs(scaledBudget)),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
@@ -4258,8 +4276,9 @@
                             pointHoverRadius: 0,
                             fill: false,
                             tension: 0,
-                            order: -1
-                        });
+                            order: -1,
+                            stack: 'budget_line'
+                        })
                     }
 
                     if (trendChart.value && trendChart.value.config.type !== trendChartType.value) {
@@ -4510,11 +4529,11 @@
                     })
                 }
 
-                const showConfirm = (message, onlyOK = false) => {
+                const showConfirm = (message, onlyOK = 0) => {
                     return new Promise((resolve) => {
                         confirmModal.value = {
                             isOpen: true,
-                            message: message,
+                            message,
                             onlyOK,
                             resolvePromise: resolve
                         }
