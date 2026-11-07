@@ -4180,7 +4180,7 @@
                             let budgetAmount = 0
 
                             if (isFallback) {
-                                budgetAmount = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(label, timeUnit.value) : 0
+                                budgetAmount = getHistoricalSpent(label, timeUnit.value)
                             } else {
                                 const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
                                 budgetAmount = rawBudget * multiplier
@@ -4341,18 +4341,26 @@
                         }
                     })
 
-                    let dynamicTotalBudget = 0;
+                    let dynamicTotalBudget = 0
                     trendObj.categories.forEach(cat => {
-                        const catSettings = categoryBudgets.value[cat] || {};
-                        const explicitBudget = Number(catSettings.budget || catSettings.amount || catSettings || 0);
+                        const catSettings = categoryBudgets.value[cat]
+                        let explicitBudget = 0
+                        if (catSettings !== undefined && catSettings !== null) {
+                            if (typeof catSettings === 'object') {
+                                explicitBudget = Number(catSettings.budget || catSettings.amount || 0)
+                            } else {
+                                explicitBudget = Number(catSettings)
+                            }
+                        }
 
                         if (explicitBudget === 0) {
-                            dynamicTotalBudget += typeof getHistoricalSpent === 'function' ? getHistoricalSpent(cat, timeUnit.value) : 0;
+                            const historySpent = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(cat, timeUnit.value) : 0
+                            dynamicTotalBudget += historySpent
                         } else {
-                            const multiplier = typeof currentBudgetMultiplier !== 'undefined' ? currentBudgetMultiplier.value : 1;
-                            dynamicTotalBudget += explicitBudget * multiplier;
+                            const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
+                            dynamicTotalBudget += explicitBudget * multiplier
                         }
-                    });
+                    })
                     if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
