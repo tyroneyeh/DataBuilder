@@ -3633,7 +3633,7 @@
                         }
 
                         rows.value = []
-                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
                         heightCache = {}
                         windowStart.value = 0
                         windowEnd.value = 50
