@@ -231,7 +231,7 @@
                                     :style="{
                                         width: item.budget > 0 ? Math.min((Math.abs(item.value) / item.budget) * 100, 100) + '%' : (Math.abs(item.value) > 0 ? '100%' : '0%')
                                     }"
-                                    :data-tooltip="item.budget > 0 ? ((Math.abs(item.value) / item.budget) * 100).toFixed(1) + '%' : 'Over!'">
+                                    :data-tooltip="item.budget > 0 ? ((Math.abs(item.value) / item.budget) * 100).toFixed(1) + '%' : translate('Over!')">
                                 </div>
 
                             </div>
@@ -505,7 +505,7 @@
                                             {{ getWeekdayStr(row[col.id]) }}
                                         </span>
                                     </div>
-                                    <button v-if="!isPrinting && !['number', 'date', 'time'].includes(col.type)"
+                                    <button v-if="isMobile && !isPrinting && !['number', 'date', 'time'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row, col }"
                                         class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex"
@@ -667,7 +667,7 @@
                                         :placeholder="'🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
-                                    <button v-if="!['number'].includes(col.type)"
+                                    <button v-if="isMobile && !['number'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row: null, col }"
                                         class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
@@ -2424,10 +2424,6 @@
                     const todayStr = new Date().toISOString()
                     const targetDateKey = selectedChartDate.value || getDateGroupKey(todayStr, timeUnit.value)
 
-                    if (selectedChartDate.value) {
-                        const parsedDate = new Date(selectedChartDate.value.length === 7 ? `${selectedChartDate.value}-01` : selectedChartDate.value)
-                    }
-
                     displayRows.forEach(row => {
                         const cat = row[mainCatColId.value]
                         if (!cat || !amountColId || !dateColId) return
@@ -2466,7 +2462,7 @@
 
                         let displayStr = ''
                         if (dynamicBudget === 0 && spent > 0) {
-                            displayStr = 'Over!'
+                            displayStr = translate('Over!')
                         } else if (dynamicBudget > 0) {
                             displayStr = Math.round(percentageNum) + '%'
                         } else {
@@ -4387,7 +4383,6 @@
                     })
 
                     let dynamicTotalBudget = 0
-                    let budgetCount = 0
 
                     trendObj.categories.forEach(cat => {
                         const catSettings = categoryBudgets.value[cat]
@@ -4406,12 +4401,11 @@
                         } else {
                             dynamicTotalBudget += explicitBudget * currentBudgetMultiplier.value
                         }
-                        budgetCount++
                     })
                     if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
-                            data: labels.map(() => -Math.abs(dynamicTotalBudget) / budgetCount),
+                            data: labels.map(() => -Math.abs(dynamicTotalBudget) / trendObj.categories.length),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
@@ -6841,6 +6835,7 @@
                 })
 
                 return {
+                    isMobile,
                     isBudgetOpen,
                     toggleBudget,
                     categoryBudgets,
