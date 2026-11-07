@@ -222,14 +222,18 @@
                                     </span>
                                 </span>
                             </div>
-                            <div v-if="item.budget" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
+                            <div v-if="item.budget > 0 || Math.abs(item.value) > 0" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
                                 <div class="h-full rounded-full transition-all duration-500"
-                                    :class="Math.abs(item.value) > Math.abs(item.budget) ? 'bg-red-500' : 'bg-emerald-500'"
+                                    :class="[
+                                        Math.abs(item.value) > item.budget ? 'bg-red-500' : 'bg-emerald-500',
+                                        item.isFallback ? 'bg-[length:10px_10px] bg-[linear-gradient(45deg,rgba(255,255,255,.15)25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)50%,rgba(255,255,255,.15)75%,transparent_75%,transparent)]' : ''
+                                    ]"
                                     :style="{
-                                        width: item.budget ? Math.min((Math.abs(item.value) / Math.abs(item.budget)) * 100, 100) + '%' : '0%'
+                                        width: item.budget > 0 ? Math.min((Math.abs(item.value) / item.budget) * 100, 100) + '%' : (Math.abs(item.value) > 0 ? '100%' : '0%')
                                     }"
-                                    :data-tooltip="item.budget ? ((Math.abs(item.value) / Math.abs(item.budget)) * 100).toFixed(1) + '%' : 'N/A'">
+                                    :data-tooltip="item.budget > 0 ? ((Math.abs(item.value) / item.budget) * 100).toFixed(1) + '%' : 'Over!'">
                                 </div>
+
                             </div>
                             <div class="text-right pl-4">
                                 <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :data-tooltip="item.value.toLocaleString()">
@@ -4164,14 +4168,23 @@
 
                             const meta = chart.getDatasetMeta(0)
                             const style = meta.controller.getStyle(index)
+
                             const rawBudget = calcValue(
                                 categoryBudgets.value[label]?.amount ||
                                 categoryBudgets.value[label]?.budget ||
                                 categoryBudgets.value[label] ||
                                 0
                             )
-                            const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1;
-                            const budgetAmount = rawBudget * multiplier;
+
+                            const isFallback = rawBudget === 0
+                            let budgetAmount = 0
+
+                            if (isFallback) {
+                                budgetAmount = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(label, timeUnit.value) : 0
+                            } else {
+                                const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
+                                budgetAmount = rawBudget * multiplier
+                            }
 
                             return {
                                 index: index,
@@ -4181,9 +4194,11 @@
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index),
                                 budget: budgetAmount,
+                                isFallback: isFallback,
                                 count: categoryCounts.value[label] || 0
                             }
                         })
+
                         rawItems.sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
                         const newItemsStr = JSON.stringify(rawItems)
                         if (chart.$lastLegendStr !== newItemsStr) {
@@ -4326,17 +4341,22 @@
                         }
                     })
 
-                    let currentDisplayBudget = 0
+                    let dynamicTotalBudget = 0;
                     trendObj.categories.forEach(cat => {
-                        const catSettings = categoryBudgets.value[cat]
-                        const budgetVal = catSettings ? (catSettings.budget || catSettings.amount || catSettings || 0) : 0
-                        currentDisplayBudget += Number(budgetVal)
-                    })
-                    const scaledBudget = currentDisplayBudget * currentBudgetMultiplier.value
-                    if (scaledBudget > 0 && chartViewMode.value !== 'income') {
+                        const catSettings = categoryBudgets.value[cat] || {};
+                        const explicitBudget = Number(catSettings.budget || catSettings.amount || catSettings || 0);
+
+                        if (explicitBudget === 0) {
+                            dynamicTotalBudget += typeof getHistoricalSpent === 'function' ? getHistoricalSpent(cat, timeUnit.value) : 0;
+                        } else {
+                            const multiplier = typeof currentBudgetMultiplier !== 'undefined' ? currentBudgetMultiplier.value : 1;
+                            dynamicTotalBudget += explicitBudget * multiplier;
+                        }
+                    });
+                    if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
-                            data: labels.map(() => -Math.abs(scaledBudget)),
+                            data: labels.map(() => -Math.abs(dynamicTotalBudget)),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
