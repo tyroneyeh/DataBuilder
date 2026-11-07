@@ -2345,39 +2345,41 @@
                 const categoryBudgetMap = computed(() => {
                     const map = {}
 
-                    const catColId = selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
-                    const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))
+                    const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
 
-                    if (!catColId || !numCol) return map;
+                    const currentPeriodSpent = {}
 
-                    const totals = {}
-                    filteredRows.value.forEach(row => {
-                        let catLabel = translate('Uncategorized')
-                        const rawCat = row[catColId]
-                        if (rawCat && String(rawCat).trim() !== '') catLabel = String(rawCat).trim()
+                    const displayRows = filteredRows.value || []
 
-                        let val = parseFloat(row[numCol.id]) || 0
-                        if (numCol.type === 'multiply') val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
-                        else if (numCol.type === 'multiply3') val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB]) * calcValue(row[numCol.opC])
-                        else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
+                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id;
 
-                        if (val !== 0) {
-                            totals[catLabel] = (totals[catLabel] || 0) + val
-                        }
-                    })
+                    displayRows.forEach(row => {
+                        const cat = row[mainCatColId.value]
+                        if (!cat || !amountColId) return
 
-                    const sortedCats = Object.entries(totals).sort((a, b) => b[1] - a[1])
+                        const val = Number(row[amountColId]) || 0
+                        if (!currentPeriodSpent[cat]) currentPeriodSpent[cat] = 0
 
-                    sortedCats.forEach(([catLabel, spent], index) => {
-                        const budgetConfig = categoryBudgets.value[catLabel] || {}
-                        const budget = budgetConfig.amount || 0
-                        const color = budgetConfig.color || '#9ca3af'
-                        map[catLabel] = {
+                        currentPeriodSpent[cat] += Math.abs(val)
+                    });
+
+                    Object.keys(categoryBudgets.value).forEach(cat => {
+                        const settings = categoryBudgets.value[cat]
+                        const rawBudget = Number(settings.budget || settings.amount || settings || 0)
+
+                        const dynamicBudget = rawBudget * multiplier
+
+                        const spent = currentPeriodSpent[cat] || 0
+
+                        const percentage = dynamicBudget > 0 ? Math.min((spent / dynamicBudget) * 100, 100) : 0
+                        const isOver = dynamicBudget > 0 && spent > dynamicBudget
+
+                        map[cat] = {
+                            budget: dynamicBudget,
                             spent: spent,
-                            budget: budget,
-                            percentage: budget > 0 ? Math.min(100, (spent / budget) * 100) : 0,
-                            isOver: budget > 0 ? spent > budget : false,
-                            color: color
+                            percentage: percentage,
+                            isOver: isOver,
+                            color: settings.color || '#9ca3af'
                         }
                     })
 
