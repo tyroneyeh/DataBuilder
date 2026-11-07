@@ -2415,7 +2415,6 @@
 
                 const categoryBudgetMap = computed(() => {
                     const map = {}
-                    const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
                     const currentPeriodSpent = {}
 
                     const displayRows = rows.value || []
@@ -2425,10 +2424,8 @@
                     const todayStr = new Date().toISOString()
                     const targetDateKey = selectedChartDate.value || getDateGroupKey(todayStr, timeUnit.value)
 
-                    let referenceDate = new Date()
                     if (selectedChartDate.value) {
                         const parsedDate = new Date(selectedChartDate.value.length === 7 ? `${selectedChartDate.value}-01` : selectedChartDate.value)
-                        if (!isNaN(parsedDate.getTime())) referenceDate = parsedDate
                     }
 
                     displayRows.forEach(row => {
@@ -2460,7 +2457,7 @@
                         if (isFallback) {
                             dynamicBudget = getHistoricalSpent(cat)
                         } else {
-                            dynamicBudget = explicitBudget * multiplier
+                            dynamicBudget = explicitBudget * currentBudgetMultiplier.value
                         }
 
                         const spent = currentPeriodSpent[cat] || 0
@@ -2494,6 +2491,8 @@
                     switch (timeUnit.value) {
                         case 'day': return 1 / 30
                         case 'week': return 1 / 4.33
+                        case 'quarter': return 3
+                        case 'halfyear': return 6
                         case 'year': return 12
                         case 'month':
                         default:
@@ -4208,10 +4207,8 @@
                             }
                         })
                         const rawItems = chart.data.labels.map((label, index) => {
-                            // 🌟 2. 也是直接拿原始數值
                             let realValue = rawValues[index]
 
-                            // 🌟 3. 計算佔比：如果這個分類被隱藏了，佔比就是 0%；否則正常計算
                             let percentage = '0.0'
                             if (chart.getDataVisibility(index) && total > 0) {
                                 percentage = ((Math.abs(realValue) / total) * 100).toFixed(1)
@@ -4229,17 +4226,16 @@
                             const isFallback = rawBudget === 0
                             let budgetAmount = 0
                             if (isFallback) {
-                                budgetAmount = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(label) : 0
+                                budgetAmount = getHistoricalSpent(label)
                             } else {
-                                const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
-                                budgetAmount = rawBudget * multiplier
+                                budgetAmount = rawBudget * currentBudgetMultiplier.value
                             }
 
                             return {
                                 index: index,
                                 text: label,
                                 value: realValue,
-                                percentage: percentage, // ✅ 現在這個比例絕對跟圓餅圖一模一樣
+                                percentage: percentage,
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index),
                                 budget: budgetAmount,
@@ -4391,6 +4387,7 @@
                     })
 
                     let dynamicTotalBudget = 0
+                    let budgetCount = 0
 
                     trendObj.categories.forEach(cat => {
                         const catSettings = categoryBudgets.value[cat]
@@ -4407,14 +4404,14 @@
                             const historySpent = getHistoricalSpent(cat)
                             dynamicTotalBudget += historySpent
                         } else {
-                            const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
-                            dynamicTotalBudget += explicitBudget * multiplier
+                            dynamicTotalBudget += explicitBudget * currentBudgetMultiplier.value
                         }
+                        budgetCount++
                     })
                     if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
-                            data: labels.map(() => -Math.abs(dynamicTotalBudget)),
+                            data: labels.map(() => -Math.abs(dynamicTotalBudget) / budgetCount),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
