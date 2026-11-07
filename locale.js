@@ -59,6 +59,7 @@ export const translations = {
         "Failed to process image.": "圖片處理失敗.",
         "Failed to read file.": "讀取檔案失敗.",
         "Failed to load Google GIS.": "載入 Google GIS 失敗.",
+        "Failed to sync TO Google Sheets!": "同步至 Google Sheets 失敗.",
         "Sync failed. You might not have permission, or token expired.": "同步失敗, 您可能沒有權限或 token 已過期.",
         "Features": "功能",
         "Filter...": "篩選...",

@@ -6386,10 +6386,10 @@
 
                             lastSyncDate.value = today
                             localStorage.setItem('ty_last_sync_date', today)
-                            console.log('✅ 自動同步完成！')
+                            showConfirm('✅ '+ translate('Successfully synced data from Google Sheets!'), 1)
 
                         } catch (error) {
-                            console.error('❌ 自動同步失敗：', error)
+                            showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
                             if (error.message.includes('authorization') || error.message.includes('token')) {
                                 googleAccessToken.value = ''
                                 tokenExpiresAt = 0
