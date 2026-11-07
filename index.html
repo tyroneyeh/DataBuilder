@@ -2057,7 +2057,6 @@
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
                         db.set(currentStorageKey.value, data)
                         debouncedUpdateChart()
-                        checkAndAutoSync()
                     } catch (e) {
                         alert(e.message)
                     }
@@ -2939,8 +2938,7 @@
                     updateColumns()
                     updateTitle()
                     syncMaxRowId()
-                    checkAndAutoSync();
-
+                    checkAndAutoSync()
                     onDataEdited('both')
 
                     const seenIds = new Set()
@@ -6356,13 +6354,14 @@
                 }
 
                 const checkAndAutoSync = async () => {
-                    if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return
+                    if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
                     const today = new Date().toISOString().slice(0, 10)
 
                     if (lastSyncDate.value !== today) {
                         isProcessing.value = 1
                         console.log('🔄 跨日觸發：開始背景自動同步 Google Sheets...')
+                        let dataChanged = false
 
                         try {
                             const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
@@ -6380,7 +6379,7 @@
                                 rows.value = Array.from(mergedMap.values())
 
                                 syncMaxRowId()
-                                onDataEdited('both')
+                                dataChanged = true
                             }
 
                             await pushToGoogleSheets(sheetImportUrl.value)
@@ -6395,9 +6394,11 @@
                                 googleAccessToken.value = ''
                                 tokenExpiresAt = 0
                             }
+                            return false
                         } finally {
                             isProcessing.value = 0
                         }
+                        return dataChanged
                     }
                 }
 
