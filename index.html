@@ -453,16 +453,19 @@
                             </div>
 
                             <div v-else class="flex items-center w-full h-full relative justify-end sm:justify-start print:justify-start">
-                                <template v-if="!isPrinting && col.type === 'category' && col.id === mainCatColId && categoryBudgetMap[row[col.id]] && categoryBudgetMap[row[col.id]].budget > 0">
+                                <template v-if="!isPrinting && col.type === 'category' && col.id === mainCatColId && categoryBudgetMap[row[col.id]] && (categoryBudgetMap[row[col.id]].budget > 0 || categoryBudgetMap[row[col.id]].spent > 0)">
                                     <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 rounded pointer-events-none"
-                                        :class="categoryBudgetMap[row[col.id]].isOver ? 'bg-red-500' : ''"
+                                        :class="[
+                                            categoryBudgetMap[row[col.id]].isOver ? 'bg-red-500' : '',
+                                            categoryBudgetMap[row[col.id]].isFallback ? 'bg-[length:20px_20px] bg-[linear-gradient(45deg,rgba(255,255,255,.15)25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)50%,rgba(255,255,255,.15)75%,transparent_75%,transparent)]' : ''
+                                        ]"
                                         :style="{
-                                            width: categoryBudgetMap[row[col.id]].percentage + '%',
+                                            width: (categoryBudgetMap[row[col.id]].budget > 0 ? categoryBudgetMap[row[col.id]].percentage : (categoryBudgetMap[row[col.id]].spent > 0 ? 100 : 0)) + '%',
                                             backgroundColor: categoryBudgetMap[row[col.id]].isOver ? undefined : categoryBudgetMap[row[col.id]].color
                                         }"></div>
                                     <span class="absolute left-2 sm:left-auto right-auto sm:right-6 z-10 text-xs font-bold pointer-events-none"
                                         :class="categoryBudgetMap[row[col.id]].isOver ? 'text-red-600 dark:text-red-400' : 'text-gray-500'">
-                                        {{ Math.round((categoryBudgetMap[row[col.id]].spent / categoryBudgetMap[row[col.id]].budget) * 100) }}%
+                                        {{ categoryBudgetMap[row[col.id]].displayString }}
                                     </span>
                                 </template>
 
@@ -2344,41 +2347,56 @@
 
                 const categoryBudgetMap = computed(() => {
                     const map = {}
-
                     const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
-
                     const currentPeriodSpent = {}
 
                     const displayRows = filteredRows.value || []
-
-                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id;
+                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id
 
                     displayRows.forEach(row => {
                         const cat = row[mainCatColId.value]
                         if (!cat || !amountColId) return
-
                         const val = Number(row[amountColId]) || 0
                         if (!currentPeriodSpent[cat]) currentPeriodSpent[cat] = 0
-
                         currentPeriodSpent[cat] += Math.abs(val)
-                    });
+                    })
 
-                    Object.keys(categoryBudgets.value).forEach(cat => {
-                        const settings = categoryBudgets.value[cat]
-                        const rawBudget = Number(settings.budget || settings.amount || settings || 0)
+                    const allCategories = new Set([
+                        ...Object.keys(categoryBudgets.value),
+                        ...Object.keys(currentPeriodSpent)
+                    ])
 
-                        const dynamicBudget = rawBudget * multiplier
+                    allCategories.forEach(cat => {
+                        const settings = categoryBudgets.value[cat] || {}
+                        const explicitBudget = Number(settings.budget || settings.amount || settings || 0)
+                        const isFallback = explicitBudget === 0
+                        let dynamicBudget = 0
+                        if (isFallback) {
+                            dynamicBudget = getHistoricalSpent(cat, timeUnit.value)
+                        } else {
+                            dynamicBudget = explicitBudget * multiplier
+                        }
 
                         const spent = currentPeriodSpent[cat] || 0
-
-                        const percentage = dynamicBudget > 0 ? Math.min((spent / dynamicBudget) * 100, 100) : 0
+                        const percentageNum = dynamicBudget > 0 ? (spent / dynamicBudget) * 100 : 0
                         const isOver = dynamicBudget > 0 && spent > dynamicBudget
+
+                        let displayStr = ''
+                        if (dynamicBudget === 0 && spent > 0) {
+                            displayStr = 'Over!'
+                        } else if (dynamicBudget > 0) {
+                            displayStr = Math.round(percentageNum) + '%'
+                        } else {
+                            displayStr = '0%'
+                        }
 
                         map[cat] = {
                             budget: dynamicBudget,
                             spent: spent,
-                            percentage: percentage,
+                            percentage: Math.min(percentageNum, 100),
                             isOver: isOver,
+                            isFallback: isFallback,
+                            displayString: displayStr,
                             color: settings.color || '#9ca3af'
                         }
                     })
@@ -2396,6 +2414,47 @@
                             return 1
                     }
                 })
+
+                const getHistoricalSpent = (catId, groupBy) => {
+                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id
+                    const dateColId = columns.value.find(c => c.type === 'date')?.id || 'date'
+
+                    if (!amountColId || !dateColId) return 0
+
+                    const today = new Date()
+                    today.setHours(0, 0, 0, 0)
+
+                    let sum = 0
+
+                    rows.value.forEach(row => {
+                        if (row[mainCatColId.value] !== catId) return
+
+                        const rowDate = new Date(row[dateColId])
+                        if (isNaN(rowDate.getTime())) return
+
+                        const diffTime = today.getTime() - rowDate.getTime()
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+                        let isMatch = false
+
+                        if (groupBy === 'day') {
+                            isMatch = (diffDays === 1)
+                        } else if (groupBy === 'week') {
+                            isMatch = (diffDays >= 7 && diffDays <= 13)
+                        } else if (groupBy === 'year') {
+                            isMatch = (rowDate.getFullYear() === today.getFullYear() - 1)
+                        } else {
+                            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+                            isMatch = (rowDate.getFullYear() === lastMonth.getFullYear() && rowDate.getMonth() === lastMonth.getMonth())
+                        }
+
+                        if (isMatch) {
+                            sum += Math.abs(Number(row[amountColId]) || 0)
+                        }
+                    })
+
+                    return sum
+                }
 
                 const debouncedUpdateChart = debounce(async(unit) => {
                     if (isInitializing) return
