@@ -1842,7 +1842,7 @@
                 const gistId = ref(localStorage.getItem('ty_gist_id') || '')
                 const isFeaturesOpen = ref(false)
                 const isSettingsOpen = ref(false)
-                const timeUnit = ref('day')
+                const timeUnit = ref('month')
                 const selectedChartDate = ref(null)
                 const globalNotes = ref('')
                 const isScannerOpen = ref(false)
@@ -2215,6 +2215,70 @@
                     }
                 }
 
+                const getHistoricalSpent = (catId) => {
+                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id
+                    const dateColId = columns.value.find(c => c.type === 'date')?.id || 'date'
+
+                    if (!amountColId || !dateColId) return 0
+
+                    const today = new Date()
+                    const targetYear = today.getFullYear()
+                    const targetDateStr = today.toISOString().slice(0, 10)
+
+                    let lastYearSum = 0
+                    let lastYearCount = 0
+
+                    let thisYearYtdSum = 0
+                    let thisYearYtdCount = 0
+
+                    rows.value.forEach(row => {
+                        if (row[mainCatColId.value] !== catId) return
+
+                        const rowDateStr = row[dateColId]
+                        if (!rowDateStr) return
+
+                        const rowDate = new Date(rowDateStr)
+                        if (isNaN(rowDate.getTime())) return
+
+                        const rowYear = rowDate.getFullYear()
+                        const val = Math.abs(Number(row[amountColId]) || 0)
+
+                        if (val === 0) return
+
+                        if (rowYear === targetYear - 1) {
+                            lastYearSum += val
+                            lastYearCount++
+                        }
+                        else if (rowYear === targetYear && rowDateStr < targetDateStr) {
+                            thisYearYtdSum += val
+                            thisYearYtdCount++
+                        }
+                    })
+
+                    let baseAveragePerTransaction = 0
+                    if (lastYearCount > 0) {
+                        baseAveragePerTransaction = lastYearSum / lastYearCount
+                    } else if (thisYearYtdCount > 0) {
+                        baseAveragePerTransaction = thisYearYtdSum / thisYearYtdCount
+                    } else {
+                        return 0
+                    }
+
+                    const estimatedMonthlyFrequency = 4
+                    const estimatedMonthlyBudget = baseAveragePerTransaction * estimatedMonthlyFrequency
+
+                    switch (timeUnit.value) {
+                        case 'day': return estimatedMonthlyBudget / 30
+                        case 'week': return estimatedMonthlyBudget / 4.33
+                        case 'quarter': return estimatedMonthlyBudget * 3
+                        case 'halfyear': return estimatedMonthlyBudget * 6
+                        case 'year': return estimatedMonthlyBudget * 12
+                        case 'month':
+                        default:
+                            return estimatedMonthlyBudget
+                    }
+                }
+
                 const filteredRows = computed(() => {
                     const chartDate = selectedChartDate.value
                     const catColId = selectedChartCatColId.value
@@ -2354,15 +2418,31 @@
                     const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
                     const currentPeriodSpent = {}
 
-                    const displayRows = filteredRows.value || []
+                    const displayRows = rows.value || []
                     const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id
+                    const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+
+                    const todayStr = new Date().toISOString()
+                    const targetDateKey = selectedChartDate.value || getDateGroupKey(todayStr, timeUnit.value)
+
+                    let referenceDate = new Date()
+                    if (selectedChartDate.value) {
+                        const parsedDate = new Date(selectedChartDate.value.length === 7 ? `${selectedChartDate.value}-01` : selectedChartDate.value)
+                        if (!isNaN(parsedDate.getTime())) referenceDate = parsedDate
+                    }
 
                     displayRows.forEach(row => {
                         const cat = row[mainCatColId.value]
-                        if (!cat || !amountColId) return
-                        const val = Number(row[amountColId]) || 0
-                        if (!currentPeriodSpent[cat]) currentPeriodSpent[cat] = 0
-                        currentPeriodSpent[cat] += Math.abs(val)
+                        if (!cat || !amountColId || !dateColId) return
+
+                        const rowDate = row[dateColId]
+                        if (!rowDate) return
+
+                        if (getDateGroupKey(rowDate, timeUnit.value) === targetDateKey) {
+                            const val = Number(row[amountColId]) || 0
+                            if (!currentPeriodSpent[cat]) currentPeriodSpent[cat] = 0
+                            currentPeriodSpent[cat] += Math.abs(val)
+                        }
                     })
 
                     const allCategories = new Set([
@@ -2372,11 +2452,13 @@
 
                     allCategories.forEach(cat => {
                         const settings = categoryBudgets.value[cat] || {}
-                        const explicitBudget = Number(settings.budget || settings.amount || settings || 0)
+                        const explicitBudget = Number(settings.amount || 0)
+
                         const isFallback = explicitBudget === 0
                         let dynamicBudget = 0
+
                         if (isFallback) {
-                            dynamicBudget = getHistoricalSpent(cat, timeUnit.value)
+                            dynamicBudget = getHistoricalSpent(cat)
                         } else {
                             dynamicBudget = explicitBudget * multiplier
                         }
@@ -2418,47 +2500,6 @@
                             return 1
                     }
                 })
-
-                const getHistoricalSpent = (catId, groupBy) => {
-                    const amountColId = columns.value.find(c => c.type === 'number' || c.type === 'minus')?.id
-                    const dateColId = columns.value.find(c => c.type === 'date')?.id || 'date'
-
-                    if (!amountColId || !dateColId) return 0
-
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-
-                    let sum = 0
-
-                    rows.value.forEach(row => {
-                        if (row[mainCatColId.value] !== catId) return
-
-                        const rowDate = new Date(row[dateColId])
-                        if (isNaN(rowDate.getTime())) return
-
-                        const diffTime = today.getTime() - rowDate.getTime()
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-                        let isMatch = false
-
-                        if (groupBy === 'day') {
-                            isMatch = (diffDays === 1)
-                        } else if (groupBy === 'week') {
-                            isMatch = (diffDays >= 7 && diffDays <= 13)
-                        } else if (groupBy === 'year') {
-                            isMatch = (rowDate.getFullYear() === today.getFullYear() - 1)
-                        } else {
-                            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-                            isMatch = (rowDate.getFullYear() === lastMonth.getFullYear() && rowDate.getMonth() === lastMonth.getMonth())
-                        }
-
-                        if (isMatch) {
-                            sum += Math.abs(Number(row[amountColId]) || 0)
-                        }
-                    })
-
-                    return sum
-                }
 
                 const debouncedUpdateChart = debounce(async(unit) => {
                     if (isInitializing) return
@@ -4025,11 +4066,11 @@
 
                 const compactFormatter = new Intl.NumberFormat(navigator.language || navigator.userLanguage || 'en-US', {
                     notation: 'compact',
-                    maximumFractionDigits: 1
+                    maximumFractionDigits: 0
                 })
 
                 const formatNumber = (num) => {
-                    return Math.abs(num) >= 10000 ? compactFormatter.format(num) : num.toLocaleString()
+                    return Math.abs(num) > 100 ? compactFormatter.format(num) : num.toLocaleString()
                 }
 
                 const formatDate = (dateStr) => {
@@ -4156,15 +4197,25 @@
                     id: 'htmlLegend',
                     afterUpdate(chart) {
                         const dataset = chart.data.datasets[0]
-                        if (!dataset || !dataset.data) return
+                        if (!dataset || !dataset.rawValues) return
 
-                        const total = dataset.data.reduce((sum, val) => sum + val, 0)
-                        const rawValues = dataset.rawValues || dataset.data
+                        const rawValues = dataset.rawValues
 
+                        let total = 0
+                        chart.data.labels.forEach((_, index) => {
+                            if (chart.getDataVisibility(index)) {
+                                total += Math.abs(rawValues[index])
+                            }
+                        })
                         const rawItems = chart.data.labels.map((label, index) => {
-                            let value = dataset.data[index]
+                            // 🌟 2. 也是直接拿原始數值
                             let realValue = rawValues[index]
-                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
+
+                            // 🌟 3. 計算佔比：如果這個分類被隱藏了，佔比就是 0%；否則正常計算
+                            let percentage = '0.0'
+                            if (chart.getDataVisibility(index) && total > 0) {
+                                percentage = ((Math.abs(realValue) / total) * 100).toFixed(1)
+                            }
 
                             const meta = chart.getDatasetMeta(0)
                             const style = meta.controller.getStyle(index)
@@ -4175,12 +4226,10 @@
                                 categoryBudgets.value[label] ||
                                 0
                             )
-
                             const isFallback = rawBudget === 0
                             let budgetAmount = 0
-
                             if (isFallback) {
-                                budgetAmount = getHistoricalSpent(label, timeUnit.value)
+                                budgetAmount = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(label) : 0
                             } else {
                                 const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
                                 budgetAmount = rawBudget * multiplier
@@ -4190,7 +4239,7 @@
                                 index: index,
                                 text: label,
                                 value: realValue,
-                                percentage: percentage,
+                                percentage: percentage, // ✅ 現在這個比例絕對跟圓餅圖一模一樣
                                 color: style.backgroundColor,
                                 hidden: !chart.getDataVisibility(index),
                                 budget: budgetAmount,
@@ -4342,6 +4391,7 @@
                     })
 
                     let dynamicTotalBudget = 0
+
                     trendObj.categories.forEach(cat => {
                         const catSettings = categoryBudgets.value[cat]
                         let explicitBudget = 0
@@ -4354,7 +4404,7 @@
                         }
 
                         if (explicitBudget === 0) {
-                            const historySpent = typeof getHistoricalSpent === 'function' ? getHistoricalSpent(cat, timeUnit.value) : 0
+                            const historySpent = getHistoricalSpent(cat)
                             dynamicTotalBudget += historySpent
                         } else {
                             const multiplier = currentBudgetMultiplier !== undefined ? currentBudgetMultiplier.value : 1
