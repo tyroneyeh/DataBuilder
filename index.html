@@ -1863,7 +1863,7 @@
                 const googleAccessToken = ref('')
                 const newCategoryInput = ref('')
                 const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
-                const lastSyncDate = ref(localStorage.getItem('ty_last_sync_date') || '')
+                const lastSyncDate = ref(localStorage.getItem(`${currentStorageKey.value}_last_sync_date`) || '')
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -3146,7 +3146,7 @@
 
                         await pushToGoogleSheets(sheetImportUrl.value)
                         lastSyncDate.value = new Date().toISOString().slice(0, 10)
-                        localStorage.setItem('ty_last_sync_date', lastSyncDate.value)
+                        localStorage.setItem(`${currentStorageKey.value}_last_sync_date`, lastSyncDate.value)
 
                         showConfirm('🚀 '+ translate('Successfully synced TO Google Sheets!'), 1)
 
@@ -3328,7 +3328,7 @@
                             await pushToGoogleSheets(sheetImportUrl.value)
 
                             lastSyncDate.value = today
-                            localStorage.setItem('ty_last_sync_date', today)
+                            localStorage.setItem(`${currentStorageKey.value}_last_sync_date`, today)
 
                         } catch (error) {
                             showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
