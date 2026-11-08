@@ -6522,6 +6522,7 @@
                         let dataChanged = false
 
                         try {
+                            await getValidGoogleToken()
                             const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
 
                             if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
