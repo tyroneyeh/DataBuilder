@@ -143,7 +143,7 @@ export const translations = {
         "Supports all formats, but consumes more power": "支援所有格式, 但較耗電",
         "Switch to Dark Mode": "切換到深色模式",
         "Switch to Light Mode": "切換到亮色模式",
-        "Start automatically syncing data from Google Sheets…": "開始自動同步 Google 工作表資料…",
+        "Start automatically syncing data from Google Sheets...": "開始自動同步 Google 工作表資料...",
         "Text": "文字",
         "Text recognized": "文字辨識",
         "There are 1000 free uses per month.": "每月有 1000 次免費使用次數.",
