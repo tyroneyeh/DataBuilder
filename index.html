@@ -2970,6 +2970,379 @@
                     hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                 }
 
+
+                const normalizeTimeString = (val) => {
+                    if (!val) return ''
+                    const str = String(val).trim()
+
+                    const match = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/)
+                    if (match) {
+                        const hours = match[1].padStart(2, '0')
+                        const minutes = match[2]
+                        return `${hours}:${minutes}`
+                    }
+
+                    const ampmMatch = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i)
+                    if (ampmMatch) {
+                        let hours = parseInt(ampmMatch[1], 10)
+                        const minutes = ampmMatch[2]
+                        const period = ampmMatch[3].toUpperCase()
+
+                        if (period === 'PM' && hours < 12) hours += 12
+                        if (period === 'AM' && hours === 12) hours = 0
+
+                        return `${String(hours).padStart(2, '0')}:${minutes}`
+                    }
+
+                    return str
+                }
+
+                const fetchGoogleSheetsData = async (url) => {
+                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) throw new Error('Invalid URL format')
+                    const spreadsheetId = match[1]
+
+                    const token = await getValidGoogleToken()
+                    const tabName = `'${currentStorageKey.value}'`
+
+                    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+
+                    if (res.status === 404 || res.status === 400) {
+                        return { rows: [] }
+                    }
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+
+                    const data = await res.json()
+                    const values = data.values
+
+                    if (!values || values.length < 2) return { rows: [] }
+
+                    const headers = values[0]
+                    const fetchedRows = []
+
+                    for (let i = 1; i < values.length; i++) {
+                        const rowArray = values[i]
+                        if (rowArray[0] === translate('Total')) continue
+
+                        const idIndex = headers.indexOf('ID')
+                        const rowId = (idIndex !== -1 && rowArray[idIndex]) ? rowArray[idIndex] : generateId()
+                        const newRow = { id: rowId, note: '', isExpanded: false }
+
+                        columns.value.forEach(col => {
+                            const colIndex = headers.indexOf(col.label)
+                            if (colIndex !== -1 && rowArray[colIndex] !== undefined && rowArray[colIndex] !== '') {
+                                let val = rowArray[colIndex]
+                                if (col.type === 'number') {
+                                    val = parseFloat(val.toString().replace(/,/g, '')) || null
+                                } else if (col.type === 'photo') {
+                                    val = []
+                                } else if (col.type === 'time') {
+                                    val = normalizeTimeString(val)
+                                }
+                                newRow[col.id] = val
+                            } else {
+                                newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
+                            }
+                        })
+
+                        const noteIndex = headers.indexOf(translate('Note'))
+                        if (noteIndex !== -1 && rowArray[noteIndex]) {
+                            newRow.note = rowArray[noteIndex]
+                        }
+
+                        fetchedRows.push(newRow)
+                    }
+
+                    return { rows: fetchedRows }
+                }
+
+                const pushToGoogleSheets = async (url) => {
+                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) throw new Error('Invalid URL format')
+                    const spreadsheetId = match[1]
+
+                    const token = await getValidGoogleToken()
+                    const tabName = `'${currentStorageKey.value}'`
+                    const safeRange = `${tabName}!A1`
+
+                    const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
+
+                    const rows2D = rows.value.map(row => {
+                        const rowArray = [row.id]
+                        columns.value.forEach(c => {
+                            rowArray.push(row[c.id] ?? '')
+                        })
+                        rowArray.push(row.note || '')
+                        return rowArray
+                    })
+
+                    const totalRow = [translate('Total')]
+                    columns.value.forEach(col => {
+                        if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
+                            totalRow.push(columnTotals.value[col.id] || 0)
+                        } else {
+                            totalRow.push('')
+                        }
+                    })
+                    totalRow.push('')
+
+                    const sheetDataValues = [headers, ...rows2D, totalRow]
+
+                    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                    if (!metaRes.ok) throw new Error(`Metadata error (${metaRes.status})`)
+
+                    const metaData = await metaRes.json()
+                    const sheetExists = (metaData.sheets || []).some(s => s.properties.title === currentStorageKey.value)
+
+                    if (!sheetExists) {
+                        const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                requests: [{ addSheet: { properties: { title: currentStorageKey.value } } }]
+                            })
+                        })
+                        if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
+                    } else {
+                        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        })
+                    }
+
+                    const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(safeRange)}?valueInputOption=USER_ENTERED`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ range: safeRange, majorDimension: 'ROWS', values: sheetDataValues })
+                    })
+
+                    if (!updateRes.ok) throw new Error(`Write data error (${updateRes.status})`)
+                    return true
+                }
+
+                const executeExportToSheets = async () => {
+                    try {
+                        if (!sheetImportUrl.value || !sheetImportUrl.value.includes('/d/')) {
+                            const token = await getValidGoogleToken()
+                            const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    properties: { title: 'TY-DB' },
+                                    sheets: [{ properties: { title: currentStorageKey.value } }]
+                                })
+                            })
+                            if (!createRes.ok) throw new Error('Failed to create new spreadsheet')
+                            const createData = await createRes.json()
+                            sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${createData.spreadsheetId}/edit`
+                        }
+
+                        await pushToGoogleSheets(sheetImportUrl.value)
+                        lastSyncDate.value = new Date().toISOString().slice(0, 10)
+                        localStorage.setItem('ty_last_sync_date', lastSyncDate.value)
+
+                        showConfirm('🚀 '+ translate('Successfully synced TO Google Sheets!'), 1)
+
+                    } catch (error) {
+                        console.error('Google Sheets Push Error:', error)
+                        showConfirm(`Sync failed: ${error.message || error}`, 1)
+                        googleAccessToken.value = ''
+                        tokenExpiresAt = 0
+                    } finally {
+                        isProcessing.value = 0
+                    }
+                }
+
+                const executeImportFromSheets = async (spreadsheetId) => {
+                    try {
+                        const urlToFetch = spreadsheetId
+                            ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
+                            : sheetImportUrl.value
+
+                        const cloudData = await fetchGoogleSheetsData(urlToFetch)
+
+                        if (!cloudData || cloudData.rows.length === 0) {
+                            return showConfirm(translate('No sufficient data found in the spreadsheet!'), 1)
+                        }
+
+                        rows.value = cloudData.rows
+                        syncMaxRowId()
+                        onDataEdited('both')
+
+                        showConfirm('🎉 '+ translate('Successfully synced data from Google Sheets!'), 1)
+
+                    } catch (error) {
+                        console.error('Google Sheets Import Error:', error)
+                        showConfirm('Sync failed. You might not have permission, or token expired.', 1)
+                        googleAccessToken.value = ''
+                    } finally {
+                        isProcessing.value = 0
+                    }
+                }
+
+                const initGoogleClient = async () => {
+                    if (!googleClientId.value.trim()) {
+                        showConfirm(translate('Please enter Google Client ID.'), 1)
+                        return false
+                    }
+                    if (tokenClient) return true
+
+                    return new Promise((resolve) => {
+                        loadScript('https://accounts.google.com/gsi/client')
+                            .then(() => {
+                                tokenClient = google.accounts.oauth2.initTokenClient({
+                                    client_id: googleClientId.value.trim(),
+                                    scope: 'https://www.googleapis.com/auth/spreadsheets',
+                                    callback: (tokenResponse) => {
+                                        if (tokenResponse && tokenResponse.access_token) {
+                                            googleAccessToken.value = tokenResponse.access_token
+                                            const expiresInSec = parseInt(tokenResponse.expires_in, 10) || 3600
+                                            tokenExpiresAt = Date.now() + (expiresInSec * 1000)
+
+                                            if (pendingTokenResolve) {
+                                                pendingTokenResolve(tokenResponse.access_token)
+                                                pendingTokenResolve = null
+                                                pendingTokenReject = null
+                                            }
+                                        } else if (tokenResponse && tokenResponse.error) {
+                                            console.warn('GIS Token Callback Error:', tokenResponse)
+                                            if (pendingTokenReject) {
+                                                pendingTokenReject(new Error(tokenResponse.error))
+                                                pendingTokenResolve = null
+                                                pendingTokenReject = null
+                                            }
+                                        }
+                                    },
+                                    error_callback: (err) => {
+                                        console.error('GIS Client Error:', err)
+                                        if (pendingTokenReject) {
+                                            pendingTokenReject(err)
+                                            pendingTokenResolve = null
+                                            pendingTokenReject = null
+                                        }
+                                    }
+                                })
+                                resolve(true)
+                            })
+                            .catch((err) => {
+                                console.error('Failed to load Google GIS script:', err)
+                                showConfirm(translate('Failed to load Google GIS.'), 1)
+                                resolve(false)
+                            })
+                    })
+                }
+
+                const requestGisToken = (promptType = '') => {
+                    return new Promise((resolve, reject) => {
+                        pendingTokenResolve = resolve
+                        pendingTokenReject = reject
+                        tokenClient.requestAccessToken({ prompt: promptType })
+                    })
+                }
+
+                const getValidGoogleToken = async () => {
+                    const isReady = await initGoogleClient()
+                    if (!isReady) throw new Error('Google Client not initialized.')
+
+                    const now = Date.now()
+                    if (googleAccessToken.value && now < (tokenExpiresAt - 120000)) {
+                        return googleAccessToken.value
+                    }
+
+                    try {
+                        const token = await requestGisToken('')
+                        return token
+                    } catch (silentErr) {
+                        console.warn('Silent token refresh failed, falling back to interactive consent:', silentErr)
+                    }
+
+                    try {
+                        const token = await requestGisToken('consent')
+                        return token
+                    } catch (interactiveErr) {
+                        throw new Error('Google authorization was cancelled or failed.')
+                    }
+                }
+
+                const exportToGoogleSheets = async () => {
+                    try {
+                        isProcessing.value = -3
+                        await executeExportToSheets()
+                    } catch (err) {
+                        console.error('Export Action Failed:', err)
+                    }
+                }
+
+                const importFromGoogleSheets = async () => {
+                    if (!sheetImportUrl.value) return showConfirm(translate('Please enter a Google Sheets URL first!'), 1)
+                    const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
+                    if (!match) return showConfirm(translate('Invalid Google Sheets URL!'), 1)
+                    if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
+
+                    try {
+                        isProcessing.value = -4
+                        await executeImportFromSheets(match[1])
+                    } catch (err) {
+                        console.error('Import Action Failed:', err)
+                    }
+                }
+
+                const checkAndAutoSync = async () => {
+                    if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
+
+                    const today = new Date().toISOString().slice(0, 10)
+
+                    if (lastSyncDate.value !== today) {
+                        isProcessing.value = 1
+                        let dataChanged = false
+
+                        try {
+                            showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets…'), 1)
+
+                            const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
+
+                            if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
+                                const mergedMap = new Map()
+
+                                rows.value.forEach(r => mergedMap.set(String(r.id), r))
+
+                                cloudData.rows.forEach(r => {
+                                    const existing = mergedMap.get(String(r.id)) || {}
+                                    mergedMap.set(String(r.id), { ...existing, ...r })
+                                })
+
+                                rows.value = Array.from(mergedMap.values())
+
+                                syncMaxRowId()
+                                dataChanged = true
+                            }
+
+                            await pushToGoogleSheets(sheetImportUrl.value)
+
+                            lastSyncDate.value = today
+                            localStorage.setItem('ty_last_sync_date', today)
+
+                        } catch (error) {
+                            showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
+                            if (error.message.includes('authorization') || error.message.includes('token')) {
+                                googleAccessToken.value = ''
+                                tokenExpiresAt = 0
+                            }
+                            return false
+                        } finally {
+                            isProcessing.value = 0
+                        }
+                        return dataChanged
+                    }
+                }
+
                 const loadData = async (noDefulat = 0) => {
                     let hashData = null
 
@@ -6355,379 +6728,6 @@
                         el.dataset.rowId = id
                         if (resizeObserver) resizeObserver.observe(el)
                         observedRows.add(el)
-                    }
-                }
-
-                const normalizeTimeString = (val) => {
-                    if (!val) return ''
-                    const str = String(val).trim()
-
-                    const match = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/)
-                    if (match) {
-                        const hours = match[1].padStart(2, '0')
-                        const minutes = match[2]
-                        return `${hours}:${minutes}`
-                    }
-
-                    const ampmMatch = str.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i)
-                    if (ampmMatch) {
-                        let hours = parseInt(ampmMatch[1], 10)
-                        const minutes = ampmMatch[2]
-                        const period = ampmMatch[3].toUpperCase()
-
-                        if (period === 'PM' && hours < 12) hours += 12
-                        if (period === 'AM' && hours === 12) hours = 0
-
-                        return `${String(hours).padStart(2, '0')}:${minutes}`
-                    }
-
-                    return str
-                }
-
-                const fetchGoogleSheetsData = async (url) => {
-                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
-                    if (!match) throw new Error('Invalid URL format')
-                    const spreadsheetId = match[1]
-
-                    const token = await getValidGoogleToken()
-                    const tabName = `'${currentStorageKey.value}'`
-
-                    const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(tabName)}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-
-                    if (res.status === 404 || res.status === 400) {
-                        return { rows: [] }
-                    }
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
-
-                    const data = await res.json()
-                    const values = data.values
-
-                    if (!values || values.length < 2) return { rows: [] }
-
-                    const headers = values[0]
-                    const fetchedRows = []
-
-                    for (let i = 1; i < values.length; i++) {
-                        const rowArray = values[i]
-                        if (rowArray[0] === translate('Total')) continue
-
-                        const idIndex = headers.indexOf('ID')
-                        const rowId = (idIndex !== -1 && rowArray[idIndex]) ? rowArray[idIndex] : generateId()
-                        const newRow = { id: rowId, note: '', isExpanded: false }
-
-                        columns.value.forEach(col => {
-                            const colIndex = headers.indexOf(col.label)
-                            if (colIndex !== -1 && rowArray[colIndex] !== undefined && rowArray[colIndex] !== '') {
-                                let val = rowArray[colIndex]
-                                if (col.type === 'number') {
-                                    val = parseFloat(val.toString().replace(/,/g, '')) || null
-                                } else if (col.type === 'photo') {
-                                    val = []
-                                } else if (col.type === 'time') {
-                                    val = normalizeTimeString(val)
-                                }
-                                newRow[col.id] = val
-                            } else {
-                                newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
-                            }
-                        })
-
-                        const noteIndex = headers.indexOf(translate('Note'))
-                        if (noteIndex !== -1 && rowArray[noteIndex]) {
-                            newRow.note = rowArray[noteIndex]
-                        }
-
-                        fetchedRows.push(newRow)
-                    }
-
-                    return { rows: fetchedRows }
-                }
-
-                const pushToGoogleSheets = async (url) => {
-                    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
-                    if (!match) throw new Error('Invalid URL format')
-                    const spreadsheetId = match[1]
-
-                    const token = await getValidGoogleToken()
-                    const tabName = `'${currentStorageKey.value}'`
-                    const safeRange = `${tabName}!A1`
-
-                    const headers = ['ID', ...columns.value.map(c => c.label), translate('Note')]
-
-                    const rows2D = rows.value.map(row => {
-                        const rowArray = [row.id]
-                        columns.value.forEach(c => {
-                            rowArray.push(row[c.id] ?? '')
-                        })
-                        rowArray.push(row.note || '')
-                        return rowArray
-                    })
-
-                    const totalRow = [translate('Total')]
-                    columns.value.forEach(col => {
-                        if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
-                            totalRow.push(columnTotals.value[col.id] || 0)
-                        } else {
-                            totalRow.push('')
-                        }
-                    })
-                    totalRow.push('')
-
-                    const sheetDataValues = [headers, ...rows2D, totalRow]
-
-                    const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                    if (!metaRes.ok) throw new Error(`Metadata error (${metaRes.status})`)
-
-                    const metaData = await metaRes.json()
-                    const sheetExists = (metaData.sheets || []).some(s => s.properties.title === currentStorageKey.value)
-
-                    if (!sheetExists) {
-                        const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                requests: [{ addSheet: { properties: { title: currentStorageKey.value } } }]
-                            })
-                        })
-                        if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
-                    } else {
-                        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        })
-                    }
-
-                    const updateRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(safeRange)}?valueInputOption=USER_ENTERED`, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ range: safeRange, majorDimension: 'ROWS', values: sheetDataValues })
-                    })
-
-                    if (!updateRes.ok) throw new Error(`Write data error (${updateRes.status})`)
-                    return true
-                }
-
-                const checkAndAutoSync = async () => {
-                    if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
-
-                    const today = new Date().toISOString().slice(0, 10)
-
-                    if (lastSyncDate.value !== today) {
-                        isProcessing.value = 1
-                        console.log('🔄 跨日觸發：開始背景自動同步 Google Sheets...')
-                        let dataChanged = false
-
-                        try {
-                            await getValidGoogleToken()
-                            const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
-
-                            if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
-                                const mergedMap = new Map()
-
-                                rows.value.forEach(r => mergedMap.set(String(r.id), r))
-
-                                cloudData.rows.forEach(r => {
-                                    const existing = mergedMap.get(String(r.id)) || {}
-                                    mergedMap.set(String(r.id), { ...existing, ...r })
-                                })
-
-                                rows.value = Array.from(mergedMap.values())
-
-                                syncMaxRowId()
-                                dataChanged = true
-                            }
-
-                            await pushToGoogleSheets(sheetImportUrl.value)
-
-                            lastSyncDate.value = today
-                            localStorage.setItem('ty_last_sync_date', today)
-                            showConfirm('✅ '+ translate('Successfully synced data from Google Sheets!'), 1)
-
-                        } catch (error) {
-                            showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
-                            if (error.message.includes('authorization') || error.message.includes('token')) {
-                                googleAccessToken.value = ''
-                                tokenExpiresAt = 0
-                            }
-                            return false
-                        } finally {
-                            isProcessing.value = 0
-                        }
-                        return dataChanged
-                    }
-                }
-
-                const executeExportToSheets = async () => {
-                    try {
-                        if (!sheetImportUrl.value || !sheetImportUrl.value.includes('/d/')) {
-                            const token = await getValidGoogleToken()
-                            const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    properties: { title: 'TY-DB' },
-                                    sheets: [{ properties: { title: currentStorageKey.value } }]
-                                })
-                            })
-                            if (!createRes.ok) throw new Error('Failed to create new spreadsheet')
-                            const createData = await createRes.json()
-                            sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${createData.spreadsheetId}/edit`
-                        }
-
-                        await pushToGoogleSheets(sheetImportUrl.value)
-                        lastSyncDate.value = new Date().toISOString().slice(0, 10)
-                        localStorage.setItem('ty_last_sync_date', lastSyncDate.value)
-
-                        showConfirm('🚀 '+ translate('Successfully synced TO Google Sheets!'), 1)
-
-                    } catch (error) {
-                        console.error('Google Sheets Push Error:', error)
-                        showConfirm(`Sync failed: ${error.message || error}`, 1)
-                        googleAccessToken.value = ''
-                        tokenExpiresAt = 0
-                    } finally {
-                        isProcessing.value = 0
-                    }
-                }
-
-                const executeImportFromSheets = async (spreadsheetId) => {
-                    try {
-                        const urlToFetch = spreadsheetId
-                            ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
-                            : sheetImportUrl.value
-
-                        const cloudData = await fetchGoogleSheetsData(urlToFetch)
-
-                        if (!cloudData || cloudData.rows.length === 0) {
-                            return showConfirm(translate('No sufficient data found in the spreadsheet!'), 1)
-                        }
-
-                        rows.value = cloudData.rows
-                        syncMaxRowId()
-                        onDataEdited('both')
-
-                        showConfirm('🎉 '+ translate('Successfully synced data from Google Sheets!'), 1)
-
-                    } catch (error) {
-                        console.error('Google Sheets Import Error:', error)
-                        showConfirm('Sync failed. You might not have permission, or token expired.', 1)
-                        googleAccessToken.value = ''
-                    } finally {
-                        isProcessing.value = 0
-                    }
-                }
-
-                const initGoogleClient = async () => {
-                    if (!googleClientId.value.trim()) {
-                        showConfirm(translate('Please enter Google Client ID.'), 1)
-                        return false
-                    }
-                    if (tokenClient) return true
-
-                    return new Promise((resolve) => {
-                        loadScript('https://accounts.google.com/gsi/client')
-                            .then(() => {
-                                tokenClient = google.accounts.oauth2.initTokenClient({
-                                    client_id: googleClientId.value.trim(),
-                                    scope: 'https://www.googleapis.com/auth/spreadsheets',
-                                    callback: (tokenResponse) => {
-                                        if (tokenResponse && tokenResponse.access_token) {
-                                            googleAccessToken.value = tokenResponse.access_token
-                                            const expiresInSec = parseInt(tokenResponse.expires_in, 10) || 3600
-                                            tokenExpiresAt = Date.now() + (expiresInSec * 1000)
-
-                                            if (pendingTokenResolve) {
-                                                pendingTokenResolve(tokenResponse.access_token)
-                                                pendingTokenResolve = null
-                                                pendingTokenReject = null
-                                            }
-                                        } else if (tokenResponse && tokenResponse.error) {
-                                            console.warn('GIS Token Callback Error:', tokenResponse)
-                                            if (pendingTokenReject) {
-                                                pendingTokenReject(new Error(tokenResponse.error))
-                                                pendingTokenResolve = null
-                                                pendingTokenReject = null
-                                            }
-                                        }
-                                    },
-                                    error_callback: (err) => {
-                                        console.error('GIS Client Error:', err)
-                                        if (pendingTokenReject) {
-                                            pendingTokenReject(err)
-                                            pendingTokenResolve = null
-                                            pendingTokenReject = null
-                                        }
-                                    }
-                                })
-                                resolve(true)
-                            })
-                            .catch((err) => {
-                                console.error('Failed to load Google GIS script:', err)
-                                showConfirm(translate('Failed to load Google GIS.'), 1)
-                                resolve(false)
-                            })
-                    })
-                }
-
-                const requestGisToken = (promptType = '') => {
-                    return new Promise((resolve, reject) => {
-                        pendingTokenResolve = resolve
-                        pendingTokenReject = reject
-                        tokenClient.requestAccessToken({ prompt: promptType })
-                    })
-                }
-
-                const getValidGoogleToken = async () => {
-                    const isReady = await initGoogleClient()
-                    if (!isReady) throw new Error('Google Client not initialized.')
-
-                    const now = Date.now()
-                    if (googleAccessToken.value && now < (tokenExpiresAt - 120000)) {
-                        return googleAccessToken.value
-                    }
-
-                    try {
-                        const token = await requestGisToken('')
-                        return token
-                    } catch (silentErr) {
-                        console.warn('Silent token refresh failed, falling back to interactive consent:', silentErr)
-                    }
-
-                    try {
-                        const token = await requestGisToken('consent')
-                        return token
-                    } catch (interactiveErr) {
-                        throw new Error('Google authorization was cancelled or failed.')
-                    }
-                }
-
-                const exportToGoogleSheets = async () => {
-                    try {
-                        isProcessing.value = -3
-                        await executeExportToSheets()
-                    } catch (err) {
-                        console.error('Export Action Failed:', err)
-                    }
-                }
-
-                const importFromGoogleSheets = async () => {
-                    if (!sheetImportUrl.value) return showConfirm(translate('Please enter a Google Sheets URL first!'), 1)
-                    const match = sheetImportUrl.value.match(/\/d\/([a-zA-Z0-9-_]+)/)
-                    if (!match) return showConfirm(translate('Invalid Google Sheets URL!'), 1)
-                    if (!await showConfirm(translate('This will overwrite your current local data. Continue?'))) return
-
-                    try {
-                        isProcessing.value = -4
-                        await executeImportFromSheets(match[1])
-                    } catch (err) {
-                        console.error('Import Action Failed:', err)
                     }
                 }
 
