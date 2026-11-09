@@ -3163,7 +3163,7 @@
                     const frequencyMap = {}
                     const validValues = []
 
-                    const isMainCategoryCol = (colId === mainCatColId.value);
+                    const isMainCategoryCol = (colId === mainCatColId.value)
                     if (isMainCategoryCol && categoryBudgets.value) {
                         Object.keys(categoryBudgets.value).forEach(cat => {
                             if (cat.trim() !== '') validValues.push(cat)
@@ -3963,7 +3963,7 @@
                 const calcValue = (val) => {
                     if (val === null || val === undefined || val === '') return 0
                     if (typeof val === 'number') return val
-                    const strVal = String(val).trim().replace(/[+\-*/.]+$/, '');
+                    const strVal = String(val).trim().replace(/[+\-*/.]+$/, '')
                     try {
                         const res = calculateInlineMath(strVal)
                         return Number(res) || 0
@@ -4710,12 +4710,12 @@
 
                     Object.values(categoryBudgets.value).forEach(config => {
                         if (config && config.type !== 'income' && config.amount) {
-                            const numAmount = calcValue(config.amount);
+                            const numAmount = calcValue(config.amount)
                             if (numAmount > 0) {
-                                totalBudgetAmount += numAmount;
+                                totalBudgetAmount += numAmount
                             }
                         }
-                    });
+                    })
 
                     return {
                         trendData,
@@ -4734,7 +4734,7 @@
                 }
 
                 const formatDate = (dateStr) => {
-                    if (!dateStr || String(dateStr).length !== 8) return dateStr;
+                    if (!dateStr || String(dateStr).length !== 8) return dateStr
                     return String(dateStr).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3')
                 }
 
@@ -4746,7 +4746,7 @@
                     if (str.length === 4) {
                         return str.replace(/^(\d{2})(\d{2})$/, '$1:$2')
                     }
-                    return str;
+                    return str
                 }
 
                 const centerTextPlugin = {
@@ -4965,7 +4965,7 @@
                     const absValues = values.map(v => Math.abs(v))
                     if (expenseChart.value) {
                         const currentLabels = expenseChart.value.data.labels || [];
-                        const isLabelsChanged = currentLabels.length !== labels.length || !currentLabels.every((val, index) => val === labels[index]);
+                        const isLabelsChanged = currentLabels.length !== labels.length || !currentLabels.every((val, index) => val === labels[index])
 
                         expenseChart.value.data.labels = labels
                         expenseChart.value.data.datasets[0].data = absValues
@@ -5228,8 +5228,8 @@
                             })
                         } else {
                             const filteredEntries = Object.entries(categoryData).filter(([cat, val]) => {
-                                if (chartViewMode.value === 'expense') return val < 0;
-                                return val > 0;
+                                if (chartViewMode.value === 'expense') return val < 0
+                                return val > 0
                             })
                             const sortedEntries = filteredEntries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
 
@@ -5921,12 +5921,12 @@
 
                             if (isOCRMode) {
                                 const base64Image = await new Promise((resolve, reject) => {
-                                    const reader = new FileReader();
+                                    const reader = new FileReader()
                                     reader.onload = () => resolve(reader.result)
                                     reader.onerror = reject
                                     reader.readAsDataURL(file)
                                 })
-                                decodedText = await processOCR(base64Image);
+                                decodedText = await processOCR(base64Image)
                             } else {
                                 if ('BarcodeDetector' in window) {
                                     try {
