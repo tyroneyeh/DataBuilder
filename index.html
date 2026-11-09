@@ -4933,7 +4933,7 @@
 
                         dynamicTotalBudget += baseBudget * currentBudgetMultiplier.value
                     })
-                    if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income' && trendStacked.value) {
+                    if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
                             data: labels.map(() => Math.round(-Math.abs(dynamicTotalBudget))),
