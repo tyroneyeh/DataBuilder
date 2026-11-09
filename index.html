@@ -2070,7 +2070,7 @@
                         if (!currentStorageKey.value) return
                         if (!colCount.value) colCount.value = columns.value.length
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
-                        if (data.budgets) data.budgets = structuredClone(data.budgets)
+                        if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                         db.set(currentStorageKey.value, data)
                         debouncedUpdateChart()
                     } catch (e) {
@@ -6918,7 +6918,7 @@
                 }
 
                 const deleteCategoryBudget = async (categoryName) => {
-                    if (!showConfirm(translate('Are you sure you want to delete the budget for {category}?', {category: categoryName}))) {
+                    if (!await showConfirm(translate('Are you sure you want to delete the budget for {category}?', {category: categoryName}))) {
                         return
                     }
 
