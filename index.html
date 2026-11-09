@@ -222,7 +222,7 @@
                                     </span>
                                 </span>
                             </div>
-                            <div v-if="item.budget > 0 || Math.abs(item.value) > 0" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
+                            <div v-if="item.budget > 0" class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded-full mt-2 overflow-hidden flex">
                                 <div class="h-full rounded-full transition-all duration-500"
                                     :class="[
                                         Math.abs(item.value) > item.budget ? 'bg-red-500' : 'bg-emerald-500',
