@@ -1651,7 +1651,7 @@
             window.addEventListener('load', () => {
                 const wb = new Workbox('./sw.js')
                 wb.addEventListener('waiting', () => {
-                    if (confirm(translate('A new version is available. Do you want to reload?'))) {
+                    if (showConfirm(translate('A new version is available. Do you want to reload?'))) {
                         wb.messageSkipWaiting()
                     }
                 })
@@ -1879,7 +1879,7 @@
 
                 const applyTypeToAll = (typeValue) => {
                     if (!typeValue) return
-                    if (confirm(translate('Are you sure you want to set all categories to {type}?', {type: typeValue === 'income' ? translate('Income') : translate('Expense')}))) {
+                    if (showConfirm(translate('Are you sure you want to set all categories to {type}?', {type: typeValue === 'income' ? translate('Income') : translate('Expense')}))) {
                         uniqueCategories.value.forEach(cat => {
                             if (categoryBudgets.value[cat]) {
                                 categoryBudgets.value[cat].type = typeValue
@@ -1892,7 +1892,7 @@
                 const applyAmountToAll = (rawAmount) => {
                     if (!rawAmount || String(rawAmount).trim() === '') return
                     const amountValue = calcValue(rawAmount)
-                    if (confirm(translate('Are you sure you want to set all categories budget to {amount} for empty categories?', {amount: amountValue}))) {
+                    if (showConfirm(translate('Are you sure you want to set all categories budget to {amount} for empty categories?', {amount: amountValue}))) {
                         uniqueCategories.value.forEach(cat => {
                             const budgetConfig = categoryBudgets.value[cat]
                             if (budgetConfig && !budgetConfig.amount) {
@@ -6918,7 +6918,7 @@
                 }
 
                 const deleteCategoryBudget = async (categoryName) => {
-                    if (!confirm(translate('Are you sure you want to delete the budget for {category}?', {category: categoryName}))) {
+                    if (!showConfirm(translate('Are you sure you want to delete the budget for {category}?', {category: categoryName}))) {
                         return
                     }
 
