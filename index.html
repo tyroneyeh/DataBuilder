@@ -4601,7 +4601,7 @@
                 })
 
                 const formatNumber = (num) => {
-                    return Math.abs(num) > 100 ? compactFormatter.format(num) : num.toLocaleString()
+                    return Math.abs(num) > 10000 ? compactFormatter.format(num) : num.toLocaleString()
                 }
 
                 const formatDate = (dateStr) => {
@@ -4914,7 +4914,7 @@
                         }
                     })
 
-                    let dynamicTotalBudget = 0
+                    let baseTotalMonthlyBudget = 0
 
                     trendObj.categories.forEach(cat => {
                         const catSettings = categoryBudgets.value[cat]
@@ -4931,12 +4931,14 @@
                             ? getHistoricalSpent(cat)
                             : explicitBudget
 
-                        dynamicTotalBudget += baseBudget * currentBudgetMultiplier.value
+                        baseTotalMonthlyBudget += baseBudget
                     })
-                    if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
+                    const periodTotalBudget = baseTotalMonthlyBudget * currentBudgetMultiplier.value
+                    if (periodTotalBudget > 0 && chartViewMode.value !== 'income') {
+                        const pointBudget = trendChartType.value === 'line' ? periodTotalBudget / labels.length : periodTotalBudget
                         datasets.push({
                             label: translate('Budget'),
-                            data: labels.map(() => Math.round(-Math.abs(dynamicTotalBudget))),
+                            data: labels.map(() => Math.round(-Math.abs(pointBudget))),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
