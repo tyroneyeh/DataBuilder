@@ -457,19 +457,20 @@
                             </div>
 
                             <div v-else class="flex items-center w-full h-full relative justify-end sm:justify-start print:justify-start">
-                                <template v-if="!isPrinting && col.type === 'category' && col.id === mainCatColId && categoryBudgetMap[row[col.id]] && (categoryBudgetMap[row[col.id]].budget > 0 || categoryBudgetMap[row[col.id]].spent > 0)">
+                                <template v-if="!isPrinting && col.type === 'category' && col.id === mainCatColId && rowRunningBudgetMap.has(row)">
                                     <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 rounded pointer-events-none"
                                         :class="[
-                                            categoryBudgetMap[row[col.id]].isOver ? 'bg-red-500' : '',
-                                            categoryBudgetMap[row[col.id]].isFallback ? 'bg-[length:20px_20px] bg-[linear-gradient(45deg,rgba(255,255,255,.15)25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)50%,rgba(255,255,255,.15)75%,transparent_75%,transparent)]' : ''
+                                            rowRunningBudgetMap.get(row).isOver ? 'bg-red-500' : '',
+                                            rowRunningBudgetMap.get(row).isFallback ? 'bg-[length:20px_20px] bg-[linear-gradient(45deg,rgba(255,255,255,.15)25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)50%,rgba(255,255,255,.15)75%,transparent_75%,transparent)]' : ''
                                         ]"
                                         :style="{
-                                            width: (categoryBudgetMap[row[col.id]].budget > 0 ? categoryBudgetMap[row[col.id]].percentage : (categoryBudgetMap[row[col.id]].spent > 0 ? 100 : 0)) + '%',
-                                            backgroundColor: categoryBudgetMap[row[col.id]].isOver ? undefined : categoryBudgetMap[row[col.id]].color
+                                            width: rowRunningBudgetMap.get(row).percentage + '%',
+                                            backgroundColor: rowRunningBudgetMap.get(row).isOver ? undefined : rowRunningBudgetMap.get(row).color
                                         }"></div>
+
                                     <span class="absolute left-2 sm:left-auto right-auto sm:right-6 z-10 text-xs font-bold pointer-events-none"
-                                        :class="categoryBudgetMap[row[col.id]].isOver ? 'text-red-600 dark:text-red-400' : 'text-gray-500'">
-                                        {{ categoryBudgetMap[row[col.id]].displayString }}
+                                        :class="rowRunningBudgetMap.get(row).isOver ? 'text-red-600 dark:text-red-400' : 'text-gray-500'">
+                                        {{ rowRunningBudgetMap.get(row).displayString }}
                                     </span>
                                 </template>
 
@@ -2407,6 +2408,19 @@
                     return Object.values(categoryBudgets.value).some(config => config.type === 'income')
                 })
 
+                const currentBudgetMultiplier = computed(() => {
+                    switch (timeUnit.value) {
+                        case 'day': return 1 / 30
+                        case 'week': return 1 / 4.33
+                        case 'quarter': return 3
+                        case 'halfyear': return 6
+                        case 'year': return 12
+                        case 'month':
+                        default:
+                            return 1
+                    }
+                })
+
                 const categoryBudgetMap = computed(() => {
                     const map = Object.create(null)
                     const currentPeriodSpent = Object.create(null)
@@ -2450,12 +2464,12 @@
 
                         if (!amountColId) return
 
-                        if (hasDateColumn && targetDateKey != null) {
-                            const rowDate = row[dateColId]
-                            if (!rowDate) return
-                            if (getDateGroupKey(rowDate, timeUnit.value) !== targetDateKey) {
-                                return
-                            }
+                        const rowDate = row[dateColId]
+                        if (!rowDate) return
+
+                        const rowDateKey = getDateGroupKey(rowDate, timeUnit.value)
+                        if (rowDateKey !== targetDateKey) {
+                            return
                         }
 
                         const rawAmount = row[amountColId]
@@ -2588,17 +2602,54 @@
                     return map
                 })
 
-                const currentBudgetMultiplier = computed(() => {
-                    switch (timeUnit.value) {
-                        case 'day': return 1 / 30
-                        case 'week': return 1 / 4.33
-                        case 'quarter': return 3
-                        case 'halfyear': return 6
-                        case 'year': return 12
-                        case 'month':
-                        default:
-                            return 1
-                    }
+                const rowRunningBudgetMap = computed(() => {
+                    const stats = new WeakMap()
+                    const spentTracker = Object.create(null)
+
+                    const dateColId = selectedChartDateColId.value
+                    const catColId = mainCatColId.value
+                    const amountColId = selectedChartNumColId.value
+
+                    if (!dateColId || !catColId || !amountColId) return stats
+
+                    const sortedRows = [...rows.value].filter(r => r[dateColId]).sort((a, b) => {
+                        return new Date(a[dateColId]).getTime() - new Date(b[dateColId]).getTime()
+                    })
+
+                    sortedRows.forEach(row => {
+                        const cat = row[catColId]
+                        if (!cat) return
+                        const catKey = String(cat)
+
+                        const rowDate = row[dateColId]
+                        const periodKey = getDateGroupKey(rowDate, timeUnit.value)
+
+                        const rawAmount = row[amountColId]
+                        const amount = Number(rawAmount)
+                        if (!Number.isFinite(amount)) return
+
+                        const trackingKey = `${periodKey}_${catKey}`
+
+                        spentTracker[trackingKey] = (spentTracker[trackingKey] || 0) + Math.abs(amount)
+
+                        const catBudgetInfo = categoryBudgetMap.value[catKey]
+
+                        if (catBudgetInfo && catBudgetInfo.budget > 0) {
+                            const runningSpent = spentTracker[trackingKey]
+                            const percentageNum = (runningSpent / catBudgetInfo.budget) * 100
+                            const isOver = runningSpent > catBudgetInfo.budget
+
+                            stats.set(row, {
+                                percentage: Math.min(Math.max(percentageNum, 0), 100),
+                                isOver: isOver,
+                                isFallback: catBudgetInfo.isFallback,
+                                displayString: `${Math.round(percentageNum)}%`,
+                                color: catBudgetInfo.color
+                            })
+                        }
+                    })
+
+                    return stats
                 })
 
                 const debouncedUpdateChart = debounce(async(unit) => {
@@ -7130,6 +7181,7 @@
                     calcValue,
                     hasIncomeCategories,
                     categoryBudgetMap,
+                    rowRunningBudgetMap,
                     getWeekdayStr,
                     googleClientId,
                     sheetImportUrl,
