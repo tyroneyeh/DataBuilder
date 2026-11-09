@@ -4601,7 +4601,7 @@
                 })
 
                 const formatNumber = (num) => {
-                    return Math.abs(num) > 10000 ? compactFormatter.format(num) : num.toLocaleString()
+                    return Math.abs(num) >= 10000 ? compactFormatter.format(num) : num.toLocaleString()
                 }
 
                 const formatDate = (dateStr) => {
