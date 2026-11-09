@@ -3590,6 +3590,7 @@
                     if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
                     const today = new Date().toISOString().slice(0, 10)
+                    lastSyncDate.value = localStorage.getItem(`${currentStorageKey.value}_last_sync_date`)
 
                     if (lastSyncDate.value !== today) {
                         isProcessing.value = 1
