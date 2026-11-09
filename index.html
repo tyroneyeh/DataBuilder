@@ -4936,7 +4936,7 @@
                     if (dynamicTotalBudget > 0 && chartViewMode.value !== 'income') {
                         datasets.push({
                             label: translate('Budget'),
-                            data: labels.map(() => Math.round(-Math.abs(dynamicTotalBudget) / labels.length)),
+                            data: labels.map(() => Math.round(-Math.abs(dynamicTotalBudget))),
                             type: 'line',
                             borderColor: '#ef4444',
                             backgroundColor: '#ef4444',
