@@ -2215,220 +2215,62 @@
                     }
                 }
 
-                const getHistoricalSpent = (catId, monthlyFrequency = 4) => {
+                const getHistoricalSpent = (catId) => {
                     const amountColId = selectedChartNumColId.value
                     const dateColId = selectedChartDateColId.value
                     const catColId = mainCatColId.value
 
-                    if (
-                        amountColId == null ||
-                        amountColId === '' ||
-                        catColId == null ||
-                        catColId === ''
-                    ) return 0
+                    if (!amountColId || !catColId || !dateColId) return 0
 
                     const now = new Date()
                     const targetYear = now.getFullYear()
-
-                    const todayStart = new Date(
-                        targetYear,
-                        now.getMonth(),
-                        now.getDate()
-                    )
-
-                    const DAY_MS = 86400000
-
-                    const hasDateColumn =
-                        dateColId !== null &&
-                        dateColId !== undefined &&
-                        dateColId !== ''
+                    const targetMonth = now.getMonth()
 
                     const parseDate = (value) => {
                         if (!value) return null
-
-                        if (value instanceof Date) {
-                            return Number.isNaN(value.getTime()) ? null : value
-                        }
-
-                        if (typeof value === 'number') {
-                            const date = new Date(value)
-                            return Number.isNaN(date.getTime()) ? null : date
-                        }
-
-                        const dateStr = String(value).trim()
-
-                        const match = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(dateStr)
-
-                        if (match) {
-                            const year = Number(match[1])
-                            const month = Number(match[2])
-                            const day = Number(match[3])
-
-                            const date = new Date(year, month - 1, day)
-
-                            if (
-                                date.getFullYear() !== year ||
-                                date.getMonth() !== month - 1 ||
-                                date.getDate() !== day
-                            ) {
-                                return null
-                            }
-
-                            return date
-                        }
-
-                        const date = new Date(dateStr)
-
+                        if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+                        const date = new Date(value)
                         return Number.isNaN(date.getTime()) ? null : date
                     }
 
-                    let totalSum = 0
-                    let totalCount = 0
-
-                    let validDateCount = 0
-
                     let lastYearSum = 0
-                    let lastYearCount = 0
-                    let lastYearMinMonth = 12
-                    let lastYearMaxMonth = -1
+                    const lastYearMonths = new Set()
 
-                    let thisYearYtdSum = 0
-                    let thisYearYtdCount = 0
-                    let thisYearFirstMonth = 12
+                    let previousMonthsSum = 0
+                    const previousMonths = new Set()
+
+                    let currentMonthSum = 0
 
                     rows.value.forEach(row => {
                         if (!row || row[catColId] !== catId) return
 
                         const rawAmount = row[amountColId]
-
-                        if (
-                            rawAmount === null ||
-                            rawAmount === undefined ||
-                            rawAmount === ''
-                        ) return
-
+                        if (rawAmount === null || rawAmount === undefined || rawAmount === '') return
                         const amount = Number(rawAmount)
-
                         if (!Number.isFinite(amount) || amount === 0) return
 
-                        const val = Math.abs(amount)
-
-                        totalSum += val
-                        totalCount++
-
-                        if (!hasDateColumn) return
-
                         const rowDate = parseDate(row[dateColId])
-
                         if (!rowDate) return
-
-                        validDateCount++
 
                         const rowYear = rowDate.getFullYear()
                         const rowMonth = rowDate.getMonth()
+                        const val = Math.abs(amount)
 
                         if (rowYear === targetYear - 1) {
                             lastYearSum += val
-                            lastYearCount++
-
-                            lastYearMinMonth = Math.min(
-                                lastYearMinMonth,
-                                rowMonth
-                            )
-
-                            lastYearMaxMonth = Math.max(
-                                lastYearMaxMonth,
-                                rowMonth
-                            )
-                        }
-                        else if (
-                            rowYear === targetYear &&
-                            rowDate < todayStart
-                        ) {
-                            thisYearYtdSum += val
-                            thisYearYtdCount++
-
-                            thisYearFirstMonth = Math.min(
-                                thisYearFirstMonth,
-                                rowMonth
-                            )
+                            lastYearMonths.add(rowMonth)
+                        } else if (rowYear === targetYear && rowMonth < targetMonth) {
+                            previousMonthsSum += val
+                            previousMonths.add(rowMonth)
+                        } else if (rowYear === targetYear && rowMonth === targetMonth) {
+                            currentMonthSum += val
                         }
                     })
 
-                    if (totalCount === 0) return 0
-
-                    let estimatedMonthlyBudget = 0
-
-                    if (hasDateColumn && lastYearCount > 0) {
-                        const coveredMonths =
-                            lastYearMaxMonth - lastYearMinMonth + 1
-
-                        estimatedMonthlyBudget =
-                            lastYearSum / coveredMonths
-
-                    }
-                    else if (hasDateColumn && thisYearYtdCount > 0) {
-
-                        const trackingStart = new Date(
-                            targetYear,
-                            thisYearFirstMonth,
-                            1
-                        )
-
-                        const elapsedDays = Math.max(
-                            1,
-                            Math.floor(
-                                (todayStart.getTime() - trackingStart.getTime()) /
-                                DAY_MS
-                            )
-                        )
-
-                        estimatedMonthlyBudget =
-                            (thisYearYtdSum / elapsedDays) * 30
-
-                    }
-                    else if (!hasDateColumn || validDateCount === 0) {
-
-                        const frequency = Number(monthlyFrequency)
-
-                        const safeFrequency =
-                            Number.isFinite(frequency) && frequency >= 0
-                                ? frequency
-                                : 4
-
-                        const averagePerTransaction = totalSum / totalCount
-
-                        estimatedMonthlyBudget =
-                            averagePerTransaction * safeFrequency
-
-                    }
-                    else {
-                        return 0
-                    }
-
-                    let result = 0
-                    switch (timeUnit.value) {
-                        case 'day':
-                            result = estimatedMonthlyBudget / 30
-                            break
-                        case 'week':
-                            result = estimatedMonthlyBudget * 12 / 52
-                            break
-                        case 'quarter':
-                            result = estimatedMonthlyBudget * 3
-                            break
-                        case 'halfyear':
-                            result = estimatedMonthlyBudget * 6
-                            break
-                        case 'year':
-                            result = estimatedMonthlyBudget * 12
-                            break
-                        case 'month':
-                        default:
-                            result = estimatedMonthlyBudget
-                    }
-
-                    return Math.round(result)
+                    if (lastYearMonths.size > 0) return Math.round(lastYearSum / lastYearMonths.size)
+                    if (previousMonths.size > 0) return Math.round(previousMonthsSum / previousMonths.size)
+                    if (currentMonthSum > 0) return Math.round(currentMonthSum)
+                    return 0
                 }
 
                 const filteredRows = computed(() => {
@@ -2568,104 +2410,75 @@
                 const categoryBudgetMap = computed(() => {
                     const map = Object.create(null)
                     const currentPeriodSpent = Object.create(null)
-                    const categoryIds = new Map()
 
                     const displayRows = Array.isArray(rows.value) ? rows.value : []
                     const columnList = Array.isArray(columns.value) ? columns.value : []
 
-                    // 優先使用圖表目前選擇的金額欄位
-                    const amountColId =
-                        selectedChartNumColId.value ||
-                        columnList.find(c => c.type === 'number' || c.type === 'minus')?.id
-
-                    const dateColId =
-                        selectedChartDateColId.value ||
-                        columnList.find(c => c.type === 'date')?.id
-
+                    const amountColId = selectedChartNumColId.value || columnList.find(c => c.type === 'number' || c.type === 'minus')?.id
+                    const dateColId = selectedChartDateColId.value || columnList.find(c => c.type === 'date')?.id
                     const catColId = mainCatColId.value
 
-                    const hasDateColumn =
-                        dateColId !== null &&
-                        dateColId !== undefined &&
-                        dateColId !== ''
+                    const hasDateColumn = dateColId !== null && dateColId !== undefined && dateColId !== ''
 
-                    const now = new Date()
-                    const todayStr = [
-                        now.getFullYear(),
-                        String(now.getMonth() + 1).padStart(2, '0'),
-                        String(now.getDate()).padStart(2, '0')
-                    ].join('-')
-
-                    const targetDateKey =
-                        selectedChartDate.value ||
-                        (hasDateColumn
-                            ? getDateGroupKey(todayStr, timeUnit.value)
-                            : null)
+                    let targetDateKey = selectedChartDate.value
+                    if (!targetDateKey && hasDateColumn) {
+                        let maxTimestamp = 0
+                        for (let i = 0; i < displayRows.length; i++) {
+                            const d = displayRows[i][dateColId]
+                            if (d) {
+                                const t = new Date(d).getTime()
+                                if (!Number.isNaN(t) && t > maxTimestamp) maxTimestamp = t
+                            }
+                        }
+                        if (maxTimestamp > 0) {
+                            const maxDate = new Date(maxTimestamp)
+                            const fallbackStr = [maxDate.getFullYear(), String(maxDate.getMonth() + 1).padStart(2, '0'), String(maxDate.getDate()).padStart(2, '0')].join('-')
+                            targetDateKey = getDateGroupKey(fallbackStr, timeUnit.value)
+                        } else {
+                            const now = new Date()
+                            const todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-')
+                            targetDateKey = getDateGroupKey(todayStr, timeUnit.value)
+                        }
+                    }
 
                     displayRows.forEach(row => {
                         if (!row || catColId == null || catColId === '') return
 
                         const cat = row[catColId]
-
                         if (cat === null || cat === undefined || cat === '') return
-
                         const catKey = String(cat)
 
-                        if (!categoryIds.has(catKey)) {
-                            categoryIds.set(catKey, cat)
-                        }
+                        if (!amountColId) return
 
-                        if (!amountColId || !hasDateColumn || targetDateKey == null) {
-                            return
-                        }
-
-                        const rowDate = row[dateColId]
-                        if (!rowDate) return
-
-                        if (getDateGroupKey(rowDate, timeUnit.value) !== targetDateKey) {
-                            return
+                        if (hasDateColumn && targetDateKey != null) {
+                            const rowDate = row[dateColId]
+                            if (!rowDate) return
+                            if (getDateGroupKey(rowDate, timeUnit.value) !== targetDateKey) {
+                                return
+                            }
                         }
 
                         const rawAmount = row[amountColId]
-
-                        if (
-                            rawAmount === null ||
-                            rawAmount === undefined ||
-                            rawAmount === ''
-                        ) return
-
+                        if (rawAmount === null || rawAmount === undefined || rawAmount === '') return
                         const amount = Number(rawAmount)
-
                         if (!Number.isFinite(amount)) return
 
-                        currentPeriodSpent[catKey] =
-                            (currentPeriodSpent[catKey] || 0) + Math.abs(amount)
+                        currentPeriodSpent[catKey] = (currentPeriodSpent[catKey] || 0) + Math.abs(amount)
                     })
 
                     const budgetSettingsMap = categoryBudgets.value || {}
 
-                    Object.keys(budgetSettingsMap).forEach(catKey => {
-                        if (!categoryIds.has(catKey)) {
-                            categoryIds.set(catKey, catKey)
-                        }
-                    })
+                    const allCategoriesToProcess = new Set([
+                        ...Object.keys(currentPeriodSpent),
+                        ...Object.keys(budgetSettingsMap)
+                    ])
 
                     const rawMultiplier = Number(currentBudgetMultiplier.value)
+                    const multiplier = Number.isFinite(rawMultiplier) && rawMultiplier >= 0 ? rawMultiplier : 1
 
-                    const multiplier =
-                        Number.isFinite(rawMultiplier) && rawMultiplier >= 0
-                            ? rawMultiplier
-                            : 1
-
-                    categoryIds.forEach((cat, catKey) => {
+                    allCategoriesToProcess.forEach((cat, catKey) => {
                         const rawSettings = budgetSettingsMap[catKey]
-
-                        const settings =
-                            rawSettings !== null &&
-                            typeof rawSettings === 'object'
-                                ? rawSettings
-                                : {}
-
+                        const settings = rawSettings !== null && typeof rawSettings === 'object' ? rawSettings : {}
                         let explicitBudget = 0
 
                         if (
@@ -4886,12 +4699,8 @@
                                 0
                             )
                             const isFallback = rawBudget === 0
-                            let budgetAmount = 0
-                            if (isFallback) {
-                                budgetAmount = getHistoricalSpent(label)
-                            } else {
-                                budgetAmount = rawBudget * currentBudgetMultiplier.value
-                            }
+                            const baseBudget = isFallback ? getHistoricalSpent(label) : rawBudget
+                            const budgetAmount = baseBudget * currentBudgetMultiplier.value
 
                             return {
                                 index: index,
