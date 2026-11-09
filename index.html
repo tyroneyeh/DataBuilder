@@ -3718,7 +3718,6 @@
                     updateColumns()
                     updateTitle()
                     syncMaxRowId()
-                    checkAndAutoSync()
                     onDataEdited('both')
 
                     const seenIds = new Set()
@@ -7045,6 +7044,12 @@
                     return 'bg-transparent'
                 }
 
+                const handleAppResume = () => {
+                    if (document.visibilityState === 'visible') {
+                        checkAndAutoSync()
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -7070,6 +7075,7 @@
                             }
                         }
                     })
+                    document.addEventListener('visibilitychange', handleAppResume)
 
                     resizeObserver = new ResizeObserver((entries) => {
                         let heightChanged = false
@@ -7124,6 +7130,7 @@
                 onUnmounted(() => {
                     window.removeEventListener('keydown', handleKeydown)
                     window.removeEventListener('mouseup', handleMouseUp)
+                    document.removeEventListener('visibilitychange', handleAppResume)
                     document.body.style.overflow = ''
                 })
 
