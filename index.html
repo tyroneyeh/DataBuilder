@@ -1046,7 +1046,7 @@
                         <span class="transform transition-transform duration-300" :class="isBudgetOpen ? 'rotate-180' : 'rotate-0'">▼</span>
                     </div>
                 </div>
-                <div v-show="isBudgetOpen" class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700" :class="{'print:hidden': !isBudgetOpen}">
+                <div v-if="isBudgetOpen" class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700" :class="{'print:hidden': !isBudgetOpen}">
                     <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                         <table class="w-full border-collapse bg-white dark:bg-gray-800 text-sm">
                             <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
@@ -1099,7 +1099,7 @@
                                     <td class="p-3 text-center">
                                         <select
                                             v-model="stat.budget.type"
-                                            @change="stat.budget.type = $event.target.value; onDataEdited('none')"
+                                            @change="stat.budget.type = $event.target.value; onDataEdited()"
                                             class="text-xs px-2 py-1 rounded border outline-none font-bold transition-colors cursor-pointer"
                                             :class="(!stat.budget.type || stat.budget.type === 'expense') ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' : 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'"
                                         >
@@ -1119,9 +1119,15 @@
                                             :value="stat.budget.amount"
                                             @focus="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
                                             @change="stat.budget.amount = calcValue($event.target.value); onDataEdited()"
-                                            class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 pl-6 text-gray-700 dark:text-gray-200 transition-colors font-mono"
+                                            class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 px-6 text-gray-700 dark:text-gray-200 transition-colors font-mono"
                                             :placeholder="translate('e.g., 5000 or 12000/12')"
                                         >
+                                        <button @click="deleteCategoryBudget(stat.name)"
+                                            class="absolute right-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1912,7 +1918,6 @@
                         color: defaultPalette[colorIndex % defaultPalette.length]
                     }
                     newCategoryInput.value = ''
-                    onDataEdited()
                 }
 
                 const mainCatColId = computed(() => {
@@ -2065,6 +2070,7 @@
                         if (!currentStorageKey.value) return
                         if (!colCount.value) colCount.value = columns.value.length
                         const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value)}
+                        if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                         db.set(currentStorageKey.value, data)
                         debouncedUpdateChart()
                     } catch (e) {
@@ -6911,6 +6917,20 @@
                     }
                 }
 
+                const deleteCategoryBudget = async (categoryName) => {
+                    if (!confirm(translate('Are you sure you want to delete the budget for {category}?', {category: categoryName}))) {
+                        return
+                    }
+
+                    try {
+                        const updatedBudgets = {...categoryBudgets.value}
+                        delete updatedBudgets[categoryName]
+                        categoryBudgets.value = updatedBudgets
+                    } catch (error) {
+                        console.error('Failed to delete budget:', error)
+                    }
+                }
+
                 onMounted(async () => {
                     window.addEventListener('beforeprint', () => {
                         isPrinting.value = true
@@ -7193,7 +7213,8 @@
                     getCheckboxProgressPercent,
                     getProgressBarColor,
                     newCategoryInput,
-                    addNewCategory
+                    addNewCategory,
+                    deleteCategoryBudget
                 }
             }
         }).mount('#app')
