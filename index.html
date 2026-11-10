@@ -1666,12 +1666,17 @@
 
         const debounce = (func, delay) => {
             let timer = null
-            return (...args) => {
+            const debounced = (...args) => {
                 clearTimeout(timer)
                 timer = setTimeout(() => {
                     func(...args)
                 }, delay)
             }
+            debounced.cancel = () => {
+                clearTimeout(timer)
+                timer = null
+            }
+            return debounced
         }
 
         class SimpleDB {
@@ -2658,9 +2663,8 @@
                     return stats
                 })
 
-                const debouncedUpdateChart = debounce(async(unit) => {
+                const debouncedUpdateChart = debounce((unit) => {
                     if (isInitializing) return
-                    await nextTick()
                     updateChart(unit)
                 }, 300)
 
@@ -7012,6 +7016,9 @@
                 })
 
                 onUnmounted(() => {
+                    debouncedSave.cancel()
+                    saveScrollPosition.cancel()
+                    debouncedUpdateChart.cancel()
                     window.removeEventListener('keydown', handleKeydown)
                     window.removeEventListener('mouseup', handleMouseUp)
                     document.removeEventListener('visibilitychange', handleAppResume)
