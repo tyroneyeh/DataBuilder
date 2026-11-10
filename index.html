@@ -6914,7 +6914,7 @@
                 }
 
                 const handleAppResume = () => {
-                    if (document.visibilityState === 'visible') {
+                    if (!isInitializing && document.visibilityState === 'visible') {
                         checkAndAutoSync()
                     }
                 }
