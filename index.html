@@ -3460,7 +3460,7 @@
                     }
                 }
 
-                const checkAndAutoSync = async () => {
+                const checkAndAutoSync = async (silent = false) => {
                     if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
                     const today = new Date().toISOString().slice(0, 10)
@@ -3468,11 +3468,10 @@
 
                     if (lastSyncDate.value !== today) {
                         isProcessing.value = 1
-                        let dataChanged = false
 
                         try {
 
-                            await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
+                            !slient && await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
 
                             const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
 
@@ -3489,7 +3488,6 @@
                                 rows.value = Array.from(mergedMap.values())
 
                                 syncMaxRowId()
-                                dataChanged = true
                             }
 
                             await pushToGoogleSheets(sheetImportUrl.value)
@@ -3507,7 +3505,6 @@
                         } finally {
                             isProcessing.value = 0
                         }
-                        return dataChanged
                     }
                 }
 
@@ -3747,6 +3744,9 @@
                 }
 
                 const addRow = async () => {
+
+                    checkAndAutoSync(1)
+
                     const newRowId = generateId()
                     const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
                     const {todayDate, currentTime} = getDate()
@@ -3782,7 +3782,6 @@
                         windowEnd.value = total
                         windowStart.value = Math.max(0, total - 50)
 
-                        await nextTick()
                         if (tableContainer.value) {
                             tableContainer.value.scrollTop = tableContainer.value.scrollHeight
                         }
@@ -6918,7 +6917,7 @@
                 }
 
                 const handleAppResume = () => {
-                    if (!isInitializing && document.visibilityState === 'visible') {
+                    if (document.visibilityState === 'visible') {
                         checkAndAutoSync()
                     }
                 }
