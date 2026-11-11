@@ -5277,6 +5277,7 @@
                 }
 
                 const handleTableScroll = (e) => {
+                    if (isAnyFilterActive.value) return
                     isScrolling.value = true
 
                     activeRow.value = null
