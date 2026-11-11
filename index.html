@@ -4515,20 +4515,19 @@
                     }
                 }
 
-                const getChartData = (type = 'category') => {
+                const getChartData = () => {
                     const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => c.type?.startsWith('number'))
                     if (!numCol) return null
                     selectedChartNumColId.value = numCol.id
 
-                    const colId = type === 'date' ? selectedChartDateColId.value : selectedChartCatColId.value
+                    const colId = selectedChartCatColId.value
                     if (!colId) return null
 
-                    const data = type === 'date' ? filteredRows.value : rows.value
                     const dateColIdForFilter = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
 
                     const totals = {}
                     const counts = {}
-                    data.forEach(row => {
+                    filteredRows.value.forEach(row => {
                         if (dateColIdForFilter && row[dateColIdForFilter]) {
                             const dateObj = new Date(row[dateColIdForFilter])
                             if (!isNaN(dateObj.getTime())) {
@@ -4543,29 +4542,16 @@
                         }
 
                         const rawVal = row[colId]
-
-                        let label
-                        let catLabelForType
-                        if (type === 'date') {
-                            if (!rawVal) return
-                            label = getDateGroupKey(rawVal, timeUnit.value)
-                            const catCol = selectedChartCatColId.value
-                            catLabelForType = (catCol && row[catCol] && String(row[catCol]).trim() !== '')
-                                ? String(row[catCol]).trim()
-                                : translate('Uncategorized')
-                        } else {
-                            label = rawVal && String(rawVal).trim() !== ''
-                                ? String(rawVal).trim()
-                                : translate('Uncategorized')
-                            catLabelForType = label
-                        }
+                        const label = rawVal && String(rawVal).trim() !== ''
+                            ? String(rawVal).trim()
+                            : translate('Uncategorized')
 
                         let val = parseFloat(row[numCol.id]) || 0
                         if (numCol.type.startsWith('multiply')) val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
                         else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
 
                         if (val !== 0) {
-                            const budgetConfig = categoryBudgets.value[catLabelForType]
+                            const budgetConfig = categoryBudgets.value[label]
                             const isExpense = !budgetConfig || budgetConfig.type === 'expense'
                             const adjustedVal = isExpense ? -Math.abs(val) : Math.abs(val)
 
@@ -4574,9 +4560,7 @@
                         }
                     })
 
-                    if (type === 'category') {
-                        categoryCounts.value = counts
-                    }
+                    categoryCounts.value = counts
 
                     return totals
                 }
@@ -5089,7 +5073,7 @@
                                                 if (tooltipItems.length === 0) return null
                                                 let total = 0
                                                 tooltipItems.forEach((tooltipItem) => {
-                                                    total += tooltipItem.parsed.y
+                                                    if (tooltipItem.dataset.label !== translate('Budget')) total += tooltipItem.parsed.y
                                                 })
 
                                                 const sign = total > 0 ? '+' : ''
@@ -5130,7 +5114,7 @@
                     }
                     const ctxDoughnut = document.getElementById('expenseChart')
                     const ctxLine = document.getElementById('trendChart')
-                    const categoryData = getChartData('category')
+                    const categoryData = getChartData()
                     let topCategories = new Set()
                     let labels = []
                     let values = []
