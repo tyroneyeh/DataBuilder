@@ -1815,6 +1815,7 @@
                 const db = new SimpleDB()
                 const currentStorageKey = ref('')
                 const columnFilters = ref({})
+                const appliedFilters = ref({})
                 const savedKeysList = ref([])
                 const tempKey = ref('')
 
@@ -2203,9 +2204,7 @@
                         ? activeRow.value.row[activeRow.value.col.id]
                         : columnFilters.value[activeRow.value.col.id]
                 }, (newValue, oldValue) => {
-                    if (newValue !== oldValue) {
-                        activeDropdownIndex.value = -1
-                    }
+                    activeDropdownIndex.value = -1
                 })
 
                 watch(sheetImportUrl, (newVal) => {
@@ -2220,6 +2219,10 @@
                 watch(isAutoSyncEnabled, (newVal) => {
                     newVal ? localStorage.setItem('ty_auto_sync', 1) : localStorage.removeItem('ty_auto_sync')
                 })
+
+                watch(columnFilters, (newVal) => {
+                    syncFilters(newVal)
+                }, { deep: true })
 
                 const toggleDarkMode = () => {
                     isDark.value = !isDark.value
@@ -2318,6 +2321,10 @@
                     return 0
                 }
 
+                const syncFilters = debounce((newVal) => {
+                    appliedFilters.value = { ...newVal }
+                }, 400)
+
                 const filteredRows = computed(() => {
                     const chartDate = selectedChartDate.value
                     const catColId = selectedChartCatColId.value
@@ -2391,7 +2398,7 @@
                         })
                     }
 
-                    const activeFilters = Object.entries(columnFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
+                    const activeFilters = Object.entries(appliedFilters.value).filter(([_, val]) => val && String(val).trim() !== '')
                     if (activeFilters.length > 0) {
                         result = result.filter(row => {
                             return activeFilters.every(([colId, filterText]) => {
@@ -2401,9 +2408,20 @@
                                 if (filterTextStr === translate('empty') || filterTextStr === '""' || filterTextStr === "''") {
                                     return isEmptyCell
                                 }
+                                const checkMultiConditions = (val, filterStr) => {
+                                    const cellText = String(val).toLowerCase()
+                                    const tokens = filterStr.split(/\s+/).filter(t => t.length > 0)
+                                    return tokens.every(token => {
+                                        if (token.startsWith('-') && token.length > 1) {
+                                            const excludeText = token.substring(1)
+                                            return !cellText.includes(excludeText)
+                                        }
+                                        return cellText.includes(token)
+                                    })
+                                }
                                 if (colId === 'note') {
                                     if (isEmptyCell) return false
-                                    return String(rawValue).toLowerCase().includes(filterTextStr)
+                                    return checkMultiConditions(rawValue, filterTextStr)
                                 }
                                 const colDef = columns.value.find(c => c.id === colId)
                                 if (!colDef) return true
@@ -2440,7 +2458,7 @@
                                 }
 
                                 if (isEmptyCell) return false
-                                return String(rawValue).toLowerCase().includes(filterTextStr)
+                                return checkMultiConditions(rawValue, filterTextStr)
                             })
                         })
                     }
@@ -7051,6 +7069,7 @@
                     debouncedSave.cancel()
                     saveScrollPosition.cancel()
                     debouncedUpdateChart.cancel()
+                    syncFilters.cancel()
                     window.removeEventListener('keydown', handleKeydown)
                     window.removeEventListener('mouseup', handleMouseUp)
                     document.removeEventListener('visibilitychange', handleAppResume)
