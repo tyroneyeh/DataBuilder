@@ -1323,15 +1323,39 @@
                             </div>
                         </div>
                         <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
-                        <div class="p-4 sm:p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('GitHub Personal Access Token (PAT)') }}</span>
-                                    <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('GitHub Personal Access Token (PAT)') }}</label>
+                                    <div class="relative w-full flex items-center">
+                                        <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                        <div class="absolute right-2 flex items-center h-full">
+                                            <button
+                                                v-if="githubToken"
+                                                @click="githubToken = ''"
+                                                class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+                                                :title="translate('Clear')"
+                                            >
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</span>
-                                    <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="border border-gray-300 dark:border-gray-600 px-3 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                    <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</label>
+                                    <div class="relative w-full flex items-center">
+                                        <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                        <div class="absolute right-2 flex items-center h-full">
+                                            <button
+                                                v-if="gistId"
+                                                @click="gistId = ''"
+                                                class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+                                                :title="translate('Clear')"
+                                            >
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-2 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -1351,22 +1375,29 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 {{ translate('Google Client ID (OAuth)') }}
                             </label>
-                            <div class="flex gap-2">
-                                <input
-                                    type="text"
-                                    v-model="sheetImportUrl"
-                                    :placeholder="translate('Google Sheet Import URL')"
-                                    class="flex-1 w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-                                >
-                                <input
-                                    type="text"
-                                    v-model="googleClientId"
-                                    placeholder="e.g., xxxxxxxx.apps.googleusercontent.com"
-                                    class="flex-1 min-w-0 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-                                >
-                                <button v-if="googleClientId" @click="googleClientId = ''" class="px-3 py-2 text-gray-400 hover:text-red-500 transition-colors" :title="translate('Clear')">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div class="relative flex-1 min-w-0">
+                                    <input
+                                        type="text"
+                                        v-model="sheetImportUrl"
+                                        :placeholder="translate('Google Sheet Import URL')"
+                                        class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-3 pr-10 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
+                                    >
+                                    <button v-if="sheetImportUrl" @click="sheetImportUrl = ''" class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center" :title="translate('Clear')">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                <div class="relative flex-1 min-w-0">
+                                    <input
+                                        type="text"
+                                        v-model="googleClientId"
+                                        placeholder="e.g., xxxxxxxx.apps.googleusercontent.com"
+                                        class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-3 pr-10 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
+                                    >
+                                    <button v-if="googleClientId" @click="googleClientId = ''" class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center" :title="translate('Clear')">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ translate('Private key will be stored safely in your browser.') }}
@@ -1400,10 +1431,18 @@
                             <div class="flex items-center justify-between mb-2">
                                 <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ {{ translate('Google Vision API') }} {{ translate('Text recognized') }}</h4>
                             </div>
-                            <div class="flex flex-col">
-                                <input v-model="googleVisionKey" type="password" placeholder="AIzaSy..." class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
-                                <p class="text-xs text-gray-500 mt-1">{{ translate('Get your API key from Google Cloud Console.') }} ({{ translate('There are 1000 free uses per month.') }})</p>
+                            <div class="relative w-full flex items-center">
+                                <input v-model="googleVisionKey" type="password" placeholder="AIzaSy..." class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
+                                <button
+                                    v-if="googleVisionKey"
+                                    @click="googleVisionKey = ''"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
+                                    :title="translate('Clear')"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
                             </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ translate('Get your API key from Google Cloud Console.') }} ({{ translate('There are 1000 free uses per month.') }})</p>
                         </div>
 
                         <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
