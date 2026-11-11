@@ -4245,7 +4245,7 @@
                 }
 
                 const clearStorage = async () => {
-                    if(await showConfirm(translate('Are you sure you want to clear all data?'))) {
+                    if(await showConfirm(translate('Are you sure you want to clear all data?') +' '+ currentStorageKey.value)) {
                         localStorage.removeItem(`${currentStorageKey.value}_scrollTop`)
                         await db.remove(currentStorageKey.value)
 
