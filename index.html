@@ -3331,10 +3331,24 @@
                         return rowArray
                     })
 
+                    const getColumnLetter = (index) => {
+                        let letter = ''
+                        let temp = index
+                        while (temp >= 0) {
+                            letter = String.fromCharCode((temp % 26) + 65) + letter
+                            temp = Math.floor(temp / 26) - 1
+                        }
+                        return letter
+                    }
+                    const startRow = 2
+                    const endRow = rows.value.length + 1
+
                     const totalRow = [translate('Total')]
-                    columns.value.forEach(col => {
+                    columns.value.forEach((col, index) => {
                         if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
-                            totalRow.push(columnTotals.value[col.id] || 0)
+                            const colIndex = index + 1
+                            const colLetter = getColumnLetter(colIndex)
+                            totalRow.push(`=SUM(${colLetter}${startRow}:${colLetter}${endRow})`)
                         } else {
                             totalRow.push('')
                         }
