@@ -491,8 +491,8 @@
                                             :class="{
                                                 'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                                 'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
-                                                'peer border-gray-300 dark:border-gray-600 transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500': col.type === 'number',
-                                                'min-w-0 sm:text-left print:text-left truncate focus:border-b-2 text-gray-800 dark:text-white dark:placeholder-gray-500': col.type !== 'number',
+                                                'peer border-gray-300 dark:border-gray-600 transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500': !isKeyboardOpen && col.type === 'number',
+                                                'min-w-0 sm:text-left print:text-left truncate focus:border-b-2 text-gray-800 dark:text-white dark:placeholder-gray-500': isKeyboardOpen || col.type !== 'number',
                                                 'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id]
                                             }"
                                             @paste="handlePaste($event, windowStart + index, col.id)"
@@ -6453,6 +6453,9 @@
                     if (col.type !== 'category' && isLabel) {
                         target.inputMode = target.inputMode === 'decimal' ? 'none' : 'decimal'
                         isKeyboardOpen.value = target.inputMode === 'none'
+                    } else {
+                        menuStyle.value.left = `${rect.left + window.scrollX}px`
+                        menuStyle.value.width = `${rect.width}px`
                     }
                 }
 
