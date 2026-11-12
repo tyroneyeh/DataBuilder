@@ -487,15 +487,18 @@
                                             :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
                                             :data-tooltip="row[col.id]"
                                             :placeholder="col.type === 'number' ? '0' : '...'"
-                                            class="peer relative z-10 w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none px-1 py-2 print:py-0 text-base print:text-sm transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500"
+                                            class="relative z-10 w-full text-right bg-transparent focus:border-blue-500 outline-none px-1 py-2 print:py-0 text-base print:text-sm"
                                             :class="{
                                                 'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                                 'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
+                                                'peer border-gray-300 dark:border-gray-600 transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500': col.type === 'number',
+                                                'min-w-0 sm:text-left print:text-left truncate focus:border-b-2 text-gray-800 dark:text-white dark:placeholder-gray-500': col.type !== 'number',
                                                 'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id]
                                             }"
                                             @paste="handlePaste($event, windowStart + index, col.id)"
                                             @input="formatNumberInput(row, col)"
                                             @click.stop="enterInput(row, col, $event)"
+                                            @focus="openGlobalMenu($event, row, col)"
                                             @blur="saveInput(row, col)"
                                             @keydown="focusNextInput($event, row.id, col.id)"
                                         >
