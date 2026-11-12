@@ -100,6 +100,7 @@ export const translations = {
         "Multiply (A × B x C)": "乘法(A × B × C)",
         "My Data Sheets": "我的資料表",
         "New Category": "新增類別",
+        "Never synced": "從未同步",
         "No budget": "無預算",
         "No matching data found in this Gist. Invalid JSON.": "此 Gist 中找不到符合的資料.JSON 格式無效.",
         "None": "無",

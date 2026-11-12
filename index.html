@@ -1408,11 +1408,11 @@
                                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
                                 </label>
                             </div>
-                            <div v-if="isAutoSyncEnabled && lastSyncDate" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                            <div v-if="isAutoSyncEnabled && displayLastSync" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <svg class="w-3.5 h-3.5 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                {{ translate('Last background sync') }}: {{ lastSyncDate }}
+                                {{ translate('Last background sync') }}: {{ displayLastSync }}
                             </div>
                         </div>
 
@@ -2776,6 +2776,36 @@
                     return totals
                 })
 
+                const selectedBox = computed(() => {
+                    if (!startCell.value || !endCell.value) return null
+                    return {
+                        minRow: Math.min(startCell.value.row, endCell.value.row),
+                        maxRow: Math.max(startCell.value.row, endCell.value.row),
+                        minCol: Math.min(startCell.value.col, endCell.value.col),
+                        maxCol: Math.max(startCell.value.col, endCell.value.col),
+                    }
+                })
+
+                const isAnyFilterActive = computed(() => {
+                    const hasTextFilter = Object.values(columnFilters.value).some(val => val && String(val).trim() !== '')
+                    const hasDateFilter = Object.values(dateRangeFilters.value).some(range => range.start !== '' || range.end !== '')
+                    const hasChartDateFilter = selectedChartDate.value !== null
+                    const hasLegendFilter = hiddenCategoryNames.value.length > 0
+                    return hasTextFilter || hasDateFilter || hasChartDateFilter || hasLegendFilter
+                })
+
+                const displayLastSync = computed(() => {
+                    if (!lastSyncDate.value) return translate('Never synced')
+                    const dateObj = new Date(lastSyncDate.value)
+                    return dateObj.toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                })
+
                 const onDataEdited = (target = 'rows') => {
                     if (isInitializing) return
                     if (target === 'rows' || target === 'both') {
@@ -3511,7 +3541,7 @@
 
                     lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
-                    if (updatedAt.value > lastSyncDate.value) {
+                    if (updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
                         isProcessing.value = 1
 
                         try {
@@ -6008,14 +6038,6 @@
                     selectedChartDate.value = null
                 }
 
-                const isAnyFilterActive = computed(() => {
-                    const hasTextFilter = Object.values(columnFilters.value).some(val => val && String(val).trim() !== '')
-                    const hasDateFilter = Object.values(dateRangeFilters.value).some(range => range.start !== '' || range.end !== '')
-                    const hasChartDateFilter = selectedChartDate.value !== null
-                    const hasLegendFilter = hiddenCategoryNames.value.length > 0
-                    return hasTextFilter || hasDateFilter || hasChartDateFilter || hasLegendFilter
-                })
-
                 const toggleTrendChartType = () => {
                     trendChartType.value = trendChartType.value === 'line' ? 'bar' : 'line'
                     debouncedUpdateChart()
@@ -6840,16 +6862,6 @@
                     }
                 }
 
-                const selectedBox = computed(() => {
-                    if (!startCell.value || !endCell.value) return null
-                    return {
-                        minRow: Math.min(startCell.value.row, endCell.value.row),
-                        maxRow: Math.max(startCell.value.row, endCell.value.row),
-                        minCol: Math.min(startCell.value.col, endCell.value.col),
-                        maxCol: Math.max(startCell.value.col, endCell.value.col),
-                    }
-                })
-
                 const isCellSelected = (rowIndex, colIndex) => {
                     if (!selectedBox.value) return false
                     const box = selectedBox.value
@@ -7255,7 +7267,7 @@
                     importFromGoogleSheets,
                     exportToGoogleSheets,
                     isAutoSyncEnabled,
-                    lastSyncDate,
+                    displayLastSync,
                     getCheckboxProgressClass,
                     getCheckboxProgressPercent,
                     getProgressBarColor,
