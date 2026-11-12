@@ -496,7 +496,6 @@
                                             @paste="handlePaste($event, windowStart + index, col.id)"
                                             @input="formatNumberInput(row, col)"
                                             @click.stop="enterInput(row, col, $event)"
-                                            @focus="openGlobalMenu($event, row, col)"
                                             @blur="saveInput(row, col)"
                                             @keydown="focusNextInput($event, row.id, col.id)"
                                         >
@@ -664,7 +663,6 @@
                                         type="text"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
-                                        @click.stop="openGlobalMenu($event, null, col)"
                                         :placeholder="'🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
@@ -850,7 +848,7 @@
         <div
             v-show="isKeyboardOpen"
             :style="menuStyle"
-            class="absolute w-full p-2 pb-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] transition-transform duration-300 bg-gray-200 dark:bg-gray-800 dark:shadow-[0_-4px_10px_rgba(0,0,0,0.5)] z-10"
+            class="sm:w-[40%] left-1/2 -translate-x-1/2 absolute w-full p-2 pb-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] transition-transform duration-300 bg-gray-200 dark:bg-gray-800 dark:shadow-[0_-4px_10px_rgba(0,0,0,0.5)] z-10"
         >
             <div class="touch-manipulation grid grid-cols-4 gap-2 h-64">
                 <button @click="clearAll" class="touch-manipulation rounded-lg text-xl font-medium transition-colors bg-red-100 text-red-600 active:bg-red-200 dark:bg-red-900/40 dark:text-red-400 dark:active:bg-red-900/60">AC</button>
@@ -1113,7 +1111,6 @@
                                             :ref="(el) => { if (el) inputRefs[`${stat.budget.id}-amount`] = el; else delete inputRefs[`${stat.budget.id}-amount`] }"
                                             type="text"
                                             :value="stat.budget.amount"
-                                            @focus="openGlobalMenu($event, stat.budget, { id: 'amount', type: 'number' })"
                                             @change="stat.budget.amount = calcValue($event.target.value); onDataEdited()"
                                             class="w-full text-right bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-indigo-500 outline-none px-1 py-1 text-gray-700 dark:text-gray-200 transition-colors font-mono"
                                             :placeholder="translate('e.g., 5000 or 12000/12')"
@@ -2056,7 +2053,7 @@
                     volume: 1
                 })
                 const activeRow = ref(null)
-                const menuStyle = ref({ top: '0px', left: '0px', width: '0px' })
+                const menuStyle = ref({ top: '0px' })
                 const isKeyboardOpen = ref(false)
                 const paddingTop = ref(0)
                 const paddingBottom = ref(0)
@@ -2877,9 +2874,7 @@
                     const rect = event.target.getBoundingClientRect()
 
                     menuStyle.value = {
-                        top: `${rect.bottom + window.scrollY}px`,
-                        left: `${rect.left + window.scrollX}px`,
-                        width: `${rect.width}px`
+                        top: `${rect.bottom + window.scrollY}px`
                     }
                 }
 
@@ -6406,9 +6401,7 @@
                     const rect = target.getBoundingClientRect()
 
                     menuStyle.value = {
-                        top: `${rect.bottom + window.scrollY}px`,
-                        left: `${rect.left + window.scrollX}px`,
-                        width: `${rect.width}px`
+                        top: `${rect.bottom + window.scrollY}px`
                     }
 
                     isKeyboardOpen.value = false
