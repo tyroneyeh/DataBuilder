@@ -502,7 +502,7 @@
                                             @blur="saveInput(row, col)"
                                             @keydown="focusNextInput($event, row.id, col.id)"
                                         >
-                                        <span v-if="col.type === 'number'" class="absolute z-0 px-1 right-0 text-gray-800 dark:text-gray-200 pointer-events-none transition-opacity duration-150 peer-focus:opacity-0">
+                                        <span v-if="!isKeyboardOpen && col.type === 'number'" class="absolute z-0 px-1 right-0 text-gray-800 dark:text-gray-200 pointer-events-none transition-opacity duration-150 peer-focus:opacity-0">
                                             {{ toLocaleString(row[col.id]) }}
                                         </span>
                                         <span v-if="col.type === 'date' && row[col.id]"
@@ -839,7 +839,7 @@
                     :key="val"
                     @mousedown="selectOption(val)"
                     @mouseover="activeDropdownIndex = index"
-                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    class="text-right p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     :class="{
                         'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 font-bold dropdown-active-item': activeDropdownIndex === index && activeRow?.col.id === col.id,
                         'hover:bg-gray-100 dark:hover:bg-gray-700': activeDropdownIndex !== index
