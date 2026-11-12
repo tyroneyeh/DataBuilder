@@ -3314,7 +3314,15 @@
                     const rows2D = rows.value.map(row => {
                         const rowArray = [row.id]
                         columns.value.forEach(c => {
-                            rowArray.push(row[c.id] ?? '')
+                            if (c.type === 'multiply') {
+                                rowArray.push(calcValue(row[c.opA]) * calcValue(row[c.opB]))
+                            } else if (c.type === 'multiply3') {
+                                rowArray.push(calcValue(row[c.opA]) * calcValue(row[c.opB]) * calcValue(row[c.opC]))
+                            } else if (c.type === 'minus') {
+                                rowArray.push(calcValue(row[c.opA]) - calcValue(row[c.opB]))
+                            } else {
+                                rowArray.push(row[c.id] ?? '')
+                            }
                         })
                         rowArray.push(row.note || '')
                         return rowArray
