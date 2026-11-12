@@ -3537,7 +3537,7 @@
 
                             await pushToGoogleSheets(sheetImportUrl.value)
 
-                            localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, tDate.now().toString())
+                            localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, Date.now().toString())
 
                         } catch (error) {
                             showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
