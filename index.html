@@ -4714,7 +4714,7 @@
                 }
 
                 const toLocaleString = (num) => {
-                    if (!num) return ''
+                    if (!num) return '0'
                     const numVal = Number(num)
                     if (isNaN(numVal)) return num
                     return numVal.toLocaleString()
