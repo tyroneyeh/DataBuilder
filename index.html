@@ -673,11 +673,12 @@
                                         >
                                     </div>
                                 </div>
-                                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="flex relative">
+                                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative">
                                     <input
                                         type="text"
                                         enterkeyhint="search"
                                         v-model="columnFilters[col.id]"
+                                        @click.stop="openGlobalMenu($event, row, col)"
                                         :placeholder="'🔍 ' + translate('Filter...')"
                                         class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                                     >
@@ -696,13 +697,13 @@
                                         :title="translate('Clear filter')"
                                     >✖</button>
                                 </div>
-                                <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                                <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative right-6 sm:right-0">
                                     <div v-if="dateRangeOpenState[col.id]"
                                         @click.stop="toggleDateFilter(col.id, false)"
                                         class="fixed inset-0 z-40 cursor-default"
                                         style="-webkit-tap-highlight-color: transparent">
                                     </div>
-                                    <div class="bottom-full right-6 md:left-0 md:right-auto mb-2 w-[160px] max-w-[90vw] relative z-50">
+                                    <div class="relative z-50">
                                         <input
                                             :type="col.type"
                                             :value="dateRangeFilters[col.id]?.start || ''"
