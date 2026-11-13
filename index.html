@@ -3886,6 +3886,7 @@
                         windowEnd.value = total
                         windowStart.value = Math.max(0, total - 50)
 
+                        await nextTick()
                         if (tableContainer.value) {
                             tableContainer.value.scrollTop = tableContainer.value.scrollHeight
                         }
@@ -3897,7 +3898,7 @@
                     setTimeout(() => {
                         const firstInputCol = columns.value.find(col => editableTypes.has(col.type))
                         if (firstInputCol) {
-                            let targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
+                            const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                             if (targetInput) {
                                 targetInput.focus({ preventScroll: true })
                                 targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
