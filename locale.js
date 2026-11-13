@@ -7,6 +7,7 @@ export const translations = {
         "A new version is available. Do you want to reload?": "有新版本可供使用.是否重新載入?",
         "Apply to all": "套用至全部",
         "Are you sure you want to clear all data?": "確定要清除所有資料嗎?",
+        "Are you sure you want to delete the budget for {category}?": "確定要刪除 {category} 的預算嗎?",
         "Are you sure you want to delete this column?": "確定要刪除此欄嗎?",
         "Are you sure you want to delete this row?": "確定要刪除此列嗎?",
         "Are you sure you want to merge duplicates?": "確定要合併重複項目嗎?",
