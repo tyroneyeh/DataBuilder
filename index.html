@@ -3335,7 +3335,7 @@
                         let letter = ''
                         let temp = index
                         while (temp >= 0) {
-                            letter = String.fromCharCode((temp % 26) + 65) + letter
+                            letter = String.fromCodePoint((temp % 26) + 65) + letter
                             temp = Math.floor(temp / 26) - 1
                         }
                         return letter
@@ -3343,19 +3343,22 @@
                     const startRow = 2
                     const endRow = rows.value.length + 1
 
-                    const totalRow = [translate('Total')]
-                    columns.value.forEach((col, index) => {
-                        if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
-                            const colIndex = index + 1
-                            const colLetter = getColumnLetter(colIndex)
-                            totalRow.push(`=SUM(${colLetter}${startRow}:${colLetter}${endRow})`)
-                        } else {
-                            totalRow.push('')
-                        }
-                    })
-                    totalRow.push('')
+                    if (columns.value.some(col => col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus')) {
+                        const totalRow = [translate('Total')]
+                        columns.value.forEach((col, index) => {
+                            if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
+                                const colIndex = index + 1
+                                const colLetter = getColumnLetter(colIndex)
+                                totalRow.push(`=SUM(${colLetter}${startRow}:${colLetter}${endRow})`)
+                            } else {
+                                totalRow.push('')
+                            }
+                        })
+                        totalRow.push('')
+                        rows2D.push(totalRow)
+                    }
 
-                    const sheetDataValues = [headers, ...rows2D, totalRow]
+                    const sheetDataValues = [headers, ...rows2D]
 
                     const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
                         headers: { 'Authorization': `Bearer ${token}` }
