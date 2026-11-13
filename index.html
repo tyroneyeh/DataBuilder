@@ -1802,6 +1802,7 @@
         const app = createApp({
             setup() {
                 const window = globalThis
+                let scrollTimer = null
 
                 const tooltipState = ref({
                     show: false,
@@ -3899,7 +3900,8 @@
                         const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                         if (targetInput) {
                             targetInput.focus({ preventScroll: true })
-                            setTimeout(() => {
+                            if (scrollTimer) clearTimeout(scrollTimer)
+                            scrollTimer = setTimeout(() => {
                                 targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
                             }, 50)
                         }
