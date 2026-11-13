@@ -3899,9 +3899,8 @@
                         if (firstInputCol) {
                             const targetInput = inputRefs.value[`${newRowId}-${firstInputCol.id}`]
                             if (targetInput) {
-                                targetInput.focus({ preventScroll: true })
                                 targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
-
+                                targetInput.focus({ preventScroll: true })
                             }
                         }
                     }, 150)
@@ -6459,7 +6458,7 @@
                         activeDropdownIndex.value = -1
                         return
                     }
-                    const isLabel = ['LABEL', 'SPAN'].includes(event.target.tagName)
+                    const isLabel = !event || ['LABEL', 'SPAN'].includes(event.target.tagName)
                     const target = isLabel ? inputRefs.value[`${row.id}-${col.id}`] : event.target
                     activeRow.value = {target, row, col, start: target.selectionStart, end: target.selectionEnd}
                     const rect = target.getBoundingClientRect()
