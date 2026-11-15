@@ -2735,9 +2735,7 @@
                     nextTick(() => {
                         if (!tableContainer.value) return
                         if (isAnyFilterActive.value) {
-                            setTimeout(() => {
-                                scrollToPosition()
-                            }, 100)
+                            scrollToPosition()
                         } else {
                             const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
                             if (tableContainer.value.scrollTop > maxScroll + 50) {
@@ -6062,20 +6060,12 @@
                     if (dateRangeFilters.value[colId]) {
                         dateRangeFilters.value[colId] = { start: '', end: '' }
                     }
-                    nextTick(() => {
-                        setTimeout(() => {
-                            scrollToPosition()
-                        }, 100)
-                    })
+                    scrollToPosition()
                 }
 
                 const clearFilter = (colId) => {
                     columnFilters.value[colId] = ''
-                    nextTick(() => {
-                        setTimeout(() => {
-                            scrollToPosition()
-                        }, 100)
-                    })
+                    scrollToPosition()
                 }
 
                 const clearAllFilters = () => {
@@ -6089,11 +6079,7 @@
                         dateRangeOpenState.value[key] = false
                     })
                     selectedChartDate.value = null
-                    nextTick(() => {
-                        setTimeout(() => {
-                            scrollToPosition()
-                        }, 100)
-                    })
+                    scrollToPosition()
                 }
 
                 const toggleTrendChartType = () => {
