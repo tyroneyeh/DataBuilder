@@ -1906,6 +1906,7 @@
                 const categoryCounts = ref({})
                 const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
                 const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
+                const googleTokenExpiresAt = ref(parseInt(localStorage.getItem('TY_GOOGLE_TOKEN_EXPIRES_AT')) || 0)
                 const googleAccessToken = ref('')
                 const newCategoryInput = ref('')
                 const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
@@ -3486,6 +3487,10 @@
                                         if (tokenResponse && tokenResponse.access_token) {
                                             googleAccessToken.value = tokenResponse.access_token
 
+                                            const expiresInMs = (tokenResponse.expires_in || 3600) * 1000
+                                            googleTokenExpiresAt.value = Date.now() + expiresInMs - 120000
+                                            localStorage.setItem('TY_GOOGLE_TOKEN_EXPIRES_AT', googleTokenExpiresAt.value.toString())
+
                                             if (pendingTokenResolve) {
                                                 pendingTokenResolve(tokenResponse.access_token)
                                                 pendingTokenResolve = null
@@ -3531,7 +3536,7 @@
                     const isReady = await initGoogleClient()
                     if (!isReady) throw new Error('Google Client not initialized.')
 
-                    if (googleAccessToken.value && Date.now() < lastSyncDate.value - 120000) {
+                    if (googleAccessToken.value && Date.now() < googleTokenExpiresAt.value) {
                         return googleAccessToken.value
                     }
 
