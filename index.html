@@ -692,7 +692,7 @@
                                     </button>
                                     <button
                                         v-show="columnFilters[col.id]"
-                                        @click="columnFilters[col.id] = ''"
+                                        @click="clearFilter(col.id)"
                                         class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                         :title="translate('Clear filter')"
                                     >✖</button>
@@ -753,7 +753,7 @@
                                     </select>
                                     <button
                                         v-show="columnFilters[col.id]"
-                                        @click="columnFilters[col.id] = ''"
+                                        @click="clearFilter(col.id)"
                                         class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
                                         :title="translate('Clear filter')"
                                     >✖</button>
@@ -770,7 +770,7 @@
                                         </select>
                                         <button
                                             v-show="columnFilters[col.id]"
-                                            @click="columnFilters[col.id] = ''"
+                                            @click="clearFilter(col.id)"
                                             class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
                                             :title="translate('Clear filter')"
                                         >✖</button>
@@ -2733,19 +2733,20 @@
 
                     nextTick(() => {
                         if (!tableContainer.value) return
-
-                        const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
-                        const currentScroll = tableContainer.value.scrollTop
-
-                        if (currentScroll > maxScroll) {
-                            if (isAnyFilterActive.value) {
-                                tableContainer.value.scrollTop = maxScroll
-                            } else {
+                        if (isAnyFilterActive.value) {
+                            setTimeout(() => {
+                                scrollToPosition()
+                            }, 100)
+                        } else {
+                            const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
+                            if (tableContainer.value.scrollTop > maxScroll + 50) {
                                 tableContainer.value.scrollTop = 0
                             }
                         }
                         handleTableScroll({ target: tableContainer.value })
                     })
+                }, {
+                    flush: 'post'
                 })
 
                 const visibleRows = computed(() => {
@@ -6044,10 +6045,8 @@
                                 if (parseFloat(value) > parseFloat(currentEnd)) {
                                     dateRangeFilters.value[colId].end = value
                                 }
-                            } else {
-                                if (value > currentEnd) {
-                                    dateRangeFilters.value[colId].end = value
-                                }
+                            } else if (value > currentEnd) {
+                                dateRangeFilters.value[colId].end = value
                             }
                         }
                     }
@@ -6058,6 +6057,20 @@
                     if (dateRangeFilters.value[colId]) {
                         dateRangeFilters.value[colId] = { start: '', end: '' }
                     }
+                    nextTick(() => {
+                        setTimeout(() => {
+                            scrollToPosition()
+                        }, 100)
+                    })
+                }
+
+                const clearFilter = (colId) => {
+                    columnFilters.value[colId] = ''
+                    nextTick(() => {
+                        setTimeout(() => {
+                            scrollToPosition()
+                        }, 100)
+                    })
                 }
 
                 const clearAllFilters = () => {
@@ -6071,6 +6084,11 @@
                         dateRangeOpenState.value[key] = false
                     })
                     selectedChartDate.value = null
+                    nextTick(() => {
+                        setTimeout(() => {
+                            scrollToPosition()
+                        }, 100)
+                    })
                 }
 
                 const toggleTrendChartType = () => {
@@ -7245,6 +7263,7 @@
                     updateDateRange,
                     clearDateRange,
                     dateRangeOpenState,
+                    clearFilter,
                     clearAllFilters,
                     isAnyFilterActive,
                     filterMatchMode,
