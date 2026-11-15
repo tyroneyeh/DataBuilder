@@ -2721,20 +2721,31 @@
 
                 watch(filteredRows, () => {
                     const total = filteredRows.value.length
-                    windowStart.value = 0
-                    windowEnd.value = Math.min(50, total)
-                    paddingTop.value = 0
-                    paddingBottom.value = 0
+
+                    if (windowStart.value >= total || total === 0) {
+                        windowStart.value = 0
+                        windowEnd.value = Math.min(50, total)
+                        paddingTop.value = 0
+                        paddingBottom.value = 0
+                    }
+
                     debouncedUpdateChart()
-                    if (tableContainer.value) {
+
+                    nextTick(() => {
+                        if (!tableContainer.value) return
+
                         const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
-                        if (tableContainer.value.scrollTop > maxScroll + 50) {
-                            tableContainer.value.scrollTop = 0
+                        const currentScroll = tableContainer.value.scrollTop
+
+                        if (currentScroll > maxScroll) {
+                            if (isAnyFilterActive.value) {
+                                tableContainer.value.scrollTop = maxScroll
+                            } else {
+                                tableContainer.value.scrollTop = 0
+                            }
                         }
                         handleTableScroll({ target: tableContainer.value })
-                    }
-                }, {
-                    flush: 'post'
+                    })
                 })
 
                 const visibleRows = computed(() => {
