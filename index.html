@@ -2101,7 +2101,6 @@
                 let scanCooldownTimer
                 let currentMaxRowId = 0
                 let tokenClient = null
-                let tokenExpiresAt = 0
                 let pendingTokenResolve = null
                 let pendingTokenReject = null
 
@@ -3417,8 +3416,8 @@
                         }
 
                         await pushToGoogleSheets(sheetImportUrl.value)
-                        lastSyncDate.value = Date.now().toString()
-                        localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, lastSyncDate.value)
+                        lastSyncDate.value = Date.now()
+                        localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, lastSyncDate.value.toString())
 
                         showConfirm('🚀 '+ translate('Successfully synced TO Google Sheets!'), 1)
 
@@ -3426,7 +3425,6 @@
                         console.error('Google Sheets Push Error:', error)
                         showConfirm(`Sync failed: ${error.message || error}`, 1)
                         googleAccessToken.value = ''
-                        tokenExpiresAt = 0
                     } finally {
                         isProcessing.value = 0
                     }
@@ -3475,8 +3473,6 @@
                                     callback: (tokenResponse) => {
                                         if (tokenResponse && tokenResponse.access_token) {
                                             googleAccessToken.value = tokenResponse.access_token
-                                            const expiresInSec = parseInt(tokenResponse.expires_in, 10) || 3600
-                                            tokenExpiresAt = Date.now() + (expiresInSec * 1000)
 
                                             if (pendingTokenResolve) {
                                                 pendingTokenResolve(tokenResponse.access_token)
@@ -3523,8 +3519,7 @@
                     const isReady = await initGoogleClient()
                     if (!isReady) throw new Error('Google Client not initialized.')
 
-                    const now = Date.now()
-                    if (googleAccessToken.value && now < (tokenExpiresAt - 120000)) {
+                    if (googleAccessToken.value && Date.now() < lastSyncDate.value - 120000) {
                         return googleAccessToken.value
                     }
 
@@ -3603,7 +3598,6 @@
                             showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
                             if (error.message.includes('authorization') || error.message.includes('token')) {
                                 googleAccessToken.value = ''
-                                tokenExpiresAt = 0
                             }
                             return false
                         } finally {
