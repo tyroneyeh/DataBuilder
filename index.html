@@ -2721,12 +2721,10 @@
 
                 watch(filteredRows, () => {
                     const total = filteredRows.value.length
-                    if (windowStart.value >= total || total === 0) {
-                        windowStart.value = 0
-                        windowEnd.value = Math.min(50, total)
-                        paddingTop.value = 0
-                        paddingBottom.value = 0
-                    }
+                    windowStart.value = 0
+                    windowEnd.value = Math.min(50, total)
+                    paddingTop.value = 0
+                    paddingBottom.value = 0
                     debouncedUpdateChart()
                     if (tableContainer.value) {
                         const maxScroll = Math.max(0, tableContainer.value.scrollHeight - tableContainer.value.clientHeight)
@@ -2735,6 +2733,8 @@
                         }
                         handleTableScroll({ target: tableContainer.value })
                     }
+                }, {
+                    flush: 'post'
                 })
 
                 const visibleRows = computed(() => {
@@ -5335,7 +5335,6 @@
                 }
 
                 const handleTableScroll = (e) => {
-                    if (isAnyFilterActive.value) return
                     isScrolling.value = true
 
                     activeRow.value = null
