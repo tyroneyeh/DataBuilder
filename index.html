@@ -829,7 +829,7 @@
 
                     <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
 
-                    <div class="relative w-full" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
+                    <div class="relative w-full" :class="{'text-right': ['number', 'multiply', 'multiply3', 'minus'].includes(col.type)}">
 
                         <div v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                             <div v-if="dateRangeOpenState[col.id]"
