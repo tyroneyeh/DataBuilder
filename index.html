@@ -2915,6 +2915,8 @@
                 initStorageKeys()
 
                 const changeStorageKey = async () => {
+                    isInitializing = true
+
                     windowStart.value = 0
                     isDragging.value = false
                     startCell.value = null
@@ -2944,6 +2946,10 @@
 
                     await nextTick()
                     await loadData(1)
+
+                    isInitializing = false
+
+                    debouncedUpdateChart()
                     checkAndAutoSync()
                 }
 
