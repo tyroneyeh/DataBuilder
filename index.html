@@ -606,7 +606,24 @@
                         </td>
                     </tr>
                 </tbody>
-
+                <tfoot class="hidden print:table-footer-group border border-gray-800 bg-gray-100">
+                    <tr>
+                        <td class="px-4 py-2 font-bold text-center text-gray-800 border border-gray-300">{{ translate('Total') }}</td>
+                        <td v-for="col in columns" :key="'print-total-' + col.id" 
+                            class="px-4 py-2 font-bold text-gray-800 border border-gray-300" 
+                            :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
+                            <span v-if="['number', 'multiply', 'minus'].includes(col.type)">
+                                {{ formatNumber(columnTotals[col.id]) }}
+                            </span>
+                            <span v-else-if="col.type === 'checkbox'">
+                                {{ columnTotals[col.id] || '0 / 0' }}
+                            </span>
+                            <span v-else class="text-sm text-gray-600 font-normal">
+                                {{ columnFilters[col.id] || '' }}
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
             <Teleport to="body">
             <ul
@@ -794,25 +811,25 @@
             </template>
         </div>
 
-        <div class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0 flex flex-col w-full">
+        <div class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent  rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full">
             <div class="flex flex-col sm:flex-row w-full print:flex-row">
 
-                <div class="py-1.5 bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none rounded-t-lg sm:rounded-none shrink-0  print:min-w-[100px] w-full sm:w-[var(--col-width)]"
+                <div class="py-1.5 bottom-0 left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
                     :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
                     :data-tooltip="filteredRows.length">
                     {{ translate('Total') }}
                 </div>
 
                 <div v-for="(col, index) in columns" :key="'total-' + col.id"
-                    class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center sm:items-start justify-between last:border-b-0 sm:last:border-b print:last:border-b"
+                    class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 z-10 border-b sm:border-t-2 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
                     :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
                     :class="[
-                        col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end print:justify-end' : 'sm:justify-start print:justify-start'
+                        col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end' : 'sm:justify-start'
                     ]">
 
                     <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
 
-                    <div class="print:w-full relative w-full" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
+                    <div class="relative w-full" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
 
                         <div v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                             <div v-if="dateRangeOpenState[col.id]"
@@ -830,7 +847,7 @@
                                     @click.stop="toggleDateFilter(col.id, true)"
                                     :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
                                     class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
-                                    :class="(dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '') ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400 print:text-black'"
+                                    :class="(dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '') ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'"
                                 >
                                 <button
                                     v-show="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== ''"
@@ -983,10 +1000,10 @@
 
                         <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
                             <template v-if="col.type === 'checkbox'">
-                                <span class="text-sm print:text-gray-600 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
+                                <span class="text-sm font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
                             </template>
                             <template v-else>
-                                <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
+                                <span class="text-lg font-bold text-blue-700 dark:text-blue-400">
                                     {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id])) }}
                                 </span>
                             </template>
@@ -994,7 +1011,7 @@
                     </div>
                 </div>
 
-                <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
+                <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 z-10 sm:border-t-2 sm:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
                     :style="{'--col-width': colWidths[columns.length + 1] ? colWidths[columns.length + 1] + 'px' : 'auto'}">
                     <button
                         v-if="isAnyFilterActive"
@@ -1007,7 +1024,7 @@
                 </div>
             </div>
 
-            <div v-if="!isPrinting" class="flex flex-col sm:flex-row w-full print:hidden">
+            <div v-if="!isPrinting" class="flex flex-col sm:flex-row w-full">
                 <div class="border-b sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 p-0 bg-white sm:bg-gray-100 dark:bg-gray-800 flex-1 relative min-w-0">
                     <div class="flex w-full h-full relative">
                         <input
