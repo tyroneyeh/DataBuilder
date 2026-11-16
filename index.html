@@ -438,13 +438,13 @@
                                 </span>
                             </div>
 
-                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
+                            <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
                                 {{ formatNumber(calcValue(row[col.opA]) * calcValue(row[col.opB])) }}
                             </div>
-                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
+                            <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
                                 {{ formatNumber(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])) }}
                             </div>
-                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm">
+                            <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center">
                                 {{ formatNumber(calcValue(row[col.opA]) - calcValue(row[col.opB])) }}
                             </div>
                             <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id]?.length}">
@@ -486,12 +486,12 @@
                                     </span>
                                 </template>
 
-                                <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap">
+                                <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
                                     {{ row[col.id] }}{{ col.type === 'date' && row[col.id] ? getWeekdayStr(row[col.id]) : '' }}
                                 </span>
 
                                 <template v-else>
-                                    <div class="relative w-full flex items-center justify-end sm:justify-start">
+                                    <div class="relative w-full flex items-center justify-end sm:justify-start print:!text-center">
                                         <input
                                             :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                             v-model="row[col.id]"
