@@ -833,7 +833,7 @@
 
                         <div v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                             <div v-if="dateRangeOpenState[col.id]"
-                                @click.stop="toggleDateFilter(col.id, false)"
+                                @click.stop="toggleDateFilter($event, col.id, false)"
                                 class="fixed inset-0 z-40 cursor-default"
                                 style="-webkit-tap-highlight-color: transparent">
                             </div>
@@ -843,8 +843,8 @@
                                     inputmode="decimal"
                                     :value="(dateRangeOpenState[col.id] || (dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== ''))) ? (dateRangeFilters[col.id]?.start || '') : formatNumber(columnTotals[col.id])"
                                     @input="updateDateRange(col.id, 'start', $event.target.value)"
-                                    @focus="toggleDateFilter(col.id, true)"
-                                    @click.stop="toggleDateFilter(col.id, true)"
+                                    @focus="toggleDateFilter($event, col.id, true)"
+                                    @click.stop="toggleDateFilter($event, col.id, true)"
                                     :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
                                     class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
                                     :class="(dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '') ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'"
@@ -856,13 +856,14 @@
                                     :title="translate('Clear filter')"
                                 >✖</button>
                             </div>
-
+                            <Teleport to="body">
                             <div v-if="dateRangeOpenState[col.id]"
-                                class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-bottom-left transition-all"
+                                class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-top-left transition-all"
+                                :style="menuStyle"
                             >
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
-                                        ({{ translate('To') }})
+                                        {{ translate('To') }}
                                     </label>
                                     <button
                                         @click.stop="filterMatchMode[col.id] = (filterMatchMode[col.id] === 'range' ? 'exact' : 'range')"
@@ -881,6 +882,7 @@
                                     :placeholder="translate('Max') +'...'"
                                 >
                             </div>
+                            </Teleport>
                         </div>
 
                         <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative flex">
@@ -910,7 +912,7 @@
 
                         <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
                             <div v-if="dateRangeOpenState[col.id]"
-                                @click.stop="toggleDateFilter(col.id, false)"
+                                @click.stop="toggleDateFilter($event, col.id, false)"
                                 class="fixed inset-0 z-40 cursor-default"
                                 style="-webkit-tap-highlight-color: transparent">
                             </div>
@@ -919,7 +921,7 @@
                                     :type="col.type"
                                     :value="dateRangeFilters[col.id]?.start || ''"
                                     @input="updateDateRange(col.id, 'start', $event.target.value)"
-                                    @click.stop="toggleDateFilter(col.id, true)"
+                                    @click.stop="toggleDateFilter($event, col.id, true)"
                                     class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 w-full cursor-pointer"
                                 >
                                 <button
@@ -929,8 +931,10 @@
                                     :title="translate('Clear filter')"
                                 >✖</button>
                             </div>
+                            <Teleport to="body">
                             <div v-if="dateRangeOpenState[col.id]"
-                                class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-bottom-left transition-all"
+                                class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-top-left transition-all"
+                                :style="menuStyle"
                             >
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
@@ -952,6 +956,7 @@
                                     class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
                                 >
                             </div>
+                            </Teleport>
                         </div>
 
                         <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
@@ -6070,7 +6075,7 @@
                     sharedFileInput.click()
                 }
 
-                const toggleDateFilter = (colId, forceState) => {
+                const toggleDateFilter = (event, colId, forceState) => {
                     if (forceState !== undefined) {
                         dateRangeOpenState.value[colId] = forceState
                     } else {
@@ -6080,6 +6085,11 @@
                         Object.keys(dateRangeOpenState.value).forEach(k => {
                             if (k !== colId) dateRangeOpenState.value[k] = false
                         })
+                    }
+                    const rect = event.target.getBoundingClientRect()
+                    menuStyle.value = {
+                        top: `${rect.bottom + window.scrollY}px`,
+                        left: `${rect.left + window.scrollX}px`
                     }
                 }
 
