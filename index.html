@@ -1999,7 +1999,7 @@
                     const cats = new Set()
                     const colId = mainCatColId.value
                     if (colId) {
-                        filteredRows.value.forEach(row => {
+                        chartBaseRows.value.forEach(row => {
                             const val = row[colId]
                             if (val && String(val).trim() !== '') {
                                 cats.add(String(val).trim())
@@ -2361,23 +2361,8 @@
                     appliedFilters.value = { ...newVal }
                 }, 400)
 
-                const filteredRows = computed(() => {
-                    const chartDate = selectedChartDate.value
-                    const catColId = selectedChartCatColId.value
+                const coreFilteredRows = computed(() => {
                     let result = dateFilteredRows.value
-
-                    if (catColId && hiddenCategoryNames.value.length > 0) {
-                        const hiddenCategories = new Set(hiddenCategoryNames.value)
-                        if (hiddenCategories.size > 0) {
-                            result = result.filter(row => {
-                                const rawVal = row[catColId]
-                                const catValue = rawVal && String(rawVal).trim() !== ''
-                                    ? String(rawVal).trim()
-                                    : translate('Uncategorized')
-                                return !hiddenCategories.has(catValue)
-                            })
-                        }
-                    }
 
                     const activeDateFilters = Object.entries(dateRangeFilters.value).filter(([_, range]) => range.start !== '' || range.end !== '')
                     if (activeDateFilters.length > 0) {
@@ -2387,6 +2372,7 @@
                                 const colDef = columns.value.find(c => c.id === colId)
                                 if (!colDef) return true
                                 const matchMode = filterMatchMode.value[colId] || 'exact'
+
                                 if (['number', 'multiply', 'multiply3', 'minus'].includes(colDef.type)) {
                                     let numVal = 0
                                     if (colDef.type === 'number') numVal = calcValue(rawVal)
@@ -2394,43 +2380,21 @@
                                     else if (colDef.type === 'multiply3') numVal = calcValue(row[colDef.opA]) * calcValue(row[colDef.opB]) * calcValue(row[colDef.opC])
                                     else if (colDef.type === 'minus') numVal = calcValue(row[colDef.opA]) - calcValue(row[colDef.opB])
 
-                                    if (range.start !== '' && range.end !== '') {
-                                        return numVal >= parseFloat(range.start) && numVal <= parseFloat(range.end)
-                                    } else if (range.start !== '') {
-                                        return matchMode === 'range' ? numVal >= parseFloat(range.start) : numVal === parseFloat(range.start)
-                                    } else if (range.end !== '') {
-                                        return numVal <= parseFloat(range.end)
-                                    }
+                                    if (range.start !== '' && range.end !== '') return numVal >= parseFloat(range.start) && numVal <= parseFloat(range.end)
+                                    else if (range.start !== '') return matchMode === 'range' ? numVal >= parseFloat(range.start) : numVal === parseFloat(range.start)
+                                    else if (range.end !== '') return numVal <= parseFloat(range.end)
                                     return true
                                 }
+
                                 if (!rawVal) return false
                                 let compareVal = rawVal
-                                if (colDef.type === 'time') {
-                                    compareVal = normalizeTimeString(rawVal) || rawVal
-                                }
+                                if (colDef.type === 'time') compareVal = normalizeTimeString(rawVal) || rawVal
 
-                                if (range.start && range.end) {
-                                    return compareVal >= range.start && compareVal <= range.end
-                                } else if (range.start) {
-                                    return matchMode === 'range' ? compareVal >= range.start : compareVal === range.start
-                                } else if (range.end) {
-                                    return compareVal <= range.end
-                                }
+                                if (range.start && range.end) return compareVal >= range.start && compareVal <= range.end
+                                else if (range.start) return matchMode === 'range' ? compareVal >= range.start : compareVal === range.start
+                                else if (range.end) return compareVal <= range.end
                                 return true
                             })
-                        })
-                    }
-
-                    if (chartDate) {
-                        result = result.filter(row => {
-                            const rowDate = row[selectedChartDateColId.value]
-                            if (!rowDate) return false
-                            if (chartDate.includes('-Q')) return getDateGroupKey(rowDate, 'quarter') === chartDate
-                            if (chartDate.includes('-H')) return getDateGroupKey(rowDate, 'halfyear') === chartDate
-                            if (chartDate.includes('-W')) return getDateGroupKey(rowDate, 'week') === chartDate
-                            if (chartDate.length === 4) return getDateGroupKey(rowDate, 'year') === chartDate
-                            if (chartDate.length === 7) return getDateGroupKey(rowDate, 'month') === chartDate
-                            return getDateGroupKey(rowDate, 'day') === chartDate
                         })
                     }
 
@@ -2441,24 +2405,23 @@
                                 const filterTextStr = String(filterText).toLowerCase().trim()
                                 const rawValue = colId === 'note' ? row.note : row[colId]
                                 const isEmptyCell = rawValue === null || rawValue === undefined || String(rawValue).trim() === ''
-                                if (filterTextStr === translate('empty') || filterTextStr === '""' || filterTextStr === "''") {
-                                    return isEmptyCell
-                                }
+
+                                if (filterTextStr === translate('empty') || filterTextStr === '""' || filterTextStr === "''") return isEmptyCell
+
                                 const checkMultiConditions = (val, filterStr) => {
                                     const cellText = String(val).toLowerCase()
                                     const tokens = filterStr.split(/\s+/).filter(t => t.length > 0)
                                     return tokens.every(token => {
-                                        if (token.startsWith('-') && token.length > 1) {
-                                            const excludeText = token.substring(1)
-                                            return !cellText.includes(excludeText)
-                                        }
+                                        if (token.startsWith('-') && token.length > 1) return !cellText.includes(token.substring(1))
                                         return cellText.includes(token)
                                     })
                                 }
+
                                 if (colId === 'note') {
                                     if (isEmptyCell) return false
                                     return checkMultiConditions(rawValue, filterTextStr)
                                 }
+
                                 const colDef = columns.value.find(c => c.id === colId)
                                 if (!colDef) return true
                                 if (colDef.type === 'photo') {
@@ -2477,10 +2440,8 @@
                                     const condition = parseFilterCondition(filterText)
                                     if (condition) {
                                         if (isEmptyCell) return false
-
                                         const cellValue = parseFloat(rawValue)
                                         if (isNaN(cellValue)) return false
-
                                         switch (condition.operator) {
                                             case '>':  return cellValue > condition.value
                                             case '>=': return cellValue >= condition.value
@@ -2492,12 +2453,52 @@
                                         }
                                     }
                                 }
-
                                 if (isEmptyCell) return false
                                 return checkMultiConditions(rawValue, filterTextStr)
                             })
                         })
                     }
+
+                    return result
+                })
+
+                const chartBaseRows = computed(() => {
+                    let result = coreFilteredRows.value
+                    const chartDate = selectedChartDate.value
+
+                    if (chartDate) {
+                        result = result.filter(row => {
+                            const rowDate = row[selectedChartDateColId.value]
+                            if (!rowDate) return false
+                            if (chartDate.includes('-Q')) return getDateGroupKey(rowDate, 'quarter') === chartDate
+                            if (chartDate.includes('-H')) return getDateGroupKey(rowDate, 'halfyear') === chartDate
+                            if (chartDate.includes('-W')) return getDateGroupKey(rowDate, 'week') === chartDate
+                            if (chartDate.length === 4) return getDateGroupKey(rowDate, 'year') === chartDate
+                            if (chartDate.length === 7) return getDateGroupKey(rowDate, 'month') === chartDate
+                            return getDateGroupKey(rowDate, 'day') === chartDate
+                        })
+                    }
+
+                    return result
+                })
+
+                const filteredRows = computed(() => {
+                    let result = chartBaseRows.value
+                    const catColId = selectedChartCatColId.value
+
+                    if (catColId && hiddenCategoryNames.value.length > 0) {
+                        const hiddenCategories = new Set(hiddenCategoryNames.value)
+                        if (hiddenCategories.size > 0) {
+                            result = result.filter(row => {
+                                const rawVal = row[catColId]
+                                const catValue = rawVal && String(rawVal).trim() !== ''
+                                    ? String(rawVal).trim()
+                                    : translate('Uncategorized')
+                                return !hiddenCategories.has(catValue)
+                            })
+                        }
+                    }
+
                     return result
                 })
 
@@ -4624,7 +4625,7 @@
 
                     const totals = {}
                     const counts = {}
-                    filteredRows.value.forEach(row => {
+                    chartBaseRows.value.forEach(row => {
                         if (dateColIdForFilter && row[dateColIdForFilter]) {
                             const dateObj = new Date(row[dateColIdForFilter])
                             if (!isNaN(dateObj.getTime())) {
@@ -4674,7 +4675,7 @@
                     const otherLabel = translate('Others')
                     let totalBudgetAmount = 0
 
-                    filteredRows.value.forEach(row => {
+                    coreFilteredRows.value.forEach(row => {
                         const dateVal = row[dateColId]
                         if (!dateVal) return
                         const dateObj = new Date(dateVal)
