@@ -609,8 +609,8 @@
                 <tfoot class="hidden print:table-row-group border border-gray-800 bg-gray-100">
                     <tr>
                         <td class="px-4 py-2 font-bold text-center text-gray-800 border border-gray-300">{{ translate('Total') }}</td>
-                        <td v-for="col in columns" :key="'print-total-' + col.id" 
-                            class="px-4 py-2 font-bold text-gray-800 border border-gray-300" 
+                        <td v-for="col in columns" :key="'print-total-' + col.id"
+                            class="px-4 py-2 font-bold text-gray-800 border border-gray-300"
                             :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
                             <span v-if="['number', 'multiply', 'minus'].includes(col.type)">
                                 {{ formatNumber(columnTotals[col.id]) }}
@@ -922,7 +922,7 @@
                                     :value="dateRangeFilters[col.id]?.start || ''"
                                     @input="updateDateRange(col.id, 'start', $event.target.value)"
                                     @click.stop="toggleDateFilter($event, col.id, true)"
-                                    class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 w-full cursor-pointer"
+                                    class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 sm:w-full cursor-pointer"
                                 >
                                 <button
                                     v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
