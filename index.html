@@ -5036,6 +5036,7 @@
                         })
                         return {
                             label: cat,
+                            hidden: hiddenCategoryNames.value.includes(cat),
                             data: dataValues,
                             backgroundColor: color,
                             borderColor: color,
@@ -5059,43 +5060,44 @@
                         }
                     })
 
-                    let baseTotalMonthlyBudget = 0
-
-                    trendObj.categories.forEach(cat => {
-                        const catSettings = categoryBudgets.value[cat]
-                        let explicitBudget = 0
-                        if (catSettings !== undefined && catSettings !== null) {
-                            if (typeof catSettings === 'object') {
-                                explicitBudget = Number(catSettings.budget || catSettings.amount || 0)
-                            } else {
-                                explicitBudget = Number(catSettings)
+                    if (!hiddenCategoryNames.value.length) {
+                        let baseTotalMonthlyBudget = 0
+                        trendObj.categories.forEach(cat => {
+                            const catSettings = categoryBudgets.value[cat]
+                            let explicitBudget = 0
+                            if (catSettings !== undefined && catSettings !== null) {
+                                if (typeof catSettings === 'object') {
+                                    explicitBudget = Number(catSettings.budget || catSettings.amount || 0)
+                                } else {
+                                    explicitBudget = Number(catSettings)
+                                }
                             }
-                        }
 
-                        const baseBudget = explicitBudget === 0
-                            ? getHistoricalSpent(cat)
-                            : explicitBudget
+                            const baseBudget = explicitBudget === 0
+                                ? getHistoricalSpent(cat)
+                                : explicitBudget
 
-                        baseTotalMonthlyBudget += baseBudget
-                    })
-                    const periodTotalBudget = baseTotalMonthlyBudget * currentBudgetMultiplier.value
-                    if (periodTotalBudget > 0 && chartViewMode.value !== 'income') {
-                        const pointBudget = isLine ? periodTotalBudget / labels.length : periodTotalBudget
-                        datasets.push({
-                            label: translate('Budget'),
-                            data: labels.map(() => Math.round(-Math.abs(pointBudget))),
-                            type: 'line',
-                            borderColor: '#ef4444',
-                            backgroundColor: '#ef4444',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            pointHoverRadius: 0,
-                            fill: false,
-                            tension: 0,
-                            order: -1,
-                            stack: 'budget_line'
+                            baseTotalMonthlyBudget += baseBudget
                         })
+                        const periodTotalBudget = baseTotalMonthlyBudget * currentBudgetMultiplier.value
+                        if (periodTotalBudget > 0 && chartViewMode.value !== 'income') {
+                            const pointBudget = isLine ? periodTotalBudget / labels.length : periodTotalBudget
+                            datasets.push({
+                                label: translate('Budget'),
+                                data: labels.map(() => Math.round(-Math.abs(pointBudget))),
+                                type: 'line',
+                                borderColor: '#ef4444',
+                                backgroundColor: '#ef4444',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointRadius: 0,
+                                pointHoverRadius: 0,
+                                fill: false,
+                                tension: 0,
+                                order: -1,
+                                stack: 'budget_line'
+                            })
+                        }
                     }
 
                     if (trendChart.value && trendChart.value.config.type !== trendChartType.value) {
