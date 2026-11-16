@@ -525,7 +525,7 @@
                                     <button v-if="!isPrinting && !['number', 'date', 'time'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row, col }"
-                                        class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10"
+                                        class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10 landscape:hidden sm:landscape:flex"
                                         :class="{'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
                                         <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
@@ -575,7 +575,7 @@
                                     tabindex="-1"
                                     @click.stop="scanningTarget = { row, col: {id: 'note'} }"
                                     type="button"
-                                    class="absolute flex right-2 print:hidden"
+                                    class="absolute flex right-2 print:hidden landscape:hidden sm:landscape:flex"
                                 >
                                     <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                                 </button>
@@ -844,7 +844,7 @@
                                     @focus="toggleDateFilter($event, col.id, true)"
                                     @click.stop="toggleDateFilter($event, col.id, true)"
                                     :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
-                                    class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
+                                    class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
                                     :class="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '' ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'"
                                 >
                                 <button
@@ -876,7 +876,7 @@
                                     inputmode="decimal"
                                     :value="dateRangeFilters[col.id]?.end || ''"
                                     @input="updateDateRange(col.id, 'end', $event.target.value)"
-                                    class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
+                                    class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
                                     :placeholder="translate('Max') +'...'"
                                 >
                             </div>
@@ -890,20 +890,19 @@
                                 v-model="columnFilters[col.id]"
                                 @click.stop="openGlobalMenu($event, row, col)"
                                 :placeholder="'🔍 ' + translate('Filter...')"
-                                class="sm:w-full w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
+                                class="sm:w-full w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                             >
-                            <button v-if="isMobile && !['number'].includes(col.type)"
+                            <button v-if="!['number'].includes(col.type)"
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row: null, col }"
-                                class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-8"
-                                :class="{'sm:right-8': ['category', 'text'].includes(col.type)}"
+                                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-2 top-1/2 -translate-y-1/2 landscape:hidden sm:landscape:flex"
                             >
                                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                             </button>
                             <button
                                 v-show="columnFilters[col.id]"
                                 @click="clearFilter(col.id)"
-                                class="absolute right-6 sm:right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                 :title="translate('Clear filter')"
                             >✖</button>
                         </div>
@@ -920,7 +919,7 @@
                                     :value="dateRangeFilters[col.id]?.start || ''"
                                     @input="updateDateRange(col.id, 'start', $event.target.value)"
                                     @click.stop="toggleDateFilter($event, col.id, true)"
-                                    class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 sm:w-full cursor-pointer"
+                                    class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner sm:w-full cursor-pointer"
                                 >
                                 <button
                                     v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
@@ -951,7 +950,7 @@
                                     :min="dateRangeFilters[col.id]?.start || ''"
                                     :value="dateRangeFilters[col.id]?.end || ''"
                                     @input="updateDateRange(col.id, 'end', $event.target.value)"
-                                    class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
+                                    class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
                                 >
                             </div>
                             </Teleport>
@@ -960,7 +959,7 @@
                         <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
                             <select
                                 v-model="columnFilters[col.id]"
-                                class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
+                                class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
                             >
                                 <option value="">{{ translate('All') }}</option>
                                 <option value="has_photo">🖼️ {{ translate('Photo') }}</option>
@@ -976,7 +975,7 @@
 
                         <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative w-full sm:w-auto"
                             :data-tooltip="`${columnTotals[col.id]} (${getCheckboxProgressPercent(columnTotals[col.id])}%)` || '0 / 0'">
-                            <div class="relative w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded sm:rounded-none overflow-hidden shadow-inner focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-colors">
+                            <div class="relative w-full bg-white dark:bg-gray-700 overflow-hidden shadow-inner focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-colors">
                                 <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 pointer-events-none"
                                     :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))"
                                     :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }">
@@ -1030,7 +1029,7 @@
                             enterkeyhint="search"
                             v-model="columnFilters['note']"
                             :placeholder="'🔍 ' + translate('Note') + translate('Filter...')"
-                            class="w-full h-full min-h-[44px] px-4 py-2 bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors pr-10"
+                            class="w-full h-full min-h-[44px] px-4 py-2 bg-transparent outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors pr-10"
                         >
                         <button
                             v-show="columnFilters['note']"
@@ -1061,7 +1060,7 @@
             <button v-if="!isPrinting"
                 tabindex="-1"
                 @click.stop="scanningTarget = { row: null, col: null }"
-                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0"
+                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0 landscape:hidden sm:landscape:flex"
             >
                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
             </button>
@@ -1670,7 +1669,7 @@
 
         const currentLanguage = ref(localStorage.getItem('lang') || initialLang)
         document.documentElement.lang = currentLanguage.value
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+        // const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         const translate = (key, params = null) => {
             const dict = translations[currentLanguage.value]
@@ -7165,7 +7164,6 @@
                 })
 
                 return {
-                    isMobile,
                     isBudgetOpen,
                     toggleBudget,
                     categoryBudgets,
