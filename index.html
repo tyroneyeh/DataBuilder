@@ -811,7 +811,7 @@
             </template>
         </div>
 
-        <div class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent  rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full">
+        <div ref="filterContainer" @scroll="handleFilterScroll" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
             <div class="flex flex-col sm:flex-row w-full print:flex-row">
 
                 <div class="py-1.5 bottom-0 left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
@@ -2102,6 +2102,7 @@
                 const isCopied = ref(false)
                 const observedRows = new WeakSet()
                 const colWidths = ref({})
+                const filterContainer = ref(null)
 
                 let isInitializing = true
                 let scrollRAF
@@ -5477,6 +5478,18 @@
                         if (paddingTop.value !== pTop) paddingTop.value = pTop
                         if (paddingBottom.value !== pBottom) paddingBottom.value = pBottom
                     })
+
+                    if (filterContainer.value && filterContainer.value.scrollLeft !== target.scrollLeft) {
+                        filterContainer.value.scrollLeft = target.scrollLeft
+                    }
+                }
+
+                const handleFilterScroll = (e) => {
+                    const target = e.target
+
+                    if (tableContainer.value && tableContainer.value.scrollLeft !== target.scrollLeft) {
+                        tableContainer.value.scrollLeft = target.scrollLeft
+                    }
                 }
 
                 const autoHeight = (target) => {
@@ -7361,7 +7374,9 @@
                     addNewCategory,
                     deleteCategoryBudget,
                     toLocaleString,
-                    colWidths
+                    colWidths,
+                    filterContainer,
+                    handleFilterScroll
                 }
             }
         }).mount('#app')
