@@ -893,7 +893,7 @@
                             </div>
                         </div>
 
-                        <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative">
+                        <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative flex">
                             <input
                                 type="text"
                                 enterkeyhint="search"
@@ -905,7 +905,7 @@
                             <button v-if="isMobile && !['number'].includes(col.type)"
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row: null, col }"
-                                class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-8 top-1/2 -translate-y-1/2"
+                                class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-8"
                                 :class="{'sm:right-8': ['category', 'text'].includes(col.type)}"
                             >
                                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
@@ -913,7 +913,7 @@
                             <button
                                 v-show="columnFilters[col.id]"
                                 @click="clearFilter(col.id)"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                class="absolute right-6 sm:right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                 :title="translate('Clear filter')"
                             >✖</button>
                         </div>
