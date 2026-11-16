@@ -611,226 +611,6 @@
                     </tr>
                 </tbody>
 
-                <tfoot class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 block sm:table-footer-group print:table-row-group mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0">
-                    <tr class="block sm:table-row print:table-row">
-                        <td class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none" :data-tooltip="filteredRows.length">{{ translate('Total') }}</td>
-
-                        <td v-for="col in columns" :key="'total-' + col.id"
-                            class="flex sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 px-4 py-3 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center sm:items-start justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b"
-                            :class="[
-                                col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:text-right print:text-right' : 'sm:text-left print:text-left'
-                            ]">
-
-                            <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 text-nowrap">{{ col.label }}</span>
-                            <div class="print:w-full relative" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
-                                <div v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
-                                    <div v-if="dateRangeOpenState[col.id]"
-                                        @click.stop="toggleDateFilter(col.id, false)"
-                                        class="fixed inset-0 z-40 cursor-default"
-                                        style="-webkit-tap-highlight-color: transparent">
-                                    </div>
-                                    <div class="relative z-50">
-                                        <input
-                                            type="text"
-                                            inputmode="decimal"
-                                            :value="(dateRangeOpenState[col.id] || (dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== ''))) ? (dateRangeFilters[col.id]?.start || '') : formatNumber(columnTotals[col.id])"
-                                            @input="updateDateRange(col.id, 'start', $event.target.value)"
-                                            @focus="toggleDateFilter(col.id, true)"
-                                            @click.stop="toggleDateFilter(col.id, true)"
-                                            :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
-                                            class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
-                                            :class="(dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '') ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400 print:text-black'"
-                                        >
-                                        <button
-                                            v-show="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== ''"
-                                            @click.stop="clearDateRange(col.id)"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
-                                            :title="translate('Clear filter')"
-                                        >✖</button>
-                                    </div>
-                                    <div v-if="dateRangeOpenState[col.id]"
-                                        class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
-                                    >
-                                        <div class="flex items-center justify-between mb-2">
-                                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
-                                                ({{ translate('To') }})
-                                            </label>
-                                            <button
-                                                @click.stop="filterMatchMode[col.id] = (filterMatchMode[col.id] === 'range' ? 'exact' : 'range')"
-                                                class="text-[10px] px-1.5 py-0.5 rounded font-bold border transition-colors select-none whitespace-nowrap ml-2"
-                                                :class="filterMatchMode[col.id] === 'range' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'"
-                                            >
-                                                {{ filterMatchMode[col.id] === 'range' ? '≧ Min' : '＝ Exact' }}
-                                            </button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            inputmode="decimal"
-                                            :value="dateRangeFilters[col.id]?.end || ''"
-                                            @input="updateDateRange(col.id, 'end', $event.target.value)"
-                                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
-                                            :placeholder="translate('Max') +'...'"
-                                        >
-                                    </div>
-                                </div>
-                                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative">
-                                    <input
-                                        type="text"
-                                        enterkeyhint="search"
-                                        v-model="columnFilters[col.id]"
-                                        @click.stop="openGlobalMenu($event, row, col)"
-                                        :placeholder="'🔍 ' + translate('Filter...')"
-                                        class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
-                                    >
-                                    <button v-if="isMobile && !['number'].includes(col.type)"
-                                        tabindex="-1"
-                                        @click.stop="scanningTarget = { row: null, col }"
-                                        class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
-                                        :class="{'sm:right-0': ['category', 'text'].includes(col.type)}"
-                                    >
-                                        <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
-                                    </button>
-                                    <button
-                                        v-show="columnFilters[col.id]"
-                                        @click="clearFilter(col.id)"
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                        :title="translate('Clear filter')"
-                                    >✖</button>
-                                </div>
-                                <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative right-6 sm:right-0">
-                                    <div v-if="dateRangeOpenState[col.id]"
-                                        @click.stop="toggleDateFilter(col.id, false)"
-                                        class="fixed inset-0 z-40 cursor-default"
-                                        style="-webkit-tap-highlight-color: transparent">
-                                    </div>
-                                    <div class="relative z-50">
-                                        <input
-                                            :type="col.type"
-                                            :value="dateRangeFilters[col.id]?.start || ''"
-                                            @input="updateDateRange(col.id, 'start', $event.target.value)"
-                                            @click.stop="toggleDateFilter(col.id, true)"
-                                            class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 w-full cursor-pointer"
-                                        >
-                                        <button
-                                            v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
-                                            @click.stop="clearDateRange(col.id)"
-                                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
-                                            :title="translate('Clear filter')"
-                                        >✖</button>
-                                    </div>
-                                    <div v-if="dateRangeOpenState[col.id]"
-                                        class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
-                                    >
-                                        <div class="flex items-center justify-between mb-2">
-                                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
-                                                {{ translate('To') }}
-                                            </label>
-                                            <button
-                                                @click.stop="filterMatchMode[col.id] = (filterMatchMode[col.id] === 'range' ? 'exact' : 'range')"
-                                                class="text-[10px] px-1.5 py-0.5 rounded font-bold border transition-colors select-none whitespace-nowrap ml-2"
-                                                :class="filterMatchMode[col.id] === 'range' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'"
-                                            >
-                                                {{ filterMatchMode[col.id] === 'range' ? '≧ Min' : '＝ Exact' }}
-                                            </button>
-                                        </div>
-                                        <input
-                                            :type="col.type"
-                                            :min="dateRangeFilters[col.id]?.start || ''"
-                                            :value="dateRangeFilters[col.id]?.end || ''"
-                                            @input="updateDateRange(col.id, 'end', $event.target.value)"
-                                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
-                                        >
-                                    </div>
-                                </div>
-                                <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
-                                    <select
-                                        v-model="columnFilters[col.id]"
-                                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
-                                    >
-                                        <option value="">{{ translate('All') }}</option>
-                                        <option value="has_photo">🖼️ {{ translate('Photo') }}</option>
-                                        <option value="no_photo">🚫 {{ translate('No Photo') }}</option>
-                                    </select>
-                                    <button
-                                        v-show="columnFilters[col.id]"
-                                        @click="clearFilter(col.id)"
-                                        class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
-                                        :title="translate('Clear filter')"
-                                    >✖</button>
-                                </div>
-                                <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative flex flex-col gap-2">
-                                    <div class="relative">
-                                        <select
-                                            v-model="columnFilters[col.id]"
-                                            class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
-                                        >
-                                            <option value="">{{ translate('All') }}</option>
-                                            <option value="true">✅ {{ translate('Checked') }}</option>
-                                            <option value="false">⬜ {{ translate('Unchecked') }}</option>
-                                        </select>
-                                        <button
-                                            v-show="columnFilters[col.id]"
-                                            @click="clearFilter(col.id)"
-                                            class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
-                                            :title="translate('Clear filter')"
-                                        >✖</button>
-                                    </div>
-                                    <div class="flex flex-col items-center sm:items-start justify-center w-full mx-auto sm:mx-0 cursor-pointer" :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'" @click.stop="showProgressToast(col.id, col.label)">
-                                        <span class="text-xs sm:text-sm transition-colors duration-300 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">
-                                            {{ columnTotals[col.id] || '0 / 0' }}
-                                        </span>
-                                        <div v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0" class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                            <div class="h-full transition-all duration-500 ease-out" :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))" :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
-                                    <template v-if="col.type === 'checkbox'">
-                                        <span class="text-sm print:text-gray-600 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
-                                    </template>
-                                    <template v-else>
-                                        <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
-                                            {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id])) }}
-                                        </span>
-                                    </template>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td v-if="!isPrinting" class="block sm:table-cell text-center sm:sticky bottom-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 py-3 sm:py-2 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700">
-                            <button
-                                v-if="isAnyFilterActive"
-                                @click.stop="clearAllFilters"
-                                class="flex items-center justify-center gap-1 mx-auto text-sm sm:text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-3 py-2 sm:py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md border border-red-200 dark:border-red-800 shadow-sm active:scale-95 w-full sm:w-auto"
-                                :title="translate('Clear All Filters')"
-                            >
-                                <span class="icon-mask icon-clear w-5 h-5 bg-current block"></span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr v-if="!isPrinting" class="block sm:table-row print:hidden">
-                        <td class="sm:sticky left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 py-3 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] block sm:table-cell">
-                            <span class="text-sm font-bold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ translate('Note') }}</span>
-                        </td>
-                        <td :colspan="columns.length + 1" class="border-b sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 p-0 bg-white sm:bg-gray-100 dark:bg-gray-800 block sm:table-cell relative">
-                            <div class="flex w-full h-full">
-                                <input
-                                    type="text"
-                                    enterkeyhint="search"
-                                    v-model="columnFilters['note']"
-                                    :placeholder="'🔍 ' + translate('Filter...')"
-                                    class="w-full h-full min-h-[44px] px-4 py-2 bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors pr-10"
-                                >
-                                <button
-                                    v-show="columnFilters['note']"
-                                    @click="columnFilters['note'] = ''"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                    :title="translate('Clear filter')"
-                                >✖</button>
-                            </div>
-                        </td>
-                    </tr>
-                </tfoot>
             </table>
             <Teleport to="body">
             <ul
@@ -1039,6 +819,245 @@
             >
                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
             </button>
+        </div>
+
+        <div class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0 flex flex-col w-full sm:w-max">
+            <div class="flex flex-col sm:flex-row w-full print:flex-row">
+
+                <div class="sm:sticky bottom-0 left-0 z-20 print:static bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-gray-100 border-b sm:border-t-2 sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center print:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none rounded-t-lg sm:rounded-none shrink-0  print:min-w-[100px] w-full sm:w-[var(--col-width)]"
+                    :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
+                    :data-tooltip="filteredRows.length">
+                    {{ translate('Total') }}
+                </div>
+
+                <div v-for="(col, index) in columns" :key="'total-' + col.id"
+                    class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] sm:sticky bottom-0 z-10 border-b sm:border-t-2 sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 print:bg-transparent print:static items-center sm:items-start justify-between last:border-b-0 sm:last:border-b print:last:border-b"
+                    :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
+                    :class="[
+                        col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end print:justify-end' : 'sm:justify-start print:justify-start'
+                    ]">
+
+                    <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
+
+                    <div class="print:w-full relative w-full" :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-center sm:text-left'">
+
+                        <div v-if="['number', 'multiply', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
+                            <div v-if="dateRangeOpenState[col.id]"
+                                @click.stop="toggleDateFilter(col.id, false)"
+                                class="fixed inset-0 z-40 cursor-default"
+                                style="-webkit-tap-highlight-color: transparent">
+                            </div>
+                            <div class="relative z-50 flex">
+                                <input
+                                    type="text"
+                                    inputmode="decimal"
+                                    :value="(dateRangeOpenState[col.id] || (dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== ''))) ? (dateRangeFilters[col.id]?.start || '') : formatNumber(columnTotals[col.id])"
+                                    @input="updateDateRange(col.id, 'start', $event.target.value)"
+                                    @focus="toggleDateFilter(col.id, true)"
+                                    @click.stop="toggleDateFilter(col.id, true)"
+                                    :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
+                                    class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
+                                    :class="(dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '') ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400 print:text-black'"
+                                >
+                                <button
+                                    v-show="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== ''"
+                                    @click.stop="clearDateRange(col.id)"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
+                                    :title="translate('Clear filter')"
+                                >✖</button>
+                            </div>
+
+                            <div v-if="dateRangeOpenState[col.id]"
+                                class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
+                            >
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
+                                        ({{ translate('To') }})
+                                    </label>
+                                    <button
+                                        @click.stop="filterMatchMode[col.id] = (filterMatchMode[col.id] === 'range' ? 'exact' : 'range')"
+                                        class="text-[10px] px-1.5 py-0.5 rounded font-bold border transition-colors select-none whitespace-nowrap ml-2"
+                                        :class="filterMatchMode[col.id] === 'range' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'"
+                                    >
+                                        {{ filterMatchMode[col.id] === 'range' ? '≧ Min' : '＝ Exact' }}
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    inputmode="decimal"
+                                    :value="dateRangeFilters[col.id]?.end || ''"
+                                    @input="updateDateRange(col.id, 'end', $event.target.value)"
+                                    class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
+                                    :placeholder="translate('Max') +'...'"
+                                >
+                            </div>
+                        </div>
+
+                        <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative">
+                            <input
+                                type="text"
+                                enterkeyhint="search"
+                                v-model="columnFilters[col.id]"
+                                @click.stop="openGlobalMenu($event, row, col)"
+                                :placeholder="'🔍 ' + translate('Filter...')"
+                                class="sm:w-full w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
+                            >
+                            <button v-if="isMobile && !['number'].includes(col.type)"
+                                tabindex="-1"
+                                @click.stop="scanningTarget = { row: null, col }"
+                                class="sm:absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-8 top-1/2 -translate-y-1/2"
+                                :class="{'sm:right-8': ['category', 'text'].includes(col.type)}"
+                            >
+                                <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
+                            </button>
+                            <button
+                                v-show="columnFilters[col.id]"
+                                @click="clearFilter(col.id)"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                :title="translate('Clear filter')"
+                            >✖</button>
+                        </div>
+
+                        <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
+                            <div v-if="dateRangeOpenState[col.id]"
+                                @click.stop="toggleDateFilter(col.id, false)"
+                                class="fixed inset-0 z-40 cursor-default"
+                                style="-webkit-tap-highlight-color: transparent">
+                            </div>
+                            <div class="relative z-50">
+                                <input
+                                    :type="col.type"
+                                    :value="dateRangeFilters[col.id]?.start || ''"
+                                    @input="updateDateRange(col.id, 'start', $event.target.value)"
+                                    @click.stop="toggleDateFilter(col.id, true)"
+                                    class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 w-full cursor-pointer"
+                                >
+                                <button
+                                    v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
+                                    @click.stop="clearDateRange(col.id)"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
+                                    :title="translate('Clear filter')"
+                                >✖</button>
+                            </div>
+                            <div v-if="dateRangeOpenState[col.id]"
+                                class="absolute bottom-full left-0 mb-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg z-50 origin-bottom-left transition-all"
+                            >
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">
+                                        {{ translate('To') }}
+                                    </label>
+                                    <button
+                                        @click.stop="filterMatchMode[col.id] = (filterMatchMode[col.id] === 'range' ? 'exact' : 'range')"
+                                        class="text-[10px] px-1.5 py-0.5 rounded font-bold border transition-colors select-none whitespace-nowrap ml-2"
+                                        :class="filterMatchMode[col.id] === 'range' ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-100 text-gray-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'"
+                                    >
+                                        {{ filterMatchMode[col.id] === 'range' ? '≧ Min' : '＝ Exact' }}
+                                    </button>
+                                </div>
+                                <input
+                                    :type="col.type"
+                                    :min="dateRangeFilters[col.id]?.start || ''"
+                                    :value="dateRangeFilters[col.id]?.end || ''"
+                                    @input="updateDateRange(col.id, 'end', $event.target.value)"
+                                    class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
+                                >
+                            </div>
+                        </div>
+
+                        <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
+                            <select
+                                v-model="columnFilters[col.id]"
+                                class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
+                            >
+                                <option value="">{{ translate('All') }}</option>
+                                <option value="has_photo">🖼️ {{ translate('Photo') }}</option>
+                                <option value="no_photo">🚫 {{ translate('No Photo') }}</option>
+                            </select>
+                            <button
+                                v-show="columnFilters[col.id]"
+                                @click="clearFilter(col.id)"
+                                class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                                :title="translate('Clear filter')"
+                            >✖</button>
+                        </div>
+
+                        <div v-else-if="col.type === 'checkbox' && !isPrinting" class="relative flex flex-col gap-2 w-full">
+                            <div class="relative w-full">
+                                <select
+                                    v-model="columnFilters[col.id]"
+                                    class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
+                                >
+                                    <option value="">{{ translate('All') }}</option>
+                                    <option value="true">✅ {{ translate('Checked') }}</option>
+                                    <option value="false">⬜ {{ translate('Unchecked') }}</option>
+                                </select>
+                                <button
+                                    v-show="columnFilters[col.id]"
+                                    @click="clearFilter(col.id)"
+                                    class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                                    :title="translate('Clear filter')"
+                                >✖</button>
+                            </div>
+                            <div class="flex flex-col items-center sm:items-start justify-center w-full mx-auto sm:mx-0 cursor-pointer" :title="getCheckboxProgressPercent(columnTotals[col.id]) + '%'" @click.stop="showProgressToast(col.id, col.label)">
+                                <span class="text-xs sm:text-sm transition-colors duration-300 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">
+                                    {{ columnTotals[col.id] || '0 / 0' }}
+                                </span>
+                                <div v-if="columnTotals[col.id] && getCheckboxProgressPercent(columnTotals[col.id]) > 0" class="w-full h-1 mt-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-500 ease-out" :class="getProgressBarColor(getCheckboxProgressPercent(columnTotals[col.id]))" :style="{ width: getCheckboxProgressPercent(columnTotals[col.id]) + '%' }"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else-if="['number', 'multiply', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+                            <template v-if="col.type === 'checkbox'">
+                                <span class="text-sm print:text-gray-600 font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
+                            </template>
+                            <template v-else>
+                                <span class="text-lg print:text-base font-bold text-blue-700 dark:text-blue-400 print:text-black">
+                                    {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || formatNumber(columnTotals[col.id])) }}
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="!isPrinting" class="flex items-center justify-center sm:sticky bottom-0 right-0 z-10 sm:border-t-2 sm:border print:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:w-[var(--col-width)]"
+                    :style="{'--col-width': colWidths[columns.length + 1] ? colWidths[columns.length + 1] + 'px' : 'auto'}">
+                    <button
+                        v-if="isAnyFilterActive"
+                        @click.stop="clearAllFilters"
+                        class="flex items-center justify-center gap-1 mx-auto text-sm sm:text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-3 py-2 sm:py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md border border-red-200 dark:border-red-800 shadow-sm active:scale-95 w-full"
+                        :title="translate('Clear All Filters')"
+                    >
+                        <span class="icon-mask icon-clear w-5 h-5 bg-current block"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="!isPrinting" class="flex flex-col sm:flex-row w-full print:hidden">
+                <div class="sm:sticky left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 px-4 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] shrink-0 w-full sm:w-[var(--col-width)]"
+                    :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}">
+                    <span class="text-sm font-bold text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ translate('Note') }}</span>
+                </div>
+
+                <div class="border-b sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 p-0 bg-white sm:bg-gray-100 dark:bg-gray-800 flex-1 relative min-w-0">
+                    <div class="flex w-full h-full relative">
+                        <input
+                            type="text"
+                            enterkeyhint="search"
+                            v-model="columnFilters['note']"
+                            :placeholder="'🔍 ' + translate('Filter...')"
+                            class="w-full h-full min-h-[44px] px-4 py-2 bg-transparent border-0 outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors pr-10"
+                        >
+                        <button
+                            v-show="columnFilters['note']"
+                            @click="columnFilters['note'] = ''"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            :title="translate('Clear filter')"
+                        >✖</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div v-if="!isPrinting" class="flex flex-col p-2 gap-6 mt-4 print:hidden">
@@ -2073,6 +2092,7 @@
                 const endCell = ref(null)
                 const isCopied = ref(false)
                 const observedRows = new WeakSet()
+                const colWidths = ref({})
 
                 let isInitializing = true
                 let scrollRAF
@@ -2130,7 +2150,10 @@
                     debouncedSave()
                     updateTitle()
                     refreshYearFilters()
-                }, { deep: true })
+                    nextTick(() => {
+                        syncColumnWidths()
+                    })
+                }, { deep: true, flush: 'post' })
                 watch(newColType, (newVal) => {
                     newColLabel.value = typeOptions.value.find(opt => opt.value === newVal).label
                 })
@@ -5312,6 +5335,16 @@
                     })
                 }
 
+                const syncColumnWidths = () => {
+                    if (!tableContainer.value) return
+                    const ths = tableContainer.value.querySelectorAll('thead th')
+                    const newWidths = {}
+                    ths.forEach((th, idx) => {
+                        newWidths[idx] = th.getBoundingClientRect().width
+                    })
+                    colWidths.value = newWidths
+                }
+
                 const showConfirm = (message, onlyOK = 0) => {
                     return new Promise((resolve) => {
                         confirmModal.value = {
@@ -7088,6 +7121,7 @@
                                 averageRowHeight = sum / sampleSize
                             }
                         }
+                        syncColumnWidths()
                     })
 
                     await loadData()
@@ -7322,7 +7356,8 @@
                     newCategoryInput,
                     addNewCategory,
                     deleteCategoryBudget,
-                    toLocaleString
+                    toLocaleString,
+                    colWidths
                 }
             }
         }).mount('#app')
