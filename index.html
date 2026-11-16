@@ -793,29 +793,6 @@
                 </audio>
             </template>
         </div>
-        <div v-if="!isPrinting || isPrinting && globalNotes">
-            <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                {{ globalNotes }}
-            </div>
-            <textarea
-                v-else
-                id="global-notes"
-                v-model="globalNotes"
-                rows="1"
-                class="w-full border-gray-300 dark:border-gray-600 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 [field-sizing:content]"
-                :placeholder="translate('Enter details here...')"
-                @input="autoHeight($event.target)"
-                @change="onDataEdited"
-                @click="speakFeedback($event.target.value)"
-            ></textarea>
-            <button v-if="!isPrinting"
-                tabindex="-1"
-                @click.stop="scanningTarget = { row: null, col: null }"
-                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0"
-            >
-                <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
-            </button>
-        </div>
 
         <div class="font-semibold text-gray-700 dark:text-gray-200 print:bg-gray-100 print:border-t-2 print:border-gray-800 mt-4 sm:mt-0 print:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none print:border-none shadow-sm sm:shadow-none print:shadow-none p-2 sm:p-0 print:p-0 flex flex-col w-full">
             <div class="flex flex-col sm:flex-row w-full print:flex-row">
@@ -1049,6 +1026,30 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div v-if="!isPrinting || isPrinting && globalNotes">
+            <div v-if="isPrinting" class="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                {{ globalNotes }}
+            </div>
+            <textarea
+                v-else
+                id="global-notes"
+                v-model="globalNotes"
+                rows="1"
+                class="w-full border-gray-300 dark:border-gray-600 rounded p-2 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 [field-sizing:content]"
+                :placeholder="translate('Enter details here...')"
+                @input="autoHeight($event.target)"
+                @change="onDataEdited"
+                @click="speakFeedback($event.target.value)"
+            ></textarea>
+            <button v-if="!isPrinting"
+                tabindex="-1"
+                @click.stop="scanningTarget = { row: null, col: null }"
+                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0"
+            >
+                <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
+            </button>
         </div>
 
         <div v-if="!isPrinting" class="flex flex-col p-2 gap-6 mt-4 print:hidden">
