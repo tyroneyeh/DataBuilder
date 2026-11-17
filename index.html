@@ -848,7 +848,7 @@
                                     :class="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '' ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'"
                                 >
                                 <button
-                                    v-show="!columnTotals[col.id]"
+                                    v-show="dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== '')"
                                     @click.stop="clearDateRange(col.id)"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
                                     :title="translate('Clear filter')"
