@@ -525,7 +525,7 @@
                                     <button v-if="!isPrinting && !['number', 'date', 'time'].includes(col.type)"
                                         tabindex="-1"
                                         @click.stop="scanningTarget = { row, col }"
-                                        class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10 landscape:hidden lg:landscape:flex"
+                                        class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
                                         :class="{'sm:right-0': ['category', 'text'].includes(col.type)}"
                                     >
                                         <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
@@ -575,7 +575,7 @@
                                     tabindex="-1"
                                     @click.stop="scanningTarget = { row, col: {id: 'note'} }"
                                     type="button"
-                                    class="absolute flex right-2 print:hidden landscape:hidden lg:landscape:flex"
+                                    class="absolute flex right-2 print:hidden [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
                                 >
                                     <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                                 </button>
@@ -895,7 +895,7 @@
                             <button v-if="!['number'].includes(col.type)"
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row: null, col }"
-                                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-2 top-1/2 -translate-y-1/2 landscape:hidden lg:landscape:flex"
+                                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-2 top-1/2 -translate-y-1/2 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
                             >
                                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                             </button>
@@ -1060,7 +1060,7 @@
             <button v-if="!isPrinting"
                 tabindex="-1"
                 @click.stop="scanningTarget = { row: null, col: null }"
-                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0 landscape:hidden lg:landscape:flex"
+                class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-0 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
             >
                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
             </button>
