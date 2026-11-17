@@ -3334,6 +3334,8 @@
                                     val = []
                                 } else if (col.type === 'time') {
                                     val = normalizeTimeString(val)
+                                    } else if (col.type === 'checkbox') {
+                                    val = (val === true || String(val).trim().toUpperCase() === 'TRUE')
                                 }
                                 newRow[col.id] = val
                             } else {
