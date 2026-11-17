@@ -429,7 +429,6 @@
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     type="checkbox"
                                     v-model="row[col.id]"
-                                    :checked="row[col.id] || String(row[col.id]).trim().toUpperCase() === 'TRUE'"
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                     @change="onDataEdited('rows')"
                                     class="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer transition-all active:scale-90"
