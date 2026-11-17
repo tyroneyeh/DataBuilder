@@ -115,6 +115,10 @@
             -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 13a3 3 0 11-6 0 3 3 0 016 0z' /%3E%3C/svg%3E");
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 13a3 3 0 11-6 0 3 3 0 016 0z' /%3E%3C/svg%3E");
         }
+        .icon-calendar-push {
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M16 19h6'/%3E%3Cpath d='M19 16v6'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M16 19h6'/%3E%3Cpath d='M19 16v6'/%3E%3C/svg%3E");
+        }
     </style>
     <style type="text/tailwindcss">
         @custom-variant dark (&:is(.dark *));
@@ -1427,6 +1431,18 @@
                                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
                                 </label>
                             </div>
+                            <div class="flex items-center justify-between pt-3">
+                                <div>
+                                    <div class="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center">
+                                        <span class="icon-mask icon-calendar-push w-5 h-5 bg-current block mr-1"></span>
+                                        {{ translate('Push to Google Calendar') }}
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                                    <input type="checkbox" :disabled="!googleClientId" v-model="isCalendarPushEnabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
                             <div v-if="isAutoSyncEnabled && displayLastSync" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <svg class="w-3.5 h-3.5 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -1919,6 +1935,7 @@
                 const googleAccessToken = ref('')
                 const newCategoryInput = ref('')
                 const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
+                const isCalendarPushEnabled = ref(localStorage.getItem('ty_calendar_sync') && sheetImportUrl.value != '')
                 const lastSyncDate = ref(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`) || '')
                 const updatedAt = ref('')
 
@@ -2233,6 +2250,10 @@
 
                 watch(isAutoSyncEnabled, (newVal) => {
                     newVal ? localStorage.setItem('ty_auto_sync', 1) : localStorage.removeItem('ty_auto_sync')
+                })
+
+                watch(isCalendarPushEnabled, (newVal) => {
+                    newVal ? localStorage.setItem('ty_calendar_sync', 1) : localStorage.removeItem('ty_calendar_sync')
                 })
 
                 watch(columnFilters, (newVal) => {
@@ -3514,12 +3535,17 @@
                     }
                     if (tokenClient) return true
 
+                    let scopes = 'https://www.googleapis.com/auth/spreadsheets'
+                    if (isCalendarPushEnabled.value) {
+                        scopes += ' https://www.googleapis.com/auth/calendar.events'
+                    }
+
                     return new Promise((resolve) => {
                         loadScript('https://accounts.google.com/gsi/client')
                             .then(() => {
                                 tokenClient = google.accounts.oauth2.initTokenClient({
                                     client_id: googleClientId.value.trim(),
-                                    scope: 'https://www.googleapis.com/auth/spreadsheets',
+                                    scope: scopes,
                                     callback: (tokenResponse) => {
                                         if (tokenResponse && tokenResponse.access_token) {
                                             googleAccessToken.value = tokenResponse.access_token
@@ -7376,6 +7402,7 @@
                     importFromGoogleSheets,
                     exportToGoogleSheets,
                     isAutoSyncEnabled,
+                    isCalendarPushEnabled,
                     displayLastSync,
                     getCheckboxProgressClass,
                     getCheckboxProgressPercent,
