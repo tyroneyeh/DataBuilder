@@ -892,7 +892,7 @@
                                 :placeholder="'🔍 ' + translate('Filter...')"
                                 class="sm:w-full w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                             >
-                            <button v-if="!['number'].includes(col.type)"
+                            <button
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row: null, col }"
                                 class="absolute opacity-100 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 right-2 top-1/2 -translate-y-1/2 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
