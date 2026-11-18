@@ -1204,7 +1204,7 @@
                                 <span v-if="isProcessing == -1" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬆️ {{ translate('Push to gists') }}</span>
                             </button>
-                            <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                            <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
                                 <span v-if="isProcessing == -2" class="animate-spin text-xl">⏳</span>
                                 <span v-else>⬇️ {{ translate('Pull from gists') }}</span>
                             </button>
