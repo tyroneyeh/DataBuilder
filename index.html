@@ -4712,7 +4712,7 @@
                             ? String(rawVal).trim()
                             : translate('Uncategorized')
 
-                        let val = parseFloat(row[numCol.id]) || 0
+                        let val = calcValue(row[numCol.id])
                         if (numCol.type.startsWith('multiply')) val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
                         else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
 
@@ -4769,7 +4769,7 @@
                         if (topCategoriesSet && topCategoriesSet.size > 0 && !topCategoriesSet.has(catLabel)) {
                             catLabel = otherLabel
                         }
-                        let val = parseFloat(row[numCol.id]) || 0
+                        let val = calcValue(row[numCol.id])
                         if (numCol.type.startsWith('multiply')) val = calcValue(row[numCol.opA]) * calcValue(row[numCol.opB])
                         else if (numCol.type === 'minus') val = calcValue(row[numCol.opA]) - calcValue(row[numCol.opB])
                         if (val !== 0) {
@@ -5287,7 +5287,7 @@
                         const rawDate = row[dateColId]
                         if (!rawDate) return
                         const cleanDateStr = String(rawDate).substring(0, 10).replace(/\//g, '-')
-                        const amt = Number(String(row[amountColId]).replace(/,/g, '')) || 0
+                        const amt = calcValue(String(row[amountColId]).replace(/,/g, ''))
                         dailySums[cleanDateStr] = (dailySums[cleanDateStr] || 0) + amt
                     });
 
