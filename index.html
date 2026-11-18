@@ -167,7 +167,7 @@
                     <span class="transform transition-transform duration-300" :class="isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
                 </div>
             </div>
-            <div v-show="columns.length && isChartOpen" class="w-full mt-4">
+            <div v-show="columns.length && isChartOpen" class="w-full mt-2">
                 <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
                     <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
                         <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
@@ -336,10 +336,15 @@
                         </button>
                     </div>
                 </div>
-                <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 print:p-2 print:shadow-none print:border-none rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-4 print:mt-2 print:break-inside-avoid">
+                <div v-show="selectedChartDateColId && hasTrendData" class="w-full bg-white dark:bg-gray-800 p-6 print:p-2 print:shadow-none print:border-none rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm mt-2 print:break-inside-avoid">
                     <h4 class="text-gray-500 dark:text-gray-400 text-sm font-bold mb-4 print:mb-2 flex items-center">📈 {{ translate('Trend') }}</h4>
                     <div class="relative w-full h-64 print:h-[180px] print:w-[100%] print:mx-auto">
                         <canvas id="trendChart" class="print:!max-h-[180px] print:!max-w-full print:!w-full"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-2 overflow-x-auto" ref="heatmapScrollContainer">
+                    <div class="relative mx-auto w-[1080px] min-h-[150px]">
+                        <canvas ref="heatmapCanvas"></canvas>
                     </div>
                 </div>
             </div>
@@ -1938,6 +1943,8 @@
                 const isCalendarPushEnabled = ref(localStorage.getItem('ty_calendar_sync') && sheetImportUrl.value != '')
                 const lastSyncDate = ref(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`) || '')
                 const updatedAt = ref('')
+                const heatmapScrollContainer = ref(null)
+                const heatmapCanvas = ref(null)
 
                 const toggleBudget = () => {
                     isBudgetOpen.value = !isBudgetOpen.value
@@ -2132,6 +2139,7 @@
                 let tokenClient = null
                 let pendingTokenResolve = null
                 let pendingTokenReject = null
+                let heatmapChartInstance = null
 
                 const debouncedSave = debounce(() => {
                     try {
@@ -2262,6 +2270,7 @@
 
                 const toggleDarkMode = () => {
                     isDark.value = !isDark.value
+                    renderHeatmap(heatmapCanvas.value.getContext('2d'))
                 }
 
                 const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
@@ -5255,6 +5264,169 @@
                     }
                 }
 
+                let currentMaxValue = 0
+                const getLocalizedWeekdays = (locale = navigator.language) => {
+                    const baseDate = new Date(1970, 0, 4)
+                    const weekdays = []
+                    for (let i = 0; i < 7; i++) {
+                        const dayName = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(baseDate)
+                        weekdays.push(dayName)
+                        baseDate.setDate(baseDate.getDate() + 1)
+                    }
+                    return weekdays
+                }
+
+                const getOfficialTimeMatrixData = () => {
+                    const dataMatrix = []
+                    currentMaxValue = 0
+
+                    const dailySums = {}
+                    const dateColId = selectedChartDateColId.value
+                    const amountColId = selectedChartNumColId.value
+                    chartBaseRows.value.forEach(row => {
+                        const rawDate = row[dateColId]
+                        if (!rawDate) return
+                        const cleanDateStr = String(rawDate).substring(0, 10).replace(/\//g, '-')
+                        const amt = Number(String(row[amountColId]).replace(/,/g, '')) || 0
+                        dailySums[cleanDateStr] = (dailySums[cleanDateStr] || 0) + amt
+                    });
+
+                    const availableDates = Object.keys(dailySums).sort()
+                    const targetYear = availableDates.length > 0
+                        ? parseInt(availableDates[availableDates.length - 1].substring(0, 4))
+                        : new Date().getFullYear()
+
+                    const startDate = new Date(targetYear, 0, 1)
+                    const endDate = new Date(targetYear, 11, 31)
+
+                    startDate.setDate(startDate.getDate() - startDate.getDay())
+                    if (endDate.getDay() !== 6) {
+                        endDate.setDate(endDate.getDate() + (6 - endDate.getDay()))
+                    }
+
+                    const yLabels = getLocalizedWeekdays().reverse()
+
+                    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                        const dYear = d.getFullYear()
+                        const dMonth = String(d.getMonth() + 1).padStart(2, '0')
+                        const dDay = String(d.getDate()).padStart(2, '0')
+                        const dateStr = `${dYear}-${dMonth}-${dDay}`
+
+                        const sum = dailySums[dateStr] || 0
+                        if (sum > currentMaxValue) currentMaxValue = sum
+                        const dayOfWeek = d.getDay()
+                        const y = yLabels[6 - dayOfWeek]
+
+                        dataMatrix.push({
+                            x: dateStr,
+                            y: y,
+                            v: sum,
+                            date: dateStr
+                        })
+                    }
+
+                    return { dataMatrix, yLabels, targetYear };
+                }
+
+                const renderHeatmap = (canvasCtx) => {
+                    const { dataMatrix, yLabels, targetYear } = getOfficialTimeMatrixData()
+
+                    const emptyCellColor = isDark.value ? 'rgba(31, 41, 55, 1)' : 'rgba(235, 237, 240, 1)'
+                    const textColor = isDark.value ? '#9ca3af' : '#6b7280'
+
+                    if (heatmapChartInstance) {
+                        heatmapChartInstance.destroy()
+                    }
+                    const safeLocale = window.dateFns?.locale?.[navigator.language.replace('-', '')]
+                        || window.dateFns?.locale?.zhTW
+
+                    heatmapChartInstance = new Chart(canvasCtx, {
+                        type: 'matrix',
+                        data: {
+                            datasets: [{
+                                data: dataMatrix,
+                                backgroundColor: (context) => {
+                                    const value = context.dataset.data[context.dataIndex]?.v || 0
+                                    if (value === 0) return emptyCellColor
+                                    const maxVal = currentMaxValue || 1;
+                                    const alpha = 0.2 + (value / maxVal) * 0.8
+                                    return `rgba(99, 102, 241, ${alpha})`;
+                                },
+                                borderWidth: 0,
+                                borderRadius: 2,
+                                hoverBackgroundColor: 'rgba(79, 70, 229, 1)',
+                                width: 20,
+                                height: 20
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            onClick: (event, elements, chart) => {
+                                if (elements.length > 0) {
+                                    if (selectedChartDate.value) return selectedChartDate.value = null
+                                    const dataIndex = elements[0].index
+                                    const clickedData = chart.data.datasets[0].data[dataIndex]
+                                    selectedChartDate.value = `${clickedData.date}${getWeekdayStr(clickedData.date)}`
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        title: () => '',
+                                        label: (context) => {
+                                            const item = context.raw;
+                                            return `${item.date}: $${item.v.toLocaleString()}`
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    position: 'top',
+                                    offset: true,
+                                    adapters: {
+                                        date: {
+                                            locale: safeLocale
+                                        }
+                                    },
+                                    time: {
+                                        unit: 'month',
+                                        round: 'week',
+                                        isoWeekday: 0,
+                                        displayFormats: {
+                                            month: 'MMM'
+                                        }
+                                    },
+                                    ticks: {
+                                        color: textColor
+                                    },
+                                    grid: { display: false },
+                                    border: { display: false }
+                                },
+                                y: {
+                                    type: 'category',
+                                    labels: yLabels,
+                                    ticks: {
+                                        color: textColor
+                                    },
+                                    grid: { display: false },
+                                    border: { display: false },
+                                    reverse: true
+                                }
+                            }
+                        }
+                    })
+
+                    setTimeout(() => {
+                        if (heatmapScrollContainer.value) {
+                            heatmapScrollContainer.value.scrollLeft = heatmapScrollContainer.value.scrollWidth;
+                        }
+                    }, 100);
+                }
+
                 const updateChart = async (unit) => {
                     if (!isChartOpen.value) return
                     if (unit) {
@@ -5288,6 +5460,9 @@
                     let values = []
 
                     await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
+                    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3')
+                    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js')
+                    await loadScript(`https://cdn.jsdelivr.net/npm/date-fns@3/locale/${navigator.language}/cdn.min.js`)
 
                     if (categoryData && ctxDoughnut) {
                         const MAX_CAT = 12
@@ -5340,6 +5515,10 @@
                     } else if (trendChart.value) {
                         trendChart.value.destroy()
                         trendChart.value = null
+                    }
+
+                    if (heatmapCanvas.value) {
+                        renderHeatmap(heatmapCanvas.value.getContext('2d'))
                     }
                 }
 
@@ -7441,7 +7620,9 @@
                     toLocaleString,
                     colWidths,
                     filterContainer,
-                    handleFilterScroll
+                    handleFilterScroll,
+                    heatmapScrollContainer,
+                    heatmapCanvas
                 }
             }
         }).mount('#app')
