@@ -342,7 +342,7 @@
                         <canvas id="trendChart" class="print:!max-h-[180px] print:!max-w-full print:!w-full"></canvas>
                     </div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-2 overflow-x-auto" ref="heatmapScrollContainer">
+                <div v-show="selectedChartDateColId && hasTrendData" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-2 overflow-x-auto" ref="heatmapScrollContainer">
                     <div class="relative mx-auto w-[1080px] min-h-[150px]">
                         <canvas ref="heatmapCanvas"></canvas>
                     </div>
