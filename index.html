@@ -5377,7 +5377,7 @@
                                         title: () => '',
                                         label: (context) => {
                                             const item = context.raw;
-                                            return `${item.date}: $${item.v.toLocaleString()}`
+                                            return `${item.date}: ${formatNumber(item.v)}`
                                         }
                                     }
                                 }
