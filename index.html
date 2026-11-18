@@ -87,6 +87,13 @@
                 color: #000000 !important;
                 -webkit-text-fill-color: #000000 !important;
             }
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            ::-webkit-scrollbar {
+                display: none !important;
+            }
         }
         input::-webkit-calendar-picker-indicator {
             opacity: 0;
@@ -342,8 +349,8 @@
                         <canvas id="trendChart" class="print:!max-h-[180px] print:!max-w-full print:!w-full"></canvas>
                     </div>
                 </div>
-                <div v-show="selectedChartDateColId && hasTrendData" class="bg-white dark:bg-gray-800 py-4 mx-[-40px] px-0 xl:px-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-2 overflow-x-auto" ref="heatmapScrollContainer">
-                    <div class="relative mx-auto w-[1080px]">
+                <div v-show="selectedChartDateColId && hasTrendData" class="bg-white dark:bg-gray-800 py-4 mx-[-40px] px-0 xl:px-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 mt-2 overflow-x-auto print:overflow-visible print:mx-0 print:px-0 print:shadow-none print:border-none" ref="heatmapScrollContainer">
+                    <div class="relative mx-auto w-[1080px] print:!w-full print:mx-0">
                         <canvas ref="heatmapCanvas"></canvas>
                     </div>
                 </div>
