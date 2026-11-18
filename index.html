@@ -3686,6 +3686,34 @@
                     }
                 }
 
+                const addToCalendar = async (date, title, desc) => {
+                    const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+                    const eventBody = {
+                        summary: title,
+                        description: desc,
+                        start: { date: date },
+                        end: { date: date },
+                        colorId: '11'
+                    }
+
+                    const token = await getValidGoogleToken()
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(eventBody)
+                        })
+                        const data = await response.json()
+                        console.log('成功加入日曆！連結：', data.htmlLink)
+                    } catch (error) {
+                        console.error('寫入日曆失敗', error)
+                    }
+                }
+
                 const loadData = async (noDefulat = 0) => {
                     let hashData = null
 
