@@ -1374,7 +1374,7 @@
                                 <div class="flex flex-col">
                                     <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</label>
                                     <div class="relative w-full flex items-center">
-                                        <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                        <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="[&:not(:focus)]:[-webkit-text-security:disc] w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
                                         <div class="absolute right-2 flex items-center h-full">
                                             <button
                                                 v-if="gistId"
@@ -1415,7 +1415,7 @@
                                 </div>
                                 <div class="relative flex-1 min-w-0">
                                     <input
-                                        type="text"
+                                        type="password"
                                         v-model="googleClientId"
                                         placeholder="e.g., xxxxxxxx.apps.googleusercontent.com"
                                         class="w-full border border-gray-300 dark:border-gray-600 rounded-lg pl-3 pr-10 py-2 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
@@ -1443,7 +1443,7 @@
                                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
                                 </label>
                             </div>
-                            <div class="flex items-center justify-between pt-3">
+                            <div class="flex items-center justify-between pt-3 hidden">
                                 <div>
                                     <div class="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center">
                                         <span class="icon-mask icon-calendar-push w-5 h-5 bg-current block mr-1"></span>
