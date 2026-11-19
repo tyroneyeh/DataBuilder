@@ -1596,6 +1596,12 @@
             :class="isScrolling ? 'opacity-40 hover:opacity-100 translate-x-0' : 'opacity-0 pointer-events-none translate-x-12'">
 
             <button
+                @click="checkAndAutoSync(1)"
+                class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
+                :data-tooltip="translate('Sync to sheets')"
+            >
+                <span class="leading-none">🔄</span>
+            <button
                 @click="addRow"
                 class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
                 :data-tooltip="translate('Click to add a row')"
@@ -3661,7 +3667,7 @@
 
                     lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
-                    if (updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
+                    if (silent || updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
                         isProcessing.value = 1
 
                         try {
@@ -3966,8 +3972,6 @@
                 }
 
                 const addRow = async () => {
-
-                    checkAndAutoSync(1)
 
                     const newRowId = generateId()
                     const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
@@ -7616,6 +7620,7 @@
                     categoryBudgetMap,
                     rowRunningBudgetMap,
                     getWeekdayStr,
+                    checkAndAutoSync,
                     googleClientId,
                     sheetImportUrl,
                     importFromGoogleSheets,
