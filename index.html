@@ -3662,17 +3662,17 @@
                     }
                 }
 
-                const checkAndAutoSync = async (silent = false) => {
+                const checkAndAutoSync = async (force = false) => {
                     if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
                     lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
-                    if (silent || updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
+                    if (force || updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
                         isProcessing.value = 1
 
                         try {
 
-                            !silent && await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
+                            await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
 
                             const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
 
