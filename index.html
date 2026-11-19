@@ -1681,8 +1681,7 @@
             })
         }
 
-        const browserLang = navigator.language || navigator.userLanguage
-        const lowerLang = browserLang.toLowerCase()
+        const lowerLang = navigator.language.toLowerCase()
 
         let initialLang = 'en'
 
@@ -4806,7 +4805,7 @@
                     }
                 }
 
-                const compactFormatter = new Intl.NumberFormat(navigator.language || 'en-US', {
+                const compactFormatter = new Intl.NumberFormat(currentLanguage.value, {
                     notation: 'compact',
                     maximumFractionDigits: 2,
                     roundingMode: 'trunc'
@@ -5273,7 +5272,7 @@
                 }
 
                 let currentMaxValue = 0
-                const getLocalizedWeekdays = (locale = navigator.language) => {
+                const getLocalizedWeekdays = (locale = currentLanguage.value) => {
                     const baseDate = new Date(1970, 0, 4)
                     const weekdays = []
                     for (let i = 0; i < 7; i++) {
@@ -5345,7 +5344,7 @@
                     if (heatmapChartInstance) {
                         heatmapChartInstance.destroy()
                     }
-                    const safeLocale = window.dateFns?.locale?.[navigator.language.replace('-', '')]
+                    const safeLocale = window.dateFns?.locale?.[currentLanguage.value.replace('-', '')]
                         || window.dateFns?.locale?.zhTW
 
                     heatmapChartInstance = new Chart(canvasCtx, {
@@ -5475,7 +5474,7 @@
                     await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
                     await loadScript('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3')
                     await loadScript('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js')
-                    await loadScript(`https://cdn.jsdelivr.net/npm/date-fns@3/locale/${navigator.language}/cdn.min.js`)
+                    await loadScript(`https://cdn.jsdelivr.net/npm/date-fns@3/locale/${currentLanguage.value}/cdn.min.js`)
 
                     if (categoryData && ctxDoughnut) {
                         const MAX_CAT = 12
