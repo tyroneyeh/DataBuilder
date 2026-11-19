@@ -4808,7 +4808,8 @@
 
                 const compactFormatter = new Intl.NumberFormat(navigator.language || navigator.userLanguage || 'en-US', {
                     notation: 'compact',
-                    maximumFractionDigits: 0
+                    maximumFractionDigits: 2,
+                    roundingMode: 'trunc'
                 })
 
                 const formatNumber = (num) => {
