@@ -4025,7 +4025,13 @@
                             targetInput.focus({ preventScroll: true })
                             if (scrollTimer) clearTimeout(scrollTimer)
                             scrollTimer = setTimeout(() => {
-                                targetInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                targetInput.scrollIntoView({ behavior: 'instant', block: 'center' })
+                                if (firstInputCol.type === 'category') {
+                                    const reactiveRow = rows.value.find(r => r.id === newRowId)
+                                    if (reactiveRow) {
+                                        openGlobalMenu(null, reactiveRow, firstInputCol)
+                                    }
+                                }
                             }, 50)
                         }
                     }
