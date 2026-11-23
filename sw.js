@@ -33,23 +33,41 @@ globalThis.addEventListener('activate', (event) => {
     )
 })
 
+const SENSITIVE_API_HOSTS = new Set([
+    'api.github.com',
+    'sheets.googleapis.com',
+    'www.googleapis.com',
+    'vision.googleapis.com',
+    'oauth2.googleapis.com',
+    'accounts.google.com',
+    'generativelanguage.googleapis.com'
+])
+
 globalThis.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') {
+        return
+    }
+    const url = new URL(event.request.url)
+    if (
+        !url.protocol.startsWith('http') ||
+        event.request.headers.has('Authorization') ||
+        SENSITIVE_API_HOSTS.has(url.hostname)
+    ) {
         return
     }
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                const responseClone = response.clone()
-                caches.open(CACHE_NAME).then((cache) => {
-                    if (event.request.url.startsWith('http')) {
+                if (response && response.ok && (response.type === 'basic' || response.type === 'cors')) {
+                    const responseClone = response.clone()
+                    caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, responseClone)
-                    }
-                })
+                    })
+                }
                 return response
             })
             .catch(() => {
-                return caches.match(event.request)
+                return caches.match(event.request).then((cached) => cached || Response.error())
             })
     )
 })
