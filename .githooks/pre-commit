@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -eu
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMRD)
+
+if printf '%s\n' "$STAGED_FILES" | grep -qE '^(src/|vite\.config\.js$|package\.json$|package-lock\.json$)'; then
+    echo "🔨 Source changes detected, running npm run build..."
+    npm run build
+    git add index.html _headers
+    echo "✓ Updated and staged index.html and _headers"
+fi
