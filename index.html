@@ -1957,11 +1957,12 @@
                 const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
                 const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
                 const googleTokenExpiresAt = ref(parseInt(localStorage.getItem('TY_GOOGLE_TOKEN_EXPIRES_AT')) || 0)
-                const googleAccessToken = ref('')
+                const googleAccessToken = ref(localStorage.getItem('TY_GOOGLE_ACCESS_TOKEN') || '')
                 const clearGoogleToken = () => {
                     googleAccessToken.value = ''
                     googleTokenExpiresAt.value = 0
                     localStorage.removeItem('TY_GOOGLE_TOKEN_EXPIRES_AT')
+                    localStorage.removeItem('TY_GOOGLE_ACCESS_TOKEN')
                 }
                 const newCategoryInput = ref('')
                 const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
@@ -3664,6 +3665,7 @@
 
                     try {
                         const token = await requestGisToken('')
+                        localStorage.setItem('TY_GOOGLE_ACCESS_TOKEN', token)
                         return token
                     } catch (silentErr) {
                         console.warn('Silent token refresh failed, falling back to interactive consent:', silentErr)
@@ -3671,6 +3673,7 @@
 
                     try {
                         const token = await requestGisToken('consent')
+                        localStorage.setItem('TY_GOOGLE_ACCESS_TOKEN', token)
                         return token
                     } catch (interactiveErr) {
                         throw new Error('Google authorization was cancelled or failed.')
