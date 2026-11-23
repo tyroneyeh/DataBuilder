@@ -816,13 +816,6 @@
                     <span class="text-lg">{{ isTorchOn ? '💡' : '🔦' }}</span>
                 </button>
             </div>
-            <template>
-                <audio
-                    ref="beepAudioRef"
-                    src="beep.wav"
-                    preload="auto">
-                </audio>
-            </template>
         </div>
 
         <div ref="filterContainer" @scroll="handleFilterScroll" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
@@ -2083,7 +2076,6 @@
 
                 const selectedScanMode = ref('ALL')
                 const lastScannedText = ref('')
-                const beepAudioRef = ref(null)
                 const photoViewer = ref({ isOpen: false, urls: [], currentIndex: 0 })
                 const dateRangeFilters = ref({})
                 const dateRangeOpenState = ref({})
@@ -2137,7 +2129,6 @@
                 let cachedTotalSum = 0
                 let html5QrCode
                 let audioCtx
-                let beepAudioBuffer
                 let sharedFileInput
                 let scrollHideTimer
                 let aiModel
@@ -6022,36 +6013,30 @@
                     tempKey.value = null
                 }
 
-                const initAudioFromRef = async () => {
-                    if (beepAudioBuffer || !beepAudioRef.value || !beepAudioRef.value.src) return
-                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-
-                    try {
-                        const response = await fetch(beepAudioRef.value.src)
-                        const arrayBuffer = await response.arrayBuffer()
-                        beepAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
-                        console.log("Audio converted successfully")
-
-                    } catch (error) {
-                        console.error("Audio conversion error:", error)
-                    }
-                }
-
                 const playBeep = () => {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+                    }
                     if (audioCtx.state === 'suspended') {
                         audioCtx.resume()
                     }
 
-                    if (beepAudioBuffer) {
-                        const source = audioCtx.createBufferSource()
-                        source.buffer = beepAudioBuffer
-                        source.connect(audioCtx.destination)
-                        source.start(0)
-                    } else if (beepAudioRef.value) {
-                        beepAudioRef.value.pause()
-                        beepAudioRef.value.currentTime = 0
-                        beepAudioRef.value.play().catch(e => console.warn("play audio error:", e))
-                    }
+                    const now = audioCtx.currentTime
+                    const osc = audioCtx.createOscillator()
+                    const gain = audioCtx.createGain()
+
+                    osc.type = 'sine'
+                    osc.frequency.setValueAtTime(1000, now)
+
+                    gain.gain.setValueAtTime(0.001, now)
+                    gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+
+                    osc.connect(gain)
+                    gain.connect(audioCtx.destination)
+
+                    osc.start(now)
+                    osc.stop(now + 0.09)
                 }
 
                 const getFormatsToSupport = () => {
@@ -6135,7 +6120,6 @@
                 const openScanner = async () => {
                     isProcessing.value = 1
                     await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js')
-                    initAudioFromRef()
                     playBeep()
 
                     isScannerOpen.value = true
@@ -6196,7 +6180,6 @@
 
                 const triggerQRFileUpload = async() => {
                     await loadScript('https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js')
-                    initAudioFromRef()
 
                     if (!sharedFileInput) {
                         sharedFileInput = document.createElement('input')
@@ -7558,7 +7541,6 @@
                     scanningTarget,
                     lastScannedText,
                     triggerQRFileUpload,
-                    beepAudioRef,
                     scanModeOptions,
                     selectedScanMode,
                     photoViewer,
