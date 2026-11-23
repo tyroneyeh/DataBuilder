@@ -6188,17 +6188,18 @@
                     const gain = audioCtx.createGain()
 
                     osc.type = 'sine'
-                    osc.frequency.setValueAtTime(1000, now)
+                    osc.frequency.setValueAtTime(880, now)
+                    osc.frequency.setValueAtTime(1320, now + 0.06)
 
                     gain.gain.setValueAtTime(0.001, now)
-                    gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
 
                     osc.connect(gain)
                     gain.connect(audioCtx.destination)
 
                     osc.start(now)
-                    osc.stop(now + 0.09)
+                    osc.stop(now + 0.19)
                 }
 
                 const getFormatsToSupport = () => {
