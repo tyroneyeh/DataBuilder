@@ -3699,12 +3699,12 @@
 
                     lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
-                    if (force || updatedAt.value > lastSyncDate.value && Date.now() > (lastSyncDate.value + 86400000)) {
+                    if (force || (updatedAt.value > lastSyncDate.value && Date.now() > lastSyncDate.value + 86400000)) {
                         isProcessing.value = 1
 
                         try {
 
-                            if (!googleAccessToken.value || Date.now() >= googleTokenExpiresAt.value) {
+                            if (!googleAccessToken.value || Date.now() < googleTokenExpiresAt.value) {
                                 await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
                             }
 
