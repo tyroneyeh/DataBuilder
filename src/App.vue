@@ -7370,6 +7370,14 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         onMounted(async () => {
+            if (import.meta.env.PROD && globalThis.location.protocol === 'https:' && !document.querySelector('script[src*="cloudflareinsights.com/beacon.min.js"]')) {
+                const cfScript = document.createElement('script')
+                cfScript.defer = true
+                cfScript.src = 'https://static.cloudflareinsights.com/beacon.min.js'
+                cfScript.setAttribute('data-cf-beacon', '{"token": "3c106cd650114503b9bfa5eb39259b3c"}')
+                document.head.appendChild(cfScript)
+            }
+
             if ('serviceWorker' in navigator && import.meta.env.PROD) {
                 const registerSW = () => {
                     const wb = new Workbox('./sw.js')
