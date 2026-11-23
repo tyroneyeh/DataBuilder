@@ -3569,7 +3569,7 @@ export default {
 
                 try {
 
-                    if (googleAccessToken.value || (googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value)) {
+                    if (googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value) {
                         await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
                     }
 
