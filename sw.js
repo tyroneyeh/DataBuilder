@@ -1,4 +1,9 @@
-const CACHE_NAME = 'ty-db-v1'
+const CACHE_NAME = 'ty-db-v2'
+
+const ALLOWED_CACHE_ORIGINS = new Set([
+    globalThis.location.origin,
+    'https://cdn.jsdelivr.net'
+])
 
 globalThis.addEventListener('message', (event) => {
     if (event.origin !== globalThis.location.origin) {
@@ -24,24 +29,14 @@ globalThis.addEventListener('activate', (event) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('Deleting old cache', cacheName);
-                        return caches.delete(cacheName);
+                        console.log('Deleting old cache', cacheName)
+                        return caches.delete(cacheName)
                     }
                 })
             )
         })
     )
 })
-
-const SENSITIVE_API_HOSTS = new Set([
-    'api.github.com',
-    'sheets.googleapis.com',
-    'www.googleapis.com',
-    'vision.googleapis.com',
-    'oauth2.googleapis.com',
-    'accounts.google.com',
-    'generativelanguage.googleapis.com'
-])
 
 globalThis.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') {
@@ -51,7 +46,7 @@ globalThis.addEventListener('fetch', (event) => {
     if (
         !url.protocol.startsWith('http') ||
         event.request.headers.has('Authorization') ||
-        SENSITIVE_API_HOSTS.has(url.hostname)
+        !ALLOWED_CACHE_ORIGINS.has(url.origin)
     ) {
         return
     }
