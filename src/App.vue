@@ -7374,7 +7374,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const cfScript = document.createElement('script')
                 cfScript.defer = true
                 cfScript.src = 'https://static.cloudflareinsights.com/beacon.min.js'
-                cfScript.setAttribute('data-cf-beacon', '{"token": "3c106cd650114503b9bfa5eb39259b3c"}')
+                cfScript.setAttribute('data-cf-beacon', '{"token": "08470c68d5e14ce79f13132ddba0a11f"}')
                 document.head.appendChild(cfScript)
             }
 
