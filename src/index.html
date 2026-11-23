@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="XMksXOyLKjmb5ytHkIccl5eZYVXte1OgEkrzg2UWaKs" />
+    <link rel="manifest" href="/App.webmanifest">
+    <link rel="apple-touch-icon" href="/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/web-app-manifest-192x192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/web-app-manifest-512x512.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="TY資料表工具!免註冊,免登入,免安裝,無後端,支援自訂欄位,智慧合併,CSV/JSON 匯入匯出,以及 URL 與 QR Code 無伺服器分享.適合辦公室團購,臨時報價單與記帳統計.">
+    <meta name="keywords" content="TY資料表,動態資料表,資料生成器,團購表單,報價單產生器,純前端工具,無伺服器,CSV匯入匯出,網頁試算表,免費製表工具,Vue3資料表">
+    <meta name="author" content="TY">
+    <meta name="theme-color" content="#2563eb">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ty-db.pages.dev/">
+    <meta property="og:title" content="TY Data Builder | 一鍵生成、無伺服器分享的動態資料表">
+    <meta property="og:description" content="TY資料表免安裝、點開即用!輕鬆建立自訂表單、自動加總計算, 並透過專屬 QR Code 或短連結與朋友共享資料.">
+    <meta property="og:image" content="https://ty-db.pages.dev/databuilder.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://ty-db.pages.dev/">
+    <meta name="twitter:title" content="TY Data Builder | 輕量級動態資料表與資料生成器">
+    <meta name="twitter:description" content="TY資料表純前端動態資料表工具!免註冊、支援自訂欄位、CSV 匯入匯出與 QR Code 無伺服器分享.">
+    <meta name="twitter:image" content="https://ty-db.pages.dev/databuilder.png">
+    <meta name="robots" content="index, follow">
+    <title>TY資料表 - TY Data Builder</title>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && globalThis.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 print:bg-white print:p-0 transition-colors duration-300">
+    <div id="app" class="mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md print:shadow-none print:max-w-none print:w-full transition-colors duration-300"></div>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

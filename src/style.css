@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+@media screen {
+    html, body {
+        background-color: #111827;
+    }
+}
+[v-cloak] { display: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media print {
+    :root {
+        color-scheme: light !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    html, body, #app {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        height: auto !important;
+        min-height: 100% !important;
+        overflow: visible !important;
+        position: static !important;
+    }
+    .print\:hidden {
+        display: none !important;
+    }
+    body::before {
+        content: "";
+        display: block;
+        height: 1px;
+        width: 100%;
+    }
+    table, thead, tbody, tfoot, tr, th, td {
+        position: static !important;
+        transform: none !important;
+        background-color: transparent !important;
+        color: #000000 !important;
+        border-color: #d1d5db !important;
+    }
+    th, tfoot td {
+        background-color: #f3f4f6 !important;
+    }
+    table {
+        page-break-inside: auto !important;
+        width: calc(100% - 2px) !important;
+    }
+    tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    thead {
+        display: table-header-group !important;
+    }
+    tbody {
+        display: table-row-group !important;
+    }
+    td, th {
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+    input, textarea, span, div {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    ::-webkit-scrollbar {
+        display: none !important;
+    }
+}
+input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+    justify-content: flex-end;
+}
+input:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
+}
+.dark input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+.icon-mask {
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+.icon-camera {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 13a3 3 0 11-6 0 3 3 0 016 0z' /%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='black'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z' /%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 13a3 3 0 11-6 0 3 3 0 016 0z' /%3E%3C/svg%3E");
+}
+.icon-calendar-push {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M16 19h6'/%3E%3Cpath d='M19 16v6'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8'/%3E%3Cpath d='M8 2v4'/%3E%3Cpath d='M16 2v4'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M16 19h6'/%3E%3Cpath d='M19 16v6'/%3E%3C/svg%3E");
+}

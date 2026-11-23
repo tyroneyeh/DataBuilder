@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ty-db-v2'
+const CACHE_NAME = 'ty-db-v3'
 
 const ALLOWED_CACHE_ORIGINS = new Set([
     globalThis.location.origin,
