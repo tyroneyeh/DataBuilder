@@ -3704,7 +3704,7 @@
 
                         try {
 
-                            if (!googleAccessToken.value || Date.now() < googleTokenExpiresAt.value) {
+                            if (!googleAccessToken.value || (googleAccessToken.value && Date.now() < googleTokenExpiresAt.value)) {
                                 await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
                             }
 
