@@ -683,14 +683,14 @@
 <div ref="filterContainer" @scroll="handleFilterScroll" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
     <div class="flex flex-col sm:flex-row w-full print:flex-row">
 
-        <div class="py-1.5 bottom-0 left-0 z-20 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
+        <div class="py-1.5 bottom-0 left-0 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
             :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
             :data-tooltip="filteredRows.length">
             {{ translate('Total') }}
         </div>
 
         <div v-for="(col, index) in columns" :key="'total-' + col.id"
-            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 z-10 border-b sm:border-t-2 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
+            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 border-b sm:border-t-2 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
                 col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end' : 'sm:justify-start'
@@ -703,10 +703,10 @@
                 <div v-if="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                     <div v-if="dateRangeOpenState[col.id]"
                         @click.stop="toggleDateFilter($event, col.id, false)"
-                        class="fixed inset-0 z-40 cursor-default"
+                        class="fixed inset-0 cursor-default"
                         style="-webkit-tap-highlight-color: transparent">
                     </div>
-                    <div class="relative z-50 flex">
+                    <div class="relative flex">
                         <input
                             type="text"
                             inputmode="decimal"
@@ -721,13 +721,13 @@
                         <button
                             v-show="dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== '')"
                             @click.stop="clearDateRange(col.id)"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full"
                             :title="translate('Clear filter')"
                         >✖</button>
                     </div>
                     <Teleport to="body">
                     <div v-if="dateRangeOpenState[col.id]"
-                        class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-top-left transition-all"
+                        class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none origin-top-left transition-all"
                         :style="menuStyle"
                     >
                         <div class="flex items-center justify-between mb-2">
@@ -781,10 +781,10 @@
                 <div v-else-if="['date', 'time'].includes(col.type) && !isPrinting" class="relative">
                     <div v-if="dateRangeOpenState[col.id]"
                         @click.stop="toggleDateFilter($event, col.id, false)"
-                        class="fixed inset-0 z-40 cursor-default"
+                        class="fixed inset-0 cursor-default"
                         style="-webkit-tap-highlight-color: transparent">
                     </div>
-                    <div class="relative z-50">
+                    <div class="relative">
                         <input
                             :type="col.type"
                             :value="dateRangeFilters[col.id]?.start || ''"
@@ -795,13 +795,13 @@
                         <button
                             v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
                             @click.stop="clearDateRange(col.id)"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full z-20"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full"
                             :title="translate('Clear filter')"
                         >✖</button>
                     </div>
                     <Teleport to="body">
                     <div v-if="dateRangeOpenState[col.id]"
-                        class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none z-50 origin-top-left transition-all"
+                        class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none origin-top-left transition-all"
                         :style="menuStyle"
                     >
                         <div class="flex items-center justify-between mb-2">
@@ -853,7 +853,7 @@
                         </div>
                         <select
                             v-model="columnFilters[col.id]"
-                            class="relative z-10 w-full text-sm px-2 py-1.5 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
+                            class="relative w-full text-sm px-2 py-1.5 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
                         >
                             <option value="" class="bg-white dark:bg-gray-700">{{ translate('All') }}</option>
                             <option value="true" class="bg-white dark:bg-gray-700">✅ {{ translate('Checked') }}</option>
@@ -862,7 +862,7 @@
                         <button
                             v-show="columnFilters[col.id]"
                             @click="clearFilter(col.id)"
-                            class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center z-20 shadow-sm"
+                            class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
                             :title="translate('Clear filter')"
                         >✖</button>
                     </div>
@@ -881,7 +881,7 @@
             </div>
         </div>
 
-        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 z-10 sm:border-t-2 sm:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
+        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 sm:border-t-2 sm:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
             :style="{'--col-width': colWidths[columns.length + 1] ? colWidths[columns.length + 1] + 'px' : 'auto'}">
             <button
                 v-if="isAnyFilterActive"
