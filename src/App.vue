@@ -954,7 +954,7 @@
     </button>
 </div>
 
-<div v-if="!isPrinting" class="flex flex-col p-2 gap-6 mt-4 print:hidden">
+<div v-if="!isPrinting" class="flex flex-col p-2 gap-2 mt-4 print:hidden">
     <div class="w-full bg-white dark:bg-gray-800 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300" v-show="!isPrinting || isBudgetOpen">
         <div
             @click="toggleBudget"
@@ -2145,7 +2145,10 @@ export default {
             if (selectedChartCatColId.value) localStorage.setItem(`${currentStorageKey.value}_chartCatColId`, selectedChartCatColId.value)
             if (selectedChartNumColId.value) localStorage.setItem(`${currentStorageKey.value}_chartNumColId`, selectedChartNumColId.value)
             selectedChartDateColId.value ? localStorage.setItem(`${currentStorageKey.value}_chartDateColId`, selectedChartDateColId.value) : localStorage.removeItem(`${currentStorageKey.value}_chartDateColId`)
-            debouncedUpdateChart()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
         })
 
         watch(isDark, (val) => {
@@ -2774,7 +2777,10 @@ export default {
                 paddingBottom.value = 0
             }
 
-            debouncedUpdateChart()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
 
             nextTick(() => {
                 if (!tableContainer.value) return
@@ -2951,7 +2957,10 @@ export default {
 
             isInitializing = false
 
-            debouncedUpdateChart()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
             checkAndAutoSync()
         }
 
@@ -3096,7 +3105,10 @@ export default {
             await loadData(0)
             isInitializing = false
 
-            debouncedUpdateChart()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
             if (tableContainer.value) {
                 handleTableScroll({ target: tableContainer.value })
             }
@@ -4916,6 +4928,7 @@ export default {
             isChartOpen.value = !isChartOpen.value
             isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
             if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
                 if (expenseChart.value) expenseChart.value.resize()
             }
@@ -5811,7 +5824,11 @@ export default {
                     }
                 })
             }
-            debouncedUpdateChart()
+            
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
         }
 
         const refreshYearFilters = () => {
@@ -6631,7 +6648,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
         const toggleTrendChartType = () => {
             trendChartType.value = trendChartType.value === 'line' ? 'bar' : 'line'
-            debouncedUpdateChart()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
         }
 
         const onScrollBtnsEnter = () => {
@@ -7693,7 +7713,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             isInitializing = false
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
-                updateChart()
+                debouncedUpdateChart()
             }
 
             if (window.location.hash.endsWith('/add')) {
