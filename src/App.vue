@@ -490,7 +490,7 @@
         </tbody>
 
         <tbody v-if="!isPrinting" key="action-add-row" class="block sm:table-row-group">
-            <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
+            <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden">
                 <td @click="addRow" class="left-0 sm:border-0 border-gray-300 dark:border-gray-700 p-0 text-center cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
                     <button class="w-full h-full min-h-[50px] sm:min-h-[40px] flex items-center justify-center focus:outline-none outline-none">
                         <span class="text-green-600 dark:text-green-500 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
