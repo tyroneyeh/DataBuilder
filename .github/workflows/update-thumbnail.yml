@@ -43,6 +43,12 @@ jobs:
             --timeout=15000 \
             --wait-for-timeout=3000
 
+          # 3. mobile
+          npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder-mobile.png \
+            --viewport-size="375,667" \
+            --timeout=15000 \
+            --wait-for-timeout=3000
+
       - name: 🔄 同步遠端最新狀態
         run: git pull origin main --rebase --autostash
 
@@ -50,4 +56,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: update thumbnail [skip ci]"
-          file_pattern: databuilder.png
+          file_pattern: databuilder.png databuilder-mobile.png
+

@@ -9,6 +9,7 @@
 **🔗 立即使用 (Live Demo): [https://ty-db.pages.dev](https://ty-db.pages.dev)**
 
 ![TY Data Builder - TY資料表](https://ty-db.pages.dev/databuilder.png)
+![TY Data Builder - TY資料表 (Mobile)](https://ty-db.pages.dev/databuilder-mobile.png)
 
 ---
 
