@@ -80,16 +80,16 @@
                         hasIncomeCategories ? 'w-[calc(33.333%-2.67px)]' : 'w-[calc(50%-4px)]',
                         chartViewMode === 'budget' ? 'translate-x-0' : (chartViewMode === 'expense' ? 'translate-x-full' : 'translate-x-[200%]')
                     ]"></div>
-                <div @click="chartViewMode = 'budget';debouncedUpdateChart()"
+                <div @click="debouncedUpdateChart(null, 'budget')"
                     :class="chartViewMode === 'budget' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'"
                     class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap">
                     {{ translate('Budget') }}
                 </div>
-                <div @click="chartViewMode = 'expense';debouncedUpdateChart()" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                <div @click="debouncedUpdateChart(null, 'expense')" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                     :class="chartViewMode === 'expense' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
                     ➖ {{ translate('Expense') }}
                 </div>
-                <div v-if="hasIncomeCategories" @click="chartViewMode = 'income';debouncedUpdateChart()" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                <div v-if="hasIncomeCategories" @click="debouncedUpdateChart(null, 'income')" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
                     :class="chartViewMode === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'">
                     ➕ {{ translate('Income') }}
                 </div>
@@ -180,14 +180,16 @@
                 </select>
             </div>
 
-            <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-32 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" @click="toggleTrendChartType" v-if="hasDateColumn">
-                <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
-                    :class="trendChartType === 'line' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'"></div>
+            <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative w-48 cursor-pointer select-none mx-auto sm:mx-0 shadow-inner" v-if="hasDateColumn">
+                <div class="absolute top-1 bottom-1 left-1 w-[calc(33.333%-2.67px)] bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
+                    :class="trendChartType === 'bar' ? 'translate-x-0' : (trendChartType === 'line' ? 'translate-x-full' : 'translate-x-[200%]')"></div>
 
-                <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
-                    :class="trendChartType === 'bar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📊 {{  translate('Bar') }}</div>
-                <div class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
-                    :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }} </div>
+                <div @click="toggleTrendChartType('bar')" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                    :class="trendChartType === 'bar' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📊 {{ translate('Bar') }}</div>
+                <div @click="toggleTrendChartType('line')" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                    :class="trendChartType === 'line' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">📈 {{ translate('Line') }}</div>
+                <div @click="toggleTrendChartType('total')" class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap"
+                    :class="trendChartType === 'total' ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">∑ {{ translate('Total') }}</div>
             </div>
             <div class="flex justify-end ml-2 space-x-1 text-nowrap" v-if="hasDateColumn">
                 <button @click="debouncedUpdateChart('day')"
@@ -2762,8 +2764,9 @@ export default {
             return stats
         })
 
-        const debouncedUpdateChart = debounce((unit) => {
+        const debouncedUpdateChart = debounce((unit, mode) => {
             if (isInitializing) return
+            mode && (chartViewMode.value = mode)
             updateChart(unit)
         }, 300)
 
@@ -5344,39 +5347,71 @@ export default {
         }
 
         const updateTrend = (ctx, labels, trendObj) => {
-            const isLine = trendChartType.value === 'line'
+            const isTotalLine = trendChartType.value === 'total'
+            const isLine = trendChartType.value === 'line' || isTotalLine
+            const chartJsType = isLine ? 'line' : 'bar'
             const bgColors = trendObj.categories.map((label, idx) => categoryBudgets.value[label]?.color || defaultColors[idx % defaultColors.length])
 
-            const datasets = trendObj.categories.map((cat, index) => {
-                const color = bgColors[index % bgColors.length]
-                const dataValues = labels.map(dateLabel => {
-                    return trendObj.trendData[dateLabel][cat] || 0
-                })
-                return {
-                    label: cat,
-                    hidden: hiddenCategoryNames.value.includes(cat),
-                    data: dataValues,
-                    backgroundColor: color,
-                    borderColor: color,
-                    borderWidth: isLine ? 2 : 0,
-                    fill: false,
-                    tension: 0.4,
-                    borderRadius: isLine ? 0 : 4,
-                    pointBackgroundColor: (context) => {
-                        const label = context.chart.data.labels[context.dataIndex]
-                        return label === selectedChartDate.value ? color : '#fff'
-                    },
-                    pointBorderColor: color,
-                    pointBorderWidth: (context) => {
-                        const label = context.chart.data.labels[context.dataIndex]
-                        return label === selectedChartDate.value ? 3 : 2
-                    },
-                    pointRadius: (context) => {
-                        const label = context.chart.data.labels[context.dataIndex]
-                        return label === selectedChartDate.value ? 6 : 3
+            const datasets = isTotalLine
+                ? (() => {
+                    const totalColor = '#6366f1'
+                    const visibleCategories = trendObj.categories.filter(cat => !hiddenCategoryNames.value.includes(cat))
+                    const totalValues = labels.map(dateLabel =>
+                        visibleCategories.reduce((sum, cat) => sum + (trendObj.trendData[dateLabel]?.[cat] || 0), 0)
+                    )
+                    return [{
+                        label: translate('Total'),
+                        data: totalValues,
+                        backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                        borderColor: totalColor,
+                        borderWidth: 2.5,
+                        fill: 'origin',
+                        tension: 0.4,
+                        pointBackgroundColor: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? totalColor : '#fff'
+                        },
+                        pointBorderColor: totalColor,
+                        pointBorderWidth: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? 3 : 2
+                        },
+                        pointRadius: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? 6 : 3
+                        }
+                    }]
+                })()
+                : trendObj.categories.map((cat, index) => {
+                    const color = bgColors[index % bgColors.length]
+                    const dataValues = labels.map(dateLabel => {
+                        return trendObj.trendData[dateLabel][cat] || 0
+                    })
+                    return {
+                        label: cat,
+                        hidden: hiddenCategoryNames.value.includes(cat),
+                        data: dataValues,
+                        backgroundColor: color,
+                        borderColor: color,
+                        borderWidth: isLine ? 2 : 0,
+                        fill: false,
+                        tension: 0.4,
+                        borderRadius: isLine ? 0 : 4,
+                        pointBackgroundColor: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? color : '#fff'
+                        },
+                        pointBorderColor: color,
+                        pointBorderWidth: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? 3 : 2
+                        },
+                        pointRadius: (context) => {
+                            const label = context.chart.data.labels[context.dataIndex]
+                            return label === selectedChartDate.value ? 6 : 3
+                        }
                     }
-                }
-            })
+                })
 
             if (!hiddenCategoryNames.value.length) {
                 let baseTotalMonthlyBudget = 0
@@ -5418,7 +5453,7 @@ export default {
                 }
             }
 
-            if (trendChart.value && trendChart.value.config.type !== trendChartType.value) {
+            if (trendChart.value && trendChart.value.config.type !== chartJsType) {
                 trendChart.value.destroy()
                 trendChart.value = null
             }
@@ -5433,7 +5468,7 @@ export default {
                 trendChart.value.update()
             } else {
                 trendChart.value = markRaw(new Chart(ctx, {
-                    type: trendChartType.value,
+                    type: chartJsType,
                     data: {
                         labels: labels,
                         datasets: datasets
@@ -5490,14 +5525,14 @@ export default {
                             },
                             tooltip: {
                                 filter: (tooltipItem) => {
-                                    return tooltipItem.parsed.y !== 0
+                                    return trendChartType.value === 'total' || tooltipItem.parsed.y !== 0
                                 },
                                 itemSort: (a, b) => b.parsed.y - a.parsed.y,
                                 footerFont: { size: 13, weight: 'bold' },
                                 footerMarginTop: 8,
                                 callbacks: {
                                     footer: (tooltipItems) => {
-                                        if (tooltipItems.length === 0) return null
+                                        if (tooltipItems.length === 0 || trendChartType.value === 'total') return null
                                         let total = 0
                                         tooltipItems.forEach((tooltipItem) => {
                                             if (tooltipItem.dataset.label !== translate('Budget')) total += tooltipItem.parsed.y
@@ -6646,8 +6681,15 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             selectedChartDate.value = null
         }
 
-        const toggleTrendChartType = () => {
-            trendChartType.value = trendChartType.value === 'line' ? 'bar' : 'line'
+        const toggleTrendChartType = (type) => {
+            const types = ['bar', 'line', 'total']
+            if (typeof type === 'string' && types.includes(type)) {
+                if (trendChartType.value === type) return
+                trendChartType.value = type
+            } else {
+                const nextIndex = (types.indexOf(trendChartType.value) + 1) % types.length
+                trendChartType.value = types[nextIndex]
+            }
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
