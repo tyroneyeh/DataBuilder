@@ -2334,7 +2334,6 @@ export default {
 
             let otherSum = 0
             const allOtherMonths = new Set()
-            const allOtherDays = new Set()
 
             rows.value.forEach(row => {
                 if (!row) return
@@ -2362,7 +2361,6 @@ export default {
                     if (isTargetCat) currentMonthSum += val
                 } else {
                     allOtherMonths.add(`${rowYear}-${rowMonth}`)
-                    allOtherDays.add(`${rowYear}-${rowMonth}-${rowDay}`)
                     if (isTargetCat) otherSum += val
                 }
             })
@@ -2374,11 +2372,11 @@ export default {
                 return Math.round(previousMonthsSum / allPreviousMonths.size)
             }
             if (currentMonthSum > 0 && allCurrentMonthDays.size > 0) {
-                return Math.round((currentMonthSum / allCurrentMonthDays.size) * 30)
+                const elapsedDays = Math.max(now.getDate(), allCurrentMonthDays.size)
+                return Math.round((currentMonthSum / elapsedDays) * 30)
             }
-            if (otherSum > 0) {
-                if (allOtherMonths.size > 1) return Math.round(otherSum / allOtherMonths.size)
-                if (allOtherDays.size > 0) return Math.round((otherSum / allOtherDays.size) * 30)
+            if (otherSum > 0 && allOtherMonths.size > 0) {
+                return Math.round(otherSum / allOtherMonths.size)
             }
             return 0
         }
@@ -5485,16 +5483,21 @@ export default {
                     }
                 })
 
-            if (!hiddenCategoryNames.value.length) {
+            if (!hiddenCategoryNames.value.length && trendChartType.value !== 'line') {
                 let baseTotalMonthlyBudget = 0
                 trendObj.categories.forEach(cat => {
                     const catSettings = categoryBudgets.value[cat]
+                    if (catSettings && typeof catSettings === 'object' && catSettings.type === 'income') {
+                        return
+                    }
                     let explicitBudget = 0
                     if (catSettings !== undefined && catSettings !== null) {
-                        if (typeof catSettings === 'object') {
-                            explicitBudget = Number(catSettings.budget || catSettings.amount || 0)
-                        } else {
-                            explicitBudget = Number(catSettings)
+                        const rawVal = typeof catSettings === 'object'
+                            ? (catSettings.budget || catSettings.amount || 0)
+                            : catSettings
+                        const parsed = calcValue(rawVal)
+                        if (Number.isFinite(parsed) && parsed > 0) {
+                            explicitBudget = parsed
                         }
                     }
 
