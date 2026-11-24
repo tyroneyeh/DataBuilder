@@ -494,7 +494,7 @@
                         <span class="text-green-600 dark:text-green-500 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
                     </button>
                 </td>
-                <td :colspan="columns.length + 1" class="border-l sm:border-l-0 border-b-0 sm:border-b border-gray-200 sm:border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-0 flex-grow flex items-center sm:table-cell">
+                <td :colspan="columns.length + 1" class="border-l sm:border-l-0 border-gray-200 sm:border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-0 flex-grow flex items-center sm:table-cell">
                     <button @click="addRow" class="w-full h-full min-h-[60px] sm:min-h-[50px] text-left pl-4 focus:outline-none outline-none">
                         <span class="text-base sm:text-sm text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-200 transition-colors">← {{ translate('Click to add a row') }}</span>
                     </button>
