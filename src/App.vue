@@ -2294,8 +2294,8 @@ export default {
         }
 
         const getHistoricalSpent = (catId) => {
-            const amountColId = selectedChartNumColId.value
-            const dateColId = selectedChartDateColId.value
+            const amountColId = selectedChartNumColId.value || columns.value.find(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))?.id
+            const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
             const catColId = mainCatColId.value
             const amountColDef = columns.value.find(c => c.id === amountColId)
 
@@ -2314,15 +2314,20 @@ export default {
             }
 
             let lastYearSum = 0
-            const lastYearMonths = new Set()
+            const allLastYearMonths = new Set()
 
             let previousMonthsSum = 0
-            const previousMonths = new Set()
+            const allPreviousMonths = new Set()
 
             let currentMonthSum = 0
+            const allCurrentMonthDays = new Set()
+
+            let otherSum = 0
+            const allOtherMonths = new Set()
+            const allOtherDays = new Set()
 
             rows.value.forEach(row => {
-                if (!row || String(row[catColId] ?? '').trim() !== targetCat) return
+                if (!row) return
 
                 const amount = getRowNumericValue(row, amountColDef)
                 if (!Number.isFinite(amount) || amount === 0) return
@@ -2332,22 +2337,39 @@ export default {
 
                 const rowYear = rowDate.getFullYear()
                 const rowMonth = rowDate.getMonth()
+                const rowDay = rowDate.getDate()
+                const isTargetCat = String(row[catColId] ?? '').trim() === targetCat
                 const val = Math.abs(amount)
 
                 if (rowYear === targetYear - 1) {
-                    lastYearSum += val
-                    lastYearMonths.add(rowMonth)
+                    allLastYearMonths.add(rowMonth)
+                    if (isTargetCat) lastYearSum += val
                 } else if (rowYear === targetYear && rowMonth < targetMonth) {
-                    previousMonthsSum += val
-                    previousMonths.add(rowMonth)
+                    allPreviousMonths.add(rowMonth)
+                    if (isTargetCat) previousMonthsSum += val
                 } else if (rowYear === targetYear && rowMonth === targetMonth) {
-                    currentMonthSum += val
+                    allCurrentMonthDays.add(rowDay)
+                    if (isTargetCat) currentMonthSum += val
+                } else {
+                    allOtherMonths.add(`${rowYear}-${rowMonth}`)
+                    allOtherDays.add(`${rowYear}-${rowMonth}-${rowDay}`)
+                    if (isTargetCat) otherSum += val
                 }
             })
 
-            if (lastYearMonths.size > 0) return Math.round(lastYearSum / lastYearMonths.size)
-            if (previousMonths.size > 0) return Math.round(previousMonthsSum / previousMonths.size)
-            if (currentMonthSum > 0) return Math.round(currentMonthSum)
+            if (lastYearSum > 0 && allLastYearMonths.size > 0) {
+                return Math.round(lastYearSum / allLastYearMonths.size)
+            }
+            if (previousMonthsSum > 0 && allPreviousMonths.size > 0) {
+                return Math.round(previousMonthsSum / allPreviousMonths.size)
+            }
+            if (currentMonthSum > 0 && allCurrentMonthDays.size > 0) {
+                return Math.round((currentMonthSum / allCurrentMonthDays.size) * 30)
+            }
+            if (otherSum > 0) {
+                if (allOtherMonths.size > 1) return Math.round(otherSum / allOtherMonths.size)
+                if (allOtherDays.size > 0) return Math.round((otherSum / allOtherDays.size) * 30)
+            }
             return 0
         }
 
@@ -5204,6 +5226,40 @@ export default {
                         total += Math.abs(rawValues[index])
                     }
                 })
+                const getLegendBudgetMultiplier = () => {
+                    const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+                    if (!dateColId) return 1
+
+                    if (selectedChartDate.value) {
+                        const key = String(selectedChartDate.value)
+                        if (/^\d{4}$/.test(key)) return 12
+                        if (/^\d{4}-H[12]$/.test(key)) return 6
+                        if (/^\d{4}-Q[1-4]$/.test(key)) return 3
+                        if (/^\d{4}-\d{2}$/.test(key)) return 1
+                        if (/^\d{4}-W\d{2}$/.test(key)) return 1 / 4.33
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(key)) return 1 / 30
+                        return currentBudgetMultiplier.value
+                    }
+
+                    const activeMonths = new Set()
+                    chartBaseRows.value.forEach(row => {
+                        const rawDate = row?.[dateColId]
+                        if (!rawDate) return
+                        const dateObj = new Date(rawDate)
+                        if (Number.isNaN(dateObj.getTime())) return
+                        const m = dateObj.getMonth() + 1
+                        const mFilter = monthFilters.value.find(x => x.month === m)
+                        if (mFilter && !mFilter.active) return
+                        const y = dateObj.getFullYear()
+                        const yFilter = yearFilters.value.find(x => x.year === y)
+                        if (yFilter && !yFilter.active) return
+                        activeMonths.add(`${y}-${m}`)
+                    })
+
+                    return Math.max(activeMonths.size, 1)
+                }
+                const legendBudgetMultiplier = getLegendBudgetMultiplier()
+
                 const rawItems = chart.data.labels.map((label, index) => {
                     let realValue = rawValues[index]
 
@@ -5223,7 +5279,7 @@ export default {
                     )
                     const isFallback = rawBudget === 0
                     const baseBudget = isFallback ? getHistoricalSpent(label) : rawBudget
-                    const budgetAmount = baseBudget * currentBudgetMultiplier.value
+                    const budgetAmount = Math.round(baseBudget * legendBudgetMultiplier)
 
                     return {
                         index: index,
