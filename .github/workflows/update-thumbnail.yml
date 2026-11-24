@@ -37,9 +37,9 @@ jobs:
           # 1. 安裝 Playwright 與其依賴的瀏覽器
           npx -y playwright@latest install chromium
 
-          # 2. 執行截圖，設定解析度為 1280x720
+          # 2. 執行截圖，設定解析度為 1080x700
           npx -y playwright@latest screenshot https://ty-db.pages.dev databuilder.png \
-            --viewport-size="1280,720" \
+            --viewport-size="1080,700" \
             --timeout=15000 \
             --wait-for-timeout=3000
 
