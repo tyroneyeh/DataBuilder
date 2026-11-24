@@ -1081,17 +1081,17 @@
                 <button @click="copyQuickAddLink" class="flex bg-pink-500 hover:bg-pink-600 dark:bg-pink-600 dark:hover:bg-pink-700 text-white px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">⚡ {{ translate('Quick Add Link') }}</button>
                 <button @click="triggerPrint" :disabled="isProcessing" class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm active:scale-95 w-full sm:w-auto items-center justify-center gap-2">🖨️ {{ translate('Print') }}</button>
                 <div class="flex w-full gap-2">
-                    <button @click="backupToGist" :disabled="isProcessing || !githubToken" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                    <button @click="backupToGist" :disabled="isProcessing || !githubToken || !isOnline" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
                         <span v-if="isProcessing == -1" class="animate-spin text-xl">⏳</span>
                         <span v-else>⬆️ {{ translate('Push to gists') }}</span>
                     </button>
-                    <button @click="restoreFromGist" :disabled="isProcessing || !gistId" class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
+                    <button @click="restoreFromGist" :disabled="isProcessing || !gistId || !isOnline" class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2">
                         <span v-if="isProcessing == -2" class="animate-spin text-xl">⏳</span>
                         <span v-else>⬇️ {{ translate('Pull from gists') }}</span>
                     </button>
                     <button
                         @click="exportToGoogleSheets"
-                        :disabled="isProcessing || !sheetImportUrl"
+                        :disabled="isProcessing || !sheetImportUrl || !isOnline"
                         class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                     >
                         <span v-if="isProcessing == -3" class="animate-spin text-lg">⏳</span>
@@ -1099,7 +1099,7 @@
                     </button>
                     <button
                         @click="importFromGoogleSheets"
-                        :disabled="isProcessing || !sheetImportUrl"
+                        :disabled="isProcessing || !sheetImportUrl || !isOnline"
                         class="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-all font-bold shadow-sm active:scale-95 flex items-center justify-center gap-2"
                     >
                         <span v-if="isProcessing == -4" class="animate-spin text-lg">⏳</span>
@@ -1504,7 +1504,7 @@
     class="fixed bottom-8 right-6 flex flex-col gap-3 z-50 hover:opacity-100 transition-opacity duration-300"
     :class="isScrolling ? 'opacity-40 hover:opacity-100 translate-x-0' : 'opacity-0 pointer-events-none translate-x-12'">
 
-    <button v-if="googleClientId"
+    <button v-if="googleClientId && isOnline"
         @click="checkAndAutoSync(1)"
         class="w-10 h-10 bg-gray-800 dark:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all active:scale-90"
         :data-tooltip="translate('Sync to sheets')"
@@ -3814,7 +3814,7 @@ export default {
         }
 
         const checkAndAutoSync = async (force = false) => {
-            if (!isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
+            if (!navigator.onLine || !isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
             lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
@@ -3863,6 +3863,7 @@ export default {
         }
 
         const addToCalendar = async (date, title, desc) => {
+            if (!navigator.onLine) return
             const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
             const eventBody = {
                 summary: title,
@@ -7732,6 +7733,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
         }
 
+        const isOnline = ref(navigator.onLine)
         const showBadges = ref(navigator.onLine)
         const failedBadges = reactive({
             version: false,
@@ -7739,10 +7741,15 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             jsdelivr: false
         })
         const handleOnline = () => {
+            isOnline.value = true
             showBadges.value = true
             failedBadges.version = false
             failedBadges.lastCommit = false
             failedBadges.jsdelivr = false
+            checkAndAutoSync()
+        }
+        const handleOffline = () => {
+            isOnline.value = false
         }
 
         onMounted(async () => {
@@ -7791,6 +7798,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             window.addEventListener('keydown', handleKeydown)
             window.addEventListener('mouseup', handleMouseUp)
             window.addEventListener('online', handleOnline)
+            window.addEventListener('offline', handleOffline)
             window.addEventListener('hashchange', () => {
                 const hashStr = window.location.hash.slice(1)
                 if (hashStr.startsWith('ws:')) {
@@ -7867,6 +7875,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             window.removeEventListener('keydown', handleKeydown)
             window.removeEventListener('mouseup', handleMouseUp)
             window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
             document.removeEventListener('visibilitychange', handleAppResume)
             document.body.style.overflow = ''
         })
@@ -8085,6 +8094,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             handleFilterScroll,
             heatmapScrollContainer,
             heatmapCanvas,
+            isOnline,
             showBadges,
             failedBadges
         }
