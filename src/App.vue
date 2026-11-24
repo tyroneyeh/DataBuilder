@@ -1537,11 +1537,11 @@
     </button>
 </div>
 <footer v-if="!isPrinting" class="items-center text-center text-sm text-gray-600 dark:text-gray-400 mt-4 mb-4 transition-colors">
-    &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY Data Builder") }}&nbsp;<img class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version"></a>
-    <div class="flex w-full justify-end">
-    <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex" target="_blank">
-        <img src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" referrerpolicy="no-referrer" class="dark:invert"/>
-        <img src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" referrerpolicy="no-referrer" style="object-fit:cover;object-position:-51px" />
+    &copy; {{ new Date().getFullYear() }} <a href="https://ty-db.pages.dev" class="hover:text-gray-800 dark:hover:text-gray-200">{{ translate("TY Data Builder") }}<template v-if="showBadges && !failedBadges.version">&nbsp;<img @error="failedBadges.version = true" class="inline pb-1" src="https://img.shields.io/github/commit-activity/t/tyroneyeh/DataBuilder?logoColor=%23fff&label=Ver.&labelColor=%23fff&color=%23fff" alt="Version" referrerpolicy="no-referrer"></template></a>
+    <div v-if="showBadges && (!failedBadges.lastCommit || !failedBadges.jsdelivr)" class="flex w-full justify-end">
+    <a href="https://github.com/tyroneyeh/DataBuilder/" class="flex" target="_blank" rel="noopener noreferrer">
+        <img v-if="!failedBadges.lastCommit" @error="failedBadges.lastCommit = true" src="https://img.shields.io/github/last-commit/tyroneyeh/DataBuilder?logo=github" alt="GitHub last commit" referrerpolicy="no-referrer" class="dark:invert"/>
+        <img v-if="!failedBadges.jsdelivr" @error="failedBadges.jsdelivr = true" src="https://data.jsdelivr.com/v1/package/gh/tyroneyeh/DataBuilder/badge?style=rounded" alt="JSDelivr CDN" referrerpolicy="no-referrer" style="object-fit:cover;object-position:-51px" />
     </a>
     </div>
 </footer>
@@ -7732,6 +7732,19 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
         }
 
+        const showBadges = ref(navigator.onLine)
+        const failedBadges = reactive({
+            version: false,
+            lastCommit: false,
+            jsdelivr: false
+        })
+        const handleOnline = () => {
+            showBadges.value = true
+            failedBadges.version = false
+            failedBadges.lastCommit = false
+            failedBadges.jsdelivr = false
+        }
+
         onMounted(async () => {
             if (import.meta.env.PROD && globalThis.location.protocol === 'https:' && !document.querySelector('script[src*="cloudflareinsights.com/beacon.min.js"]')) {
                 const cfScript = document.createElement('script')
@@ -7777,6 +7790,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             })
             window.addEventListener('keydown', handleKeydown)
             window.addEventListener('mouseup', handleMouseUp)
+            window.addEventListener('online', handleOnline)
             window.addEventListener('hashchange', () => {
                 const hashStr = window.location.hash.slice(1)
                 if (hashStr.startsWith('ws:')) {
@@ -7852,6 +7866,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             syncFilters.cancel()
             window.removeEventListener('keydown', handleKeydown)
             window.removeEventListener('mouseup', handleMouseUp)
+            window.removeEventListener('online', handleOnline)
             document.removeEventListener('visibilitychange', handleAppResume)
             document.body.style.overflow = ''
         })
@@ -8069,7 +8084,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             filterContainer,
             handleFilterScroll,
             heatmapScrollContainer,
-            heatmapCanvas
+            heatmapCanvas,
+            showBadges,
+            failedBadges
         }
     }
 }
