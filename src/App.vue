@@ -277,6 +277,7 @@
                     <span v-else-if="!isPrinting && col.type === 'checkbox'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Checkbox') }})</span>
                     <span v-else-if="!isPrinting && col.type === 'category'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Category') }})</span>
                     <span v-else-if="!isPrinting && col.type === 'photo'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Photo') }})</span>
+                    <span v-else-if="!isPrinting && col.type === 'password'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Password') }})</span>
                     <span v-else-if="!isPrinting" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -384,7 +385,7 @@
                         </template>
 
                         <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
-                            {{ row[col.id] }}{{ col.type === 'date' && row[col.id] ? getWeekdayStr(row[col.id]) : '' }}
+                            {{ col.type === 'password' ? (row[col.id] ? '••••••••' : '') : row[col.id] }}{{ col.type === 'date' && row[col.id] ? getWeekdayStr(row[col.id]) : '' }}
                         </span>
 
                         <template v-else>
@@ -394,7 +395,9 @@
                                     v-model="row[col.id]"
                                     :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
                                     :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
-                                    :data-tooltip="row[col.id]"
+                                    :autocomplete="col.type === 'password' ? 'off' : undefined"
+                                    :spellcheck="col.type === 'password' ? false : undefined"
+                                    :data-tooltip="col.type === 'password' ? '' : row[col.id]"
                                     :placeholder="col.type === 'number' ? '0' : '...'"
                                     class="peer relative z-10 w-full text-right bg-transparent focus:border-blue-500 outline-none px-1 py-2 sm:py-0 text-base print:py-0 print:text-sm"
                                     :class="{
@@ -402,7 +405,8 @@
                                         'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
                                         'border-gray-300 dark:border-gray-600 transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500': !isKeyboardOpen && col.type === 'number',
                                         'min-w-0 sm:text-left print:text-left truncate text-gray-800 dark:text-white dark:placeholder-gray-500': isKeyboardOpen || col.type !== 'number',
-                                        'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id]
+                                        'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id],
+                                        '[&:not(:focus)]:[-webkit-text-security:disc]': col.type === 'password'
                                     }"
                                     @paste="handlePaste($event, windowStart + index, col.id)"
                                     @input="formatNumberInput(row, col)"
@@ -423,7 +427,7 @@
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row, col }"
                                 class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
-                                :class="{'sm:right-0': ['category', 'text'].includes(col.type)}"
+                                :class="{'sm:right-0': ['category', 'text', 'password'].includes(col.type)}"
                             >
                                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                             </button>
@@ -1818,6 +1822,7 @@ export default {
             const opts = [
                 {value: 'category', label: translate('Category')},
                 {value: 'text', label: translate('Text')},
+                {value: 'password', label: translate('Password')},
                 {value: 'number', label: translate('Number')},
                 {value: 'date', label: translate('Date')},
                 {value: 'time', label: translate('Time')},
@@ -1843,7 +1848,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'date', 'time', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'password', 'date', 'time', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -6408,7 +6413,9 @@ export default {
             const inputEl = inputRefs.value[`${row.id}-${col.id}`]
             if (!inputEl) return
             tempKey.value = inputEl.value
-            speakFeedback(inputEl.value)
+            if (col.type !== 'password') {
+                speakFeedback(inputEl.value)
+            }
         }
 
         const saveInput = (row, col) => {
