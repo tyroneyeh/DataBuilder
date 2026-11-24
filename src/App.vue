@@ -27,7 +27,7 @@
             ></div>
             <div
                 v-if="isWorkspaceMenuOpen"
-                class="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+                class="absolute right-0 top-full w-[160px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
             >
                 <button type="button" @click="openWorkspaceModal('add')" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors">➕ {{ translate('Add') }}</button>
                 <button type="button" @click="openWorkspaceModal('rename')" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors">✏️ {{ translate('Rename') }}</button>
@@ -245,8 +245,8 @@
     <table :key="currentStorageKey" class="w-full min-w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
         <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
             <tr class="print:break-inside-avoid">
-                <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-3 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')">#<span v-if="!isPrinting">{{ filteredRows.length }}</span></th>
-                <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static border border-gray-300 dark:border-gray-600 px-4 py-3 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
+                <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')">#<span v-if="!isPrinting">{{ filteredRows.length }}</span></th>
+                <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
                     :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'category', 'photo', 'minus', 'checkbox'].includes(col.type) ? 'max-w-[70px]' : 'min-w-[140px]',
                         editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                     ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
@@ -279,7 +279,7 @@
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
                 </th>
-                <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-3 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
+                <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-2 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
             </tr>
         </thead>
 
@@ -297,7 +297,7 @@
             class="block sm:table-row-group print:table-row-group mb-4 sm:mb-0 print:mb-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent print:bg-transparent rounded-lg shadow-sm sm:shadow-none print:shadow-none border border-gray-200 dark:border-gray-700 sm:border-none print:border-none relative select-none print:break-inside-avoid">
             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 print:hover:bg-transparent transition-colors group block sm:table-row print:table-row relative" :data-id="row.id">
 
-                <td class="text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-3 sm:py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
+                <td class="text-nowrap left-0 z-10 print:static bg-gray-100 sm:bg-gray-50 dark:bg-gray-700 dark:sm:bg-gray-800 print:bg-transparent border-b sm:border print:border border-gray-200 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-2 py-2 sm:text-center print:text-center text-gray-600 sm:text-gray-500 dark:text-gray-300 font-bold sm:font-medium shadow-none sm:shadow-[2px_0_4px_rgba(0,0,0,0.02)] print:shadow-none cursor-grab sm:active:scale-90 sm:active:bg-gray-200 sm:dark:active:bg-gray-600 sm:active:rounded sm:active:cursor-grabbing transition-all print:cursor-auto select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none block sm:table-cell print:table-cell rounded-t-lg sm:rounded-none"
                     @pointerdown="startDragging('rows', row.id, $event)">
 
                     <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-2 sm:mr-1 text-xs">⋮</span>
@@ -394,7 +394,7 @@
                                     :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
                                     :data-tooltip="row[col.id]"
                                     :placeholder="col.type === 'number' ? '0' : '...'"
-                                    class="peer relative z-10 w-full text-right bg-transparent focus:border-blue-500 outline-none px-1 py-2 print:py-0 text-base print:text-sm"
+                                    class="peer relative z-10 w-full text-right bg-transparent focus:border-blue-500 outline-none px-1 py-2 sm:py-0 text-base print:py-0 print:text-sm"
                                     :class="{
                                         'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                         'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
@@ -436,7 +436,7 @@
                     </div>
                 </td>
 
-                <td v-if="!isPrinting" class="absolute sm:relative top-1 sm:top-auto right-1 sm:right-auto sm:border border-gray-300 dark:border-gray-700 px-2 py-2 text-center bg-transparent sm:bg-white dark:sm:bg-gray-800 transition-colors block sm:table-cell">
+                <td v-if="!isPrinting" class="absolute sm:relative top-1 sm:top-auto right-1 sm:right-auto sm:border border-gray-300 dark:border-gray-700 px-2 text-center bg-transparent sm:bg-white dark:sm:bg-gray-800 transition-colors block sm:table-cell">
                     <div class="flex items-center justify-center space-x-2">
                         <button
                             @click="toggleActionMenu($event, row)"
@@ -490,12 +490,12 @@
         <tbody v-if="!isPrinting" key="action-add-row" class="block sm:table-row-group">
             <tr class="flex sm:table-row bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent border border-gray-200 dark:border-gray-700 sm:border-none rounded-lg sm:rounded-none overflow-hidden mt-2 sm:mt-0">
                 <td @click="addRow" class="left-0 sm:border-0 border-gray-300 dark:border-gray-700 p-0 text-center cursor-pointer bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors group shadow-[2px_0_4px_rgba(0,0,0,0.02)] flex-shrink-0 flex items-center justify-center w-16 sm:w-auto">
-                    <button class="w-full h-full min-h-[60px] sm:min-h-[50px] flex items-center justify-center focus:outline-none outline-none">
+                    <button class="w-full h-full min-h-[50px] sm:min-h-[40px] flex items-center justify-center focus:outline-none outline-none">
                         <span class="text-green-600 dark:text-green-500 font-bold text-2xl sm:text-xl group-hover:scale-125 transition-transform">+</span>
                     </button>
                 </td>
                 <td :colspan="columns.length + 1" class="border-l sm:border-l-0 border-gray-200 sm:border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-0 flex-grow flex items-center sm:table-cell">
-                    <button @click="addRow" class="w-full h-full min-h-[60px] sm:min-h-[50px] text-left pl-4 focus:outline-none outline-none">
+                    <button @click="addRow" class="w-full h-full min-h-[50px] sm:min-h-[40px] text-left pl-4 focus:outline-none outline-none">
                         <span class="text-base sm:text-sm text-gray-500 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-200 transition-colors">← {{ translate('Click to add a row') }}</span>
                     </button>
                 </td>
@@ -698,16 +698,16 @@
 </div>
 
 <div ref="filterContainer" @scroll="handleFilterScroll" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
-    <div class="flex flex-col sm:flex-row w-full print:flex-row">
+    <div class="flex flex-col items-center sm:flex-row w-full print:flex-row">
 
-        <div class="py-1.5 bottom-0 left-0 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
+        <div class="py-1 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
             :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
             :data-tooltip="filteredRows.length">
             {{ translate('Total') }}
         </div>
 
         <div v-for="(col, index) in columns" :key="'total-' + col.id"
-            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 border-b sm:border-t-2 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
+            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
                 col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end' : 'sm:justify-start'
@@ -744,7 +744,7 @@
                     </div>
                     <Teleport to="body">
                     <div v-if="dateRangeOpenState[col.id]"
-                        class="absolute top-full left-0 mt-2 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none origin-top-left transition-all"
+                        class="absolute top-full left-0 w-[160px] p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-2xl rounded-lg sm:rounded-none origin-top-left transition-all"
                         :style="menuStyle"
                     >
                         <div class="flex items-center justify-between mb-2">
@@ -898,7 +898,7 @@
             </div>
         </div>
 
-        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 sm:border-t-2 sm:border border-gray-300 dark:border-gray-600 px-4 bg-gray-100 dark:bg-gray-800 border-b sm:border-b-0 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
+        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 border-gray-300 dark:border-gray-600 px-4 min-h-[35px] bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
             :style="{'--col-width': colWidths[columns.length + 1] ? colWidths[columns.length + 1] + 'px' : 'auto'}">
             <button
                 v-if="isAnyFilterActive"
