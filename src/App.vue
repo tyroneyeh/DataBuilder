@@ -73,14 +73,14 @@
             </button>
         </div>
         <div class="flex w-full my-2 mx-auto" :class="isPrinting ? 'flex-col max-w-full gap-4' : 'flex-col md:flex-row max-w-[95%] md:max-w-[70%]'">
-            <div class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative h-10 cursor-pointer select-none mx-auto shadow-inner mb-4 print:hidden"
-                :class="hasIncomeCategories ? 'w-60' : 'w-40'">
+            <div v-if="chartViewModes.length > 1" class="flex bg-gray-200 dark:bg-gray-800 p-1 rounded-lg relative h-10 cursor-pointer select-none mx-auto shadow-inner mb-4 print:hidden"
+                :class="chartViewModes.length === 3 ? 'w-60' : 'w-40'">
                 <div class="absolute top-1 bottom-1 left-1 bg-white dark:bg-gray-600 rounded-md shadow transition-transform duration-300 ease-out"
                     :class="[
-                        hasIncomeCategories ? 'w-[calc(33.333%-2.67px)]' : 'w-[calc(50%-4px)]',
-                        chartViewMode === 'budget' ? 'translate-x-0' : (chartViewMode === 'expense' ? 'translate-x-full' : 'translate-x-[200%]')
+                        chartViewModes.length === 3 ? 'w-[calc(33.333%-2.67px)]' : 'w-[calc(50%-4px)]',
+                        activeChartViewIndex === 0 ? 'translate-x-0' : (activeChartViewIndex === 1 ? 'translate-x-full' : 'translate-x-[200%]')
                     ]"></div>
-                <div @click="debouncedUpdateChart(null, 'budget')"
+                <div v-if="hasBudgetCategories" @click="debouncedUpdateChart(null, 'budget')"
                     :class="chartViewMode === 'budget' ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'"
                     class="flex-1 flex justify-center items-center z-10 text-xs font-bold transition-colors duration-300 text-nowrap">
                     {{ translate('Budget') }}
@@ -2546,7 +2546,32 @@ export default {
 
         const hasIncomeCategories = computed(() => {
             if (!categoryBudgets.value) return false
-            return Object.values(categoryBudgets.value).some(config => config.type === 'income')
+            return Object.values(categoryBudgets.value).some(config => config && config.type === 'income')
+        })
+
+        const hasBudgetCategories = computed(() => {
+            if (!categoryBudgets.value) return false
+            return Object.values(categoryBudgets.value).some(config => config && config.type !== 'income' && calcValue(config.amount) > 0)
+        })
+
+        const chartViewModes = computed(() => {
+            const modes = []
+            if (hasBudgetCategories.value) modes.push('budget')
+            modes.push('expense')
+            if (hasIncomeCategories.value) modes.push('income')
+            return modes
+        })
+
+        const activeChartViewIndex = computed(() => {
+            const idx = chartViewModes.value.indexOf(chartViewMode.value)
+            return idx >= 0 ? idx : 0
+        })
+
+        watch(chartViewModes, (modes) => {
+            if (!modes.includes(chartViewMode.value)) {
+                chartViewMode.value = 'expense'
+                if (isChartOpen.value) debouncedUpdateChart()
+            }
         })
 
         const currentBudgetMultiplier = computed(() => {
@@ -5854,8 +5879,8 @@ export default {
                 const finalData = {}
                 if (chartViewMode.value === 'budget') {
                     const budgetEntries = Object.entries(categoryBudgets.value)
-                        .filter(([cat, config]) => config.type !== 'income' && config.amount > 0)
-                        .map(([cat, config]) => [cat, config.amount])
+                        .filter(([cat, config]) => config && config.type !== 'income' && calcValue(config.amount) > 0)
+                        .map(([cat, config]) => [cat, calcValue(config.amount)])
                         .sort((a, b) => b[1] - a[1])
                     budgetEntries.forEach((item, index) => {
                         if (index < MAX_CAT) topCategories.add(item[0])
@@ -8074,6 +8099,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             observeRow,
             calcValue,
             hasIncomeCategories,
+            hasBudgetCategories,
+            chartViewModes,
+            activeChartViewIndex,
             categoryBudgetMap,
             rowRunningBudgetMap,
             getWeekdayStr,
