@@ -2267,10 +2267,10 @@ export default {
         })
 
         const dateFilteredRows = computed(() => {
-            if (!selectedChartDateColId.value) return rows.value
+            if (!selectedChartDateColId.value) return [...rows.value]
             const inactiveMonths = new Set(monthFilters.value.filter(m => !m.active).map(m => m.month))
             const inactiveYears = new Set(yearFilters.value.filter(y => !y.active).map(y => y.year))
-            if (inactiveMonths.size === 0 && inactiveYears.size === 0) return rows.value
+            if (inactiveMonths.size === 0 && inactiveYears.size === 0) return [...rows.value]
             return rows.value.filter(row => {
                 const dateVal = row[selectedChartDateColId.value]
                 if (!dateVal) return true
