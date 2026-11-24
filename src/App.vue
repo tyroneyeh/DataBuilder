@@ -39,8 +39,8 @@
 
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 print:mb-8 print:border-none print:shadow-none" v-show="!isPrinting || isChartOpen">
-    <div v-if="hasNumberColumn"
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 print:mb-8 print:border-none print:shadow-none" v-show="hasNumberColumn">
+    <div v-if="!isPrinting"
         @click="toggleChart"
         class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
     >
