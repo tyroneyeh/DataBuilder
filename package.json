@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "update": "npx -y npm-check-updates -u && npm install",
+    "build:latest": "npm run update && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
