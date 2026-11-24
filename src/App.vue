@@ -1,20 +1,37 @@
 <template>
 <div v-if="!isPrinting" class="flex flex-col sm:flex-row bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
     <div class="flex sm:flex-row flex-wrap w-full sm:flex-1">
-        <div class="flex w-full">
-            <div class="flex flex-col w-full">
-                <input
-                    type="text"
-                    v-model="currentStorageKey"
-                    list="storage-key-options"
-                    @change="changeStorageKey"
-                    @focus="onKeyFocus" @blur="onKeyBlur"
-                    :placeholder="translate('Select or create a workspace')"
-                    class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                >
-                <datalist id="storage-key-options">
-                    <option v-for="key in savedKeysList" :key="key" :value="key"></option>
-                </datalist>
+        <div class="flex w-full relative">
+            <input
+                type="text"
+                v-model="currentStorageKey"
+                list="storage-key-options"
+                @change="changeStorageKey"
+                @focus="onKeyFocus" @blur="onKeyBlur"
+                :placeholder="translate('Select or create a workspace')"
+                class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+            >
+            <datalist id="storage-key-options">
+                <option v-for="key in savedKeysList" :key="key" :value="key"></option>
+            </datalist>
+            <button
+                type="button"
+                @click.stop="isWorkspaceMenuOpen = !isWorkspaceMenuOpen"
+                class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors font-bold leading-none rotate-90 outline-none relative"
+            >•••</button>
+            <div
+                v-if="isWorkspaceMenuOpen"
+                @click="isWorkspaceMenuOpen = false"
+                class="fixed inset-0 z-40 cursor-pointer"
+                style="-webkit-tap-highlight-color: transparent"
+            ></div>
+            <div
+                v-if="isWorkspaceMenuOpen"
+                class="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-xl rounded-md z-[99] flex flex-col overflow-hidden transform origin-top-right"
+            >
+                <button type="button" @click="openWorkspaceModal('add')" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors">➕ {{ translate('Add') }}</button>
+                <button type="button" @click="openWorkspaceModal('rename')" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors">✏️ {{ translate('Rename') }}</button>
+                <button type="button" @click="deleteWorkspace" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center gap-2 transition-colors">✖ {{ translate('Delete') }}</button>
             </div>
         </div>
 
@@ -1407,6 +1424,41 @@
         </div>
     </div>
 </div>
+<div v-if="workspaceModal.isOpen"
+    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    @click.self="closeWorkspaceModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all flex flex-col">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <span class="mr-2">{{ workspaceModal.mode === 'add' ? '➕' : '✏️' }}</span>
+            {{ workspaceModal.mode === 'add' ? translate('Add Workspace') : translate('Rename Workspace') }}
+        </h3>
+        <input
+            ref="workspaceInputRef"
+            v-model="workspaceModal.inputValue"
+            type="text"
+            :placeholder="translate('Workspace Name')"
+            @input="workspaceModal.error = ''"
+            @keyup.enter="submitWorkspaceModal"
+            @keyup.escape="closeWorkspaceModal"
+            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+        >
+        <p v-if="workspaceModal.error" class="text-xs text-red-500 dark:text-red-400 mt-2">
+            {{ workspaceModal.error }}
+        </p>
+        <div class="flex justify-end space-x-3 mt-6">
+            <button
+                type="button"
+                @click="closeWorkspaceModal"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+            >{{ translate('Cancel') }}</button>
+            <button
+                type="button"
+                @click="submitWorkspaceModal"
+                class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+            >{{ translate('OK') }}</button>
+        </div>
+    </div>
+</div>
 <div v-if="photoViewer.isOpen"
     class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer select-none"
     @click="photoViewer.isOpen = false">
@@ -1720,6 +1772,14 @@ export default {
         const hasNumberColumn = ref(false)
 
         const activeMenuRow = ref(null)
+        const isWorkspaceMenuOpen = ref(false)
+        const workspaceInputRef = ref(null)
+        const workspaceModal = ref({
+            isOpen: false,
+            mode: 'add',
+            inputValue: '',
+            error: ''
+        })
 
         const editingColId = ref(null)
         const newColLabel = ref('')
@@ -2893,6 +2953,153 @@ export default {
 
             debouncedUpdateChart()
             checkAndAutoSync()
+        }
+
+        const WORKSPACE_STORAGE_SUFFIXES = ['_chartCatColId', '_chartNumColId', '_chartDateColId', '_scrollTop', '_last_sync_time']
+
+        const saveCurrentWorkspaceNow = async (targetKey = currentStorageKey.value) => {
+            if (!targetKey) return
+            debouncedSave.cancel()
+            if (!colCount.value) colCount.value = columns.value.length
+            const data = {
+                title: targetKey,
+                colCount: colCount.value,
+                columns: toRaw(columns.value),
+                rows: toRaw(rows.value),
+                note: globalNotes.value,
+                budgets: categoryBudgets.value ? JSON.parse(JSON.stringify(toRaw(categoryBudgets.value))) : {},
+                updatedAt: updatedAt.value || Date.now()
+            }
+            await db.set(targetKey, data)
+        }
+
+        const openWorkspaceModal = async (mode) => {
+            isWorkspaceMenuOpen.value = false
+            workspaceModal.value = {
+                isOpen: true,
+                mode,
+                inputValue: mode === 'rename' ? currentStorageKey.value : '',
+                error: ''
+            }
+            await nextTick()
+            if (workspaceInputRef.value) {
+                workspaceInputRef.value.focus()
+                if (mode === 'rename') {
+                    workspaceInputRef.value.select()
+                }
+            }
+        }
+
+        const closeWorkspaceModal = () => {
+            workspaceModal.value.isOpen = false
+            workspaceModal.value.error = ''
+        }
+
+        const submitWorkspaceModal = async () => {
+            const newName = workspaceModal.value.inputValue.trim()
+            if (!newName) {
+                workspaceModal.value.error = translate('Please enter a workspace name!')
+                return
+            }
+
+            if (workspaceModal.value.mode === 'add') {
+                if (savedKeysList.value.includes(newName)) {
+                    workspaceModal.value.error = translate('Workspace already exists!')
+                    return
+                }
+                await saveCurrentWorkspaceNow()
+                closeWorkspaceModal()
+                currentStorageKey.value = newName
+                await changeStorageKey()
+                return
+            }
+
+            const oldKey = currentStorageKey.value
+            if (newName === oldKey) {
+                closeWorkspaceModal()
+                return
+            }
+            if (savedKeysList.value.includes(newName)) {
+                workspaceModal.value.error = translate('Workspace already exists!')
+                return
+            }
+
+            await saveCurrentWorkspaceNow(newName)
+            await db.remove(oldKey)
+
+            WORKSPACE_STORAGE_SUFFIXES.forEach(suffix => {
+                const val = localStorage.getItem(`${oldKey}${suffix}`)
+                if (val !== null) {
+                    localStorage.setItem(`${newName}${suffix}`, val)
+                    localStorage.removeItem(`${oldKey}${suffix}`)
+                }
+            })
+
+            const idx = savedKeysList.value.indexOf(oldKey)
+            if (idx !== -1) {
+                savedKeysList.value.splice(idx, 1, newName)
+            } else {
+                savedKeysList.value.unshift(newName)
+            }
+            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+
+            currentStorageKey.value = newName
+            tempKey.value = newName
+            window.history.replaceState(null, null, '#ws:' + encodeURIComponent(newName))
+            updateTitle()
+            closeWorkspaceModal()
+        }
+
+        const deleteWorkspace = async () => {
+            isWorkspaceMenuOpen.value = false
+            const targetKey = currentStorageKey.value
+            if (!targetKey) return
+
+            if (!await showConfirm(translate('Are you sure you want to delete workspace "{name}"?', { name: targetKey }))) {
+                return
+            }
+
+            debouncedSave.cancel()
+            await db.remove(targetKey)
+            WORKSPACE_STORAGE_SUFFIXES.forEach(suffix => {
+                localStorage.removeItem(`${targetKey}${suffix}`)
+            })
+
+            savedKeysList.value = savedKeysList.value.filter(key => key !== targetKey)
+            if (savedKeysList.value.length === 0) {
+                savedKeysList.value = ['ty-db']
+            }
+            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+
+            isInitializing = true
+            currentStorageKey.value = savedKeysList.value[0]
+            tempKey.value = currentStorageKey.value
+            colCount.value = 0
+            columns.value = []
+            rows.value = []
+            globalNotes.value = ''
+            categoryBudgets.value = {}
+            heightCache = {}
+            windowStart.value = 0
+            windowEnd.value = 50
+            paddingTop.value = 0
+            paddingBottom.value = 0
+
+            window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+            loadChartCols()
+
+            if (tableContainer.value) {
+                tableContainer.value.scrollTop = 0
+            }
+
+            await nextTick()
+            await loadData(0)
+            isInitializing = false
+
+            debouncedUpdateChart()
+            if (tableContainer.value) {
+                handleTableScroll({ target: tableContainer.value })
+            }
         }
 
         const toggleActionMenu = (event, row) => {
@@ -6914,6 +7121,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
+                if (isWorkspaceMenuOpen.value) {
+                    isWorkspaceMenuOpen.value = false
+                    return
+                }
                 if (isFullscreen.value) {
                     toggleFullscreen()
                     return
@@ -7504,6 +7715,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             currentStorageKey,
             changeStorageKey,
             savedKeysList,
+            isWorkspaceMenuOpen,
+            workspaceInputRef,
+            workspaceModal,
+            openWorkspaceModal,
+            closeWorkspaceModal,
+            submitWorkspaceModal,
+            deleteWorkspace,
             activeMenuRow,
             toggleActionMenu,
             closeActionMenu,
