@@ -6,14 +6,14 @@
 
 一個強大、極輕量且**完全無需後端伺服器 (Serverless)** 的單頁式動態表格與資料視覺化應用。只需一個 HTML 檔案，點開瀏覽器即可開始使用！完美解決臨時資料收集、團購分帳、記帳統計與快速報價單生成等需求。
 
-**🔗 立即使用 (Live Demo): [https://ty-db.pages.dev](https://ty-db.pages.dev)**
+**🔗 立即使用 (Use it now)：[https://ty-db.pages.dev](https://ty-db.pages.dev)**
 
 ![TY Data Builder - TY資料表](https://ty-db.pages.dev/databuilder.png)
 ![TY Data Builder - TY資料表 (Mobile)](https://ty-db.pages.dev/databuilder-mobile.png)
 
 ---
 
-## ✨ 核心特色 (Features)
+## ✨ 核心特色
 
 * **⚡ 零依賴 & 免安裝**：採用 Vue 3 (Composition API) + Tailwind CSS 構建，下載單一 HTML 檔即可離線運行，無須 `npm install`。
 * **📶 企業級 PWA 體驗**：支援 Service Worker 離線快取，可安裝至桌面或手機主畫面，並內建流暢的深色模式 (Dark Mode)。
@@ -39,7 +39,7 @@
 
 ---
 
-## 💡 適用情境 (Use Cases)
+## 💡 適用情境
 
 * **團購/便當/公費統計**：產生單筆 QR Code 讓同事掃描匯入，最後用「一鍵合併」算出總量與總金額。
 * **快速報價單/派工單**：設定品項、單價、數量，拍照附上現場狀況，填寫完畢直接 `Ctrl+P` 輸出報表給客戶。
@@ -47,7 +47,7 @@
 
 ---
 
-## ⌨️ 快捷鍵指南 (Keyboard Shortcuts)
+## ⌨️ 快捷鍵指南
 
 | 快捷鍵 | 觸發情境 | 執行動作 |
 | :--- | :--- | :--- |
@@ -59,7 +59,7 @@
 
 ---
 
-## 🛠️ 技術架構 (Tech Stack)
+## 🛠️ 技術架構
 
 * **Framework**: [Vue.js 3](https://vuejs.org/) (Composition API via CDN)
 * **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
@@ -70,7 +70,7 @@
 
 ---
 
-# 📊 TY Data Builder (English Version)
+# 📊 TY Data Builder (TY-DB)
 
 A powerful, ultra-lightweight, and **100% Serverless** single-page dynamic table and data visualization application. Just one HTML file, open it in your browser and start building! Perfect for temporary data collection, group buying statistics, expense tracking, and rapid invoice generation.
 
