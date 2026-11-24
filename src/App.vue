@@ -2109,7 +2109,6 @@ export default {
                 const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), updatedAt: Date.now()}
                 if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                 db.set(currentStorageKey.value, data)
-                debouncedUpdateChart()
             } catch (e) {
                 showConfirm(e.message, 1)
             }
@@ -2131,9 +2130,20 @@ export default {
                 syncColumnWidths()
             })
         }, { flush: 'post' })
+        watch(columns, () => {
+            if (isInitializing) return
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
+        }, { flush: 'post' })
         watch(categoryBudgets, () => {
             if (isInitializing) return
             debouncedSave()
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                debouncedUpdateChart()
+            }
         }, { deep: true, flush: 'post' })
         watch([uniqueCategories, isBudgetOpen], ([_, open]) => {
             if (open) ensureCategoryBudgets()
@@ -4194,11 +4204,16 @@ export default {
 
         const formatNumberInput = (row, col) => {
             if (col.type === 'number' && row[col.id] != null) {
-                let valStr = String(row[col.id])
+                const rawStr = String(row[col.id])
+                let valStr = rawStr
                 const matches = valStr.match(/[0-9+\-*/.%()^]+/g)
                 if (matches) valStr = matches.join('+')
-                row[col.id] = valStr.replaceAll(/[^0-9+\-*/.%()^]/g, '')
-                triggerRef(rows)
+                const cleaned = valStr.replaceAll(/[^0-9+\-*/.%()^]/g, '')
+                row[col.id] = cleaned
+                if (cleaned !== rawStr) {
+                    const inputEl = inputRefs.value[`${row.id}-${col.id}`]
+                    if (inputEl) inputEl.value = cleaned
+                }
             }
         }
 
@@ -5679,16 +5694,24 @@ export default {
         const renderHeatmap = (canvasCtx) => {
             const { dataMatrix, yLabels } = getOfficialTimeMatrixData()
 
-            const emptyCellColor = isDark.value ? 'rgba(31, 41, 55, 1)' : 'rgba(235, 237, 240, 1)'
             const textColor = isDark.value ? '#9ca3af' : '#6b7280'
-
-            if (heatmapChartInstance) {
-                heatmapChartInstance.destroy()
-            }
             const dateFnsLocaleKey = getDateFnsLocaleSlug(currentLanguage.value).replace('-', '')
             const safeLocale = window.dateFns?.locale?.[dateFnsLocaleKey]
                 || window.dateFns?.locale?.enUS
                 || window.dateFns?.locale?.zhTW
+
+            if (heatmapChartInstance && heatmapChartInstance.ctx === canvasCtx) {
+                heatmapChartInstance.data.datasets[0].data = dataMatrix
+                heatmapChartInstance.options.scales.x.adapters.date.locale = safeLocale
+                heatmapChartInstance.options.scales.x.ticks.color = textColor
+                heatmapChartInstance.options.scales.y.labels = yLabels
+                heatmapChartInstance.update('none')
+                return
+            }
+
+            if (heatmapChartInstance) {
+                heatmapChartInstance.destroy()
+            }
 
             heatmapChartInstance = new Chart(canvasCtx, {
                 type: 'matrix',
@@ -5697,7 +5720,7 @@ export default {
                         data: dataMatrix,
                         backgroundColor: (context) => {
                             const value = context.dataset.data[context.dataIndex]?.v || 0
-                            if (value === 0) return emptyCellColor
+                            if (value === 0) return isDark.value ? 'rgba(31, 41, 55, 1)' : 'rgba(235, 237, 240, 1)'
                             const maxVal = currentMaxValue || 1;
                             const alpha = 0.2 + (value / maxVal) * 0.8
                             return `rgba(99, 102, 241, ${alpha})`;
