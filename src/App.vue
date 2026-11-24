@@ -5566,6 +5566,12 @@ export default {
             return { dataMatrix, yLabels };
         }
 
+        const DATE_FNS_LOCALE_MAP = {
+            en: 'en-US'
+        }
+
+        const getDateFnsLocaleSlug = (lang) => DATE_FNS_LOCALE_MAP[lang] || lang
+
         const renderHeatmap = (canvasCtx) => {
             const { dataMatrix, yLabels } = getOfficialTimeMatrixData()
 
@@ -5575,7 +5581,9 @@ export default {
             if (heatmapChartInstance) {
                 heatmapChartInstance.destroy()
             }
-            const safeLocale = window.dateFns?.locale?.[currentLanguage.value.replace('-', '')]
+            const dateFnsLocaleKey = getDateFnsLocaleSlug(currentLanguage.value).replace('-', '')
+            const safeLocale = window.dateFns?.locale?.[dateFnsLocaleKey]
+                || window.dateFns?.locale?.enUS
                 || window.dateFns?.locale?.zhTW
 
             heatmapChartInstance = new Chart(canvasCtx, {
@@ -5703,9 +5711,12 @@ export default {
             let values = []
 
             await loadScript('https://cdn.jsdelivr.net/npm/chart.js')
-            await loadScript('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3')
-            await loadScript('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js')
-            await loadScript(`https://cdn.jsdelivr.net/npm/date-fns@3/locale/${currentLanguage.value}/cdn.min.js`)
+            const dateFnsLocale = getDateFnsLocaleSlug(currentLanguage.value)
+            await Promise.all([
+                loadScript('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3').catch(() => {}),
+                loadScript('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js').catch(() => {}),
+                loadScript(`https://cdn.jsdelivr.net/npm/date-fns@3/locale/${dateFnsLocale}/cdn.min.js`).catch(() => {})
+            ])
 
             if (categoryData && ctxDoughnut) {
                 const MAX_CAT = 12
@@ -7680,6 +7691,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
 
             isInitializing = false
+            if (isChartOpen.value) {
+                debouncedUpdateChart.cancel()
+                updateChart()
+            }
 
             if (window.location.hash.endsWith('/add')) {
                 window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
