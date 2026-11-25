@@ -208,7 +208,9 @@ export const translations = {
         "Workspace Name": "工作區名稱",
         "Please enter a workspace name!": "請輸入工作區名稱!",
         "Workspace already exists!": "工作區已存在!",
-        "Are you sure you want to delete workspace \"{name}\"?": "確定要刪除工作區「{name}」嗎?"
+        "Are you sure you want to delete workspace \"{name}\"?": "確定要刪除工作區「{name}」嗎?",
+        "Add Blank Workspace": "新增空白工作區",
+        "Start with blank workspace (no columns)": "完全空白工作區（不含目前欄位）"
     },
     "zh-CN": {
         "Action": "操作",
@@ -417,7 +419,9 @@ export const translations = {
         "Workspace Name": "工作区名称",
         "Please enter a workspace name!": "请输入工作区名称!",
         "Workspace already exists!": "工作区已存在!",
-        "Are you sure you want to delete workspace \"{name}\"?": "确定要删除工作区「{name}」吗?"
+        "Are you sure you want to delete workspace \"{name}\"?": "确定要删除工作区「{name}」吗?",
+        "Add Blank Workspace": "新建空白工作区",
+        "Start with blank workspace (no columns)": "完全空白工作区（不含当前字段）"
     },
     "ja": {
         "Action": "操作",
@@ -626,7 +630,9 @@ export const translations = {
         "Workspace Name": "ワークスペース名",
         "Please enter a workspace name!": "ワークスペース名を入力してください!",
         "Workspace already exists!": "このワークスペースは既に存在します!",
-        "Are you sure you want to delete workspace \"{name}\"?": "ワークスペース「{name}」を削除してもよろしいですか?"
+        "Are you sure you want to delete workspace \"{name}\"?": "ワークスペース「{name}」を削除してもよろしいですか?",
+        "Add Blank Workspace": "空白のワークスペースを追加",
+        "Start with blank workspace (no columns)": "空白のワークスペースで開始（列なし）"
     },
     "ko": {
         "Action": "작업",
@@ -835,7 +841,9 @@ export const translations = {
         "Workspace Name": "워크스페이스 이름",
         "Please enter a workspace name!": "워크스페이스 이름을 입력하세요!",
         "Workspace already exists!": "이미 존재하는 워크스페이스입니다!",
-        "Are you sure you want to delete workspace \"{name}\"?": "워크스페이스 \"{name}\"을(를) 삭제하시겠습니까?"
+        "Are you sure you want to delete workspace \"{name}\"?": "워크스페이스 \"{name}\"을(를) 삭제하시겠습니까?",
+        "Add Blank Workspace": "빈 작업공간 추가",
+        "Start with blank workspace (no columns)": "빈 작업공간으로 시작 (열 없음)"
     },
     "es": {
         "Action": "Acción",
@@ -1044,7 +1052,9 @@ export const translations = {
         "Workspace Name": "Nombre del espacio de trabajo",
         "Please enter a workspace name!": "¡Por favor, introduce un nombre de espacio de trabajo!",
         "Workspace already exists!": "¡El espacio de trabajo ya existe!",
-        "Are you sure you want to delete workspace \"{name}\"?": "¿Estás seguro de que quieres eliminar el espacio de trabajo \"{name}\"?"
+        "Are you sure you want to delete workspace \"{name}\"?": "¿Estás seguro de que quieres eliminar el espacio de trabajo \"{name}\"?",
+        "Add Blank Workspace": "Añadir espacio vacío",
+        "Start with blank workspace (no columns)": "Comenzar vacío (sin columnas)"
     },
     "fr": {
         "Action": "Action",
@@ -1253,7 +1263,9 @@ export const translations = {
         "Workspace Name": "Nom de l’espace de travail",
         "Please enter a workspace name!": "Veuillez saisir un nom d’espace de travail !",
         "Workspace already exists!": "Cet espace de travail existe déjà !",
-        "Are you sure you want to delete workspace \"{name}\"?": "Voulez-vous vraiment supprimer l’espace de travail « {name} » ?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Voulez-vous vraiment supprimer l’espace de travail « {name} » ?",
+        "Add Blank Workspace": "Ajouter un espace vide",
+        "Start with blank workspace (no columns)": "Démarrer à vide (sans colonnes)"
     },
     "de": {
         "Action": "Aktion",
@@ -1462,7 +1474,9 @@ export const translations = {
         "Workspace Name": "Arbeitsbereichsname",
         "Please enter a workspace name!": "Bitte geben Sie einen Arbeitsbereichsnamen ein!",
         "Workspace already exists!": "Arbeitsbereich existiert bereits!",
-        "Are you sure you want to delete workspace \"{name}\"?": "Möchten Sie den Arbeitsbereich „{name}“ wirklich löschen?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Möchten Sie den Arbeitsbereich „{name}“ wirklich löschen?",
+        "Add Blank Workspace": "Leeren Arbeitsbereich hinzufügen",
+        "Start with blank workspace (no columns)": "Mit leerem Arbeitsbereich starten (ohne Spalten)"
     },
     "it": {
         "Action": "Azione",
@@ -1671,7 +1685,9 @@ export const translations = {
         "Workspace Name": "Nome area di lavoro",
         "Please enter a workspace name!": "Inserisci un nome per l’area di lavoro!",
         "Workspace already exists!": "L’area di lavoro esiste già!",
-        "Are you sure you want to delete workspace \"{name}\"?": "Sei sicuro di voler eliminare l’area di lavoro \"{name}\"?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Sei sicuro di voler eliminare l’area di lavoro \"{name}\"?",
+        "Add Blank Workspace": "Aggiungi area vuota",
+        "Start with blank workspace (no columns)": "Inizia con area vuota (senza colonne)"
     },
     "pt": {
         "Action": "Ação",
@@ -1880,7 +1896,9 @@ export const translations = {
         "Workspace Name": "Nome do espaço de trabalho",
         "Please enter a workspace name!": "Por favor, insira um nome de espaço de trabalho!",
         "Workspace already exists!": "O espaço de trabalho já existe!",
-        "Are you sure you want to delete workspace \"{name}\"?": "Tem certeza de que deseja excluir o espaço de trabalho \"{name}\"?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Tem certeza de que deseja excluir o espaço de trabalho \"{name}\"?",
+        "Add Blank Workspace": "Adicionar espaço vazio",
+        "Start with blank workspace (no columns)": "Iniciar em branco (sem colunas)"
     },
     "ru": {
         "Action": "Действие",
@@ -2089,7 +2107,9 @@ export const translations = {
         "Workspace Name": "Название рабочей области",
         "Please enter a workspace name!": "Пожалуйста, введите название рабочей области!",
         "Workspace already exists!": "Рабочая область уже существует!",
-        "Are you sure you want to delete workspace \"{name}\"?": "Вы уверены, что хотите удалить рабочую область «{name}»?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Вы уверены, что хотите удалить рабочую область «{name}»?",
+        "Add Blank Workspace": "Добавить пустое пространство",
+        "Start with blank workspace (no columns)": "Начать с пустого (без столбцов)"
     },
     "id": {
         "Action": "Tindakan",
@@ -2298,7 +2318,9 @@ export const translations = {
         "Workspace Name": "Nama ruang kerja",
         "Please enter a workspace name!": "Silakan masukkan nama ruang kerja!",
         "Workspace already exists!": "Ruang kerja sudah ada!",
-        "Are you sure you want to delete workspace \"{name}\"?": "Apakah Anda yakin ingin menghapus ruang kerja \"{name}\"?"
+        "Are you sure you want to delete workspace \"{name}\"?": "Apakah Anda yakin ingin menghapus ruang kerja \"{name}\"?",
+        "Add Blank Workspace": "Tambah Ruang Kerja Kosong",
+        "Start with blank workspace (no columns)": "Mulai dari ruang kerja kosong (tanpa kolom)"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2507,7 +2529,9 @@ export const translations = {
         "Rating": "Đánh giá",
         "Progress": "Tiến độ",
         "Tags": "Thẻ",
-        "Color": "Màu sắc"
+        "Color": "Màu sắc",
+        "Add Blank Workspace": "Thêm không gian trống",
+        "Start with blank workspace (no columns)": "Bắt đầu trống (không có cột)"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2716,7 +2740,9 @@ export const translations = {
         "Rating": "คะแนน",
         "Progress": "ความคืบหน้า",
         "Tags": "แท็ก",
-        "Color": "สี"
+        "Color": "สี",
+        "Add Blank Workspace": "เพิ่มพื้นที่ทำงานว่าง",
+        "Start with blank workspace (no columns)": "เริ่มด้วยพื้นที่ทำงานว่าง (ไม่มีคอลัมน์)"
     },
     "ms": {
         "Action": "Tindakan",
@@ -2925,7 +2951,9 @@ export const translations = {
         "Rating": "Penilaian",
         "Progress": "Kemajuan",
         "Tags": "Tag",
-        "Color": "Warna"
+        "Color": "Warna",
+        "Add Blank Workspace": "Tambah Ruang Kerja Kosong",
+        "Start with blank workspace (no columns)": "Mula dengan ruang kerja kosong (tiada lajur)"
     },
     "tr": {
         "Action": "İşlem",
@@ -3134,7 +3162,9 @@ export const translations = {
         "Rating": "Puan",
         "Progress": "İlerleme",
         "Tags": "Etiketler",
-        "Color": "Renk"
+        "Color": "Renk",
+        "Add Blank Workspace": "Boş Çalışma Alanı Ekle",
+        "Start with blank workspace (no columns)": "Boş çalışma alanıyla başla (sütunsuz)"
     },
     "ar": {
         "Action": "إجراء",
@@ -3343,7 +3373,9 @@ export const translations = {
         "Rating": "التقييم",
         "Progress": "التقدم",
         "Tags": "الوسوم",
-        "Color": "اللون"
+        "Color": "اللون",
+        "Add Blank Workspace": "إضافة مساحة عمل فارغة",
+        "Start with blank workspace (no columns)": "البدء بمساحة عمل فارغة (بدون أعمدة)"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3552,7 +3584,9 @@ export const translations = {
         "Rating": "रेटिंग",
         "Progress": "प्रगति",
         "Tags": "टैग",
-        "Color": "रंग"
+        "Color": "रंग",
+        "Add Blank Workspace": "खाली कार्यक्षेत्र जोड़ें",
+        "Start with blank workspace (no columns)": "खाली कार्यक्षेत्र से शुरू करें (बिना कॉलम)"
     },
     "pl": {
         "Action": "Akcja",
@@ -3761,7 +3795,9 @@ export const translations = {
         "Rating": "Ocena",
         "Progress": "Postęp",
         "Tags": "Tagi",
-        "Color": "Kolor"
+        "Color": "Kolor",
+        "Add Blank Workspace": "Dodaj pusty obszar roboczy",
+        "Start with blank workspace (no columns)": "Rozpocznij od pustego (bez kolumn)"
     },
     "nl": {
         "Action": "Actie",
@@ -3970,7 +4006,9 @@ export const translations = {
         "Rating": "Beoordeling",
         "Progress": "Voortgang",
         "Tags": "Tags",
-        "Color": "Kleur"
+        "Color": "Kleur",
+        "Add Blank Workspace": "Lege werkruimte toevoegen",
+        "Start with blank workspace (no columns)": "Start met lege werkruimte (geen kolommen)"
     },
     "uk": {
         "Action": "Дія",
@@ -4179,7 +4217,9 @@ export const translations = {
         "Rating": "Рейтинг",
         "Progress": "Прогрес",
         "Tags": "Теги",
-        "Color": "Колір"
+        "Color": "Колір",
+        "Add Blank Workspace": "Додати порожній простір",
+        "Start with blank workspace (no columns)": "Почати з порожнього (без стовпців)"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4388,7 +4428,9 @@ export const translations = {
         "Rating": "Rating",
         "Progress": "Progreso",
         "Tags": "Mga Tag",
-        "Color": "Kulay"
+        "Color": "Kulay",
+        "Add Blank Workspace": "Magdagdag ng Blangkong Workspace",
+        "Start with blank workspace (no columns)": "Magsimula sa blangkong workspace (walang column)"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4597,7 +4639,9 @@ export const translations = {
         "Rating": "Betyg",
         "Progress": "Framsteg",
         "Tags": "Taggar",
-        "Color": "Färg"
+        "Color": "Färg",
+        "Add Blank Workspace": "Lägg till tom arbetsyta",
+        "Start with blank workspace (no columns)": "Börja med tom arbetsyta (inga kolumner)"
     },
     "cs": {
         "Action": "Akce",
@@ -4806,7 +4850,9 @@ export const translations = {
         "Rating": "Hodnocení",
         "Progress": "Průběh",
         "Tags": "Štítky",
-        "Color": "Barva"
+        "Color": "Barva",
+        "Add Blank Workspace": "Přidat prázdný pracovní prostor",
+        "Start with blank workspace (no columns)": "Začít prázdným prostorem (bez sloupců)"
     },
     "ta": {
         "Action": "செயல்",
@@ -5015,6 +5061,8 @@ export const translations = {
         "Rating": "மதிப்பீடு",
         "Progress": "முன்னேற்றம்",
         "Tags": "குறிச்சொற்கள்",
-        "Color": "நிறம்"
+        "Color": "நிறம்",
+        "Add Blank Workspace": "காலி பணியிடத்தை சேர்",
+        "Start with blank workspace (no columns)": "காலி பணியிடத்துடன் தொடங்கு (நெடுவரிசைகள் இல்லை)"
     }
 }

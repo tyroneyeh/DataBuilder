@@ -1602,8 +1602,8 @@
     @click.self="closeWorkspaceModal">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all flex flex-col">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-            <span class="mr-2">{{ workspaceModal.mode === 'add' ? '➕' : '✏️' }}</span>
-            {{ workspaceModal.mode === 'add' ? translate('Add Workspace') : translate('Rename Workspace') }}
+            <span class="mr-2">{{ workspaceModal.mode === 'add' ? (workspaceModal.isBlank ? '📄' : '➕') : '✏️' }}</span>
+            {{ workspaceModal.mode === 'add' ? (workspaceModal.isBlank ? translate('Add Blank Workspace') : translate('Add Workspace')) : translate('Rename Workspace') }}
         </h3>
         <input
             ref="workspaceInputRef"
@@ -1615,6 +1615,14 @@
             @keyup.escape="closeWorkspaceModal"
             class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
         >
+        <label v-if="workspaceModal.mode === 'add'" class="flex items-center gap-2 mt-3 text-sm text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+            <input
+                type="checkbox"
+                v-model="workspaceModal.isBlank"
+                class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer"
+            >
+            <span>{{ translate('Start with blank workspace (no columns)') }}</span>
+        </label>
         <p v-if="workspaceModal.error" class="text-xs text-red-500 dark:text-red-400 mt-2">
             {{ workspaceModal.error }}
         </p>
@@ -1950,6 +1958,7 @@ export default {
         const workspaceModal = ref({
             isOpen: false,
             mode: 'add',
+            isBlank: false,
             inputValue: '',
             error: ''
         })
@@ -2441,7 +2450,7 @@ export default {
             try {
                 if (!currentStorageKey.value) return
                 if (!colCount.value) colCount.value = columns.value.length
-                const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), updatedAt: Date.now()}
+                const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), isBlank: columns.value.length === 0, updatedAt: Date.now()}
                 if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                 db.set(currentStorageKey.value, data)
             } catch (e) {
@@ -3365,7 +3374,8 @@ export default {
 
         initStorageKeys()
 
-        const changeStorageKey = async () => {
+        const changeStorageKey = async (options = {}) => {
+            const isBlankNew = Boolean(options && typeof options === 'object' && options.blank)
             isInitializing = true
 
             windowStart.value = 0
@@ -3395,6 +3405,28 @@ export default {
             loadChartCols()
 
             rows.value = []
+            if (isBlankNew) {
+                columns.value = []
+                colCount.value = 0
+                categoryBudgets.value = {}
+                globalNotes.value = ''
+                columnFilters.value = {}
+                appliedFilters.value = {}
+                dateRangeFilters.value = {}
+                selectedChartDate.value = null
+                hiddenCategoryNames.value = []
+                await db.set(newKey, {
+                    title: newKey,
+                    colCount: 0,
+                    columns: [],
+                    rows: [],
+                    note: '',
+                    budgets: {},
+                    isBlank: true,
+                    updatedAt: Date.now()
+                })
+                isSettingsOpen.value = true
+            }
 
             await nextTick()
             await loadData(1)
@@ -3421,16 +3453,18 @@ export default {
                 rows: toRaw(rows.value),
                 note: globalNotes.value,
                 budgets: categoryBudgets.value ? JSON.parse(JSON.stringify(toRaw(categoryBudgets.value))) : {},
+                isBlank: columns.value.length === 0,
                 updatedAt: updatedAt.value || Date.now()
             }
             await db.set(targetKey, data)
         }
 
-        const openWorkspaceModal = async (mode) => {
+        const openWorkspaceModal = async (mode, isBlank = false) => {
             isWorkspaceMenuOpen.value = false
             workspaceModal.value = {
                 isOpen: true,
                 mode,
+                isBlank: mode === 'add' ? Boolean(isBlank) : false,
                 inputValue: mode === 'rename' ? currentStorageKey.value : '',
                 error: ''
             }
@@ -3460,10 +3494,11 @@ export default {
                     workspaceModal.value.error = translate('Workspace already exists!')
                     return
                 }
+                const createBlank = workspaceModal.value.isBlank
                 await saveCurrentWorkspaceNow()
                 closeWorkspaceModal()
                 currentStorageKey.value = newName
-                await changeStorageKey()
+                await changeStorageKey({ blank: createBlank })
                 return
             }
 
@@ -4373,6 +4408,10 @@ export default {
             } else if (localData.columns && localData.columns.length > 0) {
                 columns.value = localData.columns
                 rows.value = localData.rows
+            } else if (localData.isBlank) {
+                columns.value = []
+                rows.value = []
+                colCount.value = 0
             } else if (noDefulat) {
                 rows.value = []
             } else {
