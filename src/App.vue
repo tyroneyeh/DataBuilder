@@ -174,7 +174,7 @@
             <div class="flex items-center justify-between w-full sm:w-auto sm:pl-4">
                 <span class="text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">💰 {{ translate('Value') }}:</span>
                 <select v-model="selectedChartNumColId" class="ml-3 w-full sm:w-auto bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded px-2 py-1 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 text-gray-700">
-                    <option v-for="col in columns.filter(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))" :key="col.id" :value="col.id">
+                    <option v-for="col in columns.filter(c => isNumericType(c.type))" :key="col.id" :value="col.id">
                         {{ col.label }}
                     </option>
                 </select>
@@ -249,7 +249,7 @@
             <tr class="print:break-inside-avoid">
                 <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')">#<span v-if="!isPrinting">{{ filteredRows.length }}</span></th>
                 <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
-                    :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'category', 'photo', 'minus', 'checkbox'].includes(col.type) ? 'max-w-[70px]' : 'min-w-[140px]',
+                    :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'minus', 'add', 'divide', 'category', 'photo', 'checkbox', 'color'].includes(col.type) ? 'max-w-[70px]' : 'min-w-[140px]',
                         editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                     ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
 
@@ -271,14 +271,7 @@
                         class="w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                     >
 
-                    <span v-if="!isPrinting && (col.type?.startsWith('multiply') || col.type === 'minus')" class="text-xs text-blue-500 dark:text-blue-400 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Calc') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'date'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Date') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'time'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Time') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'checkbox'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Checkbox') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'category'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Category') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'photo'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Photo') }})</span>
-                    <span v-else-if="!isPrinting && col.type === 'password'" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ translate('Password') }})</span>
-                    <span v-else-if="!isPrinting" class="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1 select-none whitespace-nowrap">({{ col.type === 'number' ? translate('Number') : translate('Text') }})</span>
+                    <span v-if="!isPrinting" class="text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'">({{ getColumnTypeLabel(col.type) }})</span>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
                 </th>
@@ -336,14 +329,108 @@
                         </span>
                     </div>
 
-                    <div v-else-if="col.type === 'multiply'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
-                        {{ formatNumber(calcValue(row[col.opA]) * calcValue(row[col.opB])) }}
+                    <div v-else-if="isCalcType(col.type)"
+                        class="w-auto sm:w-full print:w-full p-2 mr-6 print:text-black print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center"
+                        :class="col.type === 'minus' ? 'text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50/50 dark:bg-emerald-900/30' : (col.type === 'divide' ? 'text-violet-700 dark:text-violet-300 font-semibold bg-violet-50/50 dark:bg-violet-900/30' : 'text-blue-700 dark:text-blue-300 font-semibold bg-blue-50/50 dark:bg-blue-900/30')"
+                        :data-tooltip="getRowNumericValue(row, col).toLocaleString()"
+                        @click="speakFeedback($event.target.innerText)">
+                        {{ formatNumber(getRowNumericValue(row, col)) }}
                     </div>
-                    <div v-else-if="col.type === 'multiply3'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-blue-700 dark:text-blue-300 print:text-black font-semibold bg-blue-50/50 dark:bg-blue-900/30 print:bg-transparent rounded text-right sm:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center" :data-tooltip="(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])).toLocaleString()" @click="speakFeedback($event.target.innerText)">
-                        {{ formatNumber(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC])) }}
+                    <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
+                        <template v-if="isPrinting">
+                            <span class="text-sm text-gray-800">{{ '★'.repeat(Math.min(5, Math.max(0, Math.round(Number(row[col.id]) || 0)))) + '☆'.repeat(5 - Math.min(5, Math.max(0, Math.round(Number(row[col.id]) || 0)))) }}</span>
+                        </template>
+                        <template v-else>
+                            <button
+                                v-for="star in 5"
+                                :key="star"
+                                type="button"
+                                @click.stop="setRating(row, col.id, star)"
+                                class="text-xl sm:text-lg leading-none transition-transform active:scale-90 hover:scale-110 focus:outline-none"
+                                :class="star <= (Number(row[col.id]) || 0) ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'"
+                                :title="`${star} / 5`"
+                            >★</button>
+                        </template>
                     </div>
-                    <div v-else-if="col.type === 'minus'" class="w-auto sm:w-full print:w-full p-2 mr-6 text-emerald-600 dark:text-emerald-400 print:text-black font-bold bg-emerald-50/50 dark:bg-emerald-900/30 print:bg-transparent rounded text-right sm:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center">
-                        {{ formatNumber(calcValue(row[col.opA]) - calcValue(row[col.opB])) }}
+                    <div v-else-if="col.type === 'progress'" class="flex items-center justify-end sm:justify-start print:justify-center w-full gap-2 px-2 py-1">
+                        <template v-if="isPrinting">
+                            <span class="text-sm font-medium text-gray-800">{{ clampProgress(row[col.id]) }}%</span>
+                        </template>
+                        <template v-else>
+                            <div class="relative flex-1 min-w-[72px] h-5 flex items-center">
+                                <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-150 rounded-full"
+                                        :class="getProgressBarColor(clampProgress(row[col.id]))"
+                                        :style="{ width: clampProgress(row[col.id]) + '%' }"></div>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                    :value="clampProgress(row[col.id])"
+                                    @input="row[col.id] = clampProgress($event.target.value)"
+                                    @change="onDataEdited('rows')"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                >
+                            </div>
+                            <span class="text-xs font-bold tabular-nums w-9 text-right shrink-0" :class="clampProgress(row[col.id]) === 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-300'">
+                                {{ clampProgress(row[col.id]) }}%
+                            </span>
+                        </template>
+                    </div>
+                    <div v-else-if="col.type === 'tags'" class="flex flex-wrap items-center justify-end sm:justify-start print:justify-start w-full gap-1 px-1.5 py-1 min-h-[36px]">
+                        <template v-if="isPrinting">
+                            <span class="text-sm text-gray-800">{{ normalizeTags(row[col.id]).join(', ') }}</span>
+                        </template>
+                        <template v-else>
+                            <span
+                                v-for="(tag, tIdx) in normalizeTags(row[col.id])"
+                                :key="tIdx"
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/60 max-w-full"
+                            >
+                                <span class="truncate">{{ tag }}</span>
+                                <button type="button" tabindex="-1" @click.stop="removeTagFromRow(row, col.id, tIdx)" class="text-indigo-400 hover:text-red-500 leading-none">×</button>
+                            </span>
+                            <input
+                                :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                v-model="tagDrafts[`${row.id}-${col.id}`]"
+                                type="text"
+                                :placeholder="'+ ' + translate('Tags')"
+                                class="min-w-[56px] flex-1 bg-transparent outline-none text-sm text-right sm:text-left text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 py-0.5"
+                                @keydown.enter.prevent="addTagToRow(row, col.id)"
+                                @keydown.comma.prevent="addTagToRow(row, col.id)"
+                                @keydown.backspace="handleTagBackspace($event, row, col.id)"
+                                @blur="addTagToRow(row, col.id)"
+                            >
+                        </template>
+                    </div>
+                    <div v-else-if="col.type === 'color'" class="flex items-center justify-end sm:justify-start print:justify-center w-full gap-1.5 px-1.5 py-1">
+                        <span
+                            class="inline-block w-5 h-5 rounded border border-gray-300 dark:border-gray-600 shrink-0 relative overflow-hidden shadow-sm"
+                            :style="{ backgroundColor: isValidHexColor(row[col.id]) ? row[col.id] : '#3b82f6' }"
+                        >
+                            <input
+                                v-if="!isPrinting"
+                                type="color"
+                                :value="isValidHexColor(row[col.id]) ? row[col.id] : '#3b82f6'"
+                                @input="row[col.id] = $event.target.value"
+                                @change="onDataEdited('rows')"
+                                class="absolute -top-2 -left-2 w-10 h-10 opacity-0 cursor-pointer"
+                            >
+                        </span>
+                        <span v-if="isPrinting" class="text-xs font-mono text-gray-800">{{ row[col.id] || '' }}</span>
+                        <input
+                            v-else
+                            :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                            v-model="row[col.id]"
+                            type="text"
+                            placeholder="#3b82f6"
+                            spellcheck="false"
+                            class="w-20 min-w-0 bg-transparent outline-none text-xs font-mono text-gray-700 dark:text-gray-200 placeholder-gray-400"
+                            @change="onDataEdited('rows')"
+                            @keydown="focusNextInput($event, row.id, col.id)"
+                        >
                     </div>
                     <div v-else-if="col.type === 'photo'" class="flex items-center sm:justify-center print:justify-start w-full gap-2 overflow-x-auto max-w-full" :class="{'justify-end': !row[col.id]?.length}">
 
@@ -393,19 +480,21 @@
                                 <input
                                     :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
                                     v-model="row[col.id]"
-                                    :type="['date', 'time'].includes(col.type) ? col.type : 'text'"
-                                    :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || undefined"
+                                    :type="['date', 'time', 'url', 'tel', 'email'].includes(col.type) ? col.type : 'text'"
+                                    :inputmode="(isScannerOpen && 'none') || (col.type === 'number' && 'decimal') || (col.type === 'tel' && 'tel') || (col.type === 'email' && 'email') || (col.type === 'url' && 'url') || undefined"
                                     :autocomplete="col.type === 'password' ? 'off' : undefined"
-                                    :spellcheck="col.type === 'password' ? false : undefined"
+                                    :spellcheck="['password', 'url', 'email'].includes(col.type) ? false : undefined"
                                     :data-tooltip="col.type === 'password' ? '' : row[col.id]"
-                                    :placeholder="col.type === 'number' ? '0' : '...'"
+                                    :placeholder="col.type === 'number' ? '0' : (col.type === 'url' ? 'https://...' : (col.type === 'email' ? 'name@example.com' : (col.type === 'tel' ? '0912-345-678' : '...')))"
                                     class="peer relative z-10 w-full text-right bg-transparent focus:border-blue-500 outline-none px-1 py-2 sm:py-0 text-base print:py-0 print:text-sm"
                                     :class="{
                                         'text-gray-700 dark:text-gray-300 cursor-pointer': ['date', 'time'].includes(col.type),
                                         'text-blue-700 dark:text-blue-400 font-medium': col.type === 'category',
+                                        'text-indigo-600 dark:text-indigo-400 underline decoration-indigo-300 dark:decoration-indigo-700': col.type === 'url' && row[col.id],
                                         'border-gray-300 dark:border-gray-600 transition-colors text-transparent focus:text-gray-800 dark:focus:text-white caret-blue-500': !isKeyboardOpen && col.type === 'number',
                                         'min-w-0 sm:text-left print:text-left truncate text-gray-800 dark:text-white dark:placeholder-gray-500': isKeyboardOpen || col.type !== 'number',
                                         'pr-8 sm:pr-0 sm:pl-10': col.type === 'date' && row[col.id],
+                                        'pr-6': (col.type === 'url' && getSafeUrl(row[col.id])) || (col.type === 'tel' && getSafeTel(row[col.id])) || (col.type === 'email' && getSafeEmail(row[col.id])),
                                         '[&:not(:focus)]:[-webkit-text-security:disc]': col.type === 'password'
                                     }"
                                     @paste="handlePaste($event, windowStart + index, col.id)"
@@ -423,11 +512,34 @@
                                     {{ getWeekdayStr(row[col.id]) }}
                                 </span>
                             </div>
-                            <button v-if="!isPrinting && !['number', 'date', 'time'].includes(col.type)"
+                            <a v-if="!isPrinting && col.type === 'url' && getSafeUrl(row[col.id])"
+                                :href="getSafeUrl(row[col.id])"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                tabindex="-1"
+                                @click.stop
+                                class="sm:absolute sm:right-6 shrink-0 flex items-center justify-center p-1 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 z-10"
+                                :data-tooltip="translate('Open Link')"
+                            >🔗</a>
+                            <a v-else-if="!isPrinting && col.type === 'tel' && getSafeTel(row[col.id])"
+                                :href="getSafeTel(row[col.id])"
+                                tabindex="-1"
+                                @click.stop
+                                class="sm:absolute sm:right-0 shrink-0 flex items-center justify-center p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 z-10"
+                                :data-tooltip="translate('Phone')"
+                            >📞</a>
+                            <a v-else-if="!isPrinting && col.type === 'email' && getSafeEmail(row[col.id])"
+                                :href="getSafeEmail(row[col.id])"
+                                tabindex="-1"
+                                @click.stop
+                                class="sm:absolute sm:right-0 shrink-0 flex items-center justify-center p-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 z-10"
+                                :data-tooltip="translate('Email')"
+                            >✉️</a>
+                            <button v-if="!isPrinting && !['number', 'date', 'time', 'tel', 'email'].includes(col.type)"
                                 tabindex="-1"
                                 @click.stop="scanningTarget = { row, col }"
                                 class="sm:absolute opacity-100 sm:opacity-0 group-hover/cell:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 flex z-10 [@media(pointer:coarse)_and_(orientation:landscape)]:hidden"
-                                :class="{'sm:right-0': ['category', 'text', 'password'].includes(col.type)}"
+                                :class="{'sm:right-0': ['category', 'text', 'password', 'url'].includes(col.type)}"
                             >
                                 <span class="icon-mask icon-camera w-5 h-5 bg-current block"></span>
                             </button>
@@ -512,12 +624,18 @@
                 <td class="px-4 py-2 font-bold text-center text-gray-800 border border-gray-300">{{ translate('Total') }}</td>
                 <td v-for="col in columns" :key="'print-total-' + col.id"
                     class="px-4 py-2 font-bold text-gray-800 border border-gray-300"
-                    :class="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) ? 'text-right' : 'text-left'">
-                    <span v-if="['number', 'multiply', 'multiply3', 'minus'].includes(col.type)">
+                    :class="isNumericType(col.type) ? 'text-right' : 'text-left'">
+                    <span v-if="isNumericType(col.type)">
                         {{ formatNumber(columnTotals[col.id]) }}
                     </span>
                     <span v-else-if="col.type === 'checkbox'">
                         {{ `${columnTotals[col.id]} (${getCheckboxProgressPercent(columnTotals[col.id])}%)` || '0 / 0' }}
+                    </span>
+                    <span v-else-if="col.type === 'rating'">
+                        {{ columnTotals[col.id] ? `${columnTotals[col.id]} ★` : '' }}
+                    </span>
+                    <span v-else-if="col.type === 'progress'">
+                        {{ columnTotals[col.id] !== undefined ? `${columnTotals[col.id]}%` : '' }}
                     </span>
                     <span v-else class="text-sm text-gray-600 font-normal">
                         {{ columnFilters[col.id] || '' }}
@@ -716,14 +834,14 @@
             class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
-                col.type?.startsWith('multiply') || col.type === 'minus' ? 'sm:justify-end' : 'sm:justify-start'
+                isCalcType(col.type) ? 'sm:justify-end' : 'sm:justify-start'
             ]">
 
             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
 
-            <div class="relative w-full" :class="{'text-right': ['number', 'multiply', 'multiply3', 'minus'].includes(col.type)}">
+            <div class="relative w-full" :class="{'text-right': isNumericType(col.type)}">
 
-                <div v-if="['number', 'multiply', 'multiply3', 'minus'].includes(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
+                <div v-if="isNumericType(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(columnTotals[col.id] || 0).toLocaleString()">
                     <div v-if="dateRangeOpenState[col.id]"
                         @click.stop="toggleDateFilter($event, col.id, false)"
                         class="fixed inset-0 cursor-default"
@@ -777,7 +895,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -891,7 +1009,54 @@
                     </div>
                 </div>
 
-                <div v-else-if="['number', 'multiply', 'multiply3', 'minus', 'checkbox'].includes(col.type)" class="relative text-gray-800 dark:text-gray-200 font-semibold">
+                <div v-else-if="col.type === 'rating' && !isPrinting" class="relative w-full sm:w-auto"
+                    :data-tooltip="columnTotals[col.id] ? `${columnTotals[col.id]} ★` : '0 ★'">
+                    <select
+                        v-model="columnFilters[col.id]"
+                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-amber-600 dark:text-amber-400 font-medium transition-colors shadow-inner pr-8 cursor-pointer"
+                    >
+                        <option value="" class="bg-white dark:bg-gray-700">{{ columnTotals[col.id] ? `★ ${columnTotals[col.id]}` : translate('All') }}</option>
+                        <option value="5" class="bg-white dark:bg-gray-700">★★★★★ (5)</option>
+                        <option value="4" class="bg-white dark:bg-gray-700">★★★★+ (4+)</option>
+                        <option value="3" class="bg-white dark:bg-gray-700">★★★+ (3+)</option>
+                        <option value="2" class="bg-white dark:bg-gray-700">★★+ (2+)</option>
+                        <option value="1" class="bg-white dark:bg-gray-700">★+ (1+)</option>
+                        <option value="0" class="bg-white dark:bg-gray-700">☆ (0)</option>
+                    </select>
+                    <button
+                        v-show="columnFilters[col.id]"
+                        @click="clearFilter(col.id)"
+                        class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                        :title="translate('Clear filter')"
+                    >✖</button>
+                </div>
+
+                <div v-else-if="col.type === 'progress' && !isPrinting" class="relative w-full sm:w-auto"
+                    :data-tooltip="`${columnTotals[col.id] || 0}%`">
+                    <div class="relative w-full bg-white dark:bg-gray-700 overflow-hidden shadow-inner focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-colors">
+                        <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out opacity-20 dark:opacity-30 pointer-events-none"
+                            :class="getProgressBarColor(columnTotals[col.id] || 0)"
+                            :style="{ width: (columnTotals[col.id] || 0) + '%' }">
+                        </div>
+                        <select
+                            v-model="columnFilters[col.id]"
+                            class="relative w-full text-sm px-2 py-1.5 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
+                        >
+                            <option value="" class="bg-white dark:bg-gray-700">{{ `${columnTotals[col.id] || 0}%` }}</option>
+                            <option value="done" class="bg-white dark:bg-gray-700">✅ 100%</option>
+                            <option value="in_progress" class="bg-white dark:bg-gray-700">⏳ 1% – 99%</option>
+                            <option value="not_started" class="bg-white dark:bg-gray-700">⬜ 0%</option>
+                        </select>
+                        <button
+                            v-show="columnFilters[col.id]"
+                            @click="clearFilter(col.id)"
+                            class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
+                            :title="translate('Clear filter')"
+                        >✖</button>
+                    </div>
+                </div>
+
+                <div v-else-if="isNumericType(col.type) || col.type === 'checkbox'" class="relative text-gray-800 dark:text-gray-200 font-semibold">
                     <template v-if="col.type === 'checkbox'">
                         <span class="text-sm font-medium" :class="getCheckboxProgressClass(columnTotals[col.id])">{{ columnTotals[col.id] || '0 / 0' }}</span>
                     </template>
@@ -1208,12 +1373,12 @@
                             <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                         </select>
                     </div>
-                    <div v-if="newColType?.startsWith('multiply') || newColType === 'minus'" class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 px-2 py-1.5 rounded-md border border-blue-200 dark:border-blue-800 flex-[1.5] min-w-0">
+                    <div v-if="isCalcType(newColType)" class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 px-2 py-1.5 rounded-md border border-blue-200 dark:border-blue-800 flex-[1.5] min-w-0">
                         <select v-model="formulaA" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base">
                             <option value="" disabled>{{ translate('Column A') }}</option>
                             <option v-for="c in numberColumns" :key="'A'+c.id" :value="c.id">{{ c.label }}</option>
                         </select>
-                        <span class="text-gray-500 dark:text-gray-400 font-bold shrink-0">{{ newColType === 'minus' ? '−' : '×' }}</span>
+                        <span class="text-gray-500 dark:text-gray-400 font-bold shrink-0">{{ newColType === 'add' ? '+' : (newColType === 'minus' ? '−' : (newColType === 'divide' ? '÷' : '×')) }}</span>
                         <select v-model="formulaB" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 dark:text-white text-base">
                             <option value="" disabled>{{ translate('Column B') }}</option>
                             <option v-for="c in numberColumns" :key="'B'+c.id" :value="c.id">{{ c.label }}</option>
@@ -1818,12 +1983,105 @@ export default {
             resolvePromise: null
         })
         const confirmCancelBtnRef = ref(null)
+        const CALC_TYPES = new Set(['multiply', 'multiply3', 'minus', 'add', 'divide'])
+        const isCalcType = (type) => CALC_TYPES.has(type)
+        const isNumericType = (type) => type === 'number' || CALC_TYPES.has(type)
+        const getSafeUrl = (raw) => {
+            const val = String(raw || '').trim()
+            if (!val) return ''
+            if (/^https?:\/\//i.test(val)) return val
+            if (/^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+([/?#].*)?$/.test(val)) return `https://${val}`
+            return ''
+        }
+        const getSafeTel = (raw) => {
+            const val = String(raw || '').trim()
+            return val && /^[+\d\s\-().#*,;]+$/.test(val) ? `tel:${val.replace(/\s+/g, '')}` : ''
+        }
+        const getSafeEmail = (raw) => {
+            const val = String(raw || '').trim()
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ? `mailto:${val}` : ''
+        }
+        const isValidHexColor = (val) => /^#[0-9a-fA-F]{6}$/.test(String(val || '').trim())
+        const normalizeTags = (val) => {
+            if (Array.isArray(val)) return val.map(v => String(v).trim()).filter(Boolean)
+            if (typeof val === 'string' && val.trim()) return val.split(/[,，]/).map(v => v.trim()).filter(Boolean)
+            return []
+        }
+        const tagDrafts = reactive({})
+        const addTagToRow = (row, colId, rawValue) => {
+            const draftKey = `${row.id}-${colId}`
+            const text = (rawValue !== undefined ? String(rawValue) : (tagDrafts[draftKey] || '')).trim()
+            if (!text) return
+            const current = normalizeTags(row[colId])
+            const newTags = text.split(/[,，]/).map(t => t.trim()).filter(t => t && !current.includes(t))
+            if (newTags.length > 0) {
+                row[colId] = [...current, ...newTags]
+                onDataEdited('rows')
+            }
+            tagDrafts[draftKey] = ''
+        }
+        const removeTagFromRow = (row, colId, idx) => {
+            const current = normalizeTags(row[colId])
+            current.splice(idx, 1)
+            row[colId] = current
+            onDataEdited('rows')
+        }
+        const handleTagBackspace = (event, row, colId) => {
+            const draftKey = `${row.id}-${colId}`
+            if (!tagDrafts[draftKey]) {
+                const current = normalizeTags(row[colId])
+                if (current.length > 0) {
+                    event.preventDefault()
+                    current.pop()
+                    row[colId] = current
+                    onDataEdited('rows')
+                }
+            }
+        }
+        const setRating = (row, colId, star) => {
+            row[colId] = Number(row[colId]) === star ? 0 : star
+            onDataEdited('rows')
+        }
+        const clampProgress = (val) => {
+            const num = Number(val)
+            if (!Number.isFinite(num)) return 0
+            return Math.min(100, Math.max(0, Math.round(num)))
+        }
+        const getColumnTypeLabel = (type) => {
+            if (isCalcType(type)) return translate('Calc')
+            const labelMap = {
+                date: 'Date',
+                time: 'Time',
+                checkbox: 'Checkbox',
+                category: 'Category',
+                photo: 'Photo',
+                password: 'Password',
+                url: 'URL',
+                tel: 'Phone',
+                email: 'Email',
+                rating: 'Rating',
+                progress: 'Progress',
+                tags: 'Tags',
+                color: 'Color',
+                number: 'Number',
+                text: 'Text'
+            }
+            return translate(labelMap[type] || 'Text')
+        }
+
         const typeOptions = computed(() => {
             const opts = [
                 {value: 'category', label: translate('Category')},
                 {value: 'text', label: translate('Text')},
                 {value: 'password', label: translate('Password')},
+                {value: 'url', label: translate('URL')},
+                {value: 'tel', label: translate('Phone')},
+                {value: 'email', label: translate('Email')},
                 {value: 'number', label: translate('Number')},
+                {value: 'rating', label: translate('Rating')},
+                {value: 'progress', label: translate('Progress')},
+                {value: 'tags', label: translate('Tags')},
+                {value: 'color', label: translate('Color')},
                 {value: 'date', label: translate('Date')},
                 {value: 'time', label: translate('Time')},
                 {value: 'checkbox', label: translate('Checkbox')},
@@ -1832,8 +2090,10 @@ export default {
             const numCount = columns.value.filter(col => col.type === 'number').length
             if (numCount > 1) {
                 opts.push(
+                    {value: 'add', label: translate('Add (A + B)')},
+                    {value: 'minus', label: translate('Minus (A - B)')},
                     {value: 'multiply', label: translate('Multiply (A × B)')},
-                    {value: 'minus', label: translate('Minus (A - B)')}
+                    {value: 'divide', label: translate('Divide (A ÷ B)')}
                 )
             }
             if (numCount > 2) {
@@ -1848,7 +2108,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'password', 'date', 'time', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -2305,11 +2565,17 @@ export default {
             if (colDef.type === 'multiply') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB])
             if (colDef.type === 'multiply3') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB]) * calcValue(row[colDef.opC])
             if (colDef.type === 'minus') return calcValue(row[colDef.opA]) - calcValue(row[colDef.opB])
+            if (colDef.type === 'add') return calcValue(row[colDef.opA]) + calcValue(row[colDef.opB])
+            if (colDef.type === 'divide') {
+                const denom = calcValue(row[colDef.opB])
+                if (denom === 0) return 0
+                return Math.round((calcValue(row[colDef.opA]) / denom) * 100) / 100
+            }
             return 0
         }
 
         const getHistoricalSpent = (catId) => {
-            const amountColId = selectedChartNumColId.value || columns.value.find(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))?.id
+            const amountColId = selectedChartNumColId.value || columns.value.find(c => isNumericType(c.type))?.id
             const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
             const catColId = mainCatColId.value
             const amountColDef = columns.value.find(c => c.id === amountColId)
@@ -2402,12 +2668,8 @@ export default {
                         if (!colDef) return true
                         const matchMode = filterMatchMode.value[colId] || 'exact'
 
-                        if (['number', 'multiply', 'multiply3', 'minus'].includes(colDef.type)) {
-                            let numVal = 0
-                            if (colDef.type === 'number') numVal = calcValue(rawVal)
-                            else if (colDef.type === 'multiply') numVal = calcValue(row[colDef.opA]) * calcValue(row[colDef.opB])
-                            else if (colDef.type === 'multiply3') numVal = calcValue(row[colDef.opA]) * calcValue(row[colDef.opB]) * calcValue(row[colDef.opC])
-                            else if (colDef.type === 'minus') numVal = calcValue(row[colDef.opA]) - calcValue(row[colDef.opB])
+                        if (isNumericType(colDef.type)) {
+                            const numVal = getRowNumericValue(row, colDef)
 
                             if (range.start !== '' && range.end !== '') return numVal >= parseFloat(range.start) && numVal <= parseFloat(range.end)
                             else if (range.start !== '') return matchMode === 'range' ? numVal >= parseFloat(range.start) : numVal === parseFloat(range.start)
@@ -2483,7 +2745,26 @@ export default {
                             if (filterTextStr === 'false') return isChecked === false
                             return true
                         }
-                        if (['number', 'multiply', 'multiply3', 'minus'].includes(colDef.type)) {
+                        if (colDef.type === 'rating') {
+                            const starVal = Math.round(Number(rawValue) || 0)
+                            const targetStar = Number(filterTextStr)
+                            if (targetStar === 0) return starVal === 0
+                            if (Number.isFinite(targetStar)) return starVal >= targetStar
+                            return true
+                        }
+                        if (colDef.type === 'progress') {
+                            const pct = clampProgress(rawValue)
+                            if (filterTextStr === 'done') return pct === 100
+                            if (filterTextStr === 'in_progress') return pct > 0 && pct < 100
+                            if (filterTextStr === 'not_started') return pct === 0
+                            return true
+                        }
+                        if (colDef.type === 'tags') {
+                            const tagStr = normalizeTags(rawValue).join(', ')
+                            if (!tagStr) return false
+                            return checkMultiConditions(tagStr, filterTextStr)
+                        }
+                        if (isNumericType(colDef.type)) {
                             const condition = parseFilterCondition(filterText)
                             if (condition) {
                                 if (colDef.type === 'number' && isEmptyCell) return false
@@ -2599,7 +2880,7 @@ export default {
             const displayRows = Array.isArray(rows.value) ? rows.value : []
             const columnList = Array.isArray(columns.value) ? columns.value : []
 
-            const amountColId = selectedChartNumColId.value || columnList.find(c => ['number', 'multiply', 'multiply3', 'minus'].includes(c.type))?.id
+            const amountColId = selectedChartNumColId.value || columnList.find(c => isNumericType(c.type))?.id
             const amountColDef = columnList.find(c => c.id === amountColId)
             const dateColId = selectedChartDateColId.value || columnList.find(c => c.type === 'date')?.id
             const catColId = mainCatColId.value
@@ -2874,8 +3155,22 @@ export default {
                     totals[col.id] = `${checkedCount} / ${filteredRows.value.length}`
                     return
                 }
+                if (col.type === 'rating') {
+                    const rated = filteredRows.value.map(row => Number(row[col.id]) || 0).filter(v => v > 0)
+                    totals[col.id] = rated.length ? Number((rated.reduce((s, v) => s + v, 0) / rated.length).toFixed(1)) : 0
+                    return
+                }
+                if (col.type === 'progress') {
+                    if (!filteredRows.value.length) {
+                        totals[col.id] = 0
+                    } else {
+                        const sum = filteredRows.value.reduce((s, row) => s + clampProgress(row[col.id]), 0)
+                        totals[col.id] = Math.round(sum / filteredRows.value.length)
+                    }
+                    return
+                }
 
-                if (['number', 'multiply', 'multiply3', 'minus'].includes(col.type)) {
+                if (isNumericType(col.type)) {
                     let sum = 0
                     filteredRows.value.forEach(row => {
                         let val = getRowNumericValue(row, col)
@@ -3551,6 +3846,12 @@ export default {
                             val = parseFloat(val.toString().replace(/,/g, '')) || null
                         } else if (col.type === 'photo') {
                             val = []
+                        } else if (col.type === 'tags') {
+                            val = normalizeTags(val)
+                        } else if (col.type === 'rating') {
+                            val = Math.min(5, Math.max(0, Math.round(Number(val) || 0)))
+                        } else if (col.type === 'progress') {
+                            val = clampProgress(val)
                         } else if (col.type === 'time') {
                             val = normalizeTimeString(val)
                         } else if (col.type === 'checkbox') {
@@ -3558,7 +3859,11 @@ export default {
                         }
                         newRow[col.id] = val
                     } else {
-                        newRow[col.id] = col.type === 'number' ? null : (col.type === 'photo' ? [] : '')
+                        if (col.type === 'number') newRow[col.id] = null
+                        else if (col.type === 'photo' || col.type === 'tags') newRow[col.id] = []
+                        else if (col.type === 'rating' || col.type === 'progress') newRow[col.id] = 0
+                        else if (col.type === 'color') newRow[col.id] = '#3b82f6'
+                        else newRow[col.id] = ''
                     }
                 })
 
@@ -3587,12 +3892,10 @@ export default {
             const rows2D = rows.value.map(row => {
                 const rowArray = [row.id]
                 columns.value.forEach(c => {
-                    if (c.type === 'multiply') {
-                        rowArray.push(calcValue(row[c.opA]) * calcValue(row[c.opB]))
-                    } else if (c.type === 'multiply3') {
-                        rowArray.push(calcValue(row[c.opA]) * calcValue(row[c.opB]) * calcValue(row[c.opC]))
-                    } else if (c.type === 'minus') {
-                        rowArray.push(calcValue(row[c.opA]) - calcValue(row[c.opB]))
+                    if (isCalcType(c.type)) {
+                        rowArray.push(getRowNumericValue(row, c))
+                    } else if (c.type === 'tags') {
+                        rowArray.push(normalizeTags(row[c.id]).join(', '))
                     } else {
                         rowArray.push(row[c.id] ?? '')
                     }
@@ -3613,10 +3916,10 @@ export default {
             const startRow = 2
             const endRow = rows.value.length + 1
 
-            if (columns.value.some(col => col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus')) {
+            if (columns.value.some(col => isNumericType(col.type))) {
                 const totalRow = [translate('Total')]
                 columns.value.forEach((col, index) => {
-                    if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') {
+                    if (isNumericType(col.type)) {
                         const colIndex = index + 1
                         const colLetter = getColumnLetter(colIndex)
                         totalRow.push(`=SUM(${colLetter}${startRow}:${colLetter}${endRow})`)
@@ -4093,7 +4396,7 @@ export default {
             const existingCol = columns.value.find(col => col.label.toLowerCase() === newColLabel.value.toLowerCase())
             if (existingCol && await showConfirm(translate('This column already exists. Do you want to overwrite it?'))) {
                 existingCol.type = newColType.value
-                if (newColType.value === 'multiply' || newColType.value === 'minus') {
+                if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                     existingCol.opA = formulaA.value
                     existingCol.opB = formulaB.value
                 }
@@ -4105,7 +4408,7 @@ export default {
                 onDataEdited('both')
                 return
             }
-            if (newColType.value.startsWith('multiply') || newColType.value === 'minus') {
+            if (isCalcType(newColType.value)) {
                 if (newColType.value === 'multiply3' && !formulaC.value) return showConfirm(translate('Please select columns A, B and C!'), 1)
                 else if (!formulaA.value || !formulaB.value) return showConfirm(translate('Please select columns A and B!'), 1)
                 if (
@@ -4120,7 +4423,7 @@ export default {
             colCount.value++
             const newColId = `col_${colCount.value}`
             const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
-            if (newColType.value === 'multiply' || newColType.value === 'minus') {
+            if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                 newColData.opA = formulaA.value
                 newColData.opB = formulaB.value
             }
@@ -4131,11 +4434,13 @@ export default {
             }
 
             columns.value = [...columns.value, newColData]
-            if (!newColType.value.startsWith('multiply') && newColType.value !== 'minus') {
+            if (!isCalcType(newColType.value)) {
                 rows.value.forEach(row => {
                     if (newColType.value === 'number') row[newColId] = null
                     else if (newColType.value === 'checkbox') row[newColId] = false
-                    else if (newColType.value === 'photo') row[newColId] = []
+                    else if (newColType.value === 'photo' || newColType.value === 'tags') row[newColId] = []
+                    else if (newColType.value === 'rating' || newColType.value === 'progress') row[newColId] = 0
+                    else if (newColType.value === 'color') row[newColId] = '#3b82f6'
                     else row[newColId] = ''
                 })
             }
@@ -4177,8 +4482,11 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'date') newRow[col.id] = todayDate
                 else if (col.type === 'time') newRow[col.id] = currentTime
-                else if (col.type === 'photo') newRow[col.id] = []
-                else if (!col.type?.startsWith('multiply') && !col.type?.startsWith('minus')) newRow[col.id] = col.type === 'number' ? null : ''
+                else if (col.type === 'photo' || col.type === 'tags') newRow[col.id] = []
+                else if (col.type === 'rating' || col.type === 'progress') newRow[col.id] = 0
+                else if (col.type === 'color') newRow[col.id] = '#3b82f6'
+                else if (col.type === 'checkbox') newRow[col.id] = false
+                else if (!isCalcType(col.type)) newRow[col.id] = col.type === 'number' ? null : ''
             })
 
             Object.keys(columnFilters.value).forEach(key => columnFilters.value[key] = '')
@@ -4533,7 +4841,7 @@ export default {
         }
 
         const removeColumn = async (idToRemove) => {
-            if (columns.value.some(col => (col.type?.startsWith('multiply') || col.type === 'minus') && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove))) {
+            if (columns.value.some(col => isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove))) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
             if (!await showConfirm(translate("Are you sure you want to delete this column?"))) return
@@ -4639,13 +4947,16 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'number') {
                     cleanRow[col.label] = row[col.id] || 0
-                } else if (col.type.startsWith('multiply')) {
-                    cleanRow[col.label] = calcValue(row[col.opA]) * calcValue(row[col.opB])
-                    if (col.type === 'multiply3') cleanRow[col.label] *= calcValue(row[col.opC])
-                } else if (col.type === 'minus') {
-                    cleanRow[col.label] = calcValue(row[col.opA]) - calcValue(row[col.opB])
+                } else if (isCalcType(col.type)) {
+                    cleanRow[col.label] = getRowNumericValue(row, col)
                 } else if (col.type === 'checkbox') {
                     cleanRow[col.label] = row[col.id] ? 1 : 0
+                } else if (col.type === 'rating') {
+                    cleanRow[col.label] = Math.min(5, Math.max(0, Math.round(Number(row[col.id]) || 0)))
+                } else if (col.type === 'progress') {
+                    cleanRow[col.label] = clampProgress(row[col.id])
+                } else if (col.type === 'tags') {
+                    cleanRow[col.label] = normalizeTags(row[col.id])
                 } else if (col.type === 'date' || col.type === 'time') {
                     cleanRow[col.label] = row[col.id] || ''
                 } else {
@@ -4682,13 +4993,13 @@ export default {
 
             const schemaHeaders = columns.value.map(c => {
                 let meta = c.type
-                if (c.type.startsWith('multiply') || c.type === 'minus') {
+                if (isCalcType(c.type)) {
                     const colA = columns.value.find(col => col.id === c.opA)
                     const colB = columns.value.find(col => col.id === c.opB)
-                    meta += `|${colA.label}|${colB.label}`
+                    meta += `|${colA?.label || ''}|${colB?.label || ''}`
                     if (c.type === 'multiply3') {
                         const colC = columns.value.find(col => col.id === c.opC)
-                        meta += `|${colC.label}`
+                        meta += `|${colC?.label || ''}`
                     }
                 }
                 return `${c.label} [${meta}]`
@@ -4702,13 +5013,16 @@ export default {
                 columns.value.forEach(col => {
                     if (col.type === 'number') {
                         rowData.push(row[col.id])
-                    } else if (col.type.startsWith('multiply')) {
-                        if (col.type === 'multiply3') rowData.push(calcValue(row[col.opA]) * calcValue(row[col.opB]) * calcValue(row[col.opC]))
-                        else rowData.push(calcValue(row[col.opA]) * calcValue(row[col.opB]))
-                    } else if (col.type === 'minus') {
-                        rowData.push(calcValue(row[col.opA]) - calcValue(row[col.opB]))
+                    } else if (isCalcType(col.type)) {
+                        rowData.push(getRowNumericValue(row, col))
                     } else if (col.type === 'checkbox') {
                         rowData.push(row[col.id] ? 1 : 0)
+                    } else if (col.type === 'rating') {
+                        rowData.push(Math.min(5, Math.max(0, Math.round(Number(row[col.id]) || 0))))
+                    } else if (col.type === 'progress') {
+                        rowData.push(clampProgress(row[col.id]))
+                    } else if (col.type === 'tags') {
+                        rowData.push(normalizeTags(row[col.id]).join(', '))
                     } else {
                         rowData.push(row[col.id] || '')
                     }
@@ -4719,7 +5033,7 @@ export default {
 
             const totalRow = [translate('Total')]
             columns.value.forEach(col => {
-                if (col.type === 'number' || col.type.startsWith('multiply') || col.type === 'minus') totalRow.push(columnTotals.value[col.id] || 0)
+                if (isNumericType(col.type)) totalRow.push(columnTotals.value[col.id] || 0)
                 else totalRow.push('')
             })
             totalRow.push('')
@@ -4850,8 +5164,8 @@ export default {
 
                     if (parsedColumnMeta[key]) {
                         const metaStr = parsedColumnMeta[key].type
-                        if (metaStr.startsWith('multiply') || metaStr.startsWith('minus')) {
-                            const parts = metaStr.split('|')
+                        const parts = metaStr.split('|')
+                        if (isCalcType(parts[0])) {
                             targetType = parts[0]
                             targetOpA = columns.value.find(col => col.label === parts[1])?.id
                             targetOpB = columns.value.find(col => col.label === parts[2])?.id
@@ -4895,11 +5209,17 @@ export default {
                 columns.value.forEach(col => {
                     const val = item[col.label]
                     if (val !== undefined && val !== null && val !== '') {
-                        if (col.type === 'number' || col.type?.startsWith('multiply') || col.type === 'minus') {
+                        if (isNumericType(col.type)) {
                             newRow[col.id] = val
                             hasNumberColumn.value = true
                         } else if (col.type === 'checkbox') {
                             newRow[col.id] = val === true || val === 1 || ['true', '1', 'yes'].includes(String(val).trim().toLowerCase())
+                        } else if (col.type === 'rating') {
+                            newRow[col.id] = Math.min(5, Math.max(0, Math.round(Number(val) || 0)))
+                        } else if (col.type === 'progress') {
+                            newRow[col.id] = clampProgress(val)
+                        } else if (col.type === 'tags') {
+                            newRow[col.id] = normalizeTags(val)
                         } else if (col.type === 'date') {
                             newRow[col.id] = formatDate(val)
                             if (!dateColId) dateColId = col.id
@@ -4910,10 +5230,16 @@ export default {
                             newRow[col.id] = String(val)
                         }
                     } else if (col.type === 'checkbox') {
-                        newRow[col.id] =  false
+                        newRow[col.id] = false
                     } else if (col.type === 'number') {
                         newRow[col.id] = 0
                         hasNumberColumn.value = true
+                    } else if (col.type === 'rating' || col.type === 'progress') {
+                        newRow[col.id] = 0
+                    } else if (col.type === 'tags' || col.type === 'photo') {
+                        newRow[col.id] = []
+                    } else if (col.type === 'color') {
+                        newRow[col.id] = '#3b82f6'
                     } else {
                         newRow[col.id] = ''
                     }
@@ -4987,7 +5313,7 @@ export default {
                 selectedChartCatColId.value = defaultCat ? defaultCat.id : null
             }
             if (!numExists) {
-                const defaultNum = columns.value.find(c => c.type?.startsWith('multiply')) || columns.value.find(c => c.type === 'number')
+                const defaultNum = columns.value.find(c => isCalcType(c.type)) || columns.value.find(c => c.type === 'number')
                 selectedChartNumColId.value = defaultNum ? defaultNum.id : null
             }
         }
@@ -6760,7 +7086,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const currentEnd = dateRangeFilters.value[colId].end
                 if (currentEnd !== '') {
                     const colDef = columns.value.find(c => c.id === colId)
-                    const isNumber = colDef && ['number', 'multiply', 'multiply3', 'minus'].includes(colDef.type)
+                    const isNumber = colDef && isNumericType(colDef.type)
                     if (isNumber) {
                         if (parseFloat(value) > parseFloat(currentEnd)) {
                             dateRangeFilters.value[colId].end = value
@@ -7482,7 +7808,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
+                        if (!isCalcType(colType) && colType !== 'photo') {
                             let newVal = ''
                             if (isSingleValue) {
                                 newVal = singleValue
@@ -7490,6 +7816,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                                 const pasteColIdx = (c - minCol) % cells.length
                                 newVal = (cells[pasteColIdx] || '').trim()
                             }
+                            if (colType === 'tags') newVal = normalizeTags(newVal)
+                            else if (colType === 'rating') newVal = Math.min(5, Math.max(0, Math.round(Number(newVal) || 0)))
+                            else if (colType === 'progress') newVal = clampProgress(newVal)
 
                             if (newRows[actualIndex][colId] !== newVal) {
                                 newRows[actualIndex][colId] = newVal
@@ -7514,7 +7843,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         const newRow = { id: generateId(), note: '', isExpanded: false }
                         columns.value.forEach(col => {
                             if (col.type === 'number') newRow[col.id] = null
-                            else if (col.type === 'photo') newRow[col.id] = []
+                            else if (col.type === 'photo' || col.type === 'tags') newRow[col.id] = []
+                            else if (col.type === 'rating' || col.type === 'progress') newRow[col.id] = 0
+                            else if (col.type === 'color') newRow[col.id] = '#3b82f6'
+                            else if (col.type === 'checkbox') newRow[col.id] = false
                             else if (col.type === 'date') newRow[col.id] = todayDate
                             else if (col.type === 'time') newRow[col.id] = currentTime
                             else newRow[col.id] = ''
@@ -7533,25 +7865,33 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         if (targetColIndex < columns.value.length) {
                             const targetColId = columns.value[targetColIndex].id
                             const colType = columns.value[targetColIndex].type
-                            if (!['multiply', 'multiply3', 'minus', 'photo'].includes(colType)) {
+                            if (!isCalcType(colType) && colType !== 'photo') {
                                 let finalVal = cellValue.trim()
-                                const mixedMatch = finalVal.match(/^(.*?[^\d\s])\s*(\d+(?:\.\d+)?)\s*$/)
-                                if (mixedMatch) {
-                                    const parsedText = mixedMatch[1].trim()
-                                    const parsedNumber = mixedMatch[2]
-                                    if (colType === 'number') {
-                                        finalVal = parsedNumber
-                                        const textCol = columns.value.find(c => c.type === 'text') || columns.value.find(c => c.type === 'category') || columns.value.find(c => c.type === 'note')
-                                        if (textCol && newRows[actualIndex][textCol.id] !== parsedText) {
-                                            newRows[actualIndex][textCol.id] = parsedText
-                                            hasChanges = true
-                                        }
-                                    } else {
-                                        finalVal = parsedText
-                                        const numCol = columns.value.find(c => c.type === 'number')
-                                        if (numCol && newRows[actualIndex][numCol.id] !== parsedNumber) {
-                                            newRows[actualIndex][numCol.id] = parsedNumber
-                                            hasChanges = true
+                                if (colType === 'tags') {
+                                    finalVal = normalizeTags(finalVal)
+                                } else if (colType === 'rating') {
+                                    finalVal = Math.min(5, Math.max(0, Math.round(Number(finalVal) || 0)))
+                                } else if (colType === 'progress') {
+                                    finalVal = clampProgress(finalVal)
+                                } else if (['text', 'category', 'number'].includes(colType)) {
+                                    const mixedMatch = finalVal.match(/^(.*?[^\d\s])\s*(\d+(?:\.\d+)?)\s*$/)
+                                    if (mixedMatch) {
+                                        const parsedText = mixedMatch[1].trim()
+                                        const parsedNumber = mixedMatch[2]
+                                        if (colType === 'number') {
+                                            finalVal = parsedNumber
+                                            const textCol = columns.value.find(c => c.type === 'text') || columns.value.find(c => c.type === 'category') || columns.value.find(c => c.type === 'note')
+                                            if (textCol && newRows[actualIndex][textCol.id] !== parsedText) {
+                                                newRows[actualIndex][textCol.id] = parsedText
+                                                hasChanges = true
+                                            }
+                                        } else {
+                                            finalVal = parsedText
+                                            const numCol = columns.value.find(c => c.type === 'number')
+                                            if (numCol && newRows[actualIndex][numCol.id] !== parsedNumber) {
+                                                newRows[actualIndex][numCol.id] = parsedNumber
+                                                hasChanges = true
+                                            }
                                         }
                                     }
                                 }
@@ -7708,8 +8048,12 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 for (let r = minRow; r <= maxRow; r++) {
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
-                        if (!['multiply', 'photo', 'multiply3', 'minus'].includes(columns.value[c].type) && filteredRows.value[r]) {
-                            filteredRows.value[r][colId] = ''
+                        const colType = columns.value[c].type
+                        if (!isCalcType(colType) && colType !== 'photo' && filteredRows.value[r]) {
+                            if (colType === 'tags') filteredRows.value[r][colId] = []
+                            else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
+                            else if (colType === 'checkbox') filteredRows.value[r][colId] = false
+                            else filteredRows.value[r][colId] = ''
                         }
                     }
                 }
@@ -8134,7 +8478,22 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             heatmapCanvas,
             isOnline,
             showBadges,
-            failedBadges
+            failedBadges,
+            isCalcType,
+            isNumericType,
+            getRowNumericValue,
+            getSafeUrl,
+            getSafeTel,
+            getSafeEmail,
+            isValidHexColor,
+            normalizeTags,
+            tagDrafts,
+            addTagToRow,
+            removeTagFromRow,
+            handleTagBackspace,
+            setRating,
+            clampProgress,
+            getColumnTypeLabel
         }
     }
 }
