@@ -49,7 +49,8 @@
             <span class="transform transition-transform duration-300" :class="isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
         </div>
     </div>
-    <div v-show="columns.length && isChartOpen" class="w-full mt-2">
+    <div ref="chartContainer" v-show="columns.length && isChartOpen" class="w-full mt-2"
+        :style="!isPrinting && lockedChartMinHeight ? { minHeight: lockedChartMinHeight + 'px' } : undefined">
         <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
             <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
                 <span class="text-gray-500 dark:text-gray-400 text-sm font-bold flex items-center mr-2">📅 {{ translate('Year') }}:</span>
@@ -2336,7 +2337,9 @@ export default {
         const observedRows = new WeakSet()
         const colWidths = ref({})
         const filterContainer = ref(null)
+        const chartContainer = ref(null)
         const lockedTableMinHeight = ref(0)
+        const lockedChartMinHeight = ref(0)
         const isFilterFocused = ref(false)
         let pendingFilterAnchorTop = null
 
@@ -2345,16 +2348,25 @@ export default {
             return isFilterFocused.value || hasOpenRange || Boolean(activeRow.value && !activeRow.value.row)
         }
 
-        const lockTableHeightForFilter = () => {
-            if (!lockedTableMinHeight.value && tableContainer.value) {
+        const lockLayoutForFilter = () => {
+            if (tableContainer.value) {
                 const h = Math.round(tableContainer.value.getBoundingClientRect().height)
-                if (h > 0) lockedTableMinHeight.value = h
+                if (h > lockedTableMinHeight.value) lockedTableMinHeight.value = h
             }
+            if (isChartOpen.value && chartContainer.value) {
+                const ch = Math.round(chartContainer.value.getBoundingClientRect().height)
+                if (ch > lockedChartMinHeight.value) lockedChartMinHeight.value = ch
+            }
+        }
+
+        const releaseFilterLayoutLock = () => {
+            lockedTableMinHeight.value = 0
+            lockedChartMinHeight.value = 0
         }
 
         const captureFilterAnchor = () => {
             if (!filterContainer.value || !isFilterInteractionActive()) return
-            lockTableHeightForFilter()
+            lockLayoutForFilter()
             if (pendingFilterAnchorTop === null) {
                 pendingFilterAnchorTop = filterContainer.value.getBoundingClientRect().top
             }
@@ -2381,7 +2393,7 @@ export default {
 
         const onFilterFocusIn = () => {
             isFilterFocused.value = true
-            lockTableHeightForFilter()
+            lockLayoutForFilter()
         }
 
         const onFilterFocusOut = (e) => {
@@ -2389,8 +2401,8 @@ export default {
                 return
             }
             isFilterFocused.value = false
-            if (!isAnyFilterActive.value) {
-                lockedTableMinHeight.value = 0
+            if (!isFilterInteractionActive() && !isAnyFilterActive.value) {
+                releaseFilterLayoutLock()
             }
         }
 
@@ -3277,8 +3289,8 @@ export default {
         })
 
         watch(isAnyFilterActive, (active) => {
-            if (!active && !isFilterFocused.value) {
-                lockedTableMinHeight.value = 0
+            if (!active && !isFilterInteractionActive()) {
+                releaseFilterLayoutLock()
             }
         })
 
@@ -3357,7 +3369,7 @@ export default {
             isInitializing = true
 
             windowStart.value = 0
-            lockedTableMinHeight.value = 0
+            releaseFilterLayoutLock()
             isFilterFocused.value = false
             isDragging.value = false
             startCell.value = null
@@ -3522,7 +3534,7 @@ export default {
             categoryBudgets.value = {}
             heightCache = {}
             windowStart.value = 0
-            lockedTableMinHeight.value = 0
+            releaseFilterLayoutLock()
             isFilterFocused.value = false
             windowEnd.value = 50
             paddingTop.value = 0
@@ -5136,7 +5148,7 @@ export default {
                 window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
                 heightCache = {}
                 windowStart.value = 0
-                lockedTableMinHeight.value = 0
+                releaseFilterLayoutLock()
                 isFilterFocused.value = false
                 windowEnd.value = 50
                 paddingTop.value = 0
@@ -5398,6 +5410,7 @@ export default {
 
         const toggleChart = () => {
             if (!columns.value.length) return
+            lockedChartMinHeight.value = 0
             isChartOpen.value = !isChartOpen.value
             isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
             if (isChartOpen.value) {
@@ -7146,12 +7159,12 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 dateRangeOpenState.value[colId] = !dateRangeOpenState.value[colId]
             }
             if (dateRangeOpenState.value[colId]) {
-                lockTableHeightForFilter()
+                lockLayoutForFilter()
                 Object.keys(dateRangeOpenState.value).forEach(k => {
                     if (k !== colId) dateRangeOpenState.value[k] = false
                 })
-            } else if (!isFilterFocused.value && !isAnyFilterActive.value) {
-                lockedTableMinHeight.value = 0
+            } else if (!isFilterInteractionActive() && !isAnyFilterActive.value) {
+                releaseFilterLayoutLock()
             }
             const rect = event.target.getBoundingClientRect()
             menuStyle.value = {
@@ -7203,8 +7216,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 dateRangeOpenState.value[key] = false
             })
             selectedChartDate.value = null
-            if (!isFilterFocused.value) {
-                lockedTableMinHeight.value = 0
+            if (!isFilterInteractionActive()) {
+                releaseFilterLayoutLock()
             }
         }
 
@@ -8559,7 +8572,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             toLocaleString,
             colWidths,
             filterContainer,
+            chartContainer,
             lockedTableMinHeight,
+            lockedChartMinHeight,
             onFilterFocusIn,
             onFilterFocusOut,
             handleFilterScroll,
