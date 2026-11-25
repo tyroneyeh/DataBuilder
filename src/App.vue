@@ -4244,17 +4244,15 @@ export default {
                 isProcessing.value = 1
 
                 try {
-                    const hasValidToken = Boolean(googleAccessToken.value && googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value)
-                    if (!hasValidToken) {
+                    if (!Boolean(googleAccessToken.value && googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value)) {
                         const isReady = await initGoogleClient()
                         if (!isReady) return false
 
-                        if (!force) {
-                            const confirmed = await showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'))
-                            if (!confirmed) return false
-                        }
+                        if (!await showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'))) return false
 
                         await getValidGoogleToken()
+                    } else {
+                        showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'), 1)
                     }
 
                     const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
