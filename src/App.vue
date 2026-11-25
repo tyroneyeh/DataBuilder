@@ -4248,7 +4248,7 @@ export default {
                         const isReady = await initGoogleClient()
                         if (!isReady) return false
 
-                        if (!await showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'))) return false
+                        if (!force && !await showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'))) return false
 
                         await getValidGoogleToken()
                     } else {
