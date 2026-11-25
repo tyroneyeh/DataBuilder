@@ -4197,6 +4197,9 @@ export default {
                 localStorage.setItem('TY_GOOGLE_ACCESS_TOKEN', token)
                 return token
             } catch (silentErr) {
+                if (silentErr?.type === 'popup_closed') {
+                    throw new Error('Google authorization was cancelled or failed.')
+                }
                 console.warn('Silent token refresh failed, falling back to interactive consent:', silentErr)
             }
 
@@ -4233,7 +4236,7 @@ export default {
         }
 
         const checkAndAutoSync = async (force = false) => {
-            if (!navigator.onLine || !isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
+            if (isProcessing.value === 1 || !navigator.onLine || !isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
             lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
 
@@ -4241,9 +4244,17 @@ export default {
                 isProcessing.value = 1
 
                 try {
+                    const hasValidToken = Boolean(googleAccessToken.value && googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value)
+                    if (!hasValidToken) {
+                        const isReady = await initGoogleClient()
+                        if (!isReady) return false
 
-                    if (googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value) {
-                        await showConfirm('🔄 '+ translate('Start automatically syncing data from Google Sheets...'), 1)
+                        if (!force) {
+                            const confirmed = await showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'))
+                            if (!confirmed) return false
+                        }
+
+                        await getValidGoogleToken()
                     }
 
                     const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
