@@ -242,6 +242,7 @@
 
 <div ref="tableContainer"
         @scroll="handleTableScroll"
+        :style="!isPrinting && lockedTableMinHeight ? { minHeight: lockedTableMinHeight + 'px' } : undefined"
         class="[overflow-anchor:none] mb-2 border-none sm:border border-gray-300 dark:border-gray-700 sm:rounded shadow-none sm:shadow-sm bg-gray-50 dark:bg-gray-800/50 sm:bg-transparent dark:sm:bg-transparent transition-colors duration-300 max-h-[80vh] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overflow-y-auto overflow-x-hidden sm:overflow-x-auto print:overflow-visible print:block print:h-auto print:max-h-none"
     >
     <table :key="currentStorageKey" class="w-full min-w-full border-collapse relative print:w-full block sm:table print:table" @click="openGlobalMenu">
@@ -821,7 +822,7 @@
     </div>
 </div>
 
-<div ref="filterContainer" @scroll="handleFilterScroll" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
+<div ref="filterContainer" @scroll="handleFilterScroll" @focusin="onFilterFocusIn" @focusout="onFilterFocusOut" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
     <div class="flex flex-col items-center sm:flex-row w-full print:flex-row">
 
         <div class="py-1 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
@@ -1069,10 +1070,10 @@
             </div>
         </div>
 
-        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 border-gray-300 dark:border-gray-600 px-4 min-h-[35px] bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
+        <div v-if="!isPrinting" class="flex items-center justify-center bottom-0 right-0 border-gray-300 dark:border-gray-600 px-4 min-h-[38px] bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 shrink-0 w-full sm:flex-1"
             :style="{'--col-width': colWidths[columns.length + 1] ? colWidths[columns.length + 1] + 'px' : 'auto'}">
             <button
-                v-if="isAnyFilterActive"
+                v-show="isAnyFilterActive"
                 @click.stop="clearAllFilters"
                 class="flex items-center justify-center gap-1 mx-auto text-sm sm:text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors px-3 py-2 sm:py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 rounded-md border border-red-200 dark:border-red-800 shadow-sm active:scale-95 w-full"
                 :title="translate('Clear All Filters')"
@@ -2335,6 +2336,63 @@ export default {
         const observedRows = new WeakSet()
         const colWidths = ref({})
         const filterContainer = ref(null)
+        const lockedTableMinHeight = ref(0)
+        const isFilterFocused = ref(false)
+        let pendingFilterAnchorTop = null
+
+        const isFilterInteractionActive = () => {
+            const hasOpenRange = Object.values(dateRangeOpenState.value).some(Boolean)
+            return isFilterFocused.value || hasOpenRange || Boolean(activeRow.value && !activeRow.value.row)
+        }
+
+        const lockTableHeightForFilter = () => {
+            if (!lockedTableMinHeight.value && tableContainer.value) {
+                const h = Math.round(tableContainer.value.getBoundingClientRect().height)
+                if (h > 0) lockedTableMinHeight.value = h
+            }
+        }
+
+        const captureFilterAnchor = () => {
+            if (!filterContainer.value || !isFilterInteractionActive()) return
+            lockTableHeightForFilter()
+            if (pendingFilterAnchorTop === null) {
+                pendingFilterAnchorTop = filterContainer.value.getBoundingClientRect().top
+            }
+        }
+
+        const restoreFilterAnchor = () => {
+            if (pendingFilterAnchorTop === null || !filterContainer.value) return
+            const targetTop = pendingFilterAnchorTop
+            pendingFilterAnchorTop = null
+            const currentTop = filterContainer.value.getBoundingClientRect().top
+            const delta = currentTop - targetTop
+            if (Math.abs(delta) > 1) {
+                window.scrollBy(0, delta)
+            }
+            if (activeRow.value && !activeRow.value.row && activeRow.value.target) {
+                const rect = activeRow.value.target.getBoundingClientRect()
+                menuStyle.value = {
+                    top: `${rect.bottom + window.scrollY}px`,
+                    left: `${rect.left + window.scrollX}px`,
+                    width: `${rect.width}px`
+                }
+            }
+        }
+
+        const onFilterFocusIn = () => {
+            isFilterFocused.value = true
+            lockTableHeightForFilter()
+        }
+
+        const onFilterFocusOut = (e) => {
+            if (filterContainer.value && e.relatedTarget && filterContainer.value.contains(e.relatedTarget)) {
+                return
+            }
+            isFilterFocused.value = false
+            if (!isAnyFilterActive.value) {
+                lockedTableMinHeight.value = 0
+            }
+        }
 
         let isInitializing = true
         let scrollRAF
@@ -3111,6 +3169,13 @@ export default {
             updateChart(unit)
         }, 300)
 
+        watch([filteredRows, hasTrendData, customLegendItems], () => {
+            captureFilterAnchor()
+            nextTick(() => {
+                restoreFilterAnchor()
+            })
+        }, { flush: 'pre' })
+
         watch(filteredRows, () => {
             const total = filteredRows.value.length
 
@@ -3134,7 +3199,8 @@ export default {
                     tableContainer.value.scrollTop = 0
                 }
 
-                handleTableScroll({ target: tableContainer.value })
+                handleTableScroll({ target: tableContainer.value }, true)
+                restoreFilterAnchor()
             })
         }, {
             flush: 'post'
@@ -3208,6 +3274,12 @@ export default {
             const hasChartDateFilter = selectedChartDate.value !== null
             const hasLegendFilter = hiddenCategoryNames.value.length > 0
             return hasTextFilter || hasDateFilter || hasChartDateFilter || hasLegendFilter
+        })
+
+        watch(isAnyFilterActive, (active) => {
+            if (!active && !isFilterFocused.value) {
+                lockedTableMinHeight.value = 0
+            }
         })
 
         const displayLastSync = computed(() => {
@@ -3285,6 +3357,8 @@ export default {
             isInitializing = true
 
             windowStart.value = 0
+            lockedTableMinHeight.value = 0
+            isFilterFocused.value = false
             isDragging.value = false
             startCell.value = null
             endCell.value = null
@@ -3448,6 +3522,8 @@ export default {
             categoryBudgets.value = {}
             heightCache = {}
             windowStart.value = 0
+            lockedTableMinHeight.value = 0
+            isFilterFocused.value = false
             windowEnd.value = 50
             paddingTop.value = 0
             paddingBottom.value = 0
@@ -5060,6 +5136,8 @@ export default {
                 window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
                 heightCache = {}
                 windowStart.value = 0
+                lockedTableMinHeight.value = 0
+                isFilterFocused.value = false
                 windowEnd.value = 50
                 paddingTop.value = 0
                 paddingBottom.value = 0
@@ -6247,9 +6325,9 @@ export default {
                 return
             }
             const trendObj = getTrendChartData(topCategories)
-            hasTrendData.value = false
-            if (trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value) {
-                hasTrendData.value = true
+            const nextHasTrendData = Boolean(trendObj && Object.keys(trendObj.trendData).length > 0 && selectedChartDateColId.value)
+            hasTrendData.value = nextHasTrendData
+            if (nextHasTrendData) {
                 const sortedLabels = Object.keys(trendObj.trendData).sort((a, b) => a.localeCompare(b))
                 await nextTick()
                 updateTrend(ctxLine, sortedLabels, trendObj)
@@ -6378,17 +6456,19 @@ export default {
             isAtBottom.value = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 5
         }
 
-        const handleTableScroll = (e) => {
-            isScrolling.value = true
+        const handleTableScroll = (e, isProgrammatic = false) => {
+            if (!isProgrammatic) {
+                isScrolling.value = true
 
-            activeRow.value = null
-            activeDropdownIndex.value = -1
-            isKeyboardOpen.value = false
+                activeRow.value = null
+                activeDropdownIndex.value = -1
+                isKeyboardOpen.value = false
 
-            clearTimeout(scrollHideTimer)
-            scrollHideTimer = setTimeout(() => {
-                isScrolling.value = false
-            }, 3000)
+                clearTimeout(scrollHideTimer)
+                scrollHideTimer = setTimeout(() => {
+                    isScrolling.value = false
+                }, 3000)
+            }
             if (scrollRAF) cancelAnimationFrame(scrollRAF)
             const target = e.target
             const scrollTop = target.scrollTop
@@ -7066,9 +7146,12 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 dateRangeOpenState.value[colId] = !dateRangeOpenState.value[colId]
             }
             if (dateRangeOpenState.value[colId]) {
+                lockTableHeightForFilter()
                 Object.keys(dateRangeOpenState.value).forEach(k => {
                     if (k !== colId) dateRangeOpenState.value[k] = false
                 })
+            } else if (!isFilterFocused.value && !isAnyFilterActive.value) {
+                lockedTableMinHeight.value = 0
             }
             const rect = event.target.getBoundingClientRect()
             menuStyle.value = {
@@ -7120,6 +7203,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 dateRangeOpenState.value[key] = false
             })
             selectedChartDate.value = null
+            if (!isFilterFocused.value) {
+                lockedTableMinHeight.value = 0
+            }
         }
 
         const toggleTrendChartType = (type) => {
@@ -8473,6 +8559,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             toLocaleString,
             colWidths,
             filterContainer,
+            lockedTableMinHeight,
+            onFilterFocusIn,
+            onFilterFocusOut,
             handleFilterScroll,
             heatmapScrollContainer,
             heatmapCanvas,
