@@ -3561,7 +3561,7 @@ export default {
             } else {
                 currentStorageKey.value = savedKeysList.value[0]
             }
-            if (!window.location.hash.endsWith('/add')) {
+            if (!hashStr.startsWith('data:') && !hashStr.startsWith('gist:') && !window.location.hash.endsWith('/add')) {
                 window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
             }
             currentStorageKey.value = savedKeysList.value[0]
@@ -4692,6 +4692,34 @@ export default {
         const loadData = async (noDefulat = 0) => {
             let hashData = null
 
+            const hashStr = window.location.hash.slice(1)
+            if (hashStr) {
+                try {
+                    if (hashStr.startsWith('data:')) {
+                        const safeBase64 = decodeURIComponent(hashStr.slice(5)).replaceAll(' ', '+')
+                        const jsonString = await decompressFromBase64(safeBase64)
+                        hashData = JSON.parse(jsonString)
+                        const targetWs = (hashData?.workspace || '').trim()
+                        if (targetWs) {
+                            currentStorageKey.value = targetWs
+                            savedKeysList.value = savedKeysList.value.filter(key => key !== targetWs)
+                            savedKeysList.value.unshift(targetWs)
+                            localStorage.setItem('TY_TABLE_MASTER_KEY_LIST', JSON.stringify(savedKeysList.value))
+                            loadChartCols()
+                        }
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                    } else if (hashStr.startsWith('gist:')) {
+                        gistId.value = hashStr.slice(5)
+                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                        restoreFromGist()
+                        return
+                    }
+                } catch (e) {
+                    console.info('Hash error', e)
+                    window.history.replaceState(null, null, '#ws:' + encodeURIComponent(currentStorageKey.value))
+                }
+            }
+
             let localData = await db.get(currentStorageKey.value)
             if (localData) {
                 if (typeof localData === 'string') {
@@ -4707,28 +4735,7 @@ export default {
                 localData = { title: '', columns: [], rows: [], note: '' }
             }
 
-            const hashStr = window.location.hash.slice(1)
-            if (hashStr) {
-                try {
-                    if (hashStr.startsWith('data:')) {
-                        const safeBase64 = decodeURIComponent(hashStr.slice(5))
-                        const jsonString = await decompressFromBase64(safeBase64)
-                        hashData = JSON.parse(jsonString)
-                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
-                    } else if (hashStr.startsWith('gist:')) {
-                        gistId.value = hashStr.slice(5)
-                        window.history.replaceState(null, null, '#ws:' + encodeURIComponent(hashData?.workspace || currentStorageKey.value))
-                        restoreFromGist()
-                        return
-                    }
-                } catch (e) {
-                    console.info('Hash error', e)
-                    return
-                }
-            }
-
             if (hashData) {
-                currentStorageKey.value = hashData.workspace || currentStorageKey.value
                 columns.value = (hashData.columns && hashData.columns.length > 0) ? hashData.columns : (localData.columns || [])
                 const localRows = localData.rows || []
                 const incomingRows = hashData.rows || []
@@ -4789,7 +4796,7 @@ export default {
                 seenIds.add(row.id)
             })
 
-            if (hasFixed) {
+            if (hasFixed || hashData) {
                 debouncedSave()
             }
 
@@ -9061,13 +9068,21 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             window.addEventListener('mouseup', handleMouseUp)
             window.addEventListener('online', handleOnline)
             window.addEventListener('offline', handleOffline)
-            window.addEventListener('hashchange', () => {
+            window.addEventListener('hashchange', async () => {
                 const hashStr = window.location.hash.slice(1)
                 if (hashStr.startsWith('ws:')) {
                     const wsName = decodeURIComponent(hashStr.slice(3))
                     if (wsName && wsName !== currentStorageKey.value) {
                         currentStorageKey.value = wsName
                         changeStorageKey()
+                    }
+                } else if (hashStr.startsWith('data:') || hashStr.startsWith('gist:')) {
+                    await loadData()
+                    initChartColumns()
+                    refreshYearFilters()
+                    if (isChartOpen.value) {
+                        debouncedUpdateChart.cancel()
+                        debouncedUpdateChart()
                     }
                 }
             })
