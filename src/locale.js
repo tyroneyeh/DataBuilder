@@ -222,7 +222,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "加入 Google 日曆失敗!",
         "Include photos": "附帶相片",
         "Photo copied!": "已複製相片至剪貼簿!",
-        "Share text copied! Paste it in Facebook.": "已複製貼文內容，請於 Facebook 貼文框直接貼上！"
+        "Share text copied! Paste it in Facebook.": "已複製貼文內容，請於 Facebook 貼文框直接貼上！",
+        "Include this month total": "加入這個月總計",
+        "This Month Total": "本月總計",
+        "Include TY-DB link": "附帶 TY-DB 連結"
     },
     "zh-CN": {
         "Action": "操作",
@@ -445,7 +448,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "添加到 Google 日历失败!",
         "Include photos": "附带照片",
         "Photo copied!": "已复制照片到剪贴板!",
-        "Share text copied! Paste it in Facebook.": "已复制贴文内容，请在 Facebook 贴文框直接粘贴！"
+        "Share text copied! Paste it in Facebook.": "已复制贴文内容，请在 Facebook 贴文框直接粘贴！",
+        "Include this month total": "加入本月总计",
+        "This Month Total": "本月总计",
+        "Include TY-DB link": "附带 TY-DB 链接"
     },
     "ja": {
         "Action": "操作",
@@ -668,7 +674,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Google カレンダーへの追加に失敗しました!",
         "Include photos": "写真を添付",
         "Photo copied!": "写真をコピーしました！",
-        "Share text copied! Paste it in Facebook.": "投稿文をコピーしました。Facebookに貼り付けてください！"
+        "Share text copied! Paste it in Facebook.": "投稿文をコピーしました。Facebookに貼り付けてください！",
+        "Include this month total": "今月の合計を含める",
+        "This Month Total": "今月の合計",
+        "Include TY-DB link": "TY-DB リンクを含める"
     },
     "ko": {
         "Action": "작업",
@@ -891,7 +900,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Google 캘린더에 추가하지 못했습니다!",
         "Include photos": "사진 포함",
         "Photo copied!": "사진이 복사되었습니다!",
-        "Share text copied! Paste it in Facebook.": "게시글 내용이 복사되었습니다. Facebook에 붙여넣으세요!"
+        "Share text copied! Paste it in Facebook.": "게시글 내용이 복사되었습니다. Facebook에 붙여넣으세요!",
+        "Include this month total": "이번 달 합계 포함",
+        "This Month Total": "이번 달 합계",
+        "Include TY-DB link": "TY-DB 링크 포함"
     },
     "es": {
         "Action": "Acción",
@@ -1114,7 +1126,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "¡Error al añadir a Google Calendar!",
         "Include photos": "Incluir fotos",
         "Photo copied!": "¡Foto copiada!",
-        "Share text copied! Paste it in Facebook.": "¡Texto copiado! Pégalo en Facebook."
+        "Share text copied! Paste it in Facebook.": "¡Texto copiado! Pégalo en Facebook.",
+        "Include this month total": "Incluir total de este mes",
+        "This Month Total": "Total de este mes",
+        "Include TY-DB link": "Incluir enlace de TY-DB"
     },
     "fr": {
         "Action": "Action",
@@ -1337,7 +1352,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Échec de l’ajout à Google Agenda !",
         "Include photos": "Inclure les photos",
         "Photo copied!": "Photo copiée !",
-        "Share text copied! Paste it in Facebook.": "Texte copié ! Collez-le sur Facebook."
+        "Share text copied! Paste it in Facebook.": "Texte copié ! Collez-le sur Facebook.",
+        "Include this month total": "Inclure le total du mois",
+        "This Month Total": "Total du mois",
+        "Include TY-DB link": "Inclure le lien TY-DB"
     },
     "de": {
         "Action": "Aktion",
@@ -1560,7 +1578,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Fehler beim Hinzufügen zu Google Kalender!",
         "Include photos": "Fotos einbeziehen",
         "Photo copied!": "Foto kopiert!",
-        "Share text copied! Paste it in Facebook.": "Text kopiert! Auf Facebook einfügen."
+        "Share text copied! Paste it in Facebook.": "Text kopiert! Auf Facebook einfügen.",
+        "Include this month total": "Monatssumme einbeziehen",
+        "This Month Total": "Monatssumme",
+        "Include TY-DB link": "TY-DB-Link einbeziehen"
     },
     "it": {
         "Action": "Azione",
@@ -1783,7 +1804,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Impossibile aggiungere a Google Calendar!",
         "Include photos": "Includi foto",
         "Photo copied!": "Foto copiata!",
-        "Share text copied! Paste it in Facebook.": "Testo copiato! Incollalo su Facebook."
+        "Share text copied! Paste it in Facebook.": "Testo copiato! Incollalo su Facebook.",
+        "Include this month total": "Includi totale del mese",
+        "This Month Total": "Totale del mese",
+        "Include TY-DB link": "Includi link TY-DB"
     },
     "pt": {
         "Action": "Ação",
@@ -2006,7 +2030,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Falha ao adicionar ao Google Agenda!",
         "Include photos": "Incluir fotos",
         "Photo copied!": "Foto copiada!",
-        "Share text copied! Paste it in Facebook.": "Texto copiado! Cole no Facebook."
+        "Share text copied! Paste it in Facebook.": "Texto copiado! Cole no Facebook.",
+        "Include this month total": "Incluir total deste mês",
+        "This Month Total": "Total deste mês",
+        "Include TY-DB link": "Incluir link do TY-DB"
     },
     "ru": {
         "Action": "Действие",
@@ -2229,7 +2256,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Не удалось добавить в Google Календарь!",
         "Include photos": "Прикрепить фото",
         "Photo copied!": "Фото скопировано!",
-        "Share text copied! Paste it in Facebook.": "Текст скопирован! Вставьте его в Facebook."
+        "Share text copied! Paste it in Facebook.": "Текст скопирован! Вставьте его в Facebook.",
+        "Include this month total": "Включить итог за месяц",
+        "This Month Total": "Итог за месяц",
+        "Include TY-DB link": "Добавить ссылку TY-DB"
     },
     "id": {
         "Action": "Tindakan",
@@ -2452,7 +2482,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Gagal menambahkan ke Google Kalender!",
         "Include photos": "Sertakan foto",
         "Photo copied!": "Foto disalin!",
-        "Share text copied! Paste it in Facebook.": "Teks disalin! Tempel di Facebook."
+        "Share text copied! Paste it in Facebook.": "Teks disalin! Tempel di Facebook.",
+        "Include this month total": "Sertakan total bulan ini",
+        "This Month Total": "Total Bulan Ini",
+        "Include TY-DB link": "Sertakan tautan TY-DB"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2675,7 +2708,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Thêm vào Lịch Google thất bại!",
         "Include photos": "Đính kèm ảnh",
         "Photo copied!": "Đã sao chép ảnh!",
-        "Share text copied! Paste it in Facebook.": "Đã sao chép nội dung! Dán vào Facebook."
+        "Share text copied! Paste it in Facebook.": "Đã sao chép nội dung! Dán vào Facebook.",
+        "Include this month total": "Kèm tổng tháng này",
+        "This Month Total": "Tổng tháng này",
+        "Include TY-DB link": "Kèm liên kết TY-DB"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2898,7 +2934,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "ไม่สามารถเพิ่มลงใน Google ปฏิทินได้!",
         "Include photos": "แนบรูปภาพ",
         "Photo copied!": "คัดลอกรูปภาพแล้ว!",
-        "Share text copied! Paste it in Facebook.": "คัดลอกข้อความแล้ว! วางใน Facebook ได้เลย"
+        "Share text copied! Paste it in Facebook.": "คัดลอกข้อความแล้ว! วางใน Facebook ได้เลย",
+        "Include this month total": "รวมยอดเดือนนี้",
+        "This Month Total": "ยอดรวมเดือนนี้",
+        "Include TY-DB link": "แนบลิงก์ TY-DB"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3121,7 +3160,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Gagal menambah ke Kalendar Google!",
         "Include photos": "Sertakan foto",
         "Photo copied!": "Foto disalin!",
-        "Share text copied! Paste it in Facebook.": "Teks disalin! Tampal di Facebook."
+        "Share text copied! Paste it in Facebook.": "Teks disalin! Tampal di Facebook.",
+        "Include this month total": "Sertakan jumlah bulan ini",
+        "This Month Total": "Jumlah Bulan Ini",
+        "Include TY-DB link": "Sertakan pautan TY-DB"
     },
     "tr": {
         "Action": "İşlem",
@@ -3344,7 +3386,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Google Takvim’e eklenemedi!",
         "Include photos": "Fotoğrafları ekle",
         "Photo copied!": "Fotoğraf kopyalandı!",
-        "Share text copied! Paste it in Facebook.": "Metin kopyalandı! Facebook’ta yapıştırın."
+        "Share text copied! Paste it in Facebook.": "Metin kopyalandı! Facebook’ta yapıştırın.",
+        "Include this month total": "Bu ayın toplamını ekle",
+        "This Month Total": "Bu Ay Toplam",
+        "Include TY-DB link": "TY-DB bağlantısını ekle"
     },
     "ar": {
         "Action": "إجراء",
@@ -3567,7 +3612,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "فشلت الإضافة إلى تقويم Google!",
         "Include photos": "تضمين الصور",
         "Photo copied!": "تم نسخ الصورة!",
-        "Share text copied! Paste it in Facebook.": "تم نسخ النص! الصقه في Facebook."
+        "Share text copied! Paste it in Facebook.": "تم نسخ النص! الصقه في Facebook.",
+        "Include this month total": "تضمين إجمالي هذا الشهر",
+        "This Month Total": "إجمالي هذا الشهر",
+        "Include TY-DB link": "تضمين رابط TY-DB"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3790,7 +3838,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Google कैलेंडर में जोड़ने में विफल!",
         "Include photos": "फ़ोटो शामिल करें",
         "Photo copied!": "फ़ोटो कॉपी हो गई!",
-        "Share text copied! Paste it in Facebook.": "टेक्स्ट कॉपी हो गया! Facebook पर पेस्ट करें।"
+        "Share text copied! Paste it in Facebook.": "टेक्स्ट कॉपी हो गया! Facebook पर पेस्ट करें।",
+        "Include this month total": "इस महीने का कुल जोड़ें",
+        "This Month Total": "इस महीने का कुल",
+        "Include TY-DB link": "TY-DB लिंक शामिल करें"
     },
     "pl": {
         "Action": "Akcja",
@@ -4013,7 +4064,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Nie udało się dodać do Kalendarza Google!",
         "Include photos": "Dołącz zdjęcia",
         "Photo copied!": "Skopiowano zdjęcie!",
-        "Share text copied! Paste it in Facebook.": "Tekst skopiowany! Wklej go na Facebooku."
+        "Share text copied! Paste it in Facebook.": "Tekst skopiowany! Wklej go na Facebooku.",
+        "Include this month total": "Dołącz sumę z tego miesiąca",
+        "This Month Total": "Suma w tym miesiącu",
+        "Include TY-DB link": "Dołącz link TY-DB"
     },
     "nl": {
         "Action": "Actie",
@@ -4236,7 +4290,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Toevoegen aan Google Agenda mislukt!",
         "Include photos": "Foto’s bijvoegen",
         "Photo copied!": "Foto gekopieerd!",
-        "Share text copied! Paste it in Facebook.": "Tekst gekopieerd! Plak deze op Facebook."
+        "Share text copied! Paste it in Facebook.": "Tekst gekopieerd! Plak deze op Facebook.",
+        "Include this month total": "Maandtotaal bijvoegen",
+        "This Month Total": "Maandtotaal",
+        "Include TY-DB link": "TY-DB-link bijvoegen"
     },
     "uk": {
         "Action": "Дія",
@@ -4459,7 +4516,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Не вдалося додати до Google Календаря!",
         "Include photos": "Додати фото",
         "Photo copied!": "Фото скопійовано!",
-        "Share text copied! Paste it in Facebook.": "Текст скопійовано! Вставте його у Facebook."
+        "Share text copied! Paste it in Facebook.": "Текст скопійовано! Вставте його у Facebook.",
+        "Include this month total": "Додати підсумок за місяць",
+        "This Month Total": "Підсумок за місяць",
+        "Include TY-DB link": "Додати посилання TY-DB"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4682,7 +4742,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Nabigong idagdag sa Google Calendar!",
         "Include photos": "Isama ang mga larawan",
         "Photo copied!": "Nakopya na ang larawan!",
-        "Share text copied! Paste it in Facebook.": "Nakopya ang teksto! I-paste sa Facebook."
+        "Share text copied! Paste it in Facebook.": "Nakopya ang teksto! I-paste sa Facebook.",
+        "Include this month total": "Isama ang kabuuan ngayong buwan",
+        "This Month Total": "Kabuuan Ngayong Buwan",
+        "Include TY-DB link": "Isama ang link ng TY-DB"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4905,7 +4968,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Kunde inte lägga till i Google Kalender!",
         "Include photos": "Inkludera foton",
         "Photo copied!": "Foto kopierat!",
-        "Share text copied! Paste it in Facebook.": "Text kopierad! Klistra in på Facebook."
+        "Share text copied! Paste it in Facebook.": "Text kopierad! Klistra in på Facebook.",
+        "Include this month total": "Inkludera månadens summa",
+        "This Month Total": "Månadens summa",
+        "Include TY-DB link": "Inkludera TY-DB-länk"
     },
     "cs": {
         "Action": "Akce",
@@ -5128,7 +5194,10 @@ export const translations = {
         "Failed to add to Google Calendar!": "Nepodařilo se přidat do Kalendáře Google!",
         "Include photos": "Připojit fotky",
         "Photo copied!": "Fotka zkopírována!",
-        "Share text copied! Paste it in Facebook.": "Text zkopírován! Vložte jej na Facebook."
+        "Share text copied! Paste it in Facebook.": "Text zkopírován! Vložte jej na Facebook.",
+        "Include this month total": "Zahrnout součet tohoto měsíce",
+        "This Month Total": "Součet tohoto měsíce",
+        "Include TY-DB link": "Zahrnout odkaz TY-DB"
     },
     "ta": {
         "Action": "செயல்",
@@ -5351,6 +5420,9 @@ export const translations = {
         "Failed to add to Google Calendar!": "Google நாள்காட்டியில் சேர்க்க முடியவில்லை!",
         "Include photos": "புகைப்படங்களைச் சேர்",
         "Photo copied!": "புகைப்படம் நகலெடுக்கப்பட்டது!",
-        "Share text copied! Paste it in Facebook.": "உரை நகலெடுக்கப்பட்டது! Facebook-இல் ஒட்டவும்."
+        "Share text copied! Paste it in Facebook.": "உரை நகலெடுக்கப்பட்டது! Facebook-இல் ஒட்டவும்.",
+        "Include this month total": "இந்த மாத மொத்தத்தைச் சேர்",
+        "This Month Total": "இந்த மாத மொத்தம்",
+        "Include TY-DB link": "TY-DB இணைப்பைச் சேர்"
     }
 }

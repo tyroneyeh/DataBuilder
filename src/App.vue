@@ -1865,6 +1865,19 @@
                 {{ shareModal.sharedPlatforms?.copy ? '✓' : '📋' }} {{ translate('Copy') }}
             </button>
         </div>
+        <div v-if="shareModal.monthlyTotalText || shareModal.link" class="w-full mt-3 pt-2.5 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+            <label v-if="shareModal.monthlyTotalText" class="flex items-start gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                <input type="checkbox" v-model="shareModal.includeMonthlyTotal" class="mt-0.5 w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer shrink-0">
+                <span class="leading-snug">
+                    <span class="font-bold">📊 {{ translate('Include this month total') }}</span>
+                    <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{{ shareModal.monthlyTotalText }}</span>
+                </span>
+            </label>
+            <label v-if="shareModal.link" class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                <input type="checkbox" v-model="shareModal.includeLink" class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer shrink-0">
+                <span class="font-bold">🔗 {{ translate('Include TY-DB link') }}</span>
+            </label>
+        </div>
     </div>
 </div>
 </template>
@@ -2443,6 +2456,9 @@ export default {
             desc: '',
             photos: [],
             includePhotos: true,
+            monthlyTotalText: '',
+            includeMonthlyTotal: false,
+            includeLink: false,
             sharedPlatforms: {}
         })
         const canWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -7905,10 +7921,70 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
         }
 
+        const buildMonthlyTotalSummary = () => {
+            const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
+                || columns.value.find(c => isCalcType(c.type))
+                || columns.value.find(c => c.type === 'number')
+            if (!numCol) return ''
+
+            const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+            const now = new Date()
+            const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+            const targetRows = dateColId
+                ? rows.value.filter(r => {
+                    const d = r[dateColId]
+                    return d && getDateGroupKey(d, 'month') === currentMonthKey
+                })
+                : rows.value
+
+            const catColId = selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
+            let expenseSum = 0
+            let incomeSum = 0
+            let plainSum = 0
+
+            targetRows.forEach(row => {
+                const val = getRowNumericValue(row, numCol)
+                if (!Number.isFinite(val) || val === 0) return
+                plainSum += val
+                if (hasIncomeCategories.value && catColId) {
+                    const rawCat = row[catColId]
+                    const catLabel = rawCat && String(rawCat).trim() !== '' ? String(rawCat).trim() : translate('Uncategorized')
+                    const budgetConfig = categoryBudgets.value[catLabel]
+                    if (budgetConfig?.type === 'income') incomeSum += Math.abs(val)
+                    else expenseSum += Math.abs(val)
+                }
+            })
+
+            const labelPrefix = dateColId
+                ? translate('This Month Total')
+                : translate('Total')
+
+            if (hasIncomeCategories.value && catColId) {
+                const net = incomeSum - expenseSum
+                const netSign = net > 0 ? '+' : ''
+                return `${labelPrefix}: ${translate('Expense')} ${expenseSum.toLocaleString()} / ${translate('Income')} ${incomeSum.toLocaleString()} (${netSign}${net.toLocaleString()})`
+            }
+            return `${labelPrefix}: ${formatNumber(plainSum)}`
+        }
+
+        const getComposedShareText = () => {
+            const base = (shareModal.value.text || '').trim()
+            const monthly = shareModal.value.includeMonthlyTotal ? (shareModal.value.monthlyTotalText || '').trim() : ''
+            if (base && monthly) return `${base}\n${monthly}`
+            return base || monthly
+        }
+
         const copyShareLink = (includeSummary = true) => {
             const link = shareModal.value.link
-            const shareText = (shareModal.value.text || '').trim()
-            const content = includeSummary && shareText ? `${shareText}\n${link}` : link
+            const shareText = getComposedShareText()
+            let content = link
+            if (includeSummary) {
+                content = (shareModal.value.includeLink && link)
+                    ? (shareText ? `${shareText}\n${link}` : link)
+                    : (shareText || link)
+            }
+            if (!content) return
             navigator.clipboard.writeText(content).then(() => {
                 markSharedPlatform(includeSummary ? 'copy' : 'link')
                 showConfirm(translate('Copied to clipboard!'), 1)
@@ -7963,7 +8039,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const buildRowShareSummary = (row) => {
-            const parts = []
+            const wsName = (currentStorageKey.value || translate('TY Data Builder')).trim()
+            const parts = wsName ? [wsName] : []
             columns.value.forEach(col => {
                 if (col.type === 'photo' || col.type === 'password') return
                 let val
@@ -7989,9 +8066,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const shareToPlatform = async (platform) => {
-            const link = shareModal.value.link
-            if (!link) return
-            const shareText = (shareModal.value.text || '').trim()
+            const shareText = getComposedShareText()
+            const link = shareModal.value.includeLink ? (shareModal.value.link || '') : ''
+            if (!shareText && !link) return
+            const textWithLink = link ? (shareText ? `${shareText}\n${link}` : link) : shareText
 
             if (platform === 'native' && canWebShare) {
                 try {
@@ -8000,17 +8078,21 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         : []
 
                     if (files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
-                        const combinedText = shareText ? `${shareText}\n${link}` : link
                         await navigator.share({
                             title: currentStorageKey.value || translate('TY Data Builder'),
-                            text: combinedText,
+                            text: textWithLink,
                             files
                         })
-                    } else {
+                    } else if (link) {
                         await navigator.share({
                             title: currentStorageKey.value || translate('TY Data Builder'),
                             text: shareText || undefined,
                             url: link
+                        })
+                    } else {
+                        await navigator.share({
+                            title: currentStorageKey.value || translate('TY Data Builder'),
+                            text: shareText
                         })
                     }
                     markSharedPlatform('native')
@@ -8024,21 +8106,26 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             let targetUrl = ''
             if (platform === 'line') {
-                const body = shareText ? `${shareText}\n${link}` : link
-                targetUrl = `https://line.me/R/share?text=${encodeURIComponent(body)}`
+                targetUrl = `https://line.me/R/share?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'telegram') {
-                targetUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}`
-                if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
+                if (link) {
+                    targetUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}`
+                    if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
+                } else {
+                    targetUrl = `https://t.me/share/url?url=${encodeURIComponent(shareText)}`
+                }
             } else if (platform === 'whatsapp') {
-                const body = shareText ? `${shareText}\n${link}` : link
-                targetUrl = `https://wa.me/?text=${encodeURIComponent(body)}`
+                targetUrl = `https://wa.me/?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'threads') {
-                targetUrl = `https://www.threads.com/intent/post?url=${encodeURIComponent(link)}`
-                if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
+                targetUrl = `https://www.threads.com/intent/post?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'facebook') {
-                targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+                if (link) {
+                    targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+                    if (shareText) targetUrl += `&quote=${encodeURIComponent(shareText)}`
+                } else {
+                    targetUrl = 'https://www.facebook.com/'
+                }
                 if (shareText) {
-                    targetUrl += `&quote=${encodeURIComponent(shareText)}`
                     navigator.clipboard?.writeText(shareText)
                         .then(() => showConfirm(translate('Share text copied! Paste it in Facebook.'), 1))
                         .catch(() => {})
@@ -8104,6 +8191,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
                 }
 
+                const monthlySummary = buildMonthlyTotalSummary()
                 QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                     if (err) return showConfirm(err, 1)
                     shareModal.value = {
@@ -8115,6 +8203,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
                         photos: collectedPhotos,
                         includePhotos: collectedPhotos.length > 0,
+                        monthlyTotalText: monthlySummary,
+                        includeMonthlyTotal: false,
+                        includeLink: false,
                         sharedPlatforms: {}
                     }
                 })
@@ -8158,6 +8249,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const encoded = encodeURIComponent(compressedBase64)
                 const link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
                 const rowSummary = buildRowShareSummary(row)
+                const monthlySummary = buildMonthlyTotalSummary()
 
                 QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                     if (err) return showConfirm(err, 1)
@@ -8170,6 +8262,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
                         photos: rowPhotos,
                         includePhotos: rowPhotos.length > 0,
+                        monthlyTotalText: monthlySummary,
+                        includeMonthlyTotal: false,
+                        includeLink: false,
                         sharedPlatforms: {}
                     }
                 })
