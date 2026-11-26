@@ -266,7 +266,7 @@
             <tr class="print:break-inside-avoid">
                 <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')">#<span v-if="!isPrinting">{{ filteredRows.length }}</span></th>
                 <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static overflow-hidden print:overflow-visible border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
-                    :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'minus', 'add', 'divide', 'category', 'photo', 'checkbox', 'color'].includes(col.type) ? 'max-w-[70px]' : 'min-w-[140px]',
+                    :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'minus', 'add', 'divide', 'category', 'photo', 'checkbox', 'color'].includes(col.type) ? 'max-w-[140px]' : 'min-w-[140px]',
                         editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                     ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
 
@@ -7921,7 +7921,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
         }
 
-        const buildMonthlyTotalSummary = () => {
+        const buildMonthlyTotalSummary = (targetCategory = null, targetCatColId = null) => {
             const numCol = columns.value.find(c => c.id === selectedChartNumColId.value)
                 || columns.value.find(c => isCalcType(c.type))
                 || columns.value.find(c => c.type === 'number')
@@ -7938,18 +7938,22 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 })
                 : rows.value
 
-            const catColId = selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
+            const catColId = targetCatColId || selectedChartCatColId.value || columns.value.find(c => ['category', 'text'].includes(c.type))?.id
             let expenseSum = 0
             let incomeSum = 0
             let plainSum = 0
+            let catSum = 0
 
             targetRows.forEach(row => {
                 const val = getRowNumericValue(row, numCol)
                 if (!Number.isFinite(val) || val === 0) return
                 plainSum += val
+                const rawCat = catColId ? row[catColId] : ''
+                const catLabel = rawCat && String(rawCat).trim() !== '' ? String(rawCat).trim() : translate('Uncategorized')
+                if (targetCategory && catColId && String(rawCat ?? '').trim() === targetCategory) {
+                    catSum += val
+                }
                 if (hasIncomeCategories.value && catColId) {
-                    const rawCat = row[catColId]
-                    const catLabel = rawCat && String(rawCat).trim() !== '' ? String(rawCat).trim() : translate('Uncategorized')
                     const budgetConfig = categoryBudgets.value[catLabel]
                     if (budgetConfig?.type === 'income') incomeSum += Math.abs(val)
                     else expenseSum += Math.abs(val)
@@ -7960,10 +7964,19 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 ? translate('This Month Total')
                 : translate('Total')
 
+            if (targetCategory && catColId) {
+                if (hasIncomeCategories.value) {
+                    const isIncomeCat = categoryBudgets.value[targetCategory]?.type === 'income'
+                    const totalCompare = isIncomeCat ? incomeSum : expenseSum
+                    return `${labelPrefix}: ${formatNumber(Math.abs(catSum))} / ${formatNumber(totalCompare)}`
+                }
+                return `${labelPrefix}: ${formatNumber(catSum)} / ${formatNumber(plainSum)}`
+            }
+
             if (hasIncomeCategories.value && catColId) {
                 const net = incomeSum - expenseSum
                 const netSign = net > 0 ? '+' : ''
-                return `${labelPrefix}: ${translate('Expense')} ${expenseSum.toLocaleString()} / ${translate('Income')} ${incomeSum.toLocaleString()} (${netSign}${net.toLocaleString()})`
+                return `${labelPrefix}: ${translate('Expense')} ${formatNumber(expenseSum)} / ${translate('Income')} ${formatNumber(incomeSum)} (${netSign}${formatNumber(net)})`
             }
             return `${labelPrefix}: ${formatNumber(plainSum)}`
         }
@@ -8249,7 +8262,11 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const encoded = encodeURIComponent(compressedBase64)
                 const link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
                 const rowSummary = buildRowShareSummary(row)
-                const monthlySummary = buildMonthlyTotalSummary()
+                const rowCatColId = columns.value.find(c => c.id === selectedChartCatColId.value && c.type === 'category')?.id
+                    || columns.value.find(c => c.type === 'category')?.id
+                    || selectedChartCatColId.value
+                const rowCategory = rowCatColId ? String(row[rowCatColId] ?? '').trim() : ''
+                const monthlySummary = buildMonthlyTotalSummary(rowCategory || null, rowCatColId)
 
                 QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                     if (err) return showConfirm(err, 1)
