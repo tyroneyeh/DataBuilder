@@ -215,7 +215,11 @@ export const translations = {
         "Next auto-add": "下次自動新增",
         "Auto-added {count} recurring item(s).": "已自動新增 {count} 筆週期項目.",
         "Undo": "復原",
-        "Redo": "重做"
+        "Redo": "重做",
+        "Push to Google Calendar": "直接推送至 Google 日曆",
+        "Add to Calendar": "加入日曆",
+        "Added to Google Calendar!": "已加入 Google 日曆!",
+        "Failed to add to Google Calendar!": "加入 Google 日曆失敗!"
     },
     "zh-CN": {
         "Action": "操作",
@@ -431,7 +435,11 @@ export const translations = {
         "Next auto-add": "下次自动添加",
         "Auto-added {count} recurring item(s).": "已自动添加 {count} 条周期项目.",
         "Undo": "撤销",
-        "Redo": "重做"
+        "Redo": "重做",
+        "Push to Google Calendar": "直接推送至 Google 日历",
+        "Add to Calendar": "添加到日历",
+        "Added to Google Calendar!": "已添加到 Google 日历!",
+        "Failed to add to Google Calendar!": "添加到 Google 日历失败!"
     },
     "ja": {
         "Action": "操作",
@@ -647,7 +655,11 @@ export const translations = {
         "Next auto-add": "次回の自動追加",
         "Auto-added {count} recurring item(s).": "{count} 件の定期項目を自動追加しました.",
         "Undo": "元に戻す",
-        "Redo": "やり直し"
+        "Redo": "やり直し",
+        "Push to Google Calendar": "Google カレンダーへ直接送信",
+        "Add to Calendar": "カレンダーに追加",
+        "Added to Google Calendar!": "Google カレンダーに追加しました!",
+        "Failed to add to Google Calendar!": "Google カレンダーへの追加に失敗しました!"
     },
     "ko": {
         "Action": "작업",
@@ -863,7 +875,11 @@ export const translations = {
         "Next auto-add": "다음 자동 추가",
         "Auto-added {count} recurring item(s).": "정기 항목 {count}개가 자동으로 추가되었습니다.",
         "Undo": "실행 취소",
-        "Redo": "다시 실행"
+        "Redo": "다시 실행",
+        "Push to Google Calendar": "Google 캘린더에 직접 푸시",
+        "Add to Calendar": "캘린더에 추가",
+        "Added to Google Calendar!": "Google 캘린더에 추가되었습니다!",
+        "Failed to add to Google Calendar!": "Google 캘린더에 추가하지 못했습니다!"
     },
     "es": {
         "Action": "Acción",
@@ -1079,7 +1095,11 @@ export const translations = {
         "Next auto-add": "Próxima adición automática",
         "Auto-added {count} recurring item(s).": "Se añadieron automáticamente {count} elemento(s) recurrente(s).",
         "Undo": "Deshacer",
-        "Redo": "Rehacer"
+        "Redo": "Rehacer",
+        "Push to Google Calendar": "Enviar directamente a Google Calendar",
+        "Add to Calendar": "Añadir al calendario",
+        "Added to Google Calendar!": "¡Añadido a Google Calendar!",
+        "Failed to add to Google Calendar!": "¡Error al añadir a Google Calendar!"
     },
     "fr": {
         "Action": "Action",
@@ -1295,7 +1315,11 @@ export const translations = {
         "Next auto-add": "Prochain ajout automatique",
         "Auto-added {count} recurring item(s).": "{count} élément(s) récurrent(s) ajouté(s) automatiquement.",
         "Undo": "Annuler",
-        "Redo": "Rétablir"
+        "Redo": "Rétablir",
+        "Push to Google Calendar": "Envoyer directement vers Google Agenda",
+        "Add to Calendar": "Ajouter à l’agenda",
+        "Added to Google Calendar!": "Ajouté à Google Agenda !",
+        "Failed to add to Google Calendar!": "Échec de l’ajout à Google Agenda !"
     },
     "de": {
         "Action": "Aktion",
@@ -1511,7 +1535,11 @@ export const translations = {
         "Next auto-add": "Nächste automatische Buchung",
         "Auto-added {count} recurring item(s).": "{count} wiederkehrende(r) Eintrag/Einträge automatisch hinzugefügt.",
         "Undo": "Rückgängig",
-        "Redo": "Wiederholen"
+        "Redo": "Wiederholen",
+        "Push to Google Calendar": "Direkt an Google Kalender senden",
+        "Add to Calendar": "Zum Kalender hinzufügen",
+        "Added to Google Calendar!": "Zu Google Kalender hinzugefügt!",
+        "Failed to add to Google Calendar!": "Fehler beim Hinzufügen zu Google Kalender!"
     },
     "it": {
         "Action": "Azione",
@@ -1727,7 +1755,11 @@ export const translations = {
         "Next auto-add": "Prossima aggiunta automatica",
         "Auto-added {count} recurring item(s).": "Aggiunti automaticamente {count} elementi ricorrenti.",
         "Undo": "Annulla",
-        "Redo": "Ripeti"
+        "Redo": "Ripeti",
+        "Push to Google Calendar": "Invia direttamente a Google Calendar",
+        "Add to Calendar": "Aggiungi al calendario",
+        "Added to Google Calendar!": "Aggiunto a Google Calendar!",
+        "Failed to add to Google Calendar!": "Impossibile aggiungere a Google Calendar!"
     },
     "pt": {
         "Action": "Ação",
@@ -1943,7 +1975,11 @@ export const translations = {
         "Next auto-add": "Próxima adição automática",
         "Auto-added {count} recurring item(s).": "{count} item(ns) recorrente(s) adicionado(s) automaticamente.",
         "Undo": "Desfazer",
-        "Redo": "Refazer"
+        "Redo": "Refazer",
+        "Push to Google Calendar": "Enviar diretamente para o Google Agenda",
+        "Add to Calendar": "Adicionar à agenda",
+        "Added to Google Calendar!": "Adicionado ao Google Agenda!",
+        "Failed to add to Google Calendar!": "Falha ao adicionar ao Google Agenda!"
     },
     "ru": {
         "Action": "Действие",
@@ -2159,7 +2195,11 @@ export const translations = {
         "Next auto-add": "Следующее автодобавление",
         "Auto-added {count} recurring item(s).": "Автоматически добавлено повторяющихся записей: {count}.",
         "Undo": "Отменить",
-        "Redo": "Повторить"
+        "Redo": "Повторить",
+        "Push to Google Calendar": "Отправлять напрямую в Google Календарь",
+        "Add to Calendar": "Добавить в календарь",
+        "Added to Google Calendar!": "Добавлено в Google Календарь!",
+        "Failed to add to Google Calendar!": "Не удалось добавить в Google Календарь!"
     },
     "id": {
         "Action": "Tindakan",
@@ -2375,7 +2415,11 @@ export const translations = {
         "Next auto-add": "Penambahan otomatis berikutnya",
         "Auto-added {count} recurring item(s).": "Menambahkan {count} item berulang secara otomatis.",
         "Undo": "Urungkan",
-        "Redo": "Ulangi"
+        "Redo": "Ulangi",
+        "Push to Google Calendar": "Kirim langsung ke Google Kalender",
+        "Add to Calendar": "Tambahkan ke Kalender",
+        "Added to Google Calendar!": "Ditambahkan ke Google Kalender!",
+        "Failed to add to Google Calendar!": "Gagal menambahkan ke Google Kalender!"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2591,7 +2635,11 @@ export const translations = {
         "Next auto-add": "Lần tự động thêm tiếp theo",
         "Auto-added {count} recurring item(s).": "Đã tự động thêm {count} mục định kỳ.",
         "Undo": "Hoàn tác",
-        "Redo": "Làm lại"
+        "Redo": "Làm lại",
+        "Push to Google Calendar": "Đẩy trực tiếp lên Lịch Google",
+        "Add to Calendar": "Thêm vào Lịch",
+        "Added to Google Calendar!": "Đã thêm vào Lịch Google!",
+        "Failed to add to Google Calendar!": "Thêm vào Lịch Google thất bại!"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2807,7 +2855,11 @@ export const translations = {
         "Next auto-add": "เพิ่มอัตโนมัติครั้งถัดไป",
         "Auto-added {count} recurring item(s).": "เพิ่มรายการประจำอัตโนมัติ {count} รายการแล้ว.",
         "Undo": "เลิกทำ",
-        "Redo": "ทำซ้ำ"
+        "Redo": "ทำซ้ำ",
+        "Push to Google Calendar": "ส่งไปยัง Google ปฏิทินโดยตรง",
+        "Add to Calendar": "เพิ่มในปฏิทิน",
+        "Added to Google Calendar!": "เพิ่มลงใน Google ปฏิทินแล้ว!",
+        "Failed to add to Google Calendar!": "ไม่สามารถเพิ่มลงใน Google ปฏิทินได้!"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3023,7 +3075,11 @@ export const translations = {
         "Next auto-add": "Tambahan automatik seterusnya",
         "Auto-added {count} recurring item(s).": "{count} item berulang ditambah secara automatik.",
         "Undo": "Buat asal",
-        "Redo": "Buat semula"
+        "Redo": "Buat semula",
+        "Push to Google Calendar": "Hantar terus ke Kalendar Google",
+        "Add to Calendar": "Tambah ke Kalendar",
+        "Added to Google Calendar!": "Ditambah ke Kalendar Google!",
+        "Failed to add to Google Calendar!": "Gagal menambah ke Kalendar Google!"
     },
     "tr": {
         "Action": "İşlem",
@@ -3239,7 +3295,11 @@ export const translations = {
         "Next auto-add": "Sonraki otomatik ekleme",
         "Auto-added {count} recurring item(s).": "{count} yinelenen öğe otomatik olarak eklendi.",
         "Undo": "Geri Al",
-        "Redo": "Yinele"
+        "Redo": "Yinele",
+        "Push to Google Calendar": "Doğrudan Google Takvim’e gönder",
+        "Add to Calendar": "Takvime Ekle",
+        "Added to Google Calendar!": "Google Takvim’e eklendi!",
+        "Failed to add to Google Calendar!": "Google Takvim’e eklenemedi!"
     },
     "ar": {
         "Action": "إجراء",
@@ -3455,7 +3515,11 @@ export const translations = {
         "Next auto-add": "الإضافة التلقائية التالية",
         "Auto-added {count} recurring item(s).": "تمت إضافة {count} عنصر متكرر تلقائيًا.",
         "Undo": "تراجع",
-        "Redo": "إعادة"
+        "Redo": "إعادة",
+        "Push to Google Calendar": "إرسال مباشر إلى تقويم Google",
+        "Add to Calendar": "إضافة إلى التقويم",
+        "Added to Google Calendar!": "تمت الإضافة إلى تقويم Google!",
+        "Failed to add to Google Calendar!": "فشلت الإضافة إلى تقويم Google!"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3671,7 +3735,11 @@ export const translations = {
         "Next auto-add": "अगला ऑटो-जोड़ें",
         "Auto-added {count} recurring item(s).": "{count} आवर्ती आइटम स्वचालित रूप से जोड़े गए.",
         "Undo": "पूर्ववत करें",
-        "Redo": "पुनः करें"
+        "Redo": "पुनः करें",
+        "Push to Google Calendar": "सीधे Google कैलेंडर पर भेजें",
+        "Add to Calendar": "कैलेंडर में जोड़ें",
+        "Added to Google Calendar!": "Google कैलेंडर में जोड़ा गया!",
+        "Failed to add to Google Calendar!": "Google कैलेंडर में जोड़ने में विफल!"
     },
     "pl": {
         "Action": "Akcja",
@@ -3887,7 +3955,11 @@ export const translations = {
         "Next auto-add": "Następne automatyczne dodanie",
         "Auto-added {count} recurring item(s).": "Automatycznie dodano {count} cyklicznych pozycji.",
         "Undo": "Cofnij",
-        "Redo": "Ponów"
+        "Redo": "Ponów",
+        "Push to Google Calendar": "Wyślij bezpośrednio do Kalendarza Google",
+        "Add to Calendar": "Dodaj do kalendarza",
+        "Added to Google Calendar!": "Dodano do Kalendarza Google!",
+        "Failed to add to Google Calendar!": "Nie udało się dodać do Kalendarza Google!"
     },
     "nl": {
         "Action": "Actie",
@@ -4103,7 +4175,11 @@ export const translations = {
         "Next auto-add": "Volgende automatische toevoeging",
         "Auto-added {count} recurring item(s).": "{count} terugkerend(e) item(s) automatisch toegevoegd.",
         "Undo": "Ongedaan maken",
-        "Redo": "Opnieuw"
+        "Redo": "Opnieuw",
+        "Push to Google Calendar": "Direct naar Google Agenda sturen",
+        "Add to Calendar": "Toevoegen aan agenda",
+        "Added to Google Calendar!": "Toegevoegd aan Google Agenda!",
+        "Failed to add to Google Calendar!": "Toevoegen aan Google Agenda mislukt!"
     },
     "uk": {
         "Action": "Дія",
@@ -4319,7 +4395,11 @@ export const translations = {
         "Next auto-add": "Наступне автододавання",
         "Auto-added {count} recurring item(s).": "Автоматично додано періодичних записів: {count}.",
         "Undo": "Скасувати",
-        "Redo": "Повторити"
+        "Redo": "Повторити",
+        "Push to Google Calendar": "Надсилати напряму в Google Календар",
+        "Add to Calendar": "Додати до календаря",
+        "Added to Google Calendar!": "Додано до Google Календаря!",
+        "Failed to add to Google Calendar!": "Не вдалося додати до Google Календаря!"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4535,7 +4615,11 @@ export const translations = {
         "Next auto-add": "Susunod na auto-add",
         "Auto-added {count} recurring item(s).": "Awtomatikong nagdagdag ng {count} paulit-ulit na item.",
         "Undo": "I-undo",
-        "Redo": "I-redo"
+        "Redo": "I-redo",
+        "Push to Google Calendar": "Direktang i-push sa Google Calendar",
+        "Add to Calendar": "Idagdag sa Kalendaryo",
+        "Added to Google Calendar!": "Naidagdag sa Google Calendar!",
+        "Failed to add to Google Calendar!": "Nabigong idagdag sa Google Calendar!"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4751,7 +4835,11 @@ export const translations = {
         "Next auto-add": "Nästa automatiska tillägg",
         "Auto-added {count} recurring item(s).": "{count} återkommande post(er) lades till automatiskt.",
         "Undo": "Ångra",
-        "Redo": "Gör om"
+        "Redo": "Gör om",
+        "Push to Google Calendar": "Skicka direkt till Google Kalender",
+        "Add to Calendar": "Lägg till i kalender",
+        "Added to Google Calendar!": "Tillagd i Google Kalender!",
+        "Failed to add to Google Calendar!": "Kunde inte lägga till i Google Kalender!"
     },
     "cs": {
         "Action": "Akce",
@@ -4967,7 +5055,11 @@ export const translations = {
         "Next auto-add": "Další automatické přidání",
         "Auto-added {count} recurring item(s).": "Automaticky přidáno {count} opakujících se položek.",
         "Undo": "Zpět",
-        "Redo": "Znovu"
+        "Redo": "Znovu",
+        "Push to Google Calendar": "Odeslat přímo do Kalendáře Google",
+        "Add to Calendar": "Přidat do kalendáře",
+        "Added to Google Calendar!": "Přidáno do Kalendáře Google!",
+        "Failed to add to Google Calendar!": "Nepodařilo se přidat do Kalendáře Google!"
     },
     "ta": {
         "Action": "செயல்",
@@ -5183,6 +5275,10 @@ export const translations = {
         "Next auto-add": "அடுத்த தானியங்கி சேர்ப்பு",
         "Auto-added {count} recurring item(s).": "{count} தொடர்ச்சியான உருப்படி(கள்) தானாகச் சேர்க்கப்பட்டன.",
         "Undo": "செயல்தவிர்",
-        "Redo": "மீண்டும் செய்"
+        "Redo": "மீண்டும் செய்",
+        "Push to Google Calendar": "Google நாள்காட்டிக்கு நேரடியாக அனுப்பு",
+        "Add to Calendar": "நாள்காட்டியில் சேர்",
+        "Added to Google Calendar!": "Google நாள்காட்டியில் சேர்க்கப்பட்டது!",
+        "Failed to add to Google Calendar!": "Google நாள்காட்டியில் சேர்க்க முடியவில்லை!"
     }
 }

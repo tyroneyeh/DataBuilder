@@ -740,6 +740,7 @@
         <button v-if="hasDateColumn" @click="openRecurringModal()"
             :class="activeMenuRow.recurring?.frequency ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 font-medium' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
             class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">🔁 {{ translate('Recurring') }}<span v-if="activeMenuRow.recurring?.frequency" class="ml-auto text-xs opacity-80">{{ getRecurringLabel(activeMenuRow.recurring.frequency) }}</span></button>
+        <button v-if="hasDateColumn" @click="pushRowToCalendar()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📅 {{ translate('Add to Calendar') }}</button>
         <button @click="shareRow" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors font-medium">🔗 {{ translate('Share') }}</button>
         <button @click="removeRow()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
     </div>
@@ -1512,7 +1513,7 @@
                             <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
                         </label>
                     </div>
-                    <div class="flex items-center justify-between pt-3 hidden">
+                    <div v-if="googleClientId" class="flex items-center justify-between pt-3">
                         <div>
                             <div class="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center">
                                 <span class="icon-mask icon-calendar-push w-5 h-5 bg-current block mr-1"></span>
@@ -2229,7 +2230,7 @@ export default {
         }
         const newCategoryInput = ref('')
         const isAutoSyncEnabled = ref(localStorage.getItem('ty_auto_sync') && sheetImportUrl.value != '')
-        const isCalendarPushEnabled = ref(localStorage.getItem('ty_calendar_sync') && sheetImportUrl.value != '')
+        const isCalendarPushEnabled = ref(Boolean(localStorage.getItem('ty_calendar_sync') && googleClientId.value))
         const lastSyncDate = ref(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`) || '')
         const updatedAt = ref('')
         const heatmapScrollContainer = ref(null)
@@ -2752,6 +2753,8 @@ export default {
 
         watch(isCalendarPushEnabled, (newVal) => {
             newVal ? localStorage.setItem('ty_calendar_sync', 1) : localStorage.removeItem('ty_calendar_sync')
+            tokenClient = null
+            clearGoogleToken()
         })
 
         watch(columnFilters, (newVal) => {
@@ -4491,20 +4494,118 @@ export default {
             }
         }
 
-        const addToCalendar = async (date, title, desc) => {
-            if (!navigator.onLine) return
-            const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
-            const eventBody = {
-                summary: title,
-                description: desc,
-                start: { date: date },
-                end: { date: date },
-                colorId: '11'
+        const getRecurringRRule = (frequency) => {
+            switch (frequency) {
+                case 'daily': return 'RRULE:FREQ=DAILY'
+                case 'weekly': return 'RRULE:FREQ=WEEKLY'
+                case 'monthly': return 'RRULE:FREQ=MONTHLY'
+                case 'quarterly': return 'RRULE:FREQ=MONTHLY;INTERVAL=3'
+                case 'halfyear': return 'RRULE:FREQ=MONTHLY;INTERVAL=6'
+                case 'yearly': return 'RRULE:FREQ=YEARLY'
+                default: return ''
+            }
+        }
+
+        const buildCalendarEventFromRow = (row) => {
+            const dateCol = getPrimaryDateColumn()
+            const rawDate = dateCol ? row[dateCol.id] : ''
+            const parsed = parseYmd(rawDate) || parseYmd(getDate().todayDate)
+            const startDateStr = formatYmd(parsed.year, parsed.month, parsed.day)
+
+            const timeCol = columns.value.find(c => c.type === 'time')
+            const normalizedTime = timeCol && row[timeCol.id] ? normalizeTimeString(row[timeCol.id]) : ''
+            const timeMatch = normalizedTime.match(/^(\d{2}):(\d{2})$/)
+
+            const labelCol = columns.value.find(c => ['category', 'text'].includes(c.type) && row[c.id] && String(row[c.id]).trim() !== '')
+            const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => isNumericType(c.type))
+            const numVal = numCol ? getRowNumericValue(row, numCol) : 0
+
+            let title = labelCol ? String(row[labelCol.id]).trim() : (currentStorageKey.value || translate('TY Data Builder'))
+            if (numVal !== 0) {
+                title += ` (${numVal.toLocaleString()})`
             }
 
-            const token = await getValidGoogleToken()
+            const detailLines = []
+            columns.value.forEach(col => {
+                if (col.type === 'photo') return
+                let val
+                if (isCalcType(col.type)) {
+                    const calc = getRowNumericValue(row, col)
+                    val = calc ? calc.toLocaleString() : ''
+                } else if (col.type === 'tags') {
+                    val = Array.isArray(row[col.id]) ? row[col.id].join(', ') : ''
+                } else if (col.type === 'checkbox') {
+                    val = row[col.id] ? translate('Checked') : translate('Unchecked')
+                } else {
+                    val = row[col.id] ?? ''
+                }
+                if (val !== '' && val !== null && val !== undefined) {
+                    detailLines.push(`${col.label}: ${val}`)
+                }
+            })
+            if (row.note && String(row.note).trim() !== '') {
+                detailLines.push(`${translate('Note')}: ${row.note.trim()}`)
+            }
+            if (currentStorageKey.value) {
+                detailLines.push(`[${currentStorageKey.value}]`)
+            }
+
+            const rrule = getRecurringRRule(row.recurring?.frequency)
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+
+            if (timeMatch) {
+                const startH = Number(timeMatch[1])
+                const startM = Number(timeMatch[2])
+                const endObj = new Date(parsed.year, parsed.month - 1, parsed.day, startH, startM + 60)
+                const endDateStr = formatYmd(endObj.getFullYear(), endObj.getMonth() + 1, endObj.getDate())
+                const endH = String(endObj.getHours()).padStart(2, '0')
+                const endM = String(endObj.getMinutes()).padStart(2, '0')
+                const startDateTime = `${startDateStr}T${timeMatch[1]}:${timeMatch[2]}:00`
+                const endDateTime = `${endDateStr}T${endH}:${endM}:00`
+                const compactStart = `${startDateStr.replaceAll('-', '')}T${timeMatch[1]}${timeMatch[2]}00`
+                const compactEnd = `${endDateStr.replaceAll('-', '')}T${endH}${endM}00`
+
+                return {
+                    title,
+                    description: detailLines.join('\n'),
+                    rrule,
+                    timeZone,
+                    apiStart: { dateTime: startDateTime, timeZone },
+                    apiEnd: { dateTime: endDateTime, timeZone },
+                    templateDates: `${compactStart}/${compactEnd}`
+                }
+            }
+
+            const nextDayObj = new Date(parsed.year, parsed.month - 1, parsed.day + 1)
+            const endDateStr = formatYmd(nextDayObj.getFullYear(), nextDayObj.getMonth() + 1, nextDayObj.getDate())
+            return {
+                title,
+                description: detailLines.join('\n'),
+                rrule,
+                timeZone,
+                apiStart: { date: startDateStr },
+                apiEnd: { date: endDateStr },
+                templateDates: `${startDateStr.replaceAll('-', '')}/${endDateStr.replaceAll('-', '')}`
+            }
+        }
+
+        const addToCalendar = async (eventData) => {
+            if (!navigator.onLine) return false
+            const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events'
+            const eventBody = {
+                summary: eventData.title,
+                description: eventData.description,
+                start: eventData.apiStart,
+                end: eventData.apiEnd,
+                colorId: '11'
+            }
+            if (eventData.rrule) {
+                eventBody.recurrence = [eventData.rrule]
+            }
 
             try {
+                isProcessing.value = 1
+                const token = await getValidGoogleToken()
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -4513,11 +4614,49 @@ export default {
                     },
                     body: JSON.stringify(eventBody)
                 })
-                const data = await response.json()
-                console.log('成功加入日曆！連結：', data.htmlLink)
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        clearGoogleToken()
+                    }
+                    throw new Error(`HTTP ${response.status}`)
+                }
+                await response.json()
+                showConfirm('📅 ' + translate('Added to Google Calendar!'), 1)
+                return true
             } catch (error) {
-                console.error('寫入日曆失敗', error)
+                console.error('Google Calendar Error:', error)
+                showConfirm('❌ ' + translate('Failed to add to Google Calendar!') + ` (${error.message || error})`, 1)
+                return false
+            } finally {
+                isProcessing.value = 0
             }
+        }
+
+        const pushRowToCalendar = async (targetRow = null) => {
+            const row = targetRow || activeMenuRow.value
+            closeActionMenu()
+            if (!row) return
+
+            const eventData = buildCalendarEventFromRow(row)
+
+            if (isCalendarPushEnabled.value && googleClientId.value.trim() && navigator.onLine) {
+                await addToCalendar(eventData)
+                return
+            }
+
+            const params = new URLSearchParams({
+                action: 'TEMPLATE',
+                text: eventData.title,
+                dates: eventData.templateDates,
+                details: eventData.description
+            })
+            if (eventData.apiStart.dateTime && eventData.timeZone) {
+                params.set('ctz', eventData.timeZone)
+            }
+            if (eventData.rrule) {
+                params.set('recur', eventData.rrule)
+            }
+            window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank', 'noopener,noreferrer')
         }
 
         const loadData = async (noDefulat = 0) => {
@@ -8918,6 +9057,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             openRecurringModal,
             closeRecurringModal,
             saveRecurringSetting,
+            pushRowToCalendar,
             canUndo,
             canRedo,
             undo,
