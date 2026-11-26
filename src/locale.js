@@ -219,7 +219,10 @@ export const translations = {
         "Push to Google Calendar": "直接推送至 Google 日曆",
         "Add to Calendar": "加入日曆",
         "Added to Google Calendar!": "已加入 Google 日曆!",
-        "Failed to add to Google Calendar!": "加入 Google 日曆失敗!"
+        "Failed to add to Google Calendar!": "加入 Google 日曆失敗!",
+        "Include photos": "附帶相片",
+        "Photo copied!": "已複製相片至剪貼簿!",
+        "Share text copied! Paste it in Facebook.": "已複製貼文內容，請於 Facebook 貼文框直接貼上！"
     },
     "zh-CN": {
         "Action": "操作",
@@ -439,7 +442,10 @@ export const translations = {
         "Push to Google Calendar": "直接推送至 Google 日历",
         "Add to Calendar": "添加到日历",
         "Added to Google Calendar!": "已添加到 Google 日历!",
-        "Failed to add to Google Calendar!": "添加到 Google 日历失败!"
+        "Failed to add to Google Calendar!": "添加到 Google 日历失败!",
+        "Include photos": "附带照片",
+        "Photo copied!": "已复制照片到剪贴板!",
+        "Share text copied! Paste it in Facebook.": "已复制贴文内容，请在 Facebook 贴文框直接粘贴！"
     },
     "ja": {
         "Action": "操作",
@@ -659,7 +665,10 @@ export const translations = {
         "Push to Google Calendar": "Google カレンダーへ直接送信",
         "Add to Calendar": "カレンダーに追加",
         "Added to Google Calendar!": "Google カレンダーに追加しました!",
-        "Failed to add to Google Calendar!": "Google カレンダーへの追加に失敗しました!"
+        "Failed to add to Google Calendar!": "Google カレンダーへの追加に失敗しました!",
+        "Include photos": "写真を添付",
+        "Photo copied!": "写真をコピーしました！",
+        "Share text copied! Paste it in Facebook.": "投稿文をコピーしました。Facebookに貼り付けてください！"
     },
     "ko": {
         "Action": "작업",
@@ -879,7 +888,10 @@ export const translations = {
         "Push to Google Calendar": "Google 캘린더에 직접 푸시",
         "Add to Calendar": "캘린더에 추가",
         "Added to Google Calendar!": "Google 캘린더에 추가되었습니다!",
-        "Failed to add to Google Calendar!": "Google 캘린더에 추가하지 못했습니다!"
+        "Failed to add to Google Calendar!": "Google 캘린더에 추가하지 못했습니다!",
+        "Include photos": "사진 포함",
+        "Photo copied!": "사진이 복사되었습니다!",
+        "Share text copied! Paste it in Facebook.": "게시글 내용이 복사되었습니다. Facebook에 붙여넣으세요!"
     },
     "es": {
         "Action": "Acción",
@@ -1099,7 +1111,10 @@ export const translations = {
         "Push to Google Calendar": "Enviar directamente a Google Calendar",
         "Add to Calendar": "Añadir al calendario",
         "Added to Google Calendar!": "¡Añadido a Google Calendar!",
-        "Failed to add to Google Calendar!": "¡Error al añadir a Google Calendar!"
+        "Failed to add to Google Calendar!": "¡Error al añadir a Google Calendar!",
+        "Include photos": "Incluir fotos",
+        "Photo copied!": "¡Foto copiada!",
+        "Share text copied! Paste it in Facebook.": "¡Texto copiado! Pégalo en Facebook."
     },
     "fr": {
         "Action": "Action",
@@ -1319,7 +1334,10 @@ export const translations = {
         "Push to Google Calendar": "Envoyer directement vers Google Agenda",
         "Add to Calendar": "Ajouter à l’agenda",
         "Added to Google Calendar!": "Ajouté à Google Agenda !",
-        "Failed to add to Google Calendar!": "Échec de l’ajout à Google Agenda !"
+        "Failed to add to Google Calendar!": "Échec de l’ajout à Google Agenda !",
+        "Include photos": "Inclure les photos",
+        "Photo copied!": "Photo copiée !",
+        "Share text copied! Paste it in Facebook.": "Texte copié ! Collez-le sur Facebook."
     },
     "de": {
         "Action": "Aktion",
@@ -1539,7 +1557,10 @@ export const translations = {
         "Push to Google Calendar": "Direkt an Google Kalender senden",
         "Add to Calendar": "Zum Kalender hinzufügen",
         "Added to Google Calendar!": "Zu Google Kalender hinzugefügt!",
-        "Failed to add to Google Calendar!": "Fehler beim Hinzufügen zu Google Kalender!"
+        "Failed to add to Google Calendar!": "Fehler beim Hinzufügen zu Google Kalender!",
+        "Include photos": "Fotos einbeziehen",
+        "Photo copied!": "Foto kopiert!",
+        "Share text copied! Paste it in Facebook.": "Text kopiert! Auf Facebook einfügen."
     },
     "it": {
         "Action": "Azione",
@@ -1759,7 +1780,10 @@ export const translations = {
         "Push to Google Calendar": "Invia direttamente a Google Calendar",
         "Add to Calendar": "Aggiungi al calendario",
         "Added to Google Calendar!": "Aggiunto a Google Calendar!",
-        "Failed to add to Google Calendar!": "Impossibile aggiungere a Google Calendar!"
+        "Failed to add to Google Calendar!": "Impossibile aggiungere a Google Calendar!",
+        "Include photos": "Includi foto",
+        "Photo copied!": "Foto copiata!",
+        "Share text copied! Paste it in Facebook.": "Testo copiato! Incollalo su Facebook."
     },
     "pt": {
         "Action": "Ação",
@@ -1979,7 +2003,10 @@ export const translations = {
         "Push to Google Calendar": "Enviar diretamente para o Google Agenda",
         "Add to Calendar": "Adicionar à agenda",
         "Added to Google Calendar!": "Adicionado ao Google Agenda!",
-        "Failed to add to Google Calendar!": "Falha ao adicionar ao Google Agenda!"
+        "Failed to add to Google Calendar!": "Falha ao adicionar ao Google Agenda!",
+        "Include photos": "Incluir fotos",
+        "Photo copied!": "Foto copiada!",
+        "Share text copied! Paste it in Facebook.": "Texto copiado! Cole no Facebook."
     },
     "ru": {
         "Action": "Действие",
@@ -2199,7 +2226,10 @@ export const translations = {
         "Push to Google Calendar": "Отправлять напрямую в Google Календарь",
         "Add to Calendar": "Добавить в календарь",
         "Added to Google Calendar!": "Добавлено в Google Календарь!",
-        "Failed to add to Google Calendar!": "Не удалось добавить в Google Календарь!"
+        "Failed to add to Google Calendar!": "Не удалось добавить в Google Календарь!",
+        "Include photos": "Прикрепить фото",
+        "Photo copied!": "Фото скопировано!",
+        "Share text copied! Paste it in Facebook.": "Текст скопирован! Вставьте его в Facebook."
     },
     "id": {
         "Action": "Tindakan",
@@ -2419,7 +2449,10 @@ export const translations = {
         "Push to Google Calendar": "Kirim langsung ke Google Kalender",
         "Add to Calendar": "Tambahkan ke Kalender",
         "Added to Google Calendar!": "Ditambahkan ke Google Kalender!",
-        "Failed to add to Google Calendar!": "Gagal menambahkan ke Google Kalender!"
+        "Failed to add to Google Calendar!": "Gagal menambahkan ke Google Kalender!",
+        "Include photos": "Sertakan foto",
+        "Photo copied!": "Foto disalin!",
+        "Share text copied! Paste it in Facebook.": "Teks disalin! Tempel di Facebook."
     },
     "vi": {
         "Action": "Thao tác",
@@ -2639,7 +2672,10 @@ export const translations = {
         "Push to Google Calendar": "Đẩy trực tiếp lên Lịch Google",
         "Add to Calendar": "Thêm vào Lịch",
         "Added to Google Calendar!": "Đã thêm vào Lịch Google!",
-        "Failed to add to Google Calendar!": "Thêm vào Lịch Google thất bại!"
+        "Failed to add to Google Calendar!": "Thêm vào Lịch Google thất bại!",
+        "Include photos": "Đính kèm ảnh",
+        "Photo copied!": "Đã sao chép ảnh!",
+        "Share text copied! Paste it in Facebook.": "Đã sao chép nội dung! Dán vào Facebook."
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2859,7 +2895,10 @@ export const translations = {
         "Push to Google Calendar": "ส่งไปยัง Google ปฏิทินโดยตรง",
         "Add to Calendar": "เพิ่มในปฏิทิน",
         "Added to Google Calendar!": "เพิ่มลงใน Google ปฏิทินแล้ว!",
-        "Failed to add to Google Calendar!": "ไม่สามารถเพิ่มลงใน Google ปฏิทินได้!"
+        "Failed to add to Google Calendar!": "ไม่สามารถเพิ่มลงใน Google ปฏิทินได้!",
+        "Include photos": "แนบรูปภาพ",
+        "Photo copied!": "คัดลอกรูปภาพแล้ว!",
+        "Share text copied! Paste it in Facebook.": "คัดลอกข้อความแล้ว! วางใน Facebook ได้เลย"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3079,7 +3118,10 @@ export const translations = {
         "Push to Google Calendar": "Hantar terus ke Kalendar Google",
         "Add to Calendar": "Tambah ke Kalendar",
         "Added to Google Calendar!": "Ditambah ke Kalendar Google!",
-        "Failed to add to Google Calendar!": "Gagal menambah ke Kalendar Google!"
+        "Failed to add to Google Calendar!": "Gagal menambah ke Kalendar Google!",
+        "Include photos": "Sertakan foto",
+        "Photo copied!": "Foto disalin!",
+        "Share text copied! Paste it in Facebook.": "Teks disalin! Tampal di Facebook."
     },
     "tr": {
         "Action": "İşlem",
@@ -3299,7 +3341,10 @@ export const translations = {
         "Push to Google Calendar": "Doğrudan Google Takvim’e gönder",
         "Add to Calendar": "Takvime Ekle",
         "Added to Google Calendar!": "Google Takvim’e eklendi!",
-        "Failed to add to Google Calendar!": "Google Takvim’e eklenemedi!"
+        "Failed to add to Google Calendar!": "Google Takvim’e eklenemedi!",
+        "Include photos": "Fotoğrafları ekle",
+        "Photo copied!": "Fotoğraf kopyalandı!",
+        "Share text copied! Paste it in Facebook.": "Metin kopyalandı! Facebook’ta yapıştırın."
     },
     "ar": {
         "Action": "إجراء",
@@ -3519,7 +3564,10 @@ export const translations = {
         "Push to Google Calendar": "إرسال مباشر إلى تقويم Google",
         "Add to Calendar": "إضافة إلى التقويم",
         "Added to Google Calendar!": "تمت الإضافة إلى تقويم Google!",
-        "Failed to add to Google Calendar!": "فشلت الإضافة إلى تقويم Google!"
+        "Failed to add to Google Calendar!": "فشلت الإضافة إلى تقويم Google!",
+        "Include photos": "تضمين الصور",
+        "Photo copied!": "تم نسخ الصورة!",
+        "Share text copied! Paste it in Facebook.": "تم نسخ النص! الصقه في Facebook."
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3739,7 +3787,10 @@ export const translations = {
         "Push to Google Calendar": "सीधे Google कैलेंडर पर भेजें",
         "Add to Calendar": "कैलेंडर में जोड़ें",
         "Added to Google Calendar!": "Google कैलेंडर में जोड़ा गया!",
-        "Failed to add to Google Calendar!": "Google कैलेंडर में जोड़ने में विफल!"
+        "Failed to add to Google Calendar!": "Google कैलेंडर में जोड़ने में विफल!",
+        "Include photos": "फ़ोटो शामिल करें",
+        "Photo copied!": "फ़ोटो कॉपी हो गई!",
+        "Share text copied! Paste it in Facebook.": "टेक्स्ट कॉपी हो गया! Facebook पर पेस्ट करें।"
     },
     "pl": {
         "Action": "Akcja",
@@ -3959,7 +4010,10 @@ export const translations = {
         "Push to Google Calendar": "Wyślij bezpośrednio do Kalendarza Google",
         "Add to Calendar": "Dodaj do kalendarza",
         "Added to Google Calendar!": "Dodano do Kalendarza Google!",
-        "Failed to add to Google Calendar!": "Nie udało się dodać do Kalendarza Google!"
+        "Failed to add to Google Calendar!": "Nie udało się dodać do Kalendarza Google!",
+        "Include photos": "Dołącz zdjęcia",
+        "Photo copied!": "Skopiowano zdjęcie!",
+        "Share text copied! Paste it in Facebook.": "Tekst skopiowany! Wklej go na Facebooku."
     },
     "nl": {
         "Action": "Actie",
@@ -4179,7 +4233,10 @@ export const translations = {
         "Push to Google Calendar": "Direct naar Google Agenda sturen",
         "Add to Calendar": "Toevoegen aan agenda",
         "Added to Google Calendar!": "Toegevoegd aan Google Agenda!",
-        "Failed to add to Google Calendar!": "Toevoegen aan Google Agenda mislukt!"
+        "Failed to add to Google Calendar!": "Toevoegen aan Google Agenda mislukt!",
+        "Include photos": "Foto’s bijvoegen",
+        "Photo copied!": "Foto gekopieerd!",
+        "Share text copied! Paste it in Facebook.": "Tekst gekopieerd! Plak deze op Facebook."
     },
     "uk": {
         "Action": "Дія",
@@ -4399,7 +4456,10 @@ export const translations = {
         "Push to Google Calendar": "Надсилати напряму в Google Календар",
         "Add to Calendar": "Додати до календаря",
         "Added to Google Calendar!": "Додано до Google Календаря!",
-        "Failed to add to Google Calendar!": "Не вдалося додати до Google Календаря!"
+        "Failed to add to Google Calendar!": "Не вдалося додати до Google Календаря!",
+        "Include photos": "Додати фото",
+        "Photo copied!": "Фото скопійовано!",
+        "Share text copied! Paste it in Facebook.": "Текст скопійовано! Вставте його у Facebook."
     },
     "tl": {
         "Action": "Aksyon",
@@ -4619,7 +4679,10 @@ export const translations = {
         "Push to Google Calendar": "Direktang i-push sa Google Calendar",
         "Add to Calendar": "Idagdag sa Kalendaryo",
         "Added to Google Calendar!": "Naidagdag sa Google Calendar!",
-        "Failed to add to Google Calendar!": "Nabigong idagdag sa Google Calendar!"
+        "Failed to add to Google Calendar!": "Nabigong idagdag sa Google Calendar!",
+        "Include photos": "Isama ang mga larawan",
+        "Photo copied!": "Nakopya na ang larawan!",
+        "Share text copied! Paste it in Facebook.": "Nakopya ang teksto! I-paste sa Facebook."
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4839,7 +4902,10 @@ export const translations = {
         "Push to Google Calendar": "Skicka direkt till Google Kalender",
         "Add to Calendar": "Lägg till i kalender",
         "Added to Google Calendar!": "Tillagd i Google Kalender!",
-        "Failed to add to Google Calendar!": "Kunde inte lägga till i Google Kalender!"
+        "Failed to add to Google Calendar!": "Kunde inte lägga till i Google Kalender!",
+        "Include photos": "Inkludera foton",
+        "Photo copied!": "Foto kopierat!",
+        "Share text copied! Paste it in Facebook.": "Text kopierad! Klistra in på Facebook."
     },
     "cs": {
         "Action": "Akce",
@@ -5059,7 +5125,10 @@ export const translations = {
         "Push to Google Calendar": "Odeslat přímo do Kalendáře Google",
         "Add to Calendar": "Přidat do kalendáře",
         "Added to Google Calendar!": "Přidáno do Kalendáře Google!",
-        "Failed to add to Google Calendar!": "Nepodařilo se přidat do Kalendáře Google!"
+        "Failed to add to Google Calendar!": "Nepodařilo se přidat do Kalendáře Google!",
+        "Include photos": "Připojit fotky",
+        "Photo copied!": "Fotka zkopírována!",
+        "Share text copied! Paste it in Facebook.": "Text zkopírován! Vložte jej na Facebook."
     },
     "ta": {
         "Action": "செயல்",
@@ -5279,6 +5348,9 @@ export const translations = {
         "Push to Google Calendar": "Google நாள்காட்டிக்கு நேரடியாக அனுப்பு",
         "Add to Calendar": "நாள்காட்டியில் சேர்",
         "Added to Google Calendar!": "Google நாள்காட்டியில் சேர்க்கப்பட்டது!",
-        "Failed to add to Google Calendar!": "Google நாள்காட்டியில் சேர்க்க முடியவில்லை!"
+        "Failed to add to Google Calendar!": "Google நாள்காட்டியில் சேர்க்க முடியவில்லை!",
+        "Include photos": "புகைப்படங்களைச் சேர்",
+        "Photo copied!": "புகைப்படம் நகலெடுக்கப்பட்டது!",
+        "Share text copied! Paste it in Facebook.": "உரை நகலெடுக்கப்பட்டது! Facebook-இல் ஒட்டவும்."
     }
 }

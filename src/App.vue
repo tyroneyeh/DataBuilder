@@ -1821,6 +1821,25 @@
                 {{ shareModal.sharedPlatforms?.link ? '✓' : '🔗' }}
             </button>
         </div>
+        <div v-if="shareModal.photos?.length" class="w-full mb-3 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+                <label class="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                    <input type="checkbox" v-model="shareModal.includePhotos" class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer">
+                    <span>📷 {{ translate('Include photos') }} ({{ shareModal.photos.length }})</span>
+                </label>
+            </div>
+            <div class="flex items-center gap-2 overflow-x-auto pb-0.5">
+                <div v-for="(photoSrc, pIdx) in shareModal.photos" :key="pIdx" class="relative shrink-0 group/sharephoto">
+                    <img :src="photoSrc" @click="viewPhoto(shareModal.photos, pIdx)" class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm" :class="{'opacity-40 grayscale': !shareModal.includePhotos}" alt="" />
+                    <button
+                        type="button"
+                        @click.stop="copySharePhoto(photoSrc, pIdx)"
+                        :title="translate('Copy')"
+                        class="absolute -bottom-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-[10px] shadow hover:bg-indigo-100 dark:hover:bg-gray-700 active:scale-90 transition-all"
+                    >{{ shareModal.sharedPlatforms?.[`photo_${pIdx}`] ? '✓' : '📋' }}</button>
+                </div>
+            </div>
+        </div>
         <div class="flex flex-wrap gap-2 w-full mb-3">
             <button type="button" @click="shareToPlatform('line')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#06C755] hover:opacity-90 active:scale-95 transition-all shadow-sm">
                 <span v-if="shareModal.sharedPlatforms?.line">✓ </span>LINE
@@ -2422,6 +2441,8 @@ export default {
             text: '',
             title: '',
             desc: '',
+            photos: [],
+            includePhotos: true,
             sharedPlatforms: {}
         })
         const canWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -7894,10 +7915,57 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }).catch(() => {})
         }
 
+        const dataUrlToFile = (dataUrl, index = 0) => {
+            const match = String(dataUrl || '').match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/)
+            if (!match) return null
+            const mime = match[1]
+            const ext = mime.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
+            const binary = atob(match[2])
+            const bytes = new Uint8Array(binary.length)
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i)
+            }
+            return new File([bytes], `photo_${index + 1}.${ext}`, { type: mime })
+        }
+
+        const copySharePhoto = async (photoDataUrl, index = 0) => {
+            try {
+                if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+                    const img = new Image()
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve
+                        img.onerror = reject
+                        img.src = photoDataUrl
+                    })
+                    const canvas = document.createElement('canvas')
+                    canvas.width = img.naturalWidth || img.width
+                    canvas.height = img.naturalHeight || img.height
+                    canvas.getContext('2d').drawImage(img, 0, 0)
+                    const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+                    if (pngBlob) {
+                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })])
+                        markSharedPlatform(`photo_${index}`)
+                        showConfirm(translate('Photo copied!'), 1)
+                        return
+                    }
+                }
+            } catch (err) {
+                console.warn('Clipboard image copy failed, falling back to download:', err)
+            }
+
+            const link = document.createElement('a')
+            link.href = photoDataUrl
+            link.download = `photo_${index + 1}.jpg`
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            markSharedPlatform(`photo_${index}`)
+        }
+
         const buildRowShareSummary = (row) => {
             const parts = []
             columns.value.forEach(col => {
-                if (col.type === 'photo') return
+                if (col.type === 'photo' || col.type === 'password') return
                 let val
                 if (isCalcType(col.type)) {
                     const calc = getRowNumericValue(row, col)
@@ -7927,11 +7995,24 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             if (platform === 'native' && canWebShare) {
                 try {
-                    await navigator.share({
-                        title: currentStorageKey.value || translate('TY Data Builder'),
-                        text: shareText || undefined,
-                        url: link
-                    })
+                    const files = (shareModal.value.includePhotos && shareModal.value.photos?.length)
+                        ? shareModal.value.photos.map((src, idx) => dataUrlToFile(src, idx)).filter(Boolean)
+                        : []
+
+                    if (files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
+                        const combinedText = shareText ? `${shareText}\n${link}` : link
+                        await navigator.share({
+                            title: currentStorageKey.value || translate('TY Data Builder'),
+                            text: combinedText,
+                            files
+                        })
+                    } else {
+                        await navigator.share({
+                            title: currentStorageKey.value || translate('TY Data Builder'),
+                            text: shareText || undefined,
+                            url: link
+                        })
+                    }
                     markSharedPlatform('native')
                 } catch (err) {
                     if (err?.name !== 'AbortError') {
@@ -7956,7 +8037,12 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
             } else if (platform === 'facebook') {
                 targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
-                if (shareText) targetUrl += `&quote=${encodeURIComponent(shareText)}`
+                if (shareText) {
+                    targetUrl += `&quote=${encodeURIComponent(shareText)}`
+                    navigator.clipboard?.writeText(shareText)
+                        .then(() => showConfirm(translate('Share text copied! Paste it in Facebook.'), 1))
+                        .catch(() => {})
+                }
             }
 
             if (targetUrl) {
@@ -7980,15 +8066,37 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             try {
                 let link = ''
+                const photoCols = columns.value.filter(col => col.type === 'photo')
+                const collectedPhotos = []
+                if (photoCols.length > 0) {
+                    for (const row of rows.value) {
+                        for (const col of photoCols) {
+                            if (Array.isArray(row[col.id])) {
+                                for (const src of row[col.id]) {
+                                    if (typeof src === 'string' && src.startsWith('data:image/')) {
+                                        collectedPhotos.push(src)
+                                        if (collectedPhotos.length >= 10) break
+                                    }
+                                }
+                            }
+                            if (collectedPhotos.length >= 10) break
+                        }
+                        if (collectedPhotos.length >= 10) break
+                    }
+                }
+
                 const gistValue = gistId.value.trim()
                 if (gistValue) {
                     link = `${window.location.origin}${window.location.pathname}#gist:${gistValue}`
                 } else {
-
-                    const photoCol = columns.value.find(col => col.type === 'photo')
                     const payload = { workspace: currentStorageKey.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value) }
-                    if (photoCol) {
-                        payload.rows = payload.rows.map(({[photoCol.id]: photos, ...rest }) => rest)
+                    if (photoCols.length > 0) {
+                        const photoColIds = new Set(photoCols.map(c => c.id))
+                        payload.rows = payload.rows.map(r => {
+                            const cleaned = { ...r }
+                            photoColIds.forEach(id => delete cleaned[id])
+                            return cleaned
+                        })
                     }
                     const jsonString = JSON.stringify(payload)
                     const compressedBase64 = await compressToBase64(jsonString)
@@ -8005,6 +8113,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         text: currentStorageKey.value || translate('TY Data Builder'),
                         title: translate('Share Link & QRCode'),
                         desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
+                        photos: collectedPhotos,
+                        includePhotos: collectedPhotos.length > 0,
                         sharedPlatforms: {}
                     }
                 })
@@ -8024,10 +8134,18 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             try {
                 const rawRowData = { ...toRaw(row) }
-                const photoCol = columns.value.find(col => col.type === 'photo')
-                if (photoCol) {
-                    delete rawRowData[photoCol.id]
-                }
+                const photoCols = columns.value.filter(col => col.type === 'photo')
+                const rowPhotos = []
+                photoCols.forEach(col => {
+                    if (Array.isArray(rawRowData[col.id])) {
+                        rawRowData[col.id].forEach(src => {
+                            if (typeof src === 'string' && src.startsWith('data:image/')) {
+                                rowPhotos.push(src)
+                            }
+                        })
+                    }
+                    delete rawRowData[col.id]
+                })
                 delete rawRowData.id
 
                 const payload = {
@@ -8050,6 +8168,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         text: rowSummary,
                         title: translate('Share Link & QRCode'),
                         desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
+                        photos: rowPhotos,
+                        includePhotos: rowPhotos.length > 0,
                         sharedPlatforms: {}
                     }
                 })
@@ -9327,6 +9447,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             shareToPlatform,
             shareRow,
             copyShareLink,
+            copySharePhoto,
             copyQuickAddLink,
             googleVisionKey,
             captureForOCR,
