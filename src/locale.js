@@ -210,7 +210,10 @@ export const translations = {
         "Workspace already exists!": "工作區已存在!",
         "Are you sure you want to delete workspace \"{name}\"?": "確定要刪除工作區「{name}」嗎?",
         "Add Blank Workspace": "新增空白工作區",
-        "Start with blank workspace (no columns)": "完全空白工作區（不含目前欄位）"
+        "Start with blank workspace (no columns)": "完全空白工作區（不含目前欄位）",
+        "Recurring": "週期重複",
+        "Next auto-add": "下次自動新增",
+        "Auto-added {count} recurring item(s).": "已自動新增 {count} 筆週期項目."
     },
     "zh-CN": {
         "Action": "操作",
@@ -421,7 +424,10 @@ export const translations = {
         "Workspace already exists!": "工作区已存在!",
         "Are you sure you want to delete workspace \"{name}\"?": "确定要删除工作区「{name}」吗?",
         "Add Blank Workspace": "新建空白工作区",
-        "Start with blank workspace (no columns)": "完全空白工作区（不含当前字段）"
+        "Start with blank workspace (no columns)": "完全空白工作区（不含当前字段）",
+        "Recurring": "周期重复",
+        "Next auto-add": "下次自动添加",
+        "Auto-added {count} recurring item(s).": "已自动添加 {count} 条周期项目."
     },
     "ja": {
         "Action": "操作",
@@ -632,7 +638,10 @@ export const translations = {
         "Workspace already exists!": "このワークスペースは既に存在します!",
         "Are you sure you want to delete workspace \"{name}\"?": "ワークスペース「{name}」を削除してもよろしいですか?",
         "Add Blank Workspace": "空白のワークスペースを追加",
-        "Start with blank workspace (no columns)": "空白のワークスペースで開始（列なし）"
+        "Start with blank workspace (no columns)": "空白のワークスペースで開始（列なし）",
+        "Recurring": "定期繰り返し",
+        "Next auto-add": "次回の自動追加",
+        "Auto-added {count} recurring item(s).": "{count} 件の定期項目を自動追加しました."
     },
     "ko": {
         "Action": "작업",
@@ -843,7 +852,10 @@ export const translations = {
         "Workspace already exists!": "이미 존재하는 워크스페이스입니다!",
         "Are you sure you want to delete workspace \"{name}\"?": "워크스페이스 \"{name}\"을(를) 삭제하시겠습니까?",
         "Add Blank Workspace": "빈 작업공간 추가",
-        "Start with blank workspace (no columns)": "빈 작업공간으로 시작 (열 없음)"
+        "Start with blank workspace (no columns)": "빈 작업공간으로 시작 (열 없음)",
+        "Recurring": "정기 반복",
+        "Next auto-add": "다음 자동 추가",
+        "Auto-added {count} recurring item(s).": "정기 항목 {count}개가 자동으로 추가되었습니다."
     },
     "es": {
         "Action": "Acción",
@@ -1054,7 +1066,10 @@ export const translations = {
         "Workspace already exists!": "¡El espacio de trabajo ya existe!",
         "Are you sure you want to delete workspace \"{name}\"?": "¿Estás seguro de que quieres eliminar el espacio de trabajo \"{name}\"?",
         "Add Blank Workspace": "Añadir espacio vacío",
-        "Start with blank workspace (no columns)": "Comenzar vacío (sin columnas)"
+        "Start with blank workspace (no columns)": "Comenzar vacío (sin columnas)",
+        "Recurring": "Recurrente",
+        "Next auto-add": "Próxima adición automática",
+        "Auto-added {count} recurring item(s).": "Se añadieron automáticamente {count} elemento(s) recurrente(s)."
     },
     "fr": {
         "Action": "Action",
@@ -1265,7 +1280,10 @@ export const translations = {
         "Workspace already exists!": "Cet espace de travail existe déjà !",
         "Are you sure you want to delete workspace \"{name}\"?": "Voulez-vous vraiment supprimer l’espace de travail « {name} » ?",
         "Add Blank Workspace": "Ajouter un espace vide",
-        "Start with blank workspace (no columns)": "Démarrer à vide (sans colonnes)"
+        "Start with blank workspace (no columns)": "Démarrer à vide (sans colonnes)",
+        "Recurring": "Récurrent",
+        "Next auto-add": "Prochain ajout automatique",
+        "Auto-added {count} recurring item(s).": "{count} élément(s) récurrent(s) ajouté(s) automatiquement."
     },
     "de": {
         "Action": "Aktion",
@@ -1476,7 +1494,10 @@ export const translations = {
         "Workspace already exists!": "Arbeitsbereich existiert bereits!",
         "Are you sure you want to delete workspace \"{name}\"?": "Möchten Sie den Arbeitsbereich „{name}“ wirklich löschen?",
         "Add Blank Workspace": "Leeren Arbeitsbereich hinzufügen",
-        "Start with blank workspace (no columns)": "Mit leerem Arbeitsbereich starten (ohne Spalten)"
+        "Start with blank workspace (no columns)": "Mit leerem Arbeitsbereich starten (ohne Spalten)",
+        "Recurring": "Wiederkehrend",
+        "Next auto-add": "Nächste automatische Buchung",
+        "Auto-added {count} recurring item(s).": "{count} wiederkehrende(r) Eintrag/Einträge automatisch hinzugefügt."
     },
     "it": {
         "Action": "Azione",
@@ -1687,7 +1708,10 @@ export const translations = {
         "Workspace already exists!": "L’area di lavoro esiste già!",
         "Are you sure you want to delete workspace \"{name}\"?": "Sei sicuro di voler eliminare l’area di lavoro \"{name}\"?",
         "Add Blank Workspace": "Aggiungi area vuota",
-        "Start with blank workspace (no columns)": "Inizia con area vuota (senza colonne)"
+        "Start with blank workspace (no columns)": "Inizia con area vuota (senza colonne)",
+        "Recurring": "Ricorrente",
+        "Next auto-add": "Prossima aggiunta automatica",
+        "Auto-added {count} recurring item(s).": "Aggiunti automaticamente {count} elementi ricorrenti."
     },
     "pt": {
         "Action": "Ação",
@@ -1898,7 +1922,10 @@ export const translations = {
         "Workspace already exists!": "O espaço de trabalho já existe!",
         "Are you sure you want to delete workspace \"{name}\"?": "Tem certeza de que deseja excluir o espaço de trabalho \"{name}\"?",
         "Add Blank Workspace": "Adicionar espaço vazio",
-        "Start with blank workspace (no columns)": "Iniciar em branco (sem colunas)"
+        "Start with blank workspace (no columns)": "Iniciar em branco (sem colunas)",
+        "Recurring": "Recorrente",
+        "Next auto-add": "Próxima adição automática",
+        "Auto-added {count} recurring item(s).": "{count} item(ns) recorrente(s) adicionado(s) automaticamente."
     },
     "ru": {
         "Action": "Действие",
@@ -2109,7 +2136,10 @@ export const translations = {
         "Workspace already exists!": "Рабочая область уже существует!",
         "Are you sure you want to delete workspace \"{name}\"?": "Вы уверены, что хотите удалить рабочую область «{name}»?",
         "Add Blank Workspace": "Добавить пустое пространство",
-        "Start with blank workspace (no columns)": "Начать с пустого (без столбцов)"
+        "Start with blank workspace (no columns)": "Начать с пустого (без столбцов)",
+        "Recurring": "Повторяющийся",
+        "Next auto-add": "Следующее автодобавление",
+        "Auto-added {count} recurring item(s).": "Автоматически добавлено повторяющихся записей: {count}."
     },
     "id": {
         "Action": "Tindakan",
@@ -2320,7 +2350,10 @@ export const translations = {
         "Workspace already exists!": "Ruang kerja sudah ada!",
         "Are you sure you want to delete workspace \"{name}\"?": "Apakah Anda yakin ingin menghapus ruang kerja \"{name}\"?",
         "Add Blank Workspace": "Tambah Ruang Kerja Kosong",
-        "Start with blank workspace (no columns)": "Mulai dari ruang kerja kosong (tanpa kolom)"
+        "Start with blank workspace (no columns)": "Mulai dari ruang kerja kosong (tanpa kolom)",
+        "Recurring": "Berulang",
+        "Next auto-add": "Penambahan otomatis berikutnya",
+        "Auto-added {count} recurring item(s).": "Menambahkan {count} item berulang secara otomatis."
     },
     "vi": {
         "Action": "Thao tác",
@@ -2531,7 +2564,10 @@ export const translations = {
         "Tags": "Thẻ",
         "Color": "Màu sắc",
         "Add Blank Workspace": "Thêm không gian trống",
-        "Start with blank workspace (no columns)": "Bắt đầu trống (không có cột)"
+        "Start with blank workspace (no columns)": "Bắt đầu trống (không có cột)",
+        "Recurring": "Định kỳ",
+        "Next auto-add": "Lần tự động thêm tiếp theo",
+        "Auto-added {count} recurring item(s).": "Đã tự động thêm {count} mục định kỳ."
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2742,7 +2778,10 @@ export const translations = {
         "Tags": "แท็ก",
         "Color": "สี",
         "Add Blank Workspace": "เพิ่มพื้นที่ทำงานว่าง",
-        "Start with blank workspace (no columns)": "เริ่มด้วยพื้นที่ทำงานว่าง (ไม่มีคอลัมน์)"
+        "Start with blank workspace (no columns)": "เริ่มด้วยพื้นที่ทำงานว่าง (ไม่มีคอลัมน์)",
+        "Recurring": "รายการประจำ",
+        "Next auto-add": "เพิ่มอัตโนมัติครั้งถัดไป",
+        "Auto-added {count} recurring item(s).": "เพิ่มรายการประจำอัตโนมัติ {count} รายการแล้ว."
     },
     "ms": {
         "Action": "Tindakan",
@@ -2953,7 +2992,10 @@ export const translations = {
         "Tags": "Tag",
         "Color": "Warna",
         "Add Blank Workspace": "Tambah Ruang Kerja Kosong",
-        "Start with blank workspace (no columns)": "Mula dengan ruang kerja kosong (tiada lajur)"
+        "Start with blank workspace (no columns)": "Mula dengan ruang kerja kosong (tiada lajur)",
+        "Recurring": "Berulang",
+        "Next auto-add": "Tambahan automatik seterusnya",
+        "Auto-added {count} recurring item(s).": "{count} item berulang ditambah secara automatik."
     },
     "tr": {
         "Action": "İşlem",
@@ -3164,7 +3206,10 @@ export const translations = {
         "Tags": "Etiketler",
         "Color": "Renk",
         "Add Blank Workspace": "Boş Çalışma Alanı Ekle",
-        "Start with blank workspace (no columns)": "Boş çalışma alanıyla başla (sütunsuz)"
+        "Start with blank workspace (no columns)": "Boş çalışma alanıyla başla (sütunsuz)",
+        "Recurring": "Yinelenen",
+        "Next auto-add": "Sonraki otomatik ekleme",
+        "Auto-added {count} recurring item(s).": "{count} yinelenen öğe otomatik olarak eklendi."
     },
     "ar": {
         "Action": "إجراء",
@@ -3375,7 +3420,10 @@ export const translations = {
         "Tags": "الوسوم",
         "Color": "اللون",
         "Add Blank Workspace": "إضافة مساحة عمل فارغة",
-        "Start with blank workspace (no columns)": "البدء بمساحة عمل فارغة (بدون أعمدة)"
+        "Start with blank workspace (no columns)": "البدء بمساحة عمل فارغة (بدون أعمدة)",
+        "Recurring": "متكرر",
+        "Next auto-add": "الإضافة التلقائية التالية",
+        "Auto-added {count} recurring item(s).": "تمت إضافة {count} عنصر متكرر تلقائيًا."
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3586,7 +3634,10 @@ export const translations = {
         "Tags": "टैग",
         "Color": "रंग",
         "Add Blank Workspace": "खाली कार्यक्षेत्र जोड़ें",
-        "Start with blank workspace (no columns)": "खाली कार्यक्षेत्र से शुरू करें (बिना कॉलम)"
+        "Start with blank workspace (no columns)": "खाली कार्यक्षेत्र से शुरू करें (बिना कॉलम)",
+        "Recurring": "आवर्ती",
+        "Next auto-add": "अगला ऑटो-जोड़ें",
+        "Auto-added {count} recurring item(s).": "{count} आवर्ती आइटम स्वचालित रूप से जोड़े गए."
     },
     "pl": {
         "Action": "Akcja",
@@ -3797,7 +3848,10 @@ export const translations = {
         "Tags": "Tagi",
         "Color": "Kolor",
         "Add Blank Workspace": "Dodaj pusty obszar roboczy",
-        "Start with blank workspace (no columns)": "Rozpocznij od pustego (bez kolumn)"
+        "Start with blank workspace (no columns)": "Rozpocznij od pustego (bez kolumn)",
+        "Recurring": "Cykliczne",
+        "Next auto-add": "Następne automatyczne dodanie",
+        "Auto-added {count} recurring item(s).": "Automatycznie dodano {count} cyklicznych pozycji."
     },
     "nl": {
         "Action": "Actie",
@@ -4008,7 +4062,10 @@ export const translations = {
         "Tags": "Tags",
         "Color": "Kleur",
         "Add Blank Workspace": "Lege werkruimte toevoegen",
-        "Start with blank workspace (no columns)": "Start met lege werkruimte (geen kolommen)"
+        "Start with blank workspace (no columns)": "Start met lege werkruimte (geen kolommen)",
+        "Recurring": "Terugkerend",
+        "Next auto-add": "Volgende automatische toevoeging",
+        "Auto-added {count} recurring item(s).": "{count} terugkerend(e) item(s) automatisch toegevoegd."
     },
     "uk": {
         "Action": "Дія",
@@ -4219,7 +4276,10 @@ export const translations = {
         "Tags": "Теги",
         "Color": "Колір",
         "Add Blank Workspace": "Додати порожній простір",
-        "Start with blank workspace (no columns)": "Почати з порожнього (без стовпців)"
+        "Start with blank workspace (no columns)": "Почати з порожнього (без стовпців)",
+        "Recurring": "Періодичний",
+        "Next auto-add": "Наступне автододавання",
+        "Auto-added {count} recurring item(s).": "Автоматично додано періодичних записів: {count}."
     },
     "tl": {
         "Action": "Aksyon",
@@ -4430,7 +4490,10 @@ export const translations = {
         "Tags": "Mga Tag",
         "Color": "Kulay",
         "Add Blank Workspace": "Magdagdag ng Blangkong Workspace",
-        "Start with blank workspace (no columns)": "Magsimula sa blangkong workspace (walang column)"
+        "Start with blank workspace (no columns)": "Magsimula sa blangkong workspace (walang column)",
+        "Recurring": "Paulit-ulit",
+        "Next auto-add": "Susunod na auto-add",
+        "Auto-added {count} recurring item(s).": "Awtomatikong nagdagdag ng {count} paulit-ulit na item."
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4641,7 +4704,10 @@ export const translations = {
         "Tags": "Taggar",
         "Color": "Färg",
         "Add Blank Workspace": "Lägg till tom arbetsyta",
-        "Start with blank workspace (no columns)": "Börja med tom arbetsyta (inga kolumner)"
+        "Start with blank workspace (no columns)": "Börja med tom arbetsyta (inga kolumner)",
+        "Recurring": "Återkommande",
+        "Next auto-add": "Nästa automatiska tillägg",
+        "Auto-added {count} recurring item(s).": "{count} återkommande post(er) lades till automatiskt."
     },
     "cs": {
         "Action": "Akce",
@@ -4852,7 +4918,10 @@ export const translations = {
         "Tags": "Štítky",
         "Color": "Barva",
         "Add Blank Workspace": "Přidat prázdný pracovní prostor",
-        "Start with blank workspace (no columns)": "Začít prázdným prostorem (bez sloupců)"
+        "Start with blank workspace (no columns)": "Začít prázdným prostorem (bez sloupců)",
+        "Recurring": "Opakující se",
+        "Next auto-add": "Další automatické přidání",
+        "Auto-added {count} recurring item(s).": "Automaticky přidáno {count} opakujících se položek."
     },
     "ta": {
         "Action": "செயல்",
@@ -5063,6 +5132,9 @@ export const translations = {
         "Tags": "குறிச்சொற்கள்",
         "Color": "நிறம்",
         "Add Blank Workspace": "காலி பணியிடத்தை சேர்",
-        "Start with blank workspace (no columns)": "காலி பணியிடத்துடன் தொடங்கு (நெடுவரிசைகள் இல்லை)"
+        "Start with blank workspace (no columns)": "காலி பணியிடத்துடன் தொடங்கு (நெடுவரிசைகள் இல்லை)",
+        "Recurring": "தொடர்ச்சியான",
+        "Next auto-add": "அடுத்த தானியங்கி சேர்ப்பு",
+        "Auto-added {count} recurring item(s).": "{count} தொடர்ச்சியான உருப்படி(கள்) தானாகச் சேர்க்கப்பட்டன."
     }
 }

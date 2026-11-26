@@ -300,6 +300,12 @@
 
                     <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-2 sm:mr-1 text-xs">⋮</span>
                     <span v-if="!isPrinting" class="sm:hidden mr-1 text-gray-400 dark:text-gray-500 text-nowrap">#</span>{{ (isPrinting ? 0 : windowStart) + index + 1 }}
+                    <button v-if="!isPrinting && row.recurring?.frequency"
+                        type="button"
+                        @pointerdown.stop
+                        @click.stop="openRecurringModal(row)"
+                        class="ml-1 text-xs text-emerald-600 dark:text-emerald-400 hover:scale-110 transition-transform"
+                        :data-tooltip="getRecurringTooltip(row)">🔁</button>
                 </td>
 
                 <td v-for="(col, colIndex) in columns" :key="col.id"
@@ -716,6 +722,9 @@
             class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">📝 {{ activeMenuRow.note && activeMenuRow.note.trim() !== '' && !activeMenuRow.isExpanded ? translate('Note (*)') : translate('Note') }}</button>
         <button @click="addRow()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">➕ {{ translate('Add') }}</button><button @click="copyRow(0)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy') }}</button>
         <button v-if="hasDateColumn" @click="copyRow(1)" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-gray-700 dark:text-gray-200 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center transition-colors">📄 {{ translate('Copy (no date)') }}</button>
+        <button v-if="hasDateColumn" @click="openRecurringModal()"
+            :class="activeMenuRow.recurring?.frequency ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 font-medium' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            class="px-3 py-3 sm:py-2 text-base sm:text-sm text-left flex items-center transition-colors">🔁 {{ translate('Recurring') }}<span v-if="activeMenuRow.recurring?.frequency" class="ml-auto text-xs opacity-80">{{ getRecurringLabel(activeMenuRow.recurring.frequency) }}</span></button>
         <button @click="shareRow" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors font-medium">🔗 {{ translate('Share') }}</button>
         <button @click="removeRow()" class="px-3 py-3 sm:py-2 text-base sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-700 text-left flex items-center transition-colors">✖ {{ translate('Delete') }}</button>
     </div>
@@ -1640,6 +1649,46 @@
         </div>
     </div>
 </div>
+<div v-if="recurringModal.isOpen"
+    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    @click.self="closeRecurringModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all flex flex-col">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <span class="mr-2">🔁</span>
+            {{ translate('Recurring') }}
+        </h3>
+        <div class="grid grid-cols-2 gap-2">
+            <button
+                v-for="opt in recurringOptions"
+                :key="opt.value || 'none'"
+                type="button"
+                @click="recurringModal.frequency = opt.value"
+                :class="[
+                    opt.value === '' ? 'col-span-2' : '',
+                    recurringModal.frequency === opt.value
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                ]"
+                class="px-3 py-2 text-sm font-medium rounded-md border transition-colors"
+            >{{ opt.label }}</button>
+        </div>
+        <p v-if="recurringModalNextDate" class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+            📅 {{ translate('Next auto-add') }}: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ recurringModalNextDate }}</span>
+        </p>
+        <div class="flex justify-end space-x-3 mt-6">
+            <button
+                type="button"
+                @click="closeRecurringModal"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+            >{{ translate('Cancel') }}</button>
+            <button
+                type="button"
+                @click="saveRecurringSetting"
+                class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+            >{{ translate('OK') }}</button>
+        </div>
+    </div>
+</div>
 <div v-if="photoViewer.isOpen"
     class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer select-none"
     @click="photoViewer.isOpen = false">
@@ -1961,6 +2010,11 @@ export default {
             isBlank: false,
             inputValue: '',
             error: ''
+        })
+        const recurringModal = ref({
+            isOpen: false,
+            rowId: null,
+            frequency: ''
         })
 
         const editingColId = ref(null)
@@ -3432,6 +3486,7 @@ export default {
             await loadData(1)
 
             isInitializing = false
+            processRecurringRows(true)
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -5021,6 +5076,7 @@ export default {
 
             const clonedRow = structuredClone(originalRow)
             clonedRow.id = generateId()
+            delete clonedRow.recurring
             const isAppendToEnd = ignoreDate || !columns.value.some(col => col.type === 'date')
 
             if (isAppendToEnd) {
@@ -5062,6 +5118,209 @@ export default {
                     }
                 }, 150)
             }
+        }
+
+        const recurringOptions = computed(() => [
+            { value: '', label: translate('None') },
+            { value: 'daily', label: translate('Daily') },
+            { value: 'weekly', label: translate('Weekly') },
+            { value: 'monthly', label: translate('Monthly') },
+            { value: 'quarterly', label: translate('Quarterly') },
+            { value: 'halfyear', label: translate('Half-Yearly') },
+            { value: 'yearly', label: translate('Yearly') }
+        ])
+
+        const getRecurringLabel = (frequency) => {
+            const opt = recurringOptions.value.find(o => o.value === frequency)
+            return opt ? opt.label : ''
+        }
+
+        const getPrimaryDateColumn = () => {
+            return columns.value.find(c => c.id === selectedChartDateColId.value && c.type === 'date')
+                || columns.value.find(c => c.type === 'date')
+                || null
+        }
+
+        const parseYmd = (dateStr) => {
+            const m = String(dateStr || '').trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+            if (!m) return null
+            const year = Number(m[1])
+            const month = Number(m[2])
+            const day = Number(m[3])
+            if (month < 1 || month > 12 || day < 1 || day > 31) return null
+            return { year, month, day }
+        }
+
+        const formatYmd = (year, month, day) => {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        }
+
+        const getNextRecurringDate = (dateStr, frequency, anchorDay) => {
+            const parsed = parseYmd(dateStr)
+            if (!parsed || !frequency) return null
+            const { year, month, day } = parsed
+            const anchor = anchorDay || day
+
+            if (frequency === 'daily') {
+                const d = new Date(year, month - 1, day + 1)
+                return formatYmd(d.getFullYear(), d.getMonth() + 1, d.getDate())
+            }
+            if (frequency === 'weekly') {
+                const d = new Date(year, month - 1, day + 7)
+                return formatYmd(d.getFullYear(), d.getMonth() + 1, d.getDate())
+            }
+
+            const monthSteps = {
+                monthly: 1,
+                quarterly: 3,
+                halfyear: 6,
+                yearly: 12
+            }
+            const step = monthSteps[frequency]
+            if (!step) return null
+
+            const totalMonths = (year * 12 + (month - 1)) + step
+            const nextYear = Math.floor(totalMonths / 12)
+            const nextMonth = (totalMonths % 12) + 1
+            const maxDay = new Date(nextYear, nextMonth, 0).getDate()
+            return formatYmd(nextYear, nextMonth, Math.min(anchor, maxDay))
+        }
+
+        const getRecurringTooltip = (row) => {
+            if (!row?.recurring?.frequency) return ''
+            const label = getRecurringLabel(row.recurring.frequency)
+            const dateCol = getPrimaryDateColumn()
+            const nextDate = dateCol ? getNextRecurringDate(row[dateCol.id], row.recurring.frequency, row.recurring.anchorDay) : null
+            return nextDate ? `${label} · ${translate('Next auto-add')}: ${nextDate}` : label
+        }
+
+        const recurringModalNextDate = computed(() => {
+            if (!recurringModal.value.isOpen || !recurringModal.value.frequency) return ''
+            const row = rows.value.find(r => r.id === recurringModal.value.rowId)
+            const dateCol = getPrimaryDateColumn()
+            if (!row || !dateCol) return ''
+            const baseDate = parseYmd(row[dateCol.id]) ? row[dateCol.id] : getDate().todayDate
+            const anchorDay = parseYmd(baseDate)?.day
+            return getNextRecurringDate(baseDate, recurringModal.value.frequency, anchorDay) || ''
+        })
+
+        const openRecurringModal = (targetRow = null) => {
+            const row = targetRow || activeMenuRow.value
+            closeActionMenu()
+            if (!row) return
+            recurringModal.value = {
+                isOpen: true,
+                rowId: row.id,
+                frequency: row.recurring?.frequency || ''
+            }
+        }
+
+        const closeRecurringModal = () => {
+            recurringModal.value.isOpen = false
+            recurringModal.value.rowId = null
+        }
+
+        const isSameRecurringContent = (rowA, rowB, dateColId) => {
+            if (rowA[dateColId] !== rowB[dateColId]) return false
+            for (const col of columns.value) {
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'photo') continue
+                const valA = rowA[col.id] ?? ''
+                const valB = rowB[col.id] ?? ''
+                if (Array.isArray(valA) || Array.isArray(valB)) {
+                    if (JSON.stringify(valA) !== JSON.stringify(valB)) return false
+                } else if (String(valA) !== String(valB)) {
+                    return false
+                }
+            }
+            return (rowA.note || '') === (rowB.note || '')
+        }
+
+        const processRecurringRows = (notify = false) => {
+            const dateCol = getPrimaryDateColumn()
+            if (!dateCol || !rows.value.length) return 0
+
+            const recurringSources = rows.value.filter(r => r && r.recurring?.frequency)
+            if (!recurringSources.length) return 0
+
+            const { todayDate } = getDate()
+            const MAX_CATCHUP_PER_ROW = 36
+            const createdRows = []
+            let changed = false
+
+            for (const sourceRow of recurringSources) {
+                const freq = sourceRow.recurring?.frequency
+                const baseDateStr = sourceRow[dateCol.id]
+                const parsedBase = parseYmd(baseDateStr)
+                if (!freq || !parsedBase) continue
+
+                const anchorDay = sourceRow.recurring.anchorDay || parsedBase.day
+                let cursorDate = formatYmd(parsedBase.year, parsedBase.month, parsedBase.day)
+                let latestRow = sourceRow
+                let iterations = 0
+
+                while (iterations < MAX_CATCHUP_PER_ROW) {
+                    const nextDate = getNextRecurringDate(cursorDate, freq, anchorDay)
+                    if (!nextDate || nextDate > todayDate) break
+
+                    const candidate = structuredClone(toRaw(latestRow))
+                    candidate[dateCol.id] = nextDate
+                    delete candidate.recurring
+
+                    const existingMatch = [...rows.value, ...createdRows].find(r => isSameRecurringContent(r, candidate, dateCol.id))
+                    if (existingMatch) {
+                        latestRow = existingMatch
+                    } else {
+                        candidate.id = generateId()
+                        candidate.isExpanded = false
+                        createdRows.push(candidate)
+                        latestRow = candidate
+                    }
+
+                    cursorDate = nextDate
+                    iterations++
+                }
+
+                if (latestRow !== sourceRow) {
+                    delete sourceRow.recurring
+                    latestRow.recurring = { frequency: freq, anchorDay }
+                    changed = true
+                }
+            }
+
+            if (createdRows.length > 0 || changed) {
+                if (createdRows.length > 0) {
+                    rows.value = [...rows.value, ...createdRows]
+                    syncMaxRowId()
+                }
+                onDataEdited('rows')
+                if (notify && createdRows.length > 0) {
+                    showConfirm('🔁 ' + translate('Auto-added {count} recurring item(s).', { count: createdRows.length }), 1)
+                }
+            }
+
+            return createdRows.length
+        }
+
+        const saveRecurringSetting = () => {
+            const row = rows.value.find(r => r.id === recurringModal.value.rowId)
+            const freq = recurringModal.value.frequency
+            closeRecurringModal()
+            if (!row) return
+
+            if (!freq) {
+                delete row.recurring
+                onDataEdited('rows')
+                return
+            }
+
+            const dateCol = getPrimaryDateColumn()
+            if (dateCol && !parseYmd(row[dateCol.id])) {
+                row[dateCol.id] = getDate().todayDate
+            }
+            const anchorDay = dateCol ? (parseYmd(row[dateCol.id])?.day || 1) : 1
+            row.recurring = { frequency: freq, anchorDay }
+            onDataEdited('rows')
+            processRecurringRows(true)
         }
 
         const removeRow = (idToRemove) => {
@@ -7800,7 +8059,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const selectAllTableCells = () => {
-            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
+            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
             if (filteredRows.value.length === 0 || columns.value.length === 0) return false
             startCell.value = { row: 0, col: 0 }
             endCell.value = { row: filteredRows.value.length - 1, col: columns.value.length - 1 }
@@ -7831,6 +8090,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
+                if (recurringModal.value.isOpen) {
+                    closeRecurringModal()
+                    return
+                }
                 if (isWorkspaceMenuOpen.value) {
                     isWorkspaceMenuOpen.value = false
                     return
@@ -8316,6 +8579,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
         const handleAppResume = () => {
             if (document.visibilityState === 'visible') {
+                processRecurringRows(true)
                 checkAndAutoSync()
             }
         }
@@ -8455,6 +8719,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
 
             isInitializing = false
+            processRecurringRows(true)
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
@@ -8503,6 +8768,14 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             closeWorkspaceModal,
             submitWorkspaceModal,
             deleteWorkspace,
+            recurringModal,
+            recurringOptions,
+            recurringModalNextDate,
+            getRecurringLabel,
+            getRecurringTooltip,
+            openRecurringModal,
+            closeRecurringModal,
+            saveRecurringSetting,
             activeMenuRow,
             toggleActionMenu,
             closeActionMenu,
