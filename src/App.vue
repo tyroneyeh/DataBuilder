@@ -7799,8 +7799,35 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }, 200)
         }
 
+        const selectAllTableCells = () => {
+            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
+            if (filteredRows.value.length === 0 || columns.value.length === 0) return false
+            startCell.value = { row: 0, col: 0 }
+            endCell.value = { row: filteredRows.value.length - 1, col: columns.value.length - 1 }
+            isCopied.value = false
+            return true
+        }
+
         const handleKeydown = async (e) => {
-            const activeTag = document.activeElement?.tagName
+            const activeEl = document.activeElement
+            const activeTag = activeEl?.tagName
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+                const isTableInput = activeEl && tableContainer.value?.contains(activeEl) && activeTag === 'INPUT'
+                if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+                    if (!isTableInput) return
+                    const isTextInput = !['checkbox', 'date', 'time', 'color', 'range'].includes(activeEl.type)
+                    const valLen = (activeEl.value || '').length
+                    const isAlreadyAllSelected = !isTextInput || valLen === 0 || (activeEl.selectionStart === 0 && activeEl.selectionEnd === valLen)
+                    if (!isAlreadyAllSelected) return
+                    activeEl.blur()
+                }
+                if (selectAllTableCells()) {
+                    e.preventDefault()
+                }
+                return
+            }
+
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
