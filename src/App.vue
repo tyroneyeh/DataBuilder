@@ -1823,14 +1823,17 @@
         </div>
         <div v-if="shareModal.photos?.length" class="w-full mb-3 p-2.5 rounded-xl bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between mb-2">
-                <label class="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                <label v-if="canWebShareFiles" class="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer select-none">
                     <input type="checkbox" v-model="shareModal.includePhotos" class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer">
                     <span>📷 {{ translate('Include photos') }} ({{ shareModal.photos.length }})</span>
                 </label>
+                <span v-else class="text-xs font-bold text-gray-700 dark:text-gray-300 select-none">
+                    📷 {{ translate('Photo') }} ({{ shareModal.photos.length }})
+                </span>
             </div>
             <div class="flex items-center gap-2 overflow-x-auto pb-0.5">
                 <div v-for="(photoSrc, pIdx) in shareModal.photos" :key="pIdx" class="relative shrink-0 group/sharephoto">
-                    <img :src="photoSrc" @click="viewPhoto(shareModal.photos, pIdx)" class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm" :class="{'opacity-40 grayscale': !shareModal.includePhotos}" alt="" />
+                    <img :src="photoSrc" @click="viewPhoto(shareModal.photos, pIdx)" class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer shadow-sm" :class="{'opacity-40 grayscale': canWebShareFiles && !shareModal.includePhotos}" alt="" />
                     <button
                         type="button"
                         @click.stop="copySharePhoto(photoSrc, pIdx)"
@@ -2465,6 +2468,14 @@ export default {
             sharedPlatforms: {}
         })
         const canWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+        const canWebShareFiles = (() => {
+            if (!canWebShare || typeof navigator.canShare !== 'function' || typeof File === 'undefined') return false
+            try {
+                return navigator.canShare({ files: [new File([''], 'test.jpg', { type: 'image/jpeg' })] })
+            } catch {
+                return false
+            }
+        })()
 
         const isVoiceEnabled = ref(localStorage.getItem('ty_voice_enabled'))
         const voiceSettings = reactive(localStorage.getItem('ty_voice_settings') ? JSON.parse(localStorage.getItem('ty_voice_settings')) :
@@ -8226,6 +8237,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         : []
 
                     if (files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
+                        if (textWithLink) {
+                            navigator.clipboard?.writeText(textWithLink).catch(() => {})
+                        }
                         await navigator.share({
                             title: currentStorageKey.value || translate('TY Data Builder'),
                             text: textWithLink,
@@ -9694,6 +9708,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             tooltipState,
             shareModal,
             canWebShare,
+            canWebShareFiles,
             shareToPlatform,
             shareRow,
             copyShareLink,
