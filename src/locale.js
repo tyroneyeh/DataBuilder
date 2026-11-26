@@ -213,7 +213,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "完全空白工作區（不含目前欄位）",
         "Recurring": "週期重複",
         "Next auto-add": "下次自動新增",
-        "Auto-added {count} recurring item(s).": "已自動新增 {count} 筆週期項目."
+        "Auto-added {count} recurring item(s).": "已自動新增 {count} 筆週期項目.",
+        "Undo": "復原",
+        "Redo": "重做"
     },
     "zh-CN": {
         "Action": "操作",
@@ -427,7 +429,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "完全空白工作区（不含当前字段）",
         "Recurring": "周期重复",
         "Next auto-add": "下次自动添加",
-        "Auto-added {count} recurring item(s).": "已自动添加 {count} 条周期项目."
+        "Auto-added {count} recurring item(s).": "已自动添加 {count} 条周期项目.",
+        "Undo": "撤销",
+        "Redo": "重做"
     },
     "ja": {
         "Action": "操作",
@@ -641,7 +645,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "空白のワークスペースで開始（列なし）",
         "Recurring": "定期繰り返し",
         "Next auto-add": "次回の自動追加",
-        "Auto-added {count} recurring item(s).": "{count} 件の定期項目を自動追加しました."
+        "Auto-added {count} recurring item(s).": "{count} 件の定期項目を自動追加しました.",
+        "Undo": "元に戻す",
+        "Redo": "やり直し"
     },
     "ko": {
         "Action": "작업",
@@ -855,7 +861,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "빈 작업공간으로 시작 (열 없음)",
         "Recurring": "정기 반복",
         "Next auto-add": "다음 자동 추가",
-        "Auto-added {count} recurring item(s).": "정기 항목 {count}개가 자동으로 추가되었습니다."
+        "Auto-added {count} recurring item(s).": "정기 항목 {count}개가 자동으로 추가되었습니다.",
+        "Undo": "실행 취소",
+        "Redo": "다시 실행"
     },
     "es": {
         "Action": "Acción",
@@ -1069,7 +1077,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Comenzar vacío (sin columnas)",
         "Recurring": "Recurrente",
         "Next auto-add": "Próxima adición automática",
-        "Auto-added {count} recurring item(s).": "Se añadieron automáticamente {count} elemento(s) recurrente(s)."
+        "Auto-added {count} recurring item(s).": "Se añadieron automáticamente {count} elemento(s) recurrente(s).",
+        "Undo": "Deshacer",
+        "Redo": "Rehacer"
     },
     "fr": {
         "Action": "Action",
@@ -1283,7 +1293,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Démarrer à vide (sans colonnes)",
         "Recurring": "Récurrent",
         "Next auto-add": "Prochain ajout automatique",
-        "Auto-added {count} recurring item(s).": "{count} élément(s) récurrent(s) ajouté(s) automatiquement."
+        "Auto-added {count} recurring item(s).": "{count} élément(s) récurrent(s) ajouté(s) automatiquement.",
+        "Undo": "Annuler",
+        "Redo": "Rétablir"
     },
     "de": {
         "Action": "Aktion",
@@ -1497,7 +1509,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Mit leerem Arbeitsbereich starten (ohne Spalten)",
         "Recurring": "Wiederkehrend",
         "Next auto-add": "Nächste automatische Buchung",
-        "Auto-added {count} recurring item(s).": "{count} wiederkehrende(r) Eintrag/Einträge automatisch hinzugefügt."
+        "Auto-added {count} recurring item(s).": "{count} wiederkehrende(r) Eintrag/Einträge automatisch hinzugefügt.",
+        "Undo": "Rückgängig",
+        "Redo": "Wiederholen"
     },
     "it": {
         "Action": "Azione",
@@ -1711,7 +1725,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Inizia con area vuota (senza colonne)",
         "Recurring": "Ricorrente",
         "Next auto-add": "Prossima aggiunta automatica",
-        "Auto-added {count} recurring item(s).": "Aggiunti automaticamente {count} elementi ricorrenti."
+        "Auto-added {count} recurring item(s).": "Aggiunti automaticamente {count} elementi ricorrenti.",
+        "Undo": "Annulla",
+        "Redo": "Ripeti"
     },
     "pt": {
         "Action": "Ação",
@@ -1925,7 +1941,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Iniciar em branco (sem colunas)",
         "Recurring": "Recorrente",
         "Next auto-add": "Próxima adição automática",
-        "Auto-added {count} recurring item(s).": "{count} item(ns) recorrente(s) adicionado(s) automaticamente."
+        "Auto-added {count} recurring item(s).": "{count} item(ns) recorrente(s) adicionado(s) automaticamente.",
+        "Undo": "Desfazer",
+        "Redo": "Refazer"
     },
     "ru": {
         "Action": "Действие",
@@ -2139,7 +2157,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Начать с пустого (без столбцов)",
         "Recurring": "Повторяющийся",
         "Next auto-add": "Следующее автодобавление",
-        "Auto-added {count} recurring item(s).": "Автоматически добавлено повторяющихся записей: {count}."
+        "Auto-added {count} recurring item(s).": "Автоматически добавлено повторяющихся записей: {count}.",
+        "Undo": "Отменить",
+        "Redo": "Повторить"
     },
     "id": {
         "Action": "Tindakan",
@@ -2353,7 +2373,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Mulai dari ruang kerja kosong (tanpa kolom)",
         "Recurring": "Berulang",
         "Next auto-add": "Penambahan otomatis berikutnya",
-        "Auto-added {count} recurring item(s).": "Menambahkan {count} item berulang secara otomatis."
+        "Auto-added {count} recurring item(s).": "Menambahkan {count} item berulang secara otomatis.",
+        "Undo": "Urungkan",
+        "Redo": "Ulangi"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2567,7 +2589,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Bắt đầu trống (không có cột)",
         "Recurring": "Định kỳ",
         "Next auto-add": "Lần tự động thêm tiếp theo",
-        "Auto-added {count} recurring item(s).": "Đã tự động thêm {count} mục định kỳ."
+        "Auto-added {count} recurring item(s).": "Đã tự động thêm {count} mục định kỳ.",
+        "Undo": "Hoàn tác",
+        "Redo": "Làm lại"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2781,7 +2805,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "เริ่มด้วยพื้นที่ทำงานว่าง (ไม่มีคอลัมน์)",
         "Recurring": "รายการประจำ",
         "Next auto-add": "เพิ่มอัตโนมัติครั้งถัดไป",
-        "Auto-added {count} recurring item(s).": "เพิ่มรายการประจำอัตโนมัติ {count} รายการแล้ว."
+        "Auto-added {count} recurring item(s).": "เพิ่มรายการประจำอัตโนมัติ {count} รายการแล้ว.",
+        "Undo": "เลิกทำ",
+        "Redo": "ทำซ้ำ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -2995,7 +3021,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Mula dengan ruang kerja kosong (tiada lajur)",
         "Recurring": "Berulang",
         "Next auto-add": "Tambahan automatik seterusnya",
-        "Auto-added {count} recurring item(s).": "{count} item berulang ditambah secara automatik."
+        "Auto-added {count} recurring item(s).": "{count} item berulang ditambah secara automatik.",
+        "Undo": "Buat asal",
+        "Redo": "Buat semula"
     },
     "tr": {
         "Action": "İşlem",
@@ -3209,7 +3237,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Boş çalışma alanıyla başla (sütunsuz)",
         "Recurring": "Yinelenen",
         "Next auto-add": "Sonraki otomatik ekleme",
-        "Auto-added {count} recurring item(s).": "{count} yinelenen öğe otomatik olarak eklendi."
+        "Auto-added {count} recurring item(s).": "{count} yinelenen öğe otomatik olarak eklendi.",
+        "Undo": "Geri Al",
+        "Redo": "Yinele"
     },
     "ar": {
         "Action": "إجراء",
@@ -3423,7 +3453,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "البدء بمساحة عمل فارغة (بدون أعمدة)",
         "Recurring": "متكرر",
         "Next auto-add": "الإضافة التلقائية التالية",
-        "Auto-added {count} recurring item(s).": "تمت إضافة {count} عنصر متكرر تلقائيًا."
+        "Auto-added {count} recurring item(s).": "تمت إضافة {count} عنصر متكرر تلقائيًا.",
+        "Undo": "تراجع",
+        "Redo": "إعادة"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3637,7 +3669,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "खाली कार्यक्षेत्र से शुरू करें (बिना कॉलम)",
         "Recurring": "आवर्ती",
         "Next auto-add": "अगला ऑटो-जोड़ें",
-        "Auto-added {count} recurring item(s).": "{count} आवर्ती आइटम स्वचालित रूप से जोड़े गए."
+        "Auto-added {count} recurring item(s).": "{count} आवर्ती आइटम स्वचालित रूप से जोड़े गए.",
+        "Undo": "पूर्ववत करें",
+        "Redo": "पुनः करें"
     },
     "pl": {
         "Action": "Akcja",
@@ -3851,7 +3885,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Rozpocznij od pustego (bez kolumn)",
         "Recurring": "Cykliczne",
         "Next auto-add": "Następne automatyczne dodanie",
-        "Auto-added {count} recurring item(s).": "Automatycznie dodano {count} cyklicznych pozycji."
+        "Auto-added {count} recurring item(s).": "Automatycznie dodano {count} cyklicznych pozycji.",
+        "Undo": "Cofnij",
+        "Redo": "Ponów"
     },
     "nl": {
         "Action": "Actie",
@@ -4065,7 +4101,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Start met lege werkruimte (geen kolommen)",
         "Recurring": "Terugkerend",
         "Next auto-add": "Volgende automatische toevoeging",
-        "Auto-added {count} recurring item(s).": "{count} terugkerend(e) item(s) automatisch toegevoegd."
+        "Auto-added {count} recurring item(s).": "{count} terugkerend(e) item(s) automatisch toegevoegd.",
+        "Undo": "Ongedaan maken",
+        "Redo": "Opnieuw"
     },
     "uk": {
         "Action": "Дія",
@@ -4279,7 +4317,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Почати з порожнього (без стовпців)",
         "Recurring": "Періодичний",
         "Next auto-add": "Наступне автододавання",
-        "Auto-added {count} recurring item(s).": "Автоматично додано періодичних записів: {count}."
+        "Auto-added {count} recurring item(s).": "Автоматично додано періодичних записів: {count}.",
+        "Undo": "Скасувати",
+        "Redo": "Повторити"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4493,7 +4533,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Magsimula sa blangkong workspace (walang column)",
         "Recurring": "Paulit-ulit",
         "Next auto-add": "Susunod na auto-add",
-        "Auto-added {count} recurring item(s).": "Awtomatikong nagdagdag ng {count} paulit-ulit na item."
+        "Auto-added {count} recurring item(s).": "Awtomatikong nagdagdag ng {count} paulit-ulit na item.",
+        "Undo": "I-undo",
+        "Redo": "I-redo"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4707,7 +4749,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Börja med tom arbetsyta (inga kolumner)",
         "Recurring": "Återkommande",
         "Next auto-add": "Nästa automatiska tillägg",
-        "Auto-added {count} recurring item(s).": "{count} återkommande post(er) lades till automatiskt."
+        "Auto-added {count} recurring item(s).": "{count} återkommande post(er) lades till automatiskt.",
+        "Undo": "Ångra",
+        "Redo": "Gör om"
     },
     "cs": {
         "Action": "Akce",
@@ -4921,7 +4965,9 @@ export const translations = {
         "Start with blank workspace (no columns)": "Začít prázdným prostorem (bez sloupců)",
         "Recurring": "Opakující se",
         "Next auto-add": "Další automatické přidání",
-        "Auto-added {count} recurring item(s).": "Automaticky přidáno {count} opakujících se položek."
+        "Auto-added {count} recurring item(s).": "Automaticky přidáno {count} opakujících se položek.",
+        "Undo": "Zpět",
+        "Redo": "Znovu"
     },
     "ta": {
         "Action": "செயல்",
@@ -5135,6 +5181,8 @@ export const translations = {
         "Start with blank workspace (no columns)": "காலி பணியிடத்துடன் தொடங்கு (நெடுவரிசைகள் இல்லை)",
         "Recurring": "தொடர்ச்சியான",
         "Next auto-add": "அடுத்த தானியங்கி சேர்ப்பு",
-        "Auto-added {count} recurring item(s).": "{count} தொடர்ச்சியான உருப்படி(கள்) தானாகச் சேர்க்கப்பட்டன."
+        "Auto-added {count} recurring item(s).": "{count} தொடர்ச்சியான உருப்படி(கள்) தானாகச் சேர்க்கப்பட்டன.",
+        "Undo": "செயல்தவிர்",
+        "Redo": "மீண்டும் செய்"
     }
 }

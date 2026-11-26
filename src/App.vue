@@ -15,6 +15,20 @@
                 <option v-for="key in savedKeysList" :key="key" :value="key"></option>
             </datalist>
             <button
+                v-if="canUndo"
+                type="button"
+                @click="undo"
+                class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-2.5 sm:py-2 rounded transition-colors font-bold leading-none outline-none shrink-0"
+                :data-tooltip="translate('Undo') + ' (Ctrl+Z)'"
+            >↩</button>
+            <button
+                v-if="canRedo"
+                type="button"
+                @click="redo"
+                class="text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-2.5 sm:py-2 rounded transition-colors font-bold leading-none outline-none shrink-0"
+                :data-tooltip="translate('Redo') + ' (Ctrl+Shift+Z)'"
+            >↪</button>
+            <button
                 type="button"
                 @click.stop="isWorkspaceMenuOpen = !isWorkspaceMenuOpen"
                 class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-indigo-100 dark:active:bg-gray-700 px-3 sm:py-2 rounded transition-colors font-bold leading-none rotate-90 outline-none relative"
@@ -2500,6 +2514,98 @@ export default {
         let pendingTokenReject = null
         let heatmapChartInstance = null
 
+        const MAX_HISTORY = 30
+        let historyStack = []
+        const historyIndex = ref(-1)
+        const historyLength = ref(0)
+        let isRestoringHistory = false
+
+        const canUndo = computed(() => historyIndex.value > 0)
+        const canRedo = computed(() => historyIndex.value >= 0 && historyIndex.value < historyLength.value - 1)
+
+        const createHistorySnapshot = () => {
+            try {
+                return JSON.stringify({
+                    colCount: colCount.value,
+                    columns: toRaw(columns.value),
+                    rows: toRaw(rows.value),
+                    globalNotes: globalNotes.value,
+                    categoryBudgets: toRaw(categoryBudgets.value)
+                })
+            } catch {
+                return null
+            }
+        }
+
+        const resetHistory = () => {
+            const snap = createHistorySnapshot()
+            if (snap) {
+                historyStack = [snap]
+                historyIndex.value = 0
+                historyLength.value = 1
+            } else {
+                historyStack = []
+                historyIndex.value = -1
+                historyLength.value = 0
+            }
+        }
+
+        const pushHistory = () => {
+            if (isInitializing || isRestoringHistory) return
+            const snap = createHistorySnapshot()
+            if (!snap) return
+            if (historyIndex.value >= 0 && historyStack[historyIndex.value] === snap) return
+
+            if (historyIndex.value < historyStack.length - 1) {
+                historyStack = historyStack.slice(0, historyIndex.value + 1)
+            }
+            historyStack.push(snap)
+            if (historyStack.length > MAX_HISTORY) {
+                historyStack.shift()
+            }
+            historyIndex.value = historyStack.length - 1
+            historyLength.value = historyStack.length
+        }
+
+        const applyHistorySnapshot = (serialized) => {
+            if (!serialized) return
+            isRestoringHistory = true
+            try {
+                const snap = JSON.parse(serialized)
+                colCount.value = snap.colCount ?? (Array.isArray(snap.columns) ? snap.columns.length : 0)
+                columns.value = Array.isArray(snap.columns) ? snap.columns : []
+                rows.value = Array.isArray(snap.rows) ? snap.rows : []
+                globalNotes.value = snap.globalNotes ?? ''
+                categoryBudgets.value = snap.categoryBudgets && typeof snap.categoryBudgets === 'object' ? snap.categoryBudgets : {}
+                hasDateColumn.value = columns.value.some(c => c.type === 'date')
+                hasNumberColumn.value = columns.value.some(c => c.type === 'number')
+                updateColumns()
+                syncMaxRowId()
+                refreshYearFilters()
+                debouncedSave()
+                if (isChartOpen.value) {
+                    debouncedUpdateChart.cancel()
+                    debouncedUpdateChart()
+                }
+            } finally {
+                nextTick(() => {
+                    isRestoringHistory = false
+                })
+            }
+        }
+
+        const undo = () => {
+            if (!canUndo.value) return
+            historyIndex.value -= 1
+            applyHistorySnapshot(historyStack[historyIndex.value])
+        }
+
+        const redo = () => {
+            if (!canRedo.value) return
+            historyIndex.value += 1
+            applyHistorySnapshot(historyStack[historyIndex.value])
+        }
+
         const debouncedSave = debounce(() => {
             try {
                 if (!currentStorageKey.value) return
@@ -2507,6 +2613,7 @@ export default {
                 const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), isBlank: columns.value.length === 0, updatedAt: Date.now()}
                 if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                 db.set(currentStorageKey.value, data)
+                pushHistory()
             } catch (e) {
                 showConfirm(e.message, 1)
             }
@@ -3377,6 +3484,7 @@ export default {
             if (target === 'columns' || target === 'both') {
                 triggerRef(columns)
             }
+            pushHistory()
             debouncedSave()
         }
 
@@ -3486,6 +3594,7 @@ export default {
             await loadData(1)
 
             isInitializing = false
+            resetHistory()
             processRecurringRows(true)
 
             if (isChartOpen.value) {
@@ -3640,6 +3749,7 @@ export default {
             await nextTick()
             await loadData(0)
             isInitializing = false
+            resetHistory()
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -8144,6 +8254,24 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 e.preventDefault()
             }
 
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return
+                e.preventDefault()
+                if (e.shiftKey) {
+                    redo()
+                } else {
+                    undo()
+                }
+                return
+            }
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return
+                e.preventDefault()
+                redo()
+                return
+            }
+
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
                 if (!selectedBox.value) return
                 e.preventDefault()
@@ -8719,6 +8847,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }
 
             isInitializing = false
+            resetHistory()
             processRecurringRows(true)
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -8776,6 +8905,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             openRecurringModal,
             closeRecurringModal,
             saveRecurringSetting,
+            canUndo,
+            canRedo,
+            undo,
+            redo,
             activeMenuRow,
             toggleActionMenu,
             closeActionMenu,
