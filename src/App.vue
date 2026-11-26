@@ -851,14 +851,14 @@
 <div ref="filterContainer" @scroll="handleFilterScroll" @focusin="onFilterFocusIn" @focusout="onFilterFocusOut" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
     <div class="flex flex-col items-center sm:flex-row w-full print:flex-row">
 
-        <div class="py-1 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 sm:border border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
+        <div class="py-1 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
             :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
             :data-tooltip="filteredRows.length">
             {{ translate('Total') }}
         </div>
 
         <div v-for="(col, index) in columns" :key="'total-' + col.id"
-            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] bottom-0 sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
+            class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
                 isCalcType(col.type) ? 'sm:justify-end' : 'sm:justify-start'
@@ -883,7 +883,7 @@
                             @focus="toggleDateFilter($event, col.id, true)"
                             @click.stop="toggleDateFilter($event, col.id, true)"
                             :placeholder="dateRangeOpenState[col.id] ? 'Min...' : ''"
-                            class="sm:w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
+                            class="sm:w-full text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-right transition-colors shadow-inner pr-8 w-full"
                             :class="dateRangeFilters[col.id]?.start !== '' || dateRangeFilters[col.id]?.end !== '' ? 'text-gray-900 dark:text-white' : 'text-blue-700 dark:text-blue-400'"
                         >
                         <button
@@ -915,7 +915,7 @@
                             inputmode="decimal"
                             :value="dateRangeFilters[col.id]?.end || ''"
                             @input="updateDateRange(col.id, 'end', $event.target.value)"
-                            class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
+                            class="w-full text-sm px-2 py-2 bg-white dark:bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner text-left"
                             :placeholder="translate('Max') +'...'"
                         >
                     </div>
@@ -929,7 +929,7 @@
                         v-model="columnFilters[col.id]"
                         @click.stop="openGlobalMenu($event, null, col)"
                         :placeholder="'🔍 ' + translate('Filter...')"
-                        class="sm:w-full w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
+                        class="sm:w-full w-full text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner pr-8"
                     >
                     <button
                         tabindex="-1"
@@ -958,7 +958,7 @@
                             :value="dateRangeFilters[col.id]?.start || ''"
                             @input="updateDateRange(col.id, 'start', $event.target.value)"
                             @click.stop="toggleDateFilter($event, col.id, true)"
-                            class="text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner sm:w-full cursor-pointer"
+                            class="text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner sm:w-full cursor-pointer"
                         >
                         <button
                             v-show="dateRangeFilters[col.id]?.start || dateRangeFilters[col.id]?.end"
@@ -989,7 +989,7 @@
                             :min="dateRangeFilters[col.id]?.start || ''"
                             :value="dateRangeFilters[col.id]?.end || ''"
                             @input="updateDateRange(col.id, 'end', $event.target.value)"
-                            class="w-full text-sm px-2 py-1.5 bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
+                            class="w-full text-sm px-2 py-2 bg-gray-50 dark:bg-gray-900 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner cursor-pointer"
                         >
                     </div>
                     </Teleport>
@@ -998,7 +998,7 @@
                 <div v-else-if="col.type === 'photo' && !isPrinting" class="relative">
                     <select
                         v-model="columnFilters[col.id]"
-                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
+                        class="w-full text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-700 dark:text-gray-200 transition-colors shadow-inner pr-8 cursor-pointer"
                     >
                         <option value="">{{ translate('All') }}</option>
                         <option value="has_photo">🖼️ {{ translate('Photo') }}</option>
@@ -1021,7 +1021,7 @@
                         </div>
                         <select
                             v-model="columnFilters[col.id]"
-                            class="relative w-full text-sm px-2 py-1.5 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
+                            class="relative w-full text-sm px-2 py-2 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
                         >
                             <option value="" class="bg-white dark:bg-gray-700">{{ translate('All') }}</option>
                             <option value="true" class="bg-white dark:bg-gray-700">✅ {{ translate('Checked') }}</option>
@@ -1040,7 +1040,7 @@
                     :data-tooltip="columnTotals[col.id] ? `${columnTotals[col.id]} ★` : '0 ★'">
                     <select
                         v-model="columnFilters[col.id]"
-                        class="w-full text-sm px-2 py-1.5 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-amber-600 dark:text-amber-400 font-medium transition-colors shadow-inner pr-8 cursor-pointer"
+                        class="w-full text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-amber-600 dark:text-amber-400 font-medium transition-colors shadow-inner pr-8 cursor-pointer"
                     >
                         <option value="" class="bg-white dark:bg-gray-700">{{ columnTotals[col.id] ? `★ ${columnTotals[col.id]}` : translate('All') }}</option>
                         <option value="5" class="bg-white dark:bg-gray-700">★★★★★ (5)</option>
@@ -1067,7 +1067,7 @@
                         </div>
                         <select
                             v-model="columnFilters[col.id]"
-                            class="relative w-full text-sm px-2 py-1.5 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
+                            class="relative w-full text-sm px-2 py-2 bg-transparent border-none outline-none text-gray-700 dark:text-gray-200 cursor-pointer pr-8 appearance-none"
                         >
                             <option value="" class="bg-white dark:bg-gray-700">{{ `${columnTotals[col.id] || 0}%` }}</option>
                             <option value="done" class="bg-white dark:bg-gray-700">✅ 100%</option>
