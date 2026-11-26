@@ -1128,7 +1128,7 @@
 </div>
 
 <div v-if="!isPrinting" class="flex flex-col p-2 gap-2 mt-4 print:hidden">
-    <div class="w-full bg-white dark:bg-gray-800 p-2 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300" v-show="!isPrinting || isBudgetOpen">
+    <div class="w-full bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300" v-show="!isPrinting || isBudgetOpen">
         <div
             @click="toggleBudget"
             class="text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer select-none"
@@ -1138,7 +1138,7 @@
                 <span class="transform transition-transform duration-300" :class="isBudgetOpen ? 'rotate-180' : 'rotate-0'">▼</span>
             </div>
         </div>
-        <div v-if="isBudgetOpen" class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700" :class="{'print:hidden': !isBudgetOpen}">
+        <div v-if="isBudgetOpen" class="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700" :class="{'print:hidden': !isBudgetOpen}">
             <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <table class="w-full border-collapse bg-white dark:bg-gray-800 text-sm">
                     <thead class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
