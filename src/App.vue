@@ -265,30 +265,32 @@
         <thead class="hidden sm:table-header-group print:table-header-group bg-gray-100 dark:bg-gray-700 print:bg-gray-100 transition-colors">
             <tr class="print:break-inside-avoid">
                 <th class="sticky top-0 left-0 z-20 print:static bg-gray-200 dark:bg-gray-800 print:bg-gray-100 border border-gray-300 dark:border-gray-600 px-4 py-2 w-20 text-center text-gray-600 dark:text-gray-300 font-semibold shadow-[2px_0_4px_rgba(0,0,0,0.05)] print:shadow-none print:w-12" :data-tooltip="translate('Total')">#<span v-if="!isPrinting">{{ filteredRows.length }}</span></th>
-                <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
+                <th v-for="(col, index) in columns" :key="col.id" :data-col-index="index" class="group pr-8 sticky top-0 z-20 print:static overflow-hidden print:overflow-visible border border-gray-300 dark:border-gray-600 px-4 py-2 text-left text-nowrap font-semibold cursor-grab transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 print:text-black print:min-w-0 print:bg-gray-100 select-none [-webkit-touch-callout:none] md:touch-none landscape:touch-none active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600 active:shadow-inner active:cursor-grabbing"
                     :class="[['number', 'date', 'time', 'multiply', 'multiply3', 'minus', 'add', 'divide', 'category', 'photo', 'checkbox', 'color'].includes(col.type) ? 'max-w-[70px]' : 'min-w-[140px]',
                         editingColId === col.id ? 'cursor-text active:cursor-text' : ''
                     ]" @pointerdown.stop.prevent="startDragging('columns', index, $event)">
 
-                    <span v-if="!isPrinting" class="text-gray-400 dark:text-gray-500 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 dark:active:bg-gray-600 active:rounded transition-all cursor-grab active:cursor-grabbing">⋮</span>
+                    <div class="flex items-center min-w-0 overflow-hidden print:overflow-visible">
+                        <span v-if="!isPrinting" class="shrink-0 text-gray-400 dark:text-gray-500 mr-1 text-xs select-none active:scale-90 active:bg-gray-200 dark:active:bg-gray-600 active:rounded transition-all cursor-grab active:cursor-grabbing">⋮</span>
 
-                    <span v-if="editingColId !== col.id"
-                        @click="startEditingCol(col.id)"
-                        class="cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        :data-tooltip="col.label">
-                        {{ col.label }}
-                    </span>
+                        <span v-if="editingColId !== col.id"
+                            @click="startEditingCol(col.id)"
+                            class="truncate min-w-0 cursor-pointer border border-transparent hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            :data-tooltip="col.label">
+                            {{ col.label }}
+                        </span>
 
-                    <input v-else
-                        :id="'edit-col-' + col.id"
-                        v-model="col.label"
-                        type="text"
-                        @blur="stopEditingCol"
-                        @keyup.enter="stopEditingCol"
-                        class="w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
-                    >
+                        <input v-else
+                            :id="'edit-col-' + col.id"
+                            v-model="col.label"
+                            type="text"
+                            @blur="stopEditingCol"
+                            @keyup.enter="stopEditingCol"
+                            class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
+                        >
 
-                    <span v-if="!isPrinting" class="text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'">({{ getColumnTypeLabel(col.type) }})</span>
+                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'">({{ getColumnTypeLabel(col.type) }})</span>
+                    </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
                 </th>
