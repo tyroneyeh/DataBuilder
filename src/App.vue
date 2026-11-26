@@ -4686,7 +4686,7 @@ export default {
             if (eventData.rrule) {
                 params.set('recur', eventData.rrule)
             }
-            window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, '_blank', 'noopener,noreferrer')
+            window.open(`https://calendar.google.com/calendar/render?${params.toString().replaceAll('+', '%20')}`, '_blank', 'noopener,noreferrer')
         }
 
         const loadData = async (noDefulat = 0) => {
@@ -7937,20 +7937,17 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const body = shareText ? `${shareText}\n${link}` : link
                 targetUrl = `https://line.me/R/share?text=${encodeURIComponent(body)}`
             } else if (platform === 'telegram') {
-                const params = new URLSearchParams({ url: link })
-                if (shareText) params.set('text', shareText)
-                targetUrl = `https://t.me/share/url?${params.toString()}`
+                targetUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}`
+                if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
             } else if (platform === 'whatsapp') {
                 const body = shareText ? `${shareText}\n${link}` : link
                 targetUrl = `https://wa.me/?text=${encodeURIComponent(body)}`
             } else if (platform === 'threads') {
-                const params = new URLSearchParams({ url: link })
-                if (shareText) params.set('text', shareText)
-                targetUrl = `https://www.threads.net/intent/post?${params.toString()}`
+                targetUrl = `https://www.threads.net/intent/post?url=${encodeURIComponent(link)}`
+                if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
             } else if (platform === 'facebook') {
-                const params = new URLSearchParams({ u: link })
-                if (shareText) params.set('quote', shareText)
-                targetUrl = `https://www.facebook.com/sharer/sharer.php?${params.toString()}`
+                targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
+                if (shareText) targetUrl += `&quote=${encodeURIComponent(shareText)}`
             }
 
             if (targetUrl) {
