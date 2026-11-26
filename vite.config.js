@@ -45,15 +45,79 @@ function serveRootStaticAssets() {
 
 function computeInlineScriptHashes(html) {
     const hashes = []
-    const scriptRegex = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
-    for (const match of html.matchAll(scriptRegex)) {
-        const attrs = match[1] || ''
-        if (/\bsrc\s*=/i.test(attrs)) continue
-        const body = (match[2] || '').replace(/\r\n?/g, '\n')
-        if (!body) continue
-        const digest = crypto.createHash('sha256').update(body, 'utf8').digest('base64')
-        hashes.push(`'sha256-${digest}'`)
+    const len = html.length
+    let pos = 0
+
+    while (pos < len) {
+        const ltIdx = html.indexOf('<', pos)
+        if (ltIdx === -1) break
+
+        if (html.startsWith('<!--', ltIdx)) {
+            const commentEnd = html.indexOf('-->', ltIdx + 4)
+            pos = commentEnd === -1 ? len : commentEnd + 3
+            continue
+        }
+
+        if (html.slice(ltIdx, ltIdx + 7).toLowerCase() !== '<script') {
+            pos = ltIdx + 1
+            continue
+        }
+
+        const afterTagName = html[ltIdx + 7]
+        if (afterTagName && !/[\s/>]/.test(afterTagName)) {
+            pos = ltIdx + 7
+            continue
+        }
+
+        let i = ltIdx + 7
+        let quote = ''
+        while (i < len) {
+            const ch = html[i]
+            if (quote) {
+                if (ch === quote) quote = ''
+            } else if (ch === '"' || ch === "'") {
+                quote = ch
+            } else if (ch === '>') {
+                break
+            }
+            i++
+        }
+        if (i >= len) break
+
+        const attrs = html.slice(ltIdx + 7, i)
+        const bodyStart = i + 1
+
+        let searchFrom = bodyStart
+        let bodyEnd = -1
+        let nextPos = len
+        while (searchFrom < len) {
+            const closeIdx = html.indexOf('</', searchFrom)
+            if (closeIdx === -1) break
+            if (html.slice(closeIdx, closeIdx + 8).toLowerCase() === '</script') {
+                const boundary = html[closeIdx + 8]
+                if (!boundary || /[\s/>]/.test(boundary)) {
+                    const closeGt = html.indexOf('>', closeIdx + 8)
+                    bodyEnd = closeIdx
+                    nextPos = closeGt === -1 ? len : closeGt + 1
+                    break
+                }
+            }
+            searchFrom = closeIdx + 2
+        }
+
+        if (bodyEnd === -1) break
+
+        if (!/\bsrc\s*=/i.test(attrs)) {
+            const body = html.slice(bodyStart, bodyEnd).replace(/\r\n?/g, '\n')
+            if (body) {
+                const digest = crypto.createHash('sha256').update(body, 'utf8').digest('base64')
+                hashes.push(`'sha256-${digest}'`)
+            }
+        }
+
+        pos = nextPos
     }
+
     return hashes
 }
 
