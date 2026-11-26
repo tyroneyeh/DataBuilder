@@ -4825,6 +4825,7 @@ export default {
         }
 
         const focusNextInput = async (event, rowId, colId) => {
+            if (event.isComposing) return
             const allowedKeys = ['Enter', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Backspace']
 
             if (event.key === 'Escape') {
@@ -4899,7 +4900,8 @@ export default {
                 isHorizontal = true
                 shouldMove = true
             } else if (event.key === 'Enter') {
-                isHorizontal = true
+                direction = event.shiftKey ? -1 : 1
+                isVertical = true
                 shouldMove = true
                 if (columns.value[currentIndex].type === 'number') {
                     const row = rows.value.find(r => r.id === rowId)
@@ -4961,16 +4963,36 @@ export default {
                 }
             }
             else if (isVertical) {
-                const currentRowIndex = rows.value.findIndex(r => r.id === rowId)
+                const currentRowIndex = filteredRows.value.findIndex(r => r.id === rowId)
                 const nextRowIndex = currentRowIndex + direction
 
-                if (nextRowIndex >= 0 && nextRowIndex < rows.value.length) {
-                    const nextRowId = rows.value[nextRowIndex].id
+                if (event.key === 'Enter' && direction > 0 && nextRowIndex >= filteredRows.value.length && !isAnyFilterActive.value) {
+                    addRow()
+                    await nextTick()
+                    const newRowIndex = filteredRows.value.length - 1
+                    const newRowId = filteredRows.value[newRowIndex]?.id
+                    if (newRowId) {
+                        startCell.value = { row: newRowIndex, col: currentIndex }
+                        endCell.value = { row: newRowIndex, col: currentIndex }
+                        const nextInput = inputRefs.value[`${newRowId}-${colId}`]
+                        if (nextInput) {
+                            nextInput.focus()
+                            await nextTick()
+                            nextInput.select?.()
+                        }
+                    }
+                    return
+                }
+
+                if (nextRowIndex >= 0 && nextRowIndex < filteredRows.value.length) {
+                    const nextRowId = filteredRows.value[nextRowIndex].id
+                    startCell.value = { row: nextRowIndex, col: currentIndex }
+                    endCell.value = { row: nextRowIndex, col: currentIndex }
                     const nextInput = inputRefs.value[`${nextRowId}-${colId}`]
                     if (nextInput) {
                         nextInput.focus()
                         await nextTick()
-                        nextInput.select()
+                        nextInput.select?.()
                     }
                 }
             }
@@ -7799,6 +7821,32 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     endCell.value = null
                     return
                 }
+            }
+
+            if (e.key === 'Enter' && selectedBox.value) {
+                if (e.isComposing || ['BUTTON', 'SELECT', 'A'].includes(activeTag)) return
+                e.preventDefault()
+
+                const currentRow = startCell.value ? startCell.value.row : selectedBox.value.minRow
+                const currentCol = startCell.value ? startCell.value.col : selectedBox.value.minCol
+                const nextRow = currentRow + (e.shiftKey ? -1 : 1)
+
+                if (nextRow >= 0 && nextRow < filteredRows.value.length) {
+                    startCell.value = { row: nextRow, col: currentCol }
+                    endCell.value = { row: nextRow, col: currentCol }
+
+                    const nextRowData = filteredRows.value[nextRow]
+                    const col = columns.value[currentCol]
+                    const nextInput = nextRowData && col ? inputRefs.value[`${nextRowData.id}-${col.id}`] : null
+                    if (nextInput) {
+                        nextInput.focus()
+                        nextInput.select?.()
+                    } else if (nextRowData) {
+                        const tr = tableContainer.value?.querySelector(`tr[data-id="${nextRowData.id}"]`)
+                        tr?.scrollIntoView({ block: 'nearest' })
+                    }
+                }
+                return
             }
 
             if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBox.value) {
