@@ -225,7 +225,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "已複製貼文內容，請於 Facebook 貼文框直接貼上！",
         "Include this month total": "加入這個月總計",
         "This Month Total": "本月總計",
-        "Include TY-DB link": "附帶 TY-DB 連結"
+        "Include TY-DB link": "附帶 TY-DB 連結",
+        "Already up to date!": "資料已是最新，無需同步！"
     },
     "zh-CN": {
         "Action": "操作",
@@ -451,7 +452,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "已复制贴文内容，请在 Facebook 贴文框直接粘贴！",
         "Include this month total": "加入本月总计",
         "This Month Total": "本月总计",
-        "Include TY-DB link": "附带 TY-DB 链接"
+        "Include TY-DB link": "附带 TY-DB 链接",
+        "Already up to date!": "数据已是最新，无需同步！"
     },
     "ja": {
         "Action": "操作",
@@ -677,7 +679,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "投稿文をコピーしました。Facebookに貼り付けてください！",
         "Include this month total": "今月の合計を含める",
         "This Month Total": "今月の合計",
-        "Include TY-DB link": "TY-DB リンクを含める"
+        "Include TY-DB link": "TY-DB リンクを含める",
+        "Already up to date!": "すでに最新の状態です！"
     },
     "ko": {
         "Action": "작업",
@@ -903,7 +906,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "게시글 내용이 복사되었습니다. Facebook에 붙여넣으세요!",
         "Include this month total": "이번 달 합계 포함",
         "This Month Total": "이번 달 합계",
-        "Include TY-DB link": "TY-DB 링크 포함"
+        "Include TY-DB link": "TY-DB 링크 포함",
+        "Already up to date!": "이미 최신 상태입니다!"
     },
     "es": {
         "Action": "Acción",
@@ -1129,7 +1133,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "¡Texto copiado! Pégalo en Facebook.",
         "Include this month total": "Incluir total de este mes",
         "This Month Total": "Total de este mes",
-        "Include TY-DB link": "Incluir enlace de TY-DB"
+        "Include TY-DB link": "Incluir enlace de TY-DB",
+        "Already up to date!": "¡Ya está actualizado!"
     },
     "fr": {
         "Action": "Action",
@@ -1355,7 +1360,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Texte copié ! Collez-le sur Facebook.",
         "Include this month total": "Inclure le total du mois",
         "This Month Total": "Total du mois",
-        "Include TY-DB link": "Inclure le lien TY-DB"
+        "Include TY-DB link": "Inclure le lien TY-DB",
+        "Already up to date!": "Déjà à jour !"
     },
     "de": {
         "Action": "Aktion",
@@ -1581,7 +1587,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Text kopiert! Auf Facebook einfügen.",
         "Include this month total": "Monatssumme einbeziehen",
         "This Month Total": "Monatssumme",
-        "Include TY-DB link": "TY-DB-Link einbeziehen"
+        "Include TY-DB link": "TY-DB-Link einbeziehen",
+        "Already up to date!": "Bereits auf dem neuesten Stand!"
     },
     "it": {
         "Action": "Azione",
@@ -1807,7 +1814,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Testo copiato! Incollalo su Facebook.",
         "Include this month total": "Includi totale del mese",
         "This Month Total": "Totale del mese",
-        "Include TY-DB link": "Includi link TY-DB"
+        "Include TY-DB link": "Includi link TY-DB",
+        "Already up to date!": "Già aggiornato!"
     },
     "pt": {
         "Action": "Ação",
@@ -2033,7 +2041,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Texto copiado! Cole no Facebook.",
         "Include this month total": "Incluir total deste mês",
         "This Month Total": "Total deste mês",
-        "Include TY-DB link": "Incluir link do TY-DB"
+        "Include TY-DB link": "Incluir link do TY-DB",
+        "Already up to date!": "Já está atualizado!"
     },
     "ru": {
         "Action": "Действие",
@@ -2259,7 +2268,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Текст скопирован! Вставьте его в Facebook.",
         "Include this month total": "Включить итог за месяц",
         "This Month Total": "Итог за месяц",
-        "Include TY-DB link": "Добавить ссылку TY-DB"
+        "Include TY-DB link": "Добавить ссылку TY-DB",
+        "Already up to date!": "Данные уже актуальны!"
     },
     "id": {
         "Action": "Tindakan",
@@ -2485,7 +2495,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Teks disalin! Tempel di Facebook.",
         "Include this month total": "Sertakan total bulan ini",
         "This Month Total": "Total Bulan Ini",
-        "Include TY-DB link": "Sertakan tautan TY-DB"
+        "Include TY-DB link": "Sertakan tautan TY-DB",
+        "Already up to date!": "Sudah terbaru!"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2711,7 +2722,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Đã sao chép nội dung! Dán vào Facebook.",
         "Include this month total": "Kèm tổng tháng này",
         "This Month Total": "Tổng tháng này",
-        "Include TY-DB link": "Kèm liên kết TY-DB"
+        "Include TY-DB link": "Kèm liên kết TY-DB",
+        "Already up to date!": "Dữ liệu đã mới nhất!"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2937,7 +2949,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "คัดลอกข้อความแล้ว! วางใน Facebook ได้เลย",
         "Include this month total": "รวมยอดเดือนนี้",
         "This Month Total": "ยอดรวมเดือนนี้",
-        "Include TY-DB link": "แนบลิงก์ TY-DB"
+        "Include TY-DB link": "แนบลิงก์ TY-DB",
+        "Already up to date!": "ข้อมูลเป็นปัจจุบันแล้ว!"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3163,7 +3176,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Teks disalin! Tampal di Facebook.",
         "Include this month total": "Sertakan jumlah bulan ini",
         "This Month Total": "Jumlah Bulan Ini",
-        "Include TY-DB link": "Sertakan pautan TY-DB"
+        "Include TY-DB link": "Sertakan pautan TY-DB",
+        "Already up to date!": "Sudah terkini!"
     },
     "tr": {
         "Action": "İşlem",
@@ -3389,7 +3403,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Metin kopyalandı! Facebook’ta yapıştırın.",
         "Include this month total": "Bu ayın toplamını ekle",
         "This Month Total": "Bu Ay Toplam",
-        "Include TY-DB link": "TY-DB bağlantısını ekle"
+        "Include TY-DB link": "TY-DB bağlantısını ekle",
+        "Already up to date!": "Zaten güncel!"
     },
     "ar": {
         "Action": "إجراء",
@@ -3615,7 +3630,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "تم نسخ النص! الصقه في Facebook.",
         "Include this month total": "تضمين إجمالي هذا الشهر",
         "This Month Total": "إجمالي هذا الشهر",
-        "Include TY-DB link": "تضمين رابط TY-DB"
+        "Include TY-DB link": "تضمين رابط TY-DB",
+        "Already up to date!": "البيانات محدثة بالفعل!"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3841,7 +3857,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "टेक्स्ट कॉपी हो गया! Facebook पर पेस्ट करें।",
         "Include this month total": "इस महीने का कुल जोड़ें",
         "This Month Total": "इस महीने का कुल",
-        "Include TY-DB link": "TY-DB लिंक शामिल करें"
+        "Include TY-DB link": "TY-DB लिंक शामिल करें",
+        "Already up to date!": "डेटा पहले से ही नवीनतम है!"
     },
     "pl": {
         "Action": "Akcja",
@@ -4067,7 +4084,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Tekst skopiowany! Wklej go na Facebooku.",
         "Include this month total": "Dołącz sumę z tego miesiąca",
         "This Month Total": "Suma w tym miesiącu",
-        "Include TY-DB link": "Dołącz link TY-DB"
+        "Include TY-DB link": "Dołącz link TY-DB",
+        "Already up to date!": "Dane są już aktualne!"
     },
     "nl": {
         "Action": "Actie",
@@ -4293,7 +4311,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Tekst gekopieerd! Plak deze op Facebook.",
         "Include this month total": "Maandtotaal bijvoegen",
         "This Month Total": "Maandtotaal",
-        "Include TY-DB link": "TY-DB-link bijvoegen"
+        "Include TY-DB link": "TY-DB-link bijvoegen",
+        "Already up to date!": "Al helemaal up-to-date!"
     },
     "uk": {
         "Action": "Дія",
@@ -4519,7 +4538,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Текст скопійовано! Вставте його у Facebook.",
         "Include this month total": "Додати підсумок за місяць",
         "This Month Total": "Підсумок за місяць",
-        "Include TY-DB link": "Додати посилання TY-DB"
+        "Include TY-DB link": "Додати посилання TY-DB",
+        "Already up to date!": "Дані вже актуальні!"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4745,7 +4765,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Nakopya ang teksto! I-paste sa Facebook.",
         "Include this month total": "Isama ang kabuuan ngayong buwan",
         "This Month Total": "Kabuuan Ngayong Buwan",
-        "Include TY-DB link": "Isama ang link ng TY-DB"
+        "Include TY-DB link": "Isama ang link ng TY-DB",
+        "Already up to date!": "Napapanahon na!"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4971,7 +4992,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Text kopierad! Klistra in på Facebook.",
         "Include this month total": "Inkludera månadens summa",
         "This Month Total": "Månadens summa",
-        "Include TY-DB link": "Inkludera TY-DB-länk"
+        "Include TY-DB link": "Inkludera TY-DB-länk",
+        "Already up to date!": "Redan uppdaterad!"
     },
     "cs": {
         "Action": "Akce",
@@ -5197,7 +5219,8 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "Text zkopírován! Vložte jej na Facebook.",
         "Include this month total": "Zahrnout součet tohoto měsíce",
         "This Month Total": "Součet tohoto měsíce",
-        "Include TY-DB link": "Zahrnout odkaz TY-DB"
+        "Include TY-DB link": "Zahrnout odkaz TY-DB",
+        "Already up to date!": "Již aktuální!"
     },
     "ta": {
         "Action": "செயல்",
@@ -5423,6 +5446,7 @@ export const translations = {
         "Share text copied! Paste it in Facebook.": "உரை நகலெடுக்கப்பட்டது! Facebook-இல் ஒட்டவும்.",
         "Include this month total": "இந்த மாத மொத்தத்தைச் சேர்",
         "This Month Total": "இந்த மாத மொத்தம்",
-        "Include TY-DB link": "TY-DB இணைப்பைச் சேர்"
+        "Include TY-DB link": "TY-DB இணைப்பைச் சேர்",
+        "Already up to date!": "ஏற்கனவே புதுப்பிக்கப்பட்டுள்ளது!"
     }
 }

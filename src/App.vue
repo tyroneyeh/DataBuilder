@@ -2681,7 +2681,9 @@ export default {
             try {
                 if (!currentStorageKey.value) return
                 if (!colCount.value) colCount.value = columns.value.length
-                const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), isBlank: columns.value.length === 0, updatedAt: Date.now()}
+                const now = Date.now()
+                updatedAt.value = now
+                const data = {title: currentStorageKey.value, colCount: colCount.value, columns: toRaw(columns.value), rows: toRaw(rows.value), note: globalNotes.value, budgets: toRaw(categoryBudgets.value), isBlank: columns.value.length === 0, updatedAt: now}
                 if (data.budgets) data.budgets = JSON.parse(JSON.stringify(data.budgets))
                 db.set(currentStorageKey.value, data)
                 pushHistory()
@@ -3551,6 +3553,7 @@ export default {
 
         const onDataEdited = (target = 'rows') => {
             if (isInitializing) return
+            updatedAt.value = Date.now()
             if (target === 'rows' || target === 'both') {
                 triggerRef(rows)
             }
@@ -4239,7 +4242,38 @@ export default {
             return { rows: fetchedRows }
         }
 
-        const pushToGoogleSheets = async (url) => {
+        const SHEET_UPDATED_AT_META_KEY = 'ty_db_updated_at'
+
+        const getGoogleSheetMeta = async (url) => {
+            const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
+            if (!match) throw new Error('Invalid URL format')
+            const spreadsheetId = match[1]
+            const token = await getValidGoogleToken()
+
+            const metaRes = await fetch(
+                `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets(properties(sheetId,title),developerMetadata(metadataId,metadataKey,metadataValue))`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+            )
+            if (!metaRes.ok) throw new Error(`Metadata error (${metaRes.status})`)
+
+            const metaData = await metaRes.json()
+            const targetSheet = (metaData.sheets || []).find(s => s.properties?.title === currentStorageKey.value)
+            if (!targetSheet) {
+                return { spreadsheetId, exists: false, sheetId: null, metadataId: null, updatedAt: 0 }
+            }
+
+            const updatedMeta = (targetSheet.developerMetadata || []).find(m => m.metadataKey === SHEET_UPDATED_AT_META_KEY)
+            const parsedTs = updatedMeta ? (parseInt(updatedMeta.metadataValue, 10) || 0) : 0
+            return {
+                spreadsheetId,
+                exists: true,
+                sheetId: targetSheet.properties.sheetId,
+                metadataId: updatedMeta?.metadataId ?? null,
+                updatedAt: parsedTs
+            }
+        }
+
+        const pushToGoogleSheets = async (url, syncTs = Date.now()) => {
             const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/)
             if (!match) throw new Error('Invalid URL format')
             const spreadsheetId = match[1]
@@ -4293,16 +4327,11 @@ export default {
             }
 
             const sheetDataValues = [headers, ...rows2D]
+            const sheetMeta = await getGoogleSheetMeta(url)
+            let sheetId = sheetMeta.sheetId
+            let metadataId = sheetMeta.metadataId
 
-            const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            if (!metaRes.ok) throw new Error(`Metadata error (${metaRes.status})`)
-
-            const metaData = await metaRes.json()
-            const sheetExists = (metaData.sheets || []).some(s => s.properties.title === currentStorageKey.value)
-
-            if (!sheetExists) {
+            if (!sheetMeta.exists) {
                 const addSheetRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -4311,6 +4340,8 @@ export default {
                     })
                 })
                 if (!addSheetRes.ok) throw new Error('Failed to create new worksheet')
+                const addSheetData = await addSheetRes.json()
+                sheetId = addSheetData.replies?.[0]?.addSheet?.properties?.sheetId ?? null
             } else {
                 await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(currentStorageKey.value)}:clear`, {
                     method: 'POST',
@@ -4325,7 +4356,46 @@ export default {
             })
 
             if (!updateRes.ok) throw new Error(`Write data error (${updateRes.status})`)
-            return true
+
+            if (sheetId !== null && sheetId !== undefined) {
+                const metaRequest = metadataId !== null
+                    ? {
+                        updateDeveloperMetadata: {
+                            dataFilters: [{
+                                developerMetadataLookup: {
+                                    metadataId,
+                                    visibility: 'DOCUMENT'
+                                }
+                            }],
+                            developerMetadata: {
+                                metadataValue: String(syncTs),
+                                visibility: 'DOCUMENT'
+                            },
+                            fields: 'metadataValue'
+                        }
+                    }
+                    : {
+                        createDeveloperMetadata: {
+                            developerMetadata: {
+                                metadataKey: SHEET_UPDATED_AT_META_KEY,
+                                metadataValue: String(syncTs),
+                                visibility: 'DOCUMENT',
+                                location: { sheetId }
+                            }
+                        }
+                    }
+
+                const metaWriteRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ requests: [metaRequest] })
+                })
+                if (!metaWriteRes.ok) {
+                    console.warn(`Failed to write sheet updatedAt metadata (${metaWriteRes.status})`)
+                }
+            }
+
+            return syncTs
         }
 
         const executeExportToSheets = async () => {
@@ -4348,9 +4418,12 @@ export default {
                     sheetImportUrl.value = `https://docs.google.com/spreadsheets/d/${createData.spreadsheetId}/edit`
                 }
 
-                await pushToGoogleSheets(sheetImportUrl.value)
-                lastSyncDate.value = Date.now()
-                localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, lastSyncDate.value.toString())
+                const syncTs = Math.max(Date.now(), Number(updatedAt.value) || 0)
+                await pushToGoogleSheets(sheetImportUrl.value, syncTs)
+                updatedAt.value = syncTs
+                lastSyncDate.value = syncTs
+                localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
+                await saveCurrentWorkspaceNow()
 
                 showConfirm('🚀 '+ translate('Successfully synced TO Google Sheets!'), 1)
 
@@ -4369,15 +4442,27 @@ export default {
                     ? `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`
                     : sheetImportUrl.value
 
+                const sheetMeta = await getGoogleSheetMeta(urlToFetch)
                 const cloudData = await fetchGoogleSheetsData(urlToFetch)
 
                 if (!cloudData || cloudData.rows.length === 0) {
                     return showConfirm(translate('No sufficient data found in the spreadsheet!'), 1)
                 }
 
+                const syncTs = sheetMeta.updatedAt || Date.now()
+                isInitializing = true
                 rows.value = cloudData.rows
                 syncMaxRowId()
-                onDataEdited('both')
+                await nextTick()
+                isInitializing = false
+                updatedAt.value = syncTs
+                lastSyncDate.value = syncTs
+                localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
+                await saveCurrentWorkspaceNow()
+                if (isChartOpen.value) {
+                    debouncedUpdateChart.cancel()
+                    debouncedUpdateChart()
+                }
 
                 showConfirm('🎉 '+ translate('Successfully synced data from Google Sheets!'), 1)
 
@@ -4512,8 +4597,9 @@ export default {
             if (isProcessing.value === 1 || !navigator.onLine || !isAutoSyncEnabled.value || !sheetImportUrl.value.trim()) return false
 
             lastSyncDate.value = parseInt(localStorage.getItem(`${currentStorageKey.value}_last_sync_time`)) || 0
+            const localUpdatedAt = Number(updatedAt.value) || 0
 
-            if (force || (updatedAt.value > lastSyncDate.value && Date.now() > lastSyncDate.value + 86400000)) {
+            if (force || (Date.now() > lastSyncDate.value + 86400000 && (localUpdatedAt > lastSyncDate.value || lastSyncDate.value > 0))) {
                 isProcessing.value = 1
 
                 try {
@@ -4528,28 +4614,74 @@ export default {
                         showConfirm('🔄 ' + translate('Start automatically syncing data from Google Sheets...'), 1)
                     }
 
-                    const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
+                    const sheetMeta = await getGoogleSheetMeta(sheetImportUrl.value)
+                    const cloudUpdatedAt = sheetMeta.updatedAt || 0
 
-                    if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
-                        const mergedMap = new Map()
-
-                        rows.value.forEach(r => mergedMap.set(String(r.id), r))
-
-                        cloudData.rows.forEach(r => {
-                            const existing = mergedMap.get(String(r.id)) || {}
-                            mergedMap.set(String(r.id), { ...existing, ...r })
-                        })
-
-                        rows.value = Array.from(mergedMap.values())
-
-                        syncMaxRowId()
+                    if (sheetMeta.exists && cloudUpdatedAt > localUpdatedAt) {
+                        const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
+                        if (cloudData && cloudData.rows) {
+                            isInitializing = true
+                            rows.value = cloudData.rows
+                            syncMaxRowId()
+                            await nextTick()
+                            isInitializing = false
+                            updatedAt.value = cloudUpdatedAt
+                            lastSyncDate.value = cloudUpdatedAt
+                            localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, cloudUpdatedAt.toString())
+                            await saveCurrentWorkspaceNow()
+                            if (isChartOpen.value) {
+                                debouncedUpdateChart.cancel()
+                                debouncedUpdateChart()
+                            }
+                            if (force) {
+                                showConfirm('⬇️ ' + translate('Successfully synced data from Google Sheets!'), 1)
+                            }
+                        }
+                        return true
                     }
 
-                    await pushToGoogleSheets(sheetImportUrl.value)
+                    if (sheetMeta.exists && cloudUpdatedAt === 0 && rows.value.length === 0) {
+                        const cloudData = await fetchGoogleSheetsData(sheetImportUrl.value)
+                        if (cloudData && cloudData.rows && cloudData.rows.length > 0) {
+                            const syncTs = Date.now()
+                            isInitializing = true
+                            rows.value = cloudData.rows
+                            syncMaxRowId()
+                            await nextTick()
+                            isInitializing = false
+                            updatedAt.value = syncTs
+                            lastSyncDate.value = syncTs
+                            localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
+                            await saveCurrentWorkspaceNow()
+                            if (isChartOpen.value) {
+                                debouncedUpdateChart.cancel()
+                                debouncedUpdateChart()
+                            }
+                            if (force) {
+                                showConfirm('⬇️ ' + translate('Successfully synced data from Google Sheets!'), 1)
+                            }
+                            return true
+                        }
+                    }
 
-                    const syncTs = Date.now()
+                    if (sheetMeta.exists && cloudUpdatedAt > 0 && cloudUpdatedAt === localUpdatedAt) {
+                        lastSyncDate.value = cloudUpdatedAt
+                        localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, cloudUpdatedAt.toString())
+                        if (force) {
+                            showConfirm('✅ ' + translate('Already up to date!'), 1)
+                        }
+                        return true
+                    }
+
+                    const syncTs = Math.max(Date.now(), localUpdatedAt)
+                    await pushToGoogleSheets(sheetImportUrl.value, syncTs)
+                    updatedAt.value = syncTs
                     lastSyncDate.value = syncTs
                     localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
+                    await saveCurrentWorkspaceNow()
+                    if (force) {
+                        showConfirm('🚀 ' + translate('Successfully synced TO Google Sheets!'), 1)
+                    }
 
                 } catch (error) {
                     showConfirm('❌ '+ translate('Failed to sync TO Google Sheets!') + error, 1)
