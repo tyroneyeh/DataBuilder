@@ -56,14 +56,15 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300 print:mb-8 print:border-none print:shadow-none" v-show="hasNumberColumn">
     <div v-if="!isPrinting"
         @click="toggleChart"
-        class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+        class="px-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center transition-colors select-none"
+        :class="canOpenSummary ? 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : 'opacity-50 cursor-not-allowed'"
     >
         <span class="flex items-center">📊 {{ translate('Summary') }}</span>
         <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
-            <span class="transform transition-transform duration-300" :class="isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+            <span class="transform transition-transform duration-300" :class="canOpenSummary && isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
         </div>
     </div>
-    <div ref="chartContainer" v-show="columns.length && isChartOpen" class="w-full mt-2"
+    <div ref="chartContainer" v-show="canOpenSummary && isChartOpen" class="w-full mt-2"
         :style="!isPrinting && lockedChartMinHeight ? { minHeight: lockedChartMinHeight + 'px' } : undefined">
         <div v-if="hasDateColumn" class="w-full bg-white dark:bg-gray-800 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center pb-2">
             <div v-if="hasDateColumn && yearFilters.length > 1" class="bg-white dark:bg-gray-800 p-2 rounded-xl border border-gray-50 dark:border-gray-700 shadow-sm flex flex-wrap gap-2 items-center justify-center">
@@ -5847,8 +5848,20 @@ export default {
             }
         }
 
+        const canOpenSummary = computed(() => {
+            if (!hasNumberColumn.value || rows.value.length === 0) return false
+            const hasLabelCol = columns.value.some(c => ['text', 'category'].includes(c.type))
+            if (!hasLabelCol) return false
+            const numCols = columns.value.filter(c => isNumericType(c.type))
+            if (!numCols.length) return false
+            const hasNumericData = rows.value.some(row =>
+                numCols.some(col => getRowNumericValue(row, col) !== 0)
+            )
+            return hasNumericData || hasBudgetCategories.value
+        })
+
         const toggleChart = () => {
-            if (!columns.value.length) return
+            if (!canOpenSummary.value) return
             lockedChartMinHeight.value = 0
             isChartOpen.value = !isChartOpen.value
             isChartOpen.value ? localStorage.setItem('ty_chart_open', 1) : localStorage.removeItem('ty_chart_open')
@@ -6696,7 +6709,7 @@ export default {
         }
 
         const updateChart = async (unit) => {
-            if (!isChartOpen.value) return
+            if (!isChartOpen.value || !canOpenSummary.value) return
             if (unit) {
                 timeUnit.value = unit
                 selectedChartDate.value = null
@@ -8954,6 +8967,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             adjustNumber,
             getUniqueValues,
             toggleChart,
+            canOpenSummary,
             isChartOpen,
             toggleTitle,
             isTitleOpen,
