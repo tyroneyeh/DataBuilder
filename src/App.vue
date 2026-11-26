@@ -1803,20 +1803,47 @@
        <div v-if="shareModal.isOpen"
     class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 transition-opacity"
     @click.self="shareModal.isOpen = false">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 transform transition-all flex flex-col items-center relative border border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-2 transform transition-all flex flex-col items-center relative border border-gray-200 dark:border-gray-700">
         <button @click="shareModal.isOpen = false" class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none">✖</button>
         <h3 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">🔗 {{ shareModal.title }}</h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center" v-html="shareModal.desc"></p>
 
-        <div class="bg-white p-3 rounded-2xl shadow-inner border border-gray-100 mb-6">
+        <div class="bg-white mb-6">
             <img :src="shareModal.qrUrl" alt="Share QR Code" class="w-56 h-56 sm:w-64 sm:h-64 pointer-events-none">
         </div>
-        <div class="w-full bg-indigo-50 dark:bg-gray-900 border border-indigo-100 dark:border-gray-700 rounded-lg p-4 text-gray-600 dark:text-gray-400 text-sm break-all select-all cursor-text shadow-inner mb-6 h-24 overflow-y-auto custom-scrollbar">
-            {{ shareModal.link }}
+        <div class="w-full relative mb-4">
+            <div class="w-full bg-indigo-50 dark:bg-gray-900 border border-indigo-100 dark:border-gray-700 rounded-lg p-4 pr-10 text-gray-600 dark:text-gray-400 text-sm break-all select-all cursor-text shadow-inner h-24 overflow-y-auto custom-scrollbar">
+                {{ shareModal.link }}
+            </div>
+            <button type="button" @click="copyShareLink(false)" :title="translate('Copy')" class="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-md bg-white/80 dark:bg-gray-800/80 border border-indigo-200 dark:border-gray-700 text-xs hover:bg-indigo-100 dark:hover:bg-gray-700 active:scale-95 transition-all">
+                {{ shareModal.sharedPlatforms?.link ? '✓' : '🔗' }}
+            </button>
         </div>
-        <button @click="copyShareLink" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl text-lg font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
-            📋
-        </button>
+        <div class="flex flex-wrap gap-2 w-full mb-3">
+            <button type="button" @click="shareToPlatform('line')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#06C755] hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.line">✓ </span>LINE
+            </button>
+            <button type="button" @click="shareToPlatform('telegram')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#229ED9] hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.telegram">✓ </span>Telegram
+            </button>
+            <button type="button" @click="shareToPlatform('threads')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-neutral-900 dark:bg-neutral-700 hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.threads">✓ </span>Threads
+            </button>
+            <button type="button" @click="shareToPlatform('whatsapp')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#25D366] hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.whatsapp">✓ </span>WhatsApp
+            </button>
+            <button type="button" @click="shareToPlatform('facebook')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#1877F2] hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.facebook">✓ </span>Facebook
+            </button>
+        </div>
+        <div class="flex gap-2 w-full">
+            <button v-if="canWebShare" type="button" @click="shareToPlatform('native')" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl text-base font-bold shadow-md hover:bg-emerald-700 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                {{ shareModal.sharedPlatforms?.native ? '✓' : '📤' }} {{ translate('Share') }}
+            </button>
+            <button type="button" @click="copyShareLink(true)" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-base font-bold shadow-md hover:bg-indigo-700 hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                {{ shareModal.sharedPlatforms?.copy ? '✓' : '📋' }} {{ translate('Copy') }}
+            </button>
+        </div>
     </div>
 </div>
 </template>
@@ -2390,9 +2417,12 @@ export default {
             isOpen: false,
             qrUrl: '',
             link: '',
+            text: '',
             title: '',
-            desc: ''
+            desc: '',
+            sharedPlatforms: {}
         })
+        const canWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
         const isVoiceEnabled = ref(localStorage.getItem('ty_voice_enabled'))
         const voiceSettings = reactive(localStorage.getItem('ty_voice_settings') ? JSON.parse(localStorage.getItem('ty_voice_settings')) :
@@ -7838,10 +7868,95 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             }, 3000)
         }
 
-        const copyShareLink = () => {
-            navigator.clipboard.writeText(shareModal.value.link).then(() => {
+        const markSharedPlatform = (platform) => {
+            shareModal.value.sharedPlatforms = {
+                ...(shareModal.value.sharedPlatforms || {}),
+                [platform]: true
+            }
+        }
+
+        const copyShareLink = (includeSummary = true) => {
+            const link = shareModal.value.link
+            const shareText = (shareModal.value.text || '').trim()
+            const content = includeSummary && shareText ? `${shareText}\n${link}` : link
+            navigator.clipboard.writeText(content).then(() => {
+                markSharedPlatform(includeSummary ? 'copy' : 'link')
                 showConfirm(translate('Copied to clipboard!'), 1)
             }).catch(() => {})
+        }
+
+        const buildRowShareSummary = (row) => {
+            const parts = []
+            columns.value.forEach(col => {
+                if (col.type === 'photo') return
+                let val
+                if (isCalcType(col.type)) {
+                    const calc = getRowNumericValue(row, col)
+                    val = calc ? calc.toLocaleString() : ''
+                } else if (col.type === 'tags') {
+                    val = Array.isArray(row[col.id]) ? row[col.id].join(', ') : ''
+                } else if (col.type === 'checkbox') {
+                    val = row[col.id] ? translate('Checked') : ''
+                } else {
+                    val = row[col.id] ?? ''
+                }
+                if (val !== '' && val !== null && val !== undefined) {
+                    parts.push(`${col.label}: ${val}`)
+                }
+            })
+            if (row.note && String(row.note).trim() !== '') {
+                parts.push(`${translate('Note')}: ${row.note.trim()}`)
+            }
+            const summary = parts.join('\n')
+            return summary.length > 300 ? `${summary.slice(0, 297)}...` : summary
+        }
+
+        const shareToPlatform = async (platform) => {
+            const link = shareModal.value.link
+            if (!link) return
+            const shareText = (shareModal.value.text || '').trim()
+
+            if (platform === 'native' && canWebShare) {
+                try {
+                    await navigator.share({
+                        title: currentStorageKey.value || translate('TY Data Builder'),
+                        text: shareText || undefined,
+                        url: link
+                    })
+                    markSharedPlatform('native')
+                } catch (err) {
+                    if (err?.name !== 'AbortError') {
+                        copyShareLink(true)
+                    }
+                }
+                return
+            }
+
+            let targetUrl = ''
+            if (platform === 'line') {
+                const body = shareText ? `${shareText}\n${link}` : link
+                targetUrl = `https://line.me/R/share?text=${encodeURIComponent(body)}`
+            } else if (platform === 'telegram') {
+                const params = new URLSearchParams({ url: link })
+                if (shareText) params.set('text', shareText)
+                targetUrl = `https://t.me/share/url?${params.toString()}`
+            } else if (platform === 'whatsapp') {
+                const body = shareText ? `${shareText}\n${link}` : link
+                targetUrl = `https://wa.me/?text=${encodeURIComponent(body)}`
+            } else if (platform === 'threads') {
+                const params = new URLSearchParams({ url: link })
+                if (shareText) params.set('text', shareText)
+                targetUrl = `https://www.threads.net/intent/post?${params.toString()}`
+            } else if (platform === 'facebook') {
+                const params = new URLSearchParams({ u: link })
+                if (shareText) params.set('quote', shareText)
+                targetUrl = `https://www.facebook.com/sharer/sharer.php?${params.toString()}`
+            }
+
+            if (targetUrl) {
+                markSharedPlatform(platform)
+                window.open(targetUrl, '_blank', 'noopener,noreferrer')
+            }
         }
 
         const copyQuickAddLink = () => {
@@ -7881,8 +7996,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         isOpen: true,
                         qrUrl: url,
                         link: link,
+                        text: currentStorageKey.value || translate('TY Data Builder'),
                         title: translate('Share Link & QRCode'),
-                        desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
+                        desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
+                        sharedPlatforms: {}
                     }
                 })
             } catch (e) {
@@ -7916,6 +8033,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const compressedBase64 = await compressToBase64(jsonString)
                 const encoded = encodeURIComponent(compressedBase64)
                 const link = `${window.location.origin}${window.location.pathname}#data:${encoded}`
+                const rowSummary = buildRowShareSummary(row)
 
                 QRCode.toDataURL(link, { width: 250, margin: 2, color: { dark: '#3730A3', light: '#FFFFFF' } }, (err, url) => {
                     if (err) return showConfirm(err, 1)
@@ -7923,8 +8041,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         isOpen: true,
                         qrUrl: url,
                         link: link,
+                        text: rowSummary,
                         title: translate('Share Link & QRCode'),
-                        desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)')
+                        desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
+                        sharedPlatforms: {}
                     }
                 })
             } catch (e) {
@@ -9189,6 +9309,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             chartViewMode,
             tooltipState,
             shareModal,
+            canWebShare,
+            shareToPlatform,
             shareRow,
             copyShareLink,
             copyQuickAddLink,
