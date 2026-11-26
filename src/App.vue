@@ -1131,7 +1131,7 @@
     <div class="w-full bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300" v-show="!isPrinting || isBudgetOpen">
         <div
             @click="toggleBudget"
-            class="text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer select-none"
+            class="p-2 text-lg font-bold text-gray-700 dark:text-gray-300 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer select-none"
         >
             <span class="flex items-center">💰 {{ translate('Budget') }}</span>
             <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
