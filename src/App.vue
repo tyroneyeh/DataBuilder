@@ -7952,7 +7952,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 const body = shareText ? `${shareText}\n${link}` : link
                 targetUrl = `https://wa.me/?text=${encodeURIComponent(body)}`
             } else if (platform === 'threads') {
-                targetUrl = `https://www.threads.net/intent/post?url=${encodeURIComponent(link)}`
+                targetUrl = `https://www.threads.com/intent/post?url=${encodeURIComponent(link)}`
                 if (shareText) targetUrl += `&text=${encodeURIComponent(shareText)}`
             } else if (platform === 'facebook') {
                 targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
