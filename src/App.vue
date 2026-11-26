@@ -1803,7 +1803,7 @@
     </div>
 </div>
        <div v-if="shareModal.isOpen"
-    class="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 transition-opacity"
+    class="fixed inset-0 bg-black/60 z-[20] flex items-center justify-center p-4 transition-opacity"
     @click.self="shareModal.isOpen = false">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-2 transform transition-all flex flex-col items-center relative border border-gray-200 dark:border-gray-700">
         <button @click="shareModal.isOpen = false" class="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none">✖</button>
@@ -1849,6 +1849,9 @@
             </button>
             <button type="button" @click="shareToPlatform('threads')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-neutral-900 dark:bg-neutral-700 hover:opacity-90 active:scale-95 transition-all shadow-sm">
                 <span v-if="shareModal.sharedPlatforms?.threads">✓ </span>Threads
+            </button>
+            <button type="button" @click="shareToPlatform('x')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-black dark:bg-zinc-800 border border-transparent dark:border-zinc-600 hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                <span v-if="shareModal.sharedPlatforms?.x">✓ </span>𝕏
             </button>
             <button type="button" @click="shareToPlatform('whatsapp')" class="flex-1 min-w-[72px] py-2 px-1 rounded-xl text-xs font-bold text-white bg-[#25D366] hover:opacity-90 active:scale-95 transition-all shadow-sm">
                 <span v-if="shareModal.sharedPlatforms?.whatsapp">✓ </span>WhatsApp
@@ -8263,6 +8266,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 targetUrl = `https://wa.me/?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'threads') {
                 targetUrl = `https://www.threads.com/intent/post?text=${encodeURIComponent(textWithLink)}`
+            } else if (platform === 'x') {
+                targetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+                if (link) targetUrl += `&url=${encodeURIComponent(link)}`
             } else if (platform === 'facebook') {
                 if (link) {
                     targetUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`
