@@ -2304,21 +2304,20 @@ export default {
         const heatmapCanvas = ref(null)
 
         const ensureCategoryBudgets = () => {
-            const defaultPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
             uniqueCategories.value.forEach((cat, index) => {
                 if (!categoryBudgets.value[cat]) {
                     categoryBudgets.value[cat] = {
                         id: 'budget_' + cat,
                         amount: null,
                         type: 'expense',
-                        color: defaultPalette[index % defaultPalette.length]
+                        color: getCategoryColor(cat, index)
                     }
                 } else {
                     if (!categoryBudgets.value[cat].type) {
                         categoryBudgets.value[cat].type = 'expense'
                     }
                     if (!categoryBudgets.value[cat].color) {
-                        categoryBudgets.value[cat].color = defaultPalette[index % defaultPalette.length]
+                        categoryBudgets.value[cat].color = getCategoryColor(cat, index)
                     }
                     if (!categoryBudgets.value[cat].id) {
                         categoryBudgets.value[cat].id = 'budget_' + cat
@@ -2372,13 +2371,12 @@ export default {
                 showConfirm(translate('Category already exists!'), 1)
                 return
             }
-            const defaultPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
-            const colorIndex = Object.keys(categoryBudgets.value).length
+            const colorIndex = allCategoryOrder.value.length
             categoryBudgets.value[catName] = {
                 id: 'budget_' + catName,
                 amount: null,
                 type: 'expense',
-                color: defaultPalette[colorIndex % defaultPalette.length]
+                color: defaultColors[colorIndex % defaultColors.length]
             }
             newCategoryInput.value = ''
         }
@@ -2388,6 +2386,30 @@ export default {
         const mainCatColId = computed(() => {
             return selectedChartCatColId.value || columns.value.find(c => c.type === 'category')?.id
         })
+
+        const allCategoryOrder = computed(() => {
+            const cats = new Set()
+            const colId = mainCatColId.value
+            if (colId) {
+                rows.value.forEach(row => {
+                    const val = row?.[colId]
+                    if (val && String(val).trim() !== '') {
+                        cats.add(String(val).trim())
+                    }
+                })
+            }
+            Object.keys(categoryBudgets.value || {}).forEach(k => cats.add(k))
+            return Array.from(cats)
+        })
+
+        const getCategoryColor = (label, fallbackIndex = 0) => {
+            const key = String(label ?? '').trim()
+            const customColor = categoryBudgets.value?.[key]?.color
+            if (customColor) return customColor
+            const idx = allCategoryOrder.value.indexOf(key)
+            const colorIdx = idx >= 0 ? idx : fallbackIndex
+            return defaultColors[Math.abs(colorIdx) % defaultColors.length]
+        }
 
         const uniqueCategories = computed(() => {
             const cats = new Set()
@@ -2405,14 +2427,13 @@ export default {
         })
 
         const budgetStats = computed(() => {
-            const defaultPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
             return uniqueCategories.value.map((cat, index) => ({
                 name: cat,
                 budget: categoryBudgets.value[cat] || {
                     id: 'budget_' + cat,
                     amount: null,
                     type: 'expense',
-                    color: defaultPalette[index % defaultPalette.length]
+                    color: getCategoryColor(cat, index)
                 }
             }))
         })
@@ -3387,7 +3408,7 @@ export default {
                     isOver: isOver,
                     isFallback: isFallback,
                     displayString: displayStr,
-                    color: settings.color || '#9ca3af'
+                    color: settings.color || getCategoryColor(catKey)
                 }
             })
 
@@ -6634,7 +6655,7 @@ export default {
         }
 
         const updateDoughnut = (ctx, labels, values) => {
-            const bgColors = labels.map((label, idx) => categoryBudgets.value[label]?.color || defaultColors[idx % defaultColors.length])
+            const bgColors = labels.map((label, idx) => getCategoryColor(label, idx))
             const absValues = values.map(v => Math.abs(v))
             if (expenseChart.value) {
                 const currentLabels = expenseChart.value.data.labels || [];
@@ -6690,7 +6711,7 @@ export default {
             const isTotalLine = trendChartType.value === 'total'
             const isLine = trendChartType.value === 'line' || isTotalLine
             const chartJsType = isLine ? 'line' : 'bar'
-            const bgColors = trendObj.categories.map((label, idx) => categoryBudgets.value[label]?.color || defaultColors[idx % defaultColors.length])
+            const bgColors = trendObj.categories.map((label, idx) => getCategoryColor(label, idx))
 
             const datasets = isTotalLine
                 ? (() => {
