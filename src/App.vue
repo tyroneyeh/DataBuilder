@@ -329,7 +329,7 @@
                         >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
                     </div>
 
-                    <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
+                    <button v-if="!isPrinting" @click="removeColumn(col.id, index)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
                 </th>
                 <th v-if="!isPrinting" class="sticky top-0 z-10 print:static bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-2 w-px text-center whitespace-nowrap text-gray-600 dark:text-gray-300 font-semibold">{{ translate('Action') }}</th>
             </tr>
@@ -2239,6 +2239,26 @@ export default {
         const tempKey = ref('')
 
         const colCount = ref(0)
+        const syncColCount = () => {
+            let maxNum = Number(colCount.value) || 0
+            columns.value.forEach(col => {
+                const m = String(col?.id || '').match(/^col_(\d+)$/)
+                if (m) {
+                    const n = parseInt(m[1], 10)
+                    if (n > maxNum) maxNum = n
+                }
+            })
+            if (columns.value.length > maxNum) maxNum = columns.value.length
+            colCount.value = maxNum
+        }
+        const getNextColId = () => {
+            syncColCount()
+            const existingIds = new Set(columns.value.map(c => c.id))
+            do {
+                colCount.value++
+            } while (existingIds.has(`col_${colCount.value}`))
+            return `col_${colCount.value}`
+        }
         const columns = shallowRef([])
         const rows = shallowRef([])
         const inputRefs = ref({})
@@ -5745,7 +5765,18 @@ export default {
             updatedAt.value = hashData?.updatedAt || localData?.updatedAt
             categoryBudgets.value = hashData?.budgets || localData.budgets || {}
 
-            if (!colCount.value || colCount.value < columns.value.length) colCount.value = columns.value.length
+            colCount.value = Number(localData?.colCount) || 0
+            syncColCount()
+
+            let hasFixed = false
+            const seenColIds = new Set()
+            columns.value.forEach(col => {
+                if (!col.id || seenColIds.has(col.id)) {
+                    col.id = getNextColId()
+                    hasFixed = true
+                }
+                seenColIds.add(col.id)
+            })
 
             updateColumns()
             updateTitle()
@@ -5753,7 +5784,6 @@ export default {
             onDataEdited('both')
 
             const seenIds = new Set()
-            let hasFixed = false
 
             rows.value.forEach(row => {
                 if (!row.id || seenIds.has(row.id)) {
@@ -5939,9 +5969,7 @@ export default {
                 }
             }
 
-            if (!colCount.value || colCount.value < columns.value.length) colCount.value = columns.value.length
-            colCount.value++
-            const newColId = `col_${colCount.value}`
+            const newColId = getNextColId()
             const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
             if (newColType.value === 'translate') {
                 newColData.sourceCol = translateSourceCol.value
@@ -7065,19 +7093,26 @@ export default {
             }
         }
 
-        const removeColumn = async (idToRemove) => {
-            if (columns.value.some(col =>
-                (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
-                (['translate', 'ai', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
-            )) {
+        const removeColumn = async (idToRemove, colIndex = -1) => {
+            const hasRemainingSameId = colIndex >= 0 && columns.value.some((col, idx) => idx !== colIndex && col.id === idToRemove)
+            if (!hasRemainingSameId && columns.value.some((col, idx) => {
+                if (colIndex >= 0 ? idx === colIndex : col.id === idToRemove) return false
+                return (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
+                    (['translate', 'ai', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
+            })) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
             if (!await showConfirm(translate("Are you sure you want to delete this column?"))) return
 
-            columns.value = columns.value.filter(col => col.id !== idToRemove).map(col => toRaw(col))
+            columns.value = (colIndex >= 0
+                ? columns.value.filter((_, idx) => idx !== colIndex)
+                : columns.value.filter(col => col.id !== idToRemove)
+            ).map(col => toRaw(col))
             if (!columns.value.length) colCount.value = 0
             updateColumns()
-            rows.value.forEach(row => delete row[idToRemove])
+            if (!hasRemainingSameId) {
+                rows.value.forEach(row => delete row[idToRemove])
+            }
             onDataEdited()
         }
 
@@ -7656,10 +7691,9 @@ export default {
                         targetType = isAllNumbers ? 'number' : 'text'
                     }
 
-                    if (!colCount.value || colCount.value < columns.value.length) colCount.value = columns.value.length
-                    colCount.value++
+                    const importedColId = getNextColId()
                     columns.value.push({
-                        id: 'col_' + colCount.value,
+                        id: importedColId,
                         label: key,
                         type: targetType,
                         opA: targetOpA,
