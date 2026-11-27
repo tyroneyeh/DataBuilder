@@ -1588,7 +1588,15 @@
                         </button>
                     </div>
                 </div>
-                <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">🐙 {{ translate('GitHub Gist Sync Settings') }}</h3>
+                <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">
+                    <span>🐙 {{ translate('GitHub Gist Sync Settings') }}</span>
+                    <button
+                        type="button"
+                        @click="showGistTokenTips"
+                        class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-base transition-colors cursor-pointer"
+                        :data-tooltip="translate('How to get a Token?')"
+                    >💡</button>
+                </h3>
                 <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         <div class="flex flex-col">
@@ -1619,17 +1627,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="text-gray-600 dark:text-gray-300 text-sm mt-2 space-y-2 bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <p class="font-bold text-gray-800 dark:text-gray-200">💡 {{ translate('How to get a Token?') }}</p>
-                        <ol class="list-decimal ml-5 space-y-1.5 marker:text-gray-400">
-                            <li><a href="https://github.com/settings/tokens" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium underline underline-offset-2 transition-colors" target="_blank">{{ translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).') }}</a></li>
-                            <li>{{ translate('Click "Generate new token (classic)".') }}</li>
-                            <li>{{ translate('Set Expiration to "No expiration" (to prevent future backup failures).') }}</li>
-                            <li>{{ translate('Under Scopes, make sure to check "gist".') }}</li>
-                            <li>{{ translate('If this is your first time using it, please leave the Gist ID blank.') }}</li>
-                            <li>{{ translate('The size limit for Gist is 1 MB.') }}</li>
-                        </ol>
                     </div>
                 </div>
 
@@ -1764,7 +1761,7 @@
 <div v-if="confirmModal.isOpen"
     class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
     @click.self="onConfirmCancel">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all flex flex-col max-h-[95vh]">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full p-6 transform transition-all flex flex-col max-h-[95vh]">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2 flex items-center flex-shrink-0">
             <span class="mr-2 text-indigo-500">💡</span> {{ translate('Tips') }}
         </h3>
@@ -8818,6 +8815,21 @@ export default {
             colWidths.value = newWidths
         }
 
+        const showGistTokenTips = () => {
+            const msg = [
+                translate('How to get a Token?'),
+                '',
+                `1. ${translate('Go to GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic).')}`,
+                '   https://github.com/settings/tokens',
+                `2. ${translate('Click "Generate new token (classic)".')}`,
+                `3. ${translate('Set Expiration to "No expiration" (to prevent future backup failures).')}`,
+                `4. ${translate('Under Scopes, make sure to check "gist".')}`,
+                `5. ${translate('If this is your first time using it, please leave the Gist ID blank.')}`,
+                `6. ${translate('The size limit for Gist is 1 MB.')}`
+            ].join('\n')
+            showConfirm(msg, 1)
+        }
+
         const showConfirm = (message, onlyOK = 0) => {
             return new Promise((resolve) => {
                 confirmModal.value = {
@@ -11296,6 +11308,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             confirmModal,
             confirmCancelBtnRef,
             confirmOkBtnRef,
+            showGistTokenTips,
             showConfirm,
             onConfirmOk,
             onConfirmCancel,
