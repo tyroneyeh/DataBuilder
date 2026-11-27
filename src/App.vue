@@ -2383,6 +2383,8 @@ export default {
             newCategoryInput.value = ''
         }
 
+        const workspaceTitle = computed(() => (currentStorageKey.value || tempKey.value || translate('TY Data Builder')).trim())
+
         const mainCatColId = computed(() => {
             return selectedChartCatColId.value || columns.value.find(c => c.type === 'category')?.id
         })
@@ -3593,7 +3595,7 @@ export default {
         }
 
         const updateTitle = () => {
-            document.title = (currentStorageKey.value || translate('My Data Sheets')) + ` - ${translate("TY Data Builder")}`
+            document.title = workspaceTitle.value
         }
 
         const initStorageKeys = () => {
@@ -4743,7 +4745,7 @@ export default {
             const numCol = columns.value.find(c => c.id === selectedChartNumColId.value) || columns.value.find(c => isNumericType(c.type))
             const numVal = numCol ? getRowNumericValue(row, numCol) : 0
 
-            let title = labelCol ? String(row[labelCol.id]).trim() : (currentStorageKey.value || translate('TY Data Builder'))
+            let title = labelCol ? String(row[labelCol.id]).trim() : workspaceTitle.value
             if (numVal !== 0) {
                 title += ` (${numVal.toLocaleString()})`
             }
@@ -7467,15 +7469,15 @@ export default {
             isProcessing.value = -1
             try {
                 const rowsValues = rows.value.map(({id, ...rest}) => rest)
+                const storageKey = currentStorageKey.value || tempKey.value || 'ty-db'
                 const payload = {
-                    title: currentStorageKey.value,
+                    title: storageKey,
                     columns: toRaw(columns.value),
                     rows: toRaw(rowsValues),
                     note: globalNotes.value,
                     budgets: toRaw(categoryBudgets.value)
                 }
 
-                const storageKey = currentStorageKey.value || tempKey.value || 'ty-db'
                 const fileContent = await compressToBase64(JSON.stringify(payload, null, 2))
                 const sizeInBytes = new Blob([fileContent]).size
                 const ONE_MB = 1000 * 1000
@@ -8206,7 +8208,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const buildRowShareSummary = (row) => {
-            const wsName = (currentStorageKey.value || translate('TY Data Builder')).trim()
+            const wsName = workspaceTitle.value
             const parts = wsName ? [wsName] : []
             columns.value.forEach(col => {
                 if (col.type === 'photo' || col.type === 'password') return
@@ -8240,7 +8242,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             if (platform === 'native' && canWebShare) {
                 try {
-                    const shareData = { title: currentStorageKey.value || translate('TY Data Builder') }
+                    const shareData = { title: workspaceTitle.value }
                     const files = (shareModal.value.includePhotos && shareModal.value.photos?.length)
                         ? shareModal.value.photos.map((src, idx) => dataUrlToFile(src, idx)).filter(Boolean)
                         : []
@@ -8367,7 +8369,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         isOpen: true,
                         qrUrl: url,
                         link: link,
-                        text: currentStorageKey.value || translate('TY Data Builder'),
+                        text: workspaceTitle.value,
                         title: translate('Share Link & QRCode'),
                         desc: translate('Scan the QRCode below to load data<br>(Ideal for mobile)'),
                         photos: collectedPhotos,
