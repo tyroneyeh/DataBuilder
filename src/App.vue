@@ -289,7 +289,7 @@
                             class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                         >
 
-                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'">({{ getColumnTypeLabel(col.type) }})</span>
+                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500')">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : getColumnTypeLabel(col.type) }})</span>
                     </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -360,6 +360,14 @@
                         :data-tooltip="getRowNumericValue(row, col).toLocaleString()"
                         @click="speakFeedback($event.target.innerText)">
                         {{ formatNumber(getRowNumericValue(row, col)) }}
+                    </div>
+                    <div v-else-if="col.type === 'translate'"
+                        class="w-auto sm:w-full print:w-full p-2 print:text-black print:bg-transparent rounded text-left text-base print:py-0 print:px-0 print:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/30 truncate cursor-pointer min-h-[40px] flex items-center"
+                        :data-tooltip="row[col.id] || ''"
+                        @click="handleTranslateCellClick(row, col)">
+                        <span v-if="translatingCells[`${row.id}-${col.id}`]" class="text-xs text-indigo-400 dark:text-indigo-400 animate-pulse">⏳ {{ translate('Translating...') }}</span>
+                        <span v-else-if="translatePendingGesture[`${row.id}-${col.id}`]" class="text-xs text-amber-600 dark:text-amber-400 underline">🌐 {{ translate('Click to translate') }}</span>
+                        <span v-else class="truncate">{{ row[col.id] || '' }}</span>
                     </div>
                     <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
                         <template v-if="isPrinting">
@@ -924,7 +932,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -1419,6 +1427,16 @@
                                 <option v-for="c in numberColumns" :key="'C'+c.id" :value="c.id">{{ c.label }}</option>
                             </select>
                         </span>
+                    </div>
+                    <div v-else-if="newColType === 'translate'" class="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1.5 rounded-md border border-indigo-200 dark:border-indigo-800 flex-[1.5] min-w-0">
+                        <select v-model="translateSourceCol" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option value="" disabled>{{ translate('Source Column') }}</option>
+                            <option v-for="c in translatableColumns" :key="'T'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <span class="text-gray-500 dark:text-gray-400 font-bold shrink-0">→</span>
+                        <select v-model="newColTargetLang" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option v-for="lang in translateTargetLangOptions" :key="lang.value" :value="lang.value">{{ lang.label }}</option>
+                        </select>
                     </div>
                     <div class="shrink-0 w-full md:w-auto">
                         <button @click="addColumn" class="w-full bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap px-5 py-2 rounded-md transition-colors font-medium shadow-sm h-[42px]">
@@ -2103,6 +2121,37 @@ export default {
         const editingColId = ref(null)
         const newColLabel = ref('')
         const newColType = ref('text')
+        const translateSourceCol = ref('')
+        const newColTargetLang = ref(currentLanguage.value || 'en')
+        const translateTargetLangOptions = [
+            { value: 'en', label: 'English (en)' },
+            { value: 'zh-TW', label: '繁體中文 (zh-TW)' },
+            { value: 'zh-CN', label: '简体中文 (zh-CN)' },
+            { value: 'ja', label: '日本語 (ja)' },
+            { value: 'ko', label: '한국어 (ko)' },
+            { value: 'fr', label: 'Français (fr)' },
+            { value: 'de', label: 'Deutsch (de)' },
+            { value: 'nl', label: 'Nederlands (nl)' },
+            { value: 'hi', label: 'हिन्दी (hi)' },
+            { value: 'tl', label: 'Tagalog (tl)' },
+            { value: 'vi', label: 'Tiếng Việt (vi)' },
+            { value: 'th', label: 'ภาษาไทย (th)' },
+            { value: 'id', label: 'Bahasa Indonesia (id)' },
+            { value: 'ms', label: 'Bahasa Melayu (ms)' },
+            { value: 'ru', label: 'Русский (ru)' },
+            { value: 'pt', label: 'Português (pt)' },
+            { value: 'es', label: 'Español (es)' },
+            { value: 'it', label: 'Italiano (it)' },
+            { value: 'pl', label: 'Polski (pl)' },
+            { value: 'tr', label: 'Türkçe (tr)' },
+            { value: 'sv', label: 'Svenska (sv)' },
+            { value: 'cs', label: 'Čeština (cs)' },
+            { value: 'ta', label: 'தமிழ் (ta)' },
+            { value: 'uk', label: 'Українська (uk)' },
+            { value: 'ar', label: 'العربية (ar)' }
+        ]
+        const translatingCells = ref({})
+        const translatePendingGesture = ref({})
         const formulaA = ref('')
         const formulaB = ref('')
         const formulaC = ref('')
@@ -2212,6 +2261,7 @@ export default {
                 tags: 'Tags',
                 color: 'Color',
                 number: 'Number',
+                translate: 'Translate',
                 text: 'Text'
             }
             return translate(labelMap[type] || 'Text')
@@ -2235,6 +2285,9 @@ export default {
                 {value: 'checkbox', label: translate('Checkbox')},
                 {value: 'photo', label: translate('Photo')}
             ]
+            if (columns.value.some(col => ['text', 'category'].includes(col.type))) {
+                opts.push({value: 'translate', label: translate('Translate')})
+            }
             const numCount = columns.value.filter(col => col.type === 'number').length
             if (numCount > 1) {
                 opts.push(
@@ -2774,6 +2827,13 @@ export default {
         watch(newColType, (newVal) => {
             const matched = typeOptions.value.find(opt => opt.value === newVal)
             if (matched) newColLabel.value = matched.label
+            if (newVal === 'translate') {
+                const candidates = translatableColumns.value
+                if (!candidates.some(c => c.id === translateSourceCol.value)) {
+                    const preferred = candidates.find(c => c.type === 'text') || candidates[0]
+                    translateSourceCol.value = preferred ? preferred.id : ''
+                }
+            }
         })
         watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
             if (isInitializing) return
@@ -2885,6 +2945,7 @@ export default {
         }
 
         const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
+        const translatableColumns = computed(() => columns.value.filter(col => ['text', 'category'].includes(col.type)))
 
         const areAllExpanded = computed(() => {
             if (rows.value.length === 0) return false
@@ -3601,6 +3662,7 @@ export default {
             updatedAt.value = Date.now()
             if (target === 'rows' || target === 'both') {
                 triggerRef(rows)
+                syncAllTranslateColumns()
             }
             if (target === 'columns' || target === 'both') {
                 triggerRef(columns)
@@ -5089,6 +5151,15 @@ export default {
             if (!newColLabel.value.trim()) return showConfirm(translate('Please enter a column name!'), 1)
             const existingCol = columns.value.find(col => col.label.toLowerCase() === newColLabel.value.toLowerCase())
             if (existingCol && await showConfirm(translate('This column already exists. Do you want to overwrite it?'))) {
+                if (newColType.value === 'translate') {
+                    if (!translateSourceCol.value) return showConfirm(translate('Please select a source column!'), 1)
+                    if (existingCol.id === translateSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
+                    existingCol.sourceCol = translateSourceCol.value
+                    existingCol.targetLang = newColTargetLang.value || 'en'
+                } else {
+                    delete existingCol.sourceCol
+                    delete existingCol.targetLang
+                }
                 existingCol.type = newColType.value
                 if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                     existingCol.opA = formulaA.value
@@ -5100,7 +5171,13 @@ export default {
                     existingCol.opC = formulaC.value
                 }
                 onDataEdited('both')
+                if (existingCol.type === 'translate') {
+                    translateColumnRows(existingCol, { force: true, interactive: true })
+                }
                 return
+            }
+            if (newColType.value === 'translate' && !translateSourceCol.value) {
+                return showConfirm(translate('Please select a source column!'), 1)
             }
             if (isCalcType(newColType.value)) {
                 if (newColType.value === 'multiply3' && !formulaC.value) return showConfirm(translate('Please select columns A, B and C!'), 1)
@@ -5117,6 +5194,10 @@ export default {
             colCount.value++
             const newColId = `col_${colCount.value}`
             const newColData = { id: newColId, label: newColLabel.value.trim(), type: newColType.value }
+            if (newColType.value === 'translate') {
+                newColData.sourceCol = translateSourceCol.value
+                newColData.targetLang = newColTargetLang.value || 'en'
+            }
             if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                 newColData.opA = formulaA.value
                 newColData.opB = formulaB.value
@@ -5127,7 +5208,18 @@ export default {
                 newColData.opC = formulaC.value
             }
 
-            columns.value = [...columns.value, newColData]
+            if (newColType.value === 'translate') {
+                const srcIdx = columns.value.findIndex(c => c.id === newColData.sourceCol)
+                if (srcIdx !== -1) {
+                    const nextCols = [...columns.value]
+                    nextCols.splice(srcIdx + 1, 0, newColData)
+                    columns.value = nextCols
+                } else {
+                    columns.value = [...columns.value, newColData]
+                }
+            } else {
+                columns.value = [...columns.value, newColData]
+            }
             if (!isCalcType(newColType.value)) {
                 rows.value.forEach(row => {
                     if (newColType.value === 'number') row[newColId] = null
@@ -5142,10 +5234,406 @@ export default {
             onDataEdited('both')
             newColLabel.value = ''
             newColType.value = 'text'
+            translateSourceCol.value = ''
             formulaA.value = ''
             formulaB.value = ''
             formulaC.value = ''
             if (newColData.type === 'date') hasDateColumn.value = true
+            if (newColData.type === 'translate') {
+                translateColumnRows(newColData, { force: true, interactive: true })
+            }
+        }
+
+        let languageDetectorPromise = null
+        const translatorCache = new Map()
+        const activeColumnTranslations = new Set()
+        const lastTranslatedSourceMap = new Map()
+        const rowTranslateTimers = new Map()
+        const normalizeLangKey = (lang) => {
+            const raw = String(lang || '').trim()
+            if (!raw) return ''
+            const lower = raw.toLowerCase()
+            if (lower === 'zh-tw' || lower === 'zh-hk' || lower === 'zh-mo' || lower.startsWith('zh-hant')) return 'zh-Hant'
+            if (lower === 'zh-cn' || lower === 'zh-sg' || lower.startsWith('zh-hans')) return 'zh-Hans'
+            if (lower === 'zh') return 'zh'
+            return lower.split('-')[0]
+        }
+        const isSameLang = (a, b) => {
+            const na = normalizeLangKey(a)
+            const nb = normalizeLangKey(b)
+            if (!na || !nb) return false
+            if (na === nb) return true
+            if ((na === 'zh' && (nb === 'zh-Hant' || nb === 'zh-Hans')) || (nb === 'zh' && (na === 'zh-Hant' || na === 'zh-Hans'))) return true
+            return false
+        }
+        const guessLanguageFromScript = (text) => {
+            if (/[\u3040-\u30ff]/.test(text)) return 'ja'
+            if (/[\uac00-\ud7af\u1100-\u11ff]/.test(text)) return 'ko'
+            if (/[\u0e00-\u0e7f]/.test(text)) return 'th'
+            if (/[\u0600-\u06ff]/.test(text)) return 'ar'
+            if (/[\u0900-\u097f]/.test(text)) return 'hi'
+            if (/[\u0b80-\u0bff]/.test(text)) return 'ta'
+            if (/[\u0400-\u04ff]/.test(text)) return 'ru'
+            if (/[\u4e00-\u9fff]/.test(text)) return 'zh'
+            return 'en'
+        }
+        const getLanguageDetector = async () => {
+            if (languageDetectorPromise) return languageDetectorPromise
+            languageDetectorPromise = (async () => {
+                if ('LanguageDetector' in globalThis && typeof globalThis.LanguageDetector?.create === 'function') {
+                    const avail = typeof globalThis.LanguageDetector.availability === 'function'
+                        ? await globalThis.LanguageDetector.availability()
+                        : 'available'
+                    if (avail !== 'unavailable') {
+                        return await globalThis.LanguageDetector.create()
+                    }
+                } else if (globalThis.ai?.languageDetector && typeof globalThis.ai.languageDetector.create === 'function') {
+                    const caps = typeof globalThis.ai.languageDetector.capabilities === 'function'
+                        ? await globalThis.ai.languageDetector.capabilities()
+                        : { available: 'readily' }
+                    if (caps?.available !== 'no') {
+                        return await globalThis.ai.languageDetector.create()
+                    }
+                }
+                return null
+            })().catch((e) => {
+                languageDetectorPromise = null
+                console.warn('LanguageDetector init fallback:', e)
+                return null
+            })
+            return languageDetectorPromise
+        }
+        const detectSourceLanguages = async (text) => {
+            const scriptLang = guessLanguageFromScript(text)
+            // Non-Latin scripts (ja/ko/th/ar/hi/ta/ru) are unambiguous; avoid CLD3 mis-detection
+            if (['ja', 'ko', 'th', 'ar', 'hi', 'ta', 'ru'].includes(scriptLang)) {
+                return [scriptLang]
+            }
+
+            const candidates = []
+            try {
+                const detector = await getLanguageDetector()
+                if (detector) {
+                    const results = await detector.detect(text)
+                    if (Array.isArray(results)) {
+                        if (scriptLang === 'zh') {
+                            const zhHit = results.find(r => r?.detectedLanguage && /^zh/i.test(r.detectedLanguage))
+                            if (zhHit) candidates.push(zhHit.detectedLanguage)
+                            candidates.push('zh')
+                        } else {
+                            // Latin script: CLD3 often mis-detects short English/brand words as sq/cy/la/etc.
+                            const letterCount = (text.match(/\p{L}/gu) || []).length
+                            const minConf = letterCount < 15 ? 0.85 : 0.6
+                            for (const item of results.slice(0, 4)) {
+                                const lang = item?.detectedLanguage
+                                if (!lang || lang === 'und') continue
+                                const conf = item.confidence ?? 1
+                                if (lang === 'en' && conf >= 0.2) {
+                                    candidates.push('en')
+                                } else if (conf >= minConf) {
+                                    candidates.push(lang)
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                languageDetectorPromise = null
+                console.warn('LanguageDetector fallback:', e)
+            }
+
+            candidates.push(scriptLang)
+            return [...new Set(candidates.map(l => normalizeLangKey(l) || l).filter(Boolean))]
+        }
+        const getLangCandidates = (lang, isTarget = false) => {
+            const raw = String(lang || '').trim()
+            if (!raw) return ['en']
+            const norm = normalizeLangKey(raw)
+            if (norm === 'zh-Hant') {
+                return isTarget ? ['zh-Hant'] : ['zh-Hant', 'zh']
+            }
+            if (norm === 'zh-Hans') {
+                return isTarget ? ['zh-Hans', 'zh'] : ['zh-Hans', 'zh']
+            }
+            const primary = raw.split('-')[0].toLowerCase()
+            return [...new Set([norm, primary].filter(Boolean))]
+        }
+        const hasBuiltInBrowserTranslator = () =>
+            ('Translator' in globalThis && typeof globalThis.Translator?.create === 'function') ||
+            Boolean(globalThis.ai?.translator && typeof globalThis.ai.translator.create === 'function')
+        const getBrowserTranslatorPair = async (src, tgt) => {
+            const pairKey = `${src}->${tgt}`
+            if (translatorCache.has(pairKey)) {
+                return translatorCache.get(pairKey)
+            }
+            const promise = (async () => {
+                if ('Translator' in globalThis && typeof globalThis.Translator?.create === 'function') {
+                    if (typeof globalThis.Translator.availability === 'function') {
+                        const avail = await globalThis.Translator.availability({ sourceLanguage: src, targetLanguage: tgt })
+                        if (avail === 'unavailable') return null
+                    }
+                    return await globalThis.Translator.create({ sourceLanguage: src, targetLanguage: tgt })
+                }
+                if (globalThis.ai?.translator && typeof globalThis.ai.translator.create === 'function') {
+                    return await globalThis.ai.translator.create({ sourceLanguage: src, targetLanguage: tgt })
+                }
+                return null
+            })().catch((err) => {
+                translatorCache.delete(pairKey)
+                throw err
+            })
+            translatorCache.set(pairKey, promise)
+            const instance = await promise
+            if (!instance) translatorCache.delete(pairKey)
+            return instance
+        }
+        const runTranslatorWithRetry = async (src, tgt, text) => {
+            const pairKey = `${src}->${tgt}`
+            let translator = await getBrowserTranslatorPair(src, tgt)
+            if (!translator) return null
+            try {
+                return await translator.translate(text)
+            } catch (err) {
+                // Recover once from stale/crashed on-device translator process
+                translatorCache.delete(pairKey)
+                if (err?.name === 'UnknownError' || String(err?.message || '').includes('generic failures')) {
+                    translator = await getBrowserTranslatorPair(src, tgt)
+                    if (translator) {
+                        return await translator.translate(text)
+                    }
+                }
+                throw err
+            }
+        }
+        const translateTextWithBrowser = async (text, sourceCandidates, targetLanguage) => {
+            const tgtCandidates = getLangCandidates(targetLanguage, true)
+            let lastErr = null
+
+            // 1. Direct translation across detected source candidates
+            for (const rawSrc of sourceCandidates) {
+                for (const src of getLangCandidates(rawSrc, false)) {
+                    for (const tgt of tgtCandidates) {
+                        if (src.toLowerCase() === tgt.toLowerCase()) continue
+                        try {
+                            const out = await runTranslatorWithRetry(src, tgt, text)
+                            if (typeof out === 'string' && out.trim() !== '') return out
+                        } catch (err) {
+                            lastErr = err
+                            if (err?.name === 'NotAllowedError') throw err
+                        }
+                    }
+                }
+            }
+
+            // 2. Pivot through English if direct non-English pair is unavailable
+            const targetNorm = normalizeLangKey(targetLanguage)
+            if (targetNorm !== 'en') {
+                for (const rawSrc of sourceCandidates) {
+                    const srcNorm = normalizeLangKey(rawSrc)
+                    if (!srcNorm || srcNorm === 'en') continue
+                    for (const src of getLangCandidates(rawSrc, false)) {
+                        try {
+                            const enText = await runTranslatorWithRetry(src, 'en', text)
+                            if (typeof enText === 'string' && enText.trim() !== '') {
+                                for (const tgt of tgtCandidates) {
+                                    const out = await runTranslatorWithRetry('en', tgt, enText)
+                                    if (typeof out === 'string' && out.trim() !== '') return out
+                                }
+                            }
+                        } catch (err) {
+                            lastErr = err
+                            if (err?.name === 'NotAllowedError') throw err
+                        }
+                    }
+                }
+            }
+
+            throw lastErr || new Error(`Unsupported language pair: ${sourceCandidates[0] || 'auto'} → ${targetLanguage}`)
+        }
+        const clearPendingGesture = (cellKey) => {
+            if (translatePendingGesture.value[cellKey]) {
+                const next = { ...translatePendingGesture.value }
+                delete next[cellKey]
+                translatePendingGesture.value = next
+            }
+        }
+        const translateSingleCell = async (row, col, { force = false, interactive = false } = {}) => {
+            if (!row || !col || col.type !== 'translate' || !col.sourceCol) return { changed: false }
+            const cellKey = `${row.id}-${col.id}`
+            const cacheKey = `${currentStorageKey.value}:${cellKey}`
+            const rawVal = row[col.sourceCol]
+            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            const targetLang = col.targetLang || currentLanguage.value || 'en'
+
+            if (!sourceText) {
+                clearPendingGesture(cellKey)
+                lastTranslatedSourceMap.delete(cacheKey)
+                if (row[col.id]) {
+                    row[col.id] = ''
+                    return { changed: true }
+                }
+                return { changed: false }
+            }
+
+            // Pure numbers / symbols need no translation
+            if (!/\p{L}/u.test(sourceText)) {
+                clearPendingGesture(cellKey)
+                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                if (row[col.id] !== sourceText) {
+                    row[col.id] = sourceText
+                    return { changed: true }
+                }
+                return { changed: false }
+            }
+
+            const prev = lastTranslatedSourceMap.get(cacheKey)
+            if (!force) {
+                if (prev && prev.source === sourceText && prev.targetLang === targetLang && row[col.id]) {
+                    return { changed: false }
+                }
+                if (!prev && row[col.id]) {
+                    lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                    return { changed: false }
+                }
+            }
+
+            if (translatingCells.value[cellKey]) return { changed: false }
+
+            if (!hasBuiltInBrowserTranslator()) {
+                if (interactive) {
+                    showConfirm(translate('Your browser does not support built-in translation (Chrome 138+ required).'), 1)
+                }
+                return { changed: false, unsupported: true }
+            }
+
+            translatingCells.value = { ...translatingCells.value, [cellKey]: true }
+            try {
+                const sourceCandidates = await detectSourceLanguages(sourceText)
+                const primarySource = sourceCandidates[0]
+                if (primarySource && isSameLang(primarySource, targetLang)) {
+                    clearPendingGesture(cellKey)
+                    lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                    if (row[col.id] !== sourceText) {
+                        row[col.id] = sourceText
+                        return { changed: true }
+                    }
+                    return { changed: false }
+                }
+
+                const translatedText = await translateTextWithBrowser(sourceText, sourceCandidates, targetLang)
+                const latestVal = row[col.sourceCol]
+                const latestSource = (Array.isArray(latestVal) ? latestVal.join(', ') : String(latestVal ?? '')).trim()
+                if (latestSource !== sourceText) {
+                    return { changed: false }
+                }
+                clearPendingGesture(cellKey)
+                if (typeof translatedText === 'string' && translatedText.trim() !== '') {
+                    lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                    if (row[col.id] !== translatedText) {
+                        row[col.id] = translatedText
+                        return { changed: true }
+                    }
+                }
+                return { changed: false }
+            } catch (err) {
+                if (err?.name === 'NotAllowedError') {
+                    translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
+                    return { changed: false, needsGesture: true }
+                }
+                console.warn('Translation error:', err)
+                if (!interactive) {
+                    translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
+                } else {
+                    showConfirm('❌ ' + translate('Translation failed.') + (err?.message ? ` (${err.message})` : ''), 1)
+                }
+                return { changed: false, error: err }
+            } finally {
+                const next = { ...translatingCells.value }
+                delete next[cellKey]
+                translatingCells.value = next
+            }
+        }
+        const translateColumnRows = async (col, { force = false, interactive = false } = {}) => {
+            if (!col || col.type !== 'translate' || !col.sourceCol) return
+            if (interactive && !hasBuiltInBrowserTranslator()) {
+                showConfirm(translate('Your browser does not support built-in translation (Chrome 138+ required).'), 1)
+                return
+            }
+            const colLockKey = `${currentStorageKey.value}:${col.id}`
+            if (activeColumnTranslations.has(colLockKey)) return
+            activeColumnTranslations.add(colLockKey)
+            let anyChanged = false
+            try {
+                for (const row of rows.value) {
+                    const res = await translateSingleCell(row, col, { force, interactive: false })
+                    if (res.changed) {
+                        anyChanged = true
+                        triggerRef(rows)
+                    }
+                    if (res.unsupported) break
+                }
+                if (anyChanged) {
+                    updatedAt.value = Date.now()
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+            } finally {
+                activeColumnTranslations.delete(colLockKey)
+            }
+        }
+        const scheduleAutoTranslateForCell = (row, sourceColId, immediate = false) => {
+            const dependentCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol === sourceColId)
+            if (!dependentCols.length) return
+            const timerKey = `${row.id}-${sourceColId}`
+            if (rowTranslateTimers.has(timerKey)) {
+                clearTimeout(rowTranslateTimers.get(timerKey))
+                rowTranslateTimers.delete(timerKey)
+            }
+            const run = async () => {
+                rowTranslateTimers.delete(timerKey)
+                let anyChanged = false
+                for (const tCol of dependentCols) {
+                    const res = await translateSingleCell(row, tCol, { force: true, interactive: false })
+                    if (res.changed) anyChanged = true
+                }
+                if (anyChanged) {
+                    updatedAt.value = Date.now()
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+            }
+            if (immediate) {
+                run()
+            } else {
+                rowTranslateTimers.set(timerKey, setTimeout(run, 450))
+            }
+        }
+        const syncAllTranslateColumns = debounce(async () => {
+            const tCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol)
+            if (!tCols.length) return
+            for (const tCol of tCols) {
+                await translateColumnRows(tCol, { force: false, interactive: false })
+            }
+        }, 250)
+        const handleTranslateCellClick = async (row, col) => {
+            const cellKey = `${row.id}-${col.id}`
+            const rawVal = row[col.sourceCol]
+            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            if (translatePendingGesture.value[cellKey] || (!row[col.id] && sourceText)) {
+                const res = await translateSingleCell(row, col, { force: true, interactive: true })
+                if (res.changed) {
+                    updatedAt.value = Date.now()
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+                if (!res.error && !res.unsupported && !res.needsGesture) {
+                    await translateColumnRows(col, { force: false, interactive: false })
+                }
+                return
+            }
+            if (row[col.id]) {
+                speakFeedback(row[col.id])
+            }
         }
 
         const getDate = () => {
@@ -5245,6 +5733,8 @@ export default {
                     const inputEl = inputRefs.value[`${row.id}-${col.id}`]
                     if (inputEl) inputEl.value = cleaned
                 }
+            } else {
+                scheduleAutoTranslateForCell(row, col.id, false)
             }
         }
 
@@ -5557,7 +6047,10 @@ export default {
         }
 
         const removeColumn = async (idToRemove) => {
-            if (columns.value.some(col => isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove))) {
+            if (columns.value.some(col =>
+                (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
+                (col.type === 'translate' && col.sourceCol === idToRemove)
+            )) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
             if (!await showConfirm(translate("Are you sure you want to delete this column?"))) return
@@ -5726,7 +6219,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'photo') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'photo') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -5921,6 +6414,9 @@ export default {
                         const colC = columns.value.find(col => col.id === c.opC)
                         meta += `|${colC?.label || ''}`
                     }
+                } else if (c.type === 'translate') {
+                    const srcCol = columns.value.find(col => col.id === c.sourceCol)
+                    meta += `|${srcCol?.label || ''}|${c.targetLang || 'en'}`
                 }
                 return `${c.label} [${meta}]`
             })
@@ -6082,7 +6578,7 @@ export default {
 
                 let existingCol = columns.value.find(c => c.label === key)
                 if (!existingCol) {
-                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null
+                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null, targetSourceCol = null, targetLang = null
 
                     if (parsedColumnMeta[key]) {
                         const metaStr = parsedColumnMeta[key].type
@@ -6094,6 +6590,10 @@ export default {
                             if (parts[0] === 'multiply3' && parts.length === 4) {
                                 targetOpC = columns.value.find(col => col.label === parts[3])?.id
                             }
+                        } else if (parts[0] === 'translate') {
+                            targetType = 'translate'
+                            targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
+                            targetLang = parts[2] || currentLanguage.value || 'en'
                         } else {
                             targetType = metaStr
                         }
@@ -6118,7 +6618,8 @@ export default {
                         type: targetType,
                         opA: targetOpA,
                         opB: targetOpB,
-                        opC: targetOpC
+                        opC: targetOpC,
+                        ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {})
                     })
                 }
             })
@@ -7684,7 +8185,10 @@ export default {
         const saveInput = (row, col) => {
             const inputEl = inputRefs.value[`${row.id}-${col.id}`]
             if (!inputEl) return
-            if (inputEl.value !== tempKey.value) onDataEdited()
+            if (inputEl.value !== tempKey.value) {
+                onDataEdited()
+                scheduleAutoTranslateForCell(row, col.id, true)
+            }
             tempKey.value = null
         }
 
@@ -9110,7 +9614,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'photo') {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo') {
                             let newVal = ''
                             if (isSingleValue) {
                                 newVal = singleValue
@@ -9167,7 +9671,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         if (targetColIndex < columns.value.length) {
                             const targetColId = columns.value[targetColIndex].id
                             const colType = columns.value[targetColIndex].type
-                            if (!isCalcType(colType) && colType !== 'photo') {
+                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo') {
                                 let finalVal = cellValue.trim()
                                 if (colType === 'tags') {
                                     finalVal = normalizeTags(finalVal)
@@ -9351,7 +9855,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'photo' && filteredRows.value[r]) {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo' && filteredRows.value[r]) {
                             if (colType === 'tags') filteredRows.value[r][colId] = []
                             else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
                             else if (colType === 'checkbox') filteredRows.value[r][colId] = false
@@ -9619,6 +10123,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             hasNumberColumn,
             newColLabel,
             newColType,
+            translateSourceCol,
+            translatableColumns,
+            newColTargetLang,
+            translateTargetLangOptions,
+            translatingCells,
+            translatePendingGesture,
+            handleTranslateCellClick,
             typeOptions,
             formulaA,
             formulaB,

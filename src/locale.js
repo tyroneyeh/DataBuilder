@@ -227,7 +227,15 @@ export const translations = {
         "This Month Total": "本月總計",
         "Include TY-DB link": "附帶 TY-DB 連結",
         "Already up to date!": "資料已是最新，無需同步！",
-        "Include total": "加入總計"
+        "Include total": "加入總計",
+        "Translate": "翻譯",
+        "Target Language": "目標語言",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "您的瀏覽器不支援內建翻譯功能（需使用 Chrome 138 以上版本）。",
+        "Translation failed.": "翻譯失敗。",
+        "Source Column": "來源欄位",
+        "Please select a source column!": "請選擇來源欄位!",
+        "Translating...": "翻譯中...",
+        "Click to translate": "點擊翻譯"
     },
     "zh-CN": {
         "Action": "操作",
@@ -455,7 +463,15 @@ export const translations = {
         "This Month Total": "本月总计",
         "Include TY-DB link": "附带 TY-DB 链接",
         "Already up to date!": "数据已是最新，无需同步！",
-        "Include total": "包含总计"
+        "Include total": "包含总计",
+        "Translate": "翻译",
+        "Target Language": "目标语言",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "您的浏览器不支持内置翻译功能（需使用 Chrome 138 及以上版本）。",
+        "Translation failed.": "翻译失败。",
+        "Source Column": "来源列",
+        "Please select a source column!": "请选择来源列!",
+        "Translating...": "翻译中...",
+        "Click to translate": "点击翻译"
     },
     "ja": {
         "Action": "操作",
@@ -683,7 +699,15 @@ export const translations = {
         "This Month Total": "今月の合計",
         "Include TY-DB link": "TY-DB リンクを含める",
         "Already up to date!": "すでに最新の状態です！",
-        "Include total": "合計を含める"
+        "Include total": "合計を含める",
+        "Translate": "翻訳",
+        "Target Language": "翻訳先の言語",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "お使いのブラウザは内蔵翻訳機能に対応していません（Chrome 138以降が必要）。",
+        "Translation failed.": "翻訳に失敗しました。",
+        "Source Column": "翻訳元の列",
+        "Please select a source column!": "翻訳元の列を選択してください!",
+        "Translating...": "翻訳中...",
+        "Click to translate": "クリックして翻訳"
     },
     "ko": {
         "Action": "작업",
@@ -911,7 +935,15 @@ export const translations = {
         "This Month Total": "이번 달 합계",
         "Include TY-DB link": "TY-DB 링크 포함",
         "Already up to date!": "이미 최신 상태입니다!",
-        "Include total": "합계 포함"
+        "Include total": "합계 포함",
+        "Translate": "번역",
+        "Target Language": "대상 언어",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "브라우저가 내장 번역 기능을 지원하지 않습니다 (Chrome 138 이상 필요).",
+        "Translation failed.": "번역에 실패했습니다.",
+        "Source Column": "원본 열",
+        "Please select a source column!": "원본 열을 선택하세요!",
+        "Translating...": "번역 중...",
+        "Click to translate": "클릭하여 번역"
     },
     "es": {
         "Action": "Acción",
@@ -1139,7 +1171,15 @@ export const translations = {
         "This Month Total": "Total de este mes",
         "Include TY-DB link": "Incluir enlace de TY-DB",
         "Already up to date!": "¡Ya está actualizado!",
-        "Include total": "Incluir total"
+        "Include total": "Incluir total",
+        "Translate": "Traducir",
+        "Target Language": "Idioma de destino",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Tu navegador no admite la traducción integrada (se requiere Chrome 138+).",
+        "Translation failed.": "Error al traducir.",
+        "Source Column": "Columna de origen",
+        "Please select a source column!": "¡Por favor selecciona una columna de origen!",
+        "Translating...": "Traduciendo...",
+        "Click to translate": "Haz clic para traducir"
     },
     "fr": {
         "Action": "Action",
@@ -1367,7 +1407,15 @@ export const translations = {
         "This Month Total": "Total du mois",
         "Include TY-DB link": "Inclure le lien TY-DB",
         "Already up to date!": "Déjà à jour !",
-        "Include total": "Inclure le total"
+        "Include total": "Inclure le total",
+        "Translate": "Traduire",
+        "Target Language": "Langue cible",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Votre navigateur ne prend pas en charge la traduction intégrée (Chrome 138+ requis).",
+        "Translation failed.": "Échec de la traduction.",
+        "Source Column": "Colonne source",
+        "Please select a source column!": "Veuillez sélectionner une colonne source !",
+        "Translating...": "Traduction...",
+        "Click to translate": "Cliquer pour traduire"
     },
     "de": {
         "Action": "Aktion",
@@ -1595,7 +1643,15 @@ export const translations = {
         "This Month Total": "Monatssumme",
         "Include TY-DB link": "TY-DB-Link einbeziehen",
         "Already up to date!": "Bereits auf dem neuesten Stand!",
-        "Include total": "Gesamtbetrag einschließen"
+        "Include total": "Gesamtbetrag einschließen",
+        "Translate": "Übersetzen",
+        "Target Language": "Zielsprache",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Ihr Browser unterstützt keine integrierte Übersetzung (Chrome 138+ erforderlich).",
+        "Translation failed.": "Übersetzung fehlgeschlagen.",
+        "Source Column": "Quellspalte",
+        "Please select a source column!": "Bitte wähle eine Quellspalte aus!",
+        "Translating...": "Übersetzen...",
+        "Click to translate": "Zum Übersetzen klicken"
     },
     "it": {
         "Action": "Azione",
@@ -1823,7 +1879,15 @@ export const translations = {
         "This Month Total": "Totale del mese",
         "Include TY-DB link": "Includi link TY-DB",
         "Already up to date!": "Già aggiornato!",
-        "Include total": "Includi totale"
+        "Include total": "Includi totale",
+        "Translate": "Traduci",
+        "Target Language": "Lingua di destinazione",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Il tuo browser non supporta la traduzione integrata (richiesto Chrome 138+).",
+        "Translation failed.": "Traduzione non riuscita.",
+        "Source Column": "Colonna di origine",
+        "Please select a source column!": "Seleziona una colonna di origine!",
+        "Translating...": "Traduzione...",
+        "Click to translate": "Clicca per tradurre"
     },
     "pt": {
         "Action": "Ação",
@@ -2051,7 +2115,15 @@ export const translations = {
         "This Month Total": "Total deste mês",
         "Include TY-DB link": "Incluir link do TY-DB",
         "Already up to date!": "Já está atualizado!",
-        "Include total": "Incluir total"
+        "Include total": "Incluir total",
+        "Translate": "Traduzir",
+        "Target Language": "Idioma de destino",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Seu navegador não oferece suporte à tradução integrada (requer Chrome 138+).",
+        "Translation failed.": "Falha na tradução.",
+        "Source Column": "Coluna de origem",
+        "Please select a source column!": "Selecione uma coluna de origem!",
+        "Translating...": "Traduzindo...",
+        "Click to translate": "Clique para traduzir"
     },
     "ru": {
         "Action": "Действие",
@@ -2279,7 +2351,15 @@ export const translations = {
         "This Month Total": "Итог за месяц",
         "Include TY-DB link": "Добавить ссылку TY-DB",
         "Already up to date!": "Данные уже актуальны!",
-        "Include total": "Включить итог"
+        "Include total": "Включить итог",
+        "Translate": "Перевод",
+        "Target Language": "Язык перевода",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Ваш браузер не поддерживает встроенный перевод (требуется Chrome 138+).",
+        "Translation failed.": "Ошибка перевода.",
+        "Source Column": "Исходный столбец",
+        "Please select a source column!": "Пожалуйста, выберите исходный столбец!",
+        "Translating...": "Перевод...",
+        "Click to translate": "Нажмите для перевода"
     },
     "id": {
         "Action": "Tindakan",
@@ -2507,7 +2587,15 @@ export const translations = {
         "This Month Total": "Total Bulan Ini",
         "Include TY-DB link": "Sertakan tautan TY-DB",
         "Already up to date!": "Sudah terbaru!",
-        "Include total": "Sertakan total"
+        "Include total": "Sertakan total",
+        "Translate": "Terjemahkan",
+        "Target Language": "Bahasa Target",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Browser Anda tidak mendukung terjemahan bawaan (diperlukan Chrome 138+).",
+        "Translation failed.": "Terjemahan gagal.",
+        "Source Column": "Kolom Sumber",
+        "Please select a source column!": "Silakan pilih kolom sumber!",
+        "Translating...": "Menerjemahkan...",
+        "Click to translate": "Klik untuk menerjemahkan"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2735,7 +2823,15 @@ export const translations = {
         "This Month Total": "Tổng tháng này",
         "Include TY-DB link": "Kèm liên kết TY-DB",
         "Already up to date!": "Dữ liệu đã mới nhất!",
-        "Include total": "Bao gồm tổng cộng"
+        "Include total": "Bao gồm tổng cộng",
+        "Translate": "Dịch",
+        "Target Language": "Ngôn ngữ đích",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Trình duyệt của bạn không hỗ trợ dịch tích hợp (yêu cầu Chrome 138+).",
+        "Translation failed.": "Dịch thất bại.",
+        "Source Column": "Cột nguồn",
+        "Please select a source column!": "Vui lòng chọn cột nguồn!",
+        "Translating...": "Đang dịch...",
+        "Click to translate": "Nhấn để dịch"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2963,7 +3059,15 @@ export const translations = {
         "This Month Total": "ยอดรวมเดือนนี้",
         "Include TY-DB link": "แนบลิงก์ TY-DB",
         "Already up to date!": "ข้อมูลเป็นปัจจุบันแล้ว!",
-        "Include total": "รวมยอดทั้งหมด"
+        "Include total": "รวมยอดทั้งหมด",
+        "Translate": "แปลภาษา",
+        "Target Language": "ภาษาเป้าหมาย",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "เบราว์เซอร์ของคุณไม่รองรับการแปลในตัว (ต้องใช้ Chrome 138 ขึ้นไป)",
+        "Translation failed.": "การแปลล้มเหลว",
+        "Source Column": "คอลัมน์ต้นทาง",
+        "Please select a source column!": "กรุณาเลือกคอลัมน์ต้นทาง!",
+        "Translating...": "กำลังแปล...",
+        "Click to translate": "คลิกเพื่อแปล"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3191,7 +3295,15 @@ export const translations = {
         "This Month Total": "Jumlah Bulan Ini",
         "Include TY-DB link": "Sertakan pautan TY-DB",
         "Already up to date!": "Sudah terkini!",
-        "Include total": "Sertakan jumlah"
+        "Include total": "Sertakan jumlah",
+        "Translate": "Terjemah",
+        "Target Language": "Bahasa Sasaran",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Pelayar anda tidak menyokong terjemahan terbina dalam (memerlukan Chrome 138+).",
+        "Translation failed.": "Terjemahan gagal.",
+        "Source Column": "Lajur Sumber",
+        "Please select a source column!": "Sila pilih lajur sumber!",
+        "Translating...": "Menterjemah...",
+        "Click to translate": "Klik untuk terjemah"
     },
     "tr": {
         "Action": "İşlem",
@@ -3419,7 +3531,15 @@ export const translations = {
         "This Month Total": "Bu Ay Toplam",
         "Include TY-DB link": "TY-DB bağlantısını ekle",
         "Already up to date!": "Zaten güncel!",
-        "Include total": "Toplamı dahil et"
+        "Include total": "Toplamı dahil et",
+        "Translate": "Çevir",
+        "Target Language": "Hedef Dil",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Tarayıcınız yerleşik çeviriyi desteklemiyor (Chrome 138+ gerekli).",
+        "Translation failed.": "Çeviri başarısız oldu.",
+        "Source Column": "Kaynak Sütun",
+        "Please select a source column!": "Lütfen bir kaynak sütun seçin!",
+        "Translating...": "Çevriliyor...",
+        "Click to translate": "Çevirmek için tıklayın"
     },
     "ar": {
         "Action": "إجراء",
@@ -3647,7 +3767,15 @@ export const translations = {
         "This Month Total": "إجمالي هذا الشهر",
         "Include TY-DB link": "تضمين رابط TY-DB",
         "Already up to date!": "البيانات محدثة بالفعل!",
-        "Include total": "تضمين الإجمالي"
+        "Include total": "تضمين الإجمالي",
+        "Translate": "ترجمة",
+        "Target Language": "اللغة الهدف",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "متصفحك لا يدعم الترجمة المدمجة (يتطلب Chrome 138 أو أحدث).",
+        "Translation failed.": "فشلت الترجمة.",
+        "Source Column": "العمود المصدر",
+        "Please select a source column!": "يرجى اختيار العمود المصدر!",
+        "Translating...": "جاري الترجمة...",
+        "Click to translate": "انقر للترجمة"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3875,7 +4003,15 @@ export const translations = {
         "This Month Total": "इस महीने का कुल",
         "Include TY-DB link": "TY-DB लिंक शामिल करें",
         "Already up to date!": "डेटा पहले से ही नवीनतम है!",
-        "Include total": "कुल शामिल करें"
+        "Include total": "कुल शामिल करें",
+        "Translate": "अनुवाद",
+        "Target Language": "लक्ष्य भाषा",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "आपका ब्राउज़र अंतर्निहित अनुवाद का समर्थन नहीं करता है (Chrome 138+ आवश्यक)।",
+        "Translation failed.": "अनुवाद विफल रहा।",
+        "Source Column": "स्रोत कॉलम",
+        "Please select a source column!": "कृपया एक स्रोत कॉलम चुनें!",
+        "Translating...": "अनुवाद हो रहा है...",
+        "Click to translate": "अनुवाद के लिए क्लिक करें"
     },
     "pl": {
         "Action": "Akcja",
@@ -4103,7 +4239,15 @@ export const translations = {
         "This Month Total": "Suma w tym miesiącu",
         "Include TY-DB link": "Dołącz link TY-DB",
         "Already up to date!": "Dane są już aktualne!",
-        "Include total": "Dołącz sumę"
+        "Include total": "Dołącz sumę",
+        "Translate": "Tłumacz",
+        "Target Language": "Język docelowy",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Twoja przeglądarka nie obsługuje wbudowanego tłumaczenia (wymagany Chrome 138+).",
+        "Translation failed.": "Tłumaczenie nie powiodło się.",
+        "Source Column": "Kolumna źródłowa",
+        "Please select a source column!": "Wybierz kolumnę źródłową!",
+        "Translating...": "Tłumaczenie...",
+        "Click to translate": "Kliknij, aby przetłumaczyć"
     },
     "nl": {
         "Action": "Actie",
@@ -4331,7 +4475,15 @@ export const translations = {
         "This Month Total": "Maandtotaal",
         "Include TY-DB link": "TY-DB-link bijvoegen",
         "Already up to date!": "Al helemaal up-to-date!",
-        "Include total": "Totaal opnemen"
+        "Include total": "Totaal opnemen",
+        "Translate": "Vertalen",
+        "Target Language": "Doeltaal",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Uw browser ondersteunt geen ingebouwde vertaling (Chrome 138+ vereist).",
+        "Translation failed.": "Vertaling mislukt.",
+        "Source Column": "Bronkolom",
+        "Please select a source column!": "Selecteer een bronkolom!",
+        "Translating...": "Vertalen...",
+        "Click to translate": "Klik om te vertalen"
     },
     "uk": {
         "Action": "Дія",
@@ -4559,7 +4711,15 @@ export const translations = {
         "This Month Total": "Підсумок за місяць",
         "Include TY-DB link": "Додати посилання TY-DB",
         "Already up to date!": "Дані вже актуальні!",
-        "Include total": "Додати підсумок"
+        "Include total": "Додати підсумок",
+        "Translate": "Переклад",
+        "Target Language": "Цільова мова",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Ваш браузер не підтримує вбудований переклад (потрібен Chrome 138+).",
+        "Translation failed.": "Помилка перекладу.",
+        "Source Column": "Вихідний стовпець",
+        "Please select a source column!": "Будь ласка, виберіть вихідний стовпець!",
+        "Translating...": "Переклад...",
+        "Click to translate": "Натисніть для перекладу"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4787,7 +4947,15 @@ export const translations = {
         "This Month Total": "Kabuuan Ngayong Buwan",
         "Include TY-DB link": "Isama ang link ng TY-DB",
         "Already up to date!": "Napapanahon na!",
-        "Include total": "Isama ang kabuuan"
+        "Include total": "Isama ang kabuuan",
+        "Translate": "Isalin",
+        "Target Language": "Target na Wika",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Hindi sinusuportahan ng iyong browser ang built-in na pagsasalin (kailangan ng Chrome 138+).",
+        "Translation failed.": "Nabigo ang pagsasalin.",
+        "Source Column": "Pinagmulang Kolum",
+        "Please select a source column!": "Mangyaring pumili ng pinagmulang kolum!",
+        "Translating...": "Isinasalin...",
+        "Click to translate": "I-click upang isalin"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5015,7 +5183,15 @@ export const translations = {
         "This Month Total": "Månadens summa",
         "Include TY-DB link": "Inkludera TY-DB-länk",
         "Already up to date!": "Redan uppdaterad!",
-        "Include total": "Inkludera totalt"
+        "Include total": "Inkludera totalt",
+        "Translate": "Översätt",
+        "Target Language": "Målspråk",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Din webbläsare stöder inte inbyggd översättning (Chrome 138+ krävs).",
+        "Translation failed.": "Översättningen misslyckades.",
+        "Source Column": "Källkolumn",
+        "Please select a source column!": "Välj en källkolumn!",
+        "Translating...": "Översätter...",
+        "Click to translate": "Klicka för att översätta"
     },
     "cs": {
         "Action": "Akce",
@@ -5243,7 +5419,15 @@ export const translations = {
         "This Month Total": "Součet tohoto měsíce",
         "Include TY-DB link": "Zahrnout odkaz TY-DB",
         "Already up to date!": "Již aktuální!",
-        "Include total": "Zahrnout celkem"
+        "Include total": "Zahrnout celkem",
+        "Translate": "Přeložit",
+        "Target Language": "Cílový jazyk",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "Váš prohlížeč nepodporuje vestavěný překlad (vyžaduje Chrome 138+).",
+        "Translation failed.": "Překlad se nezdařil.",
+        "Source Column": "Zdrojový sloupec",
+        "Please select a source column!": "Vyberte prosím zdrojový sloupec!",
+        "Translating...": "Překládání...",
+        "Click to translate": "Klikněte pro překlad"
     },
     "ta": {
         "Action": "செயல்",
@@ -5471,6 +5655,14 @@ export const translations = {
         "This Month Total": "இந்த மாத மொத்தம்",
         "Include TY-DB link": "TY-DB இணைப்பைச் சேர்",
         "Already up to date!": "ஏற்கனவே புதுப்பிக்கப்பட்டுள்ளது!",
-        "Include total": "மொத்தத்தைச் சேர்"
+        "Include total": "மொத்தத்தைச் சேர்",
+        "Translate": "மொழிபெயர்",
+        "Target Language": "இலக்கு மொழி",
+        "Your browser does not support built-in translation (Chrome 138+ required).": "உங்கள் உலாவி உள்ளமைக்கப்பட்ட மொழிபெயர்ப்பை ஆதரிக்கவில்லை (Chrome 138+ தேவை).",
+        "Translation failed.": "மொழிபெயர்ப்பு தோல்வியடைந்தது.",
+        "Source Column": "மூல நெடுவரிசை",
+        "Please select a source column!": "மூல நெடுவரிசையைத் தேர்ந்தெடுக்கவும்!",
+        "Translating...": "மொழிபெயர்க்கிறது...",
+        "Click to translate": "மொழிபெயர்க்க கிளிக் செய்க"
     }
 }
