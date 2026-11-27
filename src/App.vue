@@ -993,7 +993,7 @@
 
             <div class="relative w-full" :class="{'text-right': isNumericType(col.type)}">
 
-                <div v-if="isNumericType(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="(isChartPrivacyMode && col.id === selectedChartNumColId) ? '***' : (columnTotals[col.id] || 0).toLocaleString()">
+                <div v-if="isNumericType(col.type) && !isPrinting" class="relative text-blue-700 dark:text-blue-400 font-bold" :data-tooltip="isChartPrivacyMode ? '***' : (columnTotals[col.id] || 0).toLocaleString()">
                     <div v-if="dateRangeOpenState[col.id]"
                         @click.stop="toggleDateFilter($event, col.id, false)"
                         class="fixed inset-0 cursor-default"
@@ -1003,7 +1003,7 @@
                         <input
                             type="text"
                             inputmode="decimal"
-                            :value="(dateRangeOpenState[col.id] || (dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== ''))) ? (dateRangeFilters[col.id]?.start || '') : ((isChartPrivacyMode && col.id === selectedChartNumColId) ? '***' : formatNumber(columnTotals[col.id]))"
+                            :value="(dateRangeOpenState[col.id] || (dateRangeFilters[col.id] && (dateRangeFilters[col.id].start !== '' || dateRangeFilters[col.id].end !== ''))) ? (dateRangeFilters[col.id]?.start || '') : (isChartPrivacyMode ? '***' : formatNumber(columnTotals[col.id]))"
                             @input="updateDateRange(col.id, 'start', $event.target.value)"
                             @focus="toggleDateFilter($event, col.id, true)"
                             @click.stop="toggleDateFilter($event, col.id, true)"
@@ -1214,7 +1214,7 @@
                     </template>
                     <template v-else>
                         <span class="text-lg font-bold text-blue-700 dark:text-blue-400">
-                            {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || ((isChartPrivacyMode && col.id === selectedChartNumColId) ? '***' : formatNumber(columnTotals[col.id]))) }}
+                            {{ activeFilterCol === col.id ? draftFilterText : (columnFilters[col.id] || (isChartPrivacyMode ? '***' : formatNumber(columnTotals[col.id]))) }}
                         </span>
                     </template>
                 </div>
