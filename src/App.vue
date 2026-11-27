@@ -289,7 +289,14 @@
                             class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                         >
 
-                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500')">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : getColumnTypeLabel(col.type) }})</span>
+                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500'))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : ''">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
+                        <button v-if="!isPrinting && col.type === 'exchange' && !(Number(col.customRate) > 0)"
+                            type="button"
+                            @pointerdown.stop
+                            @click.stop="refreshExchangeColumn(col)"
+                            class="shrink-0 ml-0.5 text-xs text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
+                            :data-tooltip="getExchangeHeaderTooltip(col)"
+                        >{{ exchangeLoadingBases[(col.fromCurrency || '').toLowerCase()] ? '⏳' : '🔄' }}</button>
                     </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -368,6 +375,13 @@
                         <span v-if="translatingCells[`${row.id}-${col.id}`]" class="text-xs text-indigo-400 dark:text-indigo-400 animate-pulse">⏳ {{ translate('Translating...') }}</span>
                         <span v-else-if="translatePendingGesture[`${row.id}-${col.id}`]" class="text-xs text-amber-600 dark:text-amber-400 underline">🌐 {{ translate('Click to translate') }}</span>
                         <span v-else class="truncate">{{ row[col.id] || '' }}</span>
+                    </div>
+                    <div v-else-if="col.type === 'exchange'"
+                        class="w-auto sm:w-full print:w-full p-2 mr-6 print:text-black print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center text-amber-700 dark:text-amber-300 font-semibold bg-amber-50/50 dark:bg-amber-900/30 cursor-pointer"
+                        :data-tooltip="getExchangeCellTooltip(row, col)"
+                        @click="speakFeedback($event.target.innerText)">
+                        <span v-if="exchangeLoadingBases[(col.fromCurrency || '').toLowerCase()] && !getEffectiveExchangeRate(col)" class="text-xs text-amber-500 animate-pulse">⏳</span>
+                        <span v-else>{{ formatNumber(getRowNumericValue(row, col)) }}</span>
                     </div>
                     <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
                         <template v-if="isPrinting">
@@ -871,7 +885,7 @@
             class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
-                isCalcType(col.type) ? 'sm:justify-end' : 'sm:justify-start'
+                isCalcType(col.type) || col.type === 'exchange' ? 'sm:justify-end' : 'sm:justify-start'
             ]">
 
             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
@@ -1437,6 +1451,20 @@
                         <select v-model="newColTargetLang" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 dark:text-white text-base">
                             <option v-for="lang in translateTargetLangOptions" :key="lang.value" :value="lang.value">{{ lang.label }}</option>
                         </select>
+                    </div>
+                    <div v-else-if="newColType === 'exchange'" class="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-amber-50 dark:bg-amber-900/30 px-2 py-1.5 rounded-md border border-amber-200 dark:border-amber-800 flex-[2] min-w-0">
+                        <select v-model="exchangeSourceCol" class="flex-1 min-w-[90px] border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option value="" disabled>{{ translate('Source Column') }}</option>
+                            <option v-for="c in exchangeSourceColumns" :key="'X'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <select v-model="exchangeFromCurrency" class="w-24 shrink-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option v-for="cur in currencyOptions" :key="'F'+cur.code" :value="cur.code">{{ cur.code }}</option>
+                        </select>
+                        <span class="text-gray-500 dark:text-gray-400 font-bold shrink-0">→</span>
+                        <select v-model="exchangeToCurrency" class="w-24 shrink-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option v-for="cur in currencyOptions" :key="'To'+cur.code" :value="cur.code">{{ cur.code }}</option>
+                        </select>
+                        <input v-model="exchangeCustomRate" type="number" step="any" min="0" :placeholder="translate('Auto rate')" class="w-24 shrink-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-sm">
                     </div>
                     <div class="shrink-0 w-full md:w-auto">
                         <button @click="addColumn" class="w-full bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap px-5 py-2 rounded-md transition-colors font-medium shadow-sm h-[42px]">
@@ -2152,6 +2180,51 @@ export default {
         ]
         const translatingCells = ref({})
         const translatePendingGesture = ref({})
+        const EXCHANGE_CACHE_KEY = 'ty_exchange_rates_cache'
+        const EXCHANGE_CACHE_TTL_MS = 6 * 60 * 60 * 1000
+        const currencyOptions = [
+            { code: 'TWD', label: 'TWD (NT$)' },
+            { code: 'USD', label: 'USD ($)' },
+            { code: 'JPY', label: 'JPY (¥)' },
+            { code: 'KRW', label: 'KRW (₩)' },
+            { code: 'EUR', label: 'EUR (€)' },
+            { code: 'CNY', label: 'CNY (¥)' },
+            { code: 'HKD', label: 'HKD (HK$)' },
+            { code: 'GBP', label: 'GBP (£)' },
+            { code: 'THB', label: 'THB (฿)' },
+            { code: 'SGD', label: 'SGD (S$)' },
+            { code: 'AUD', label: 'AUD (A$)' },
+            { code: 'CAD', label: 'CAD (C$)' },
+            { code: 'VND', label: 'VND (₫)' },
+            { code: 'MYR', label: 'MYR (RM)' },
+            { code: 'IDR', label: 'IDR (Rp)' },
+            { code: 'PHP', label: 'PHP (₱)' },
+            { code: 'CHF', label: 'CHF' },
+            { code: 'NZD', label: 'NZD (NZ$)' },
+            { code: 'INR', label: 'INR (₹)' }
+        ]
+        const defaultCurrencyByLang = {
+            'zh-TW': 'TWD', 'zh-CN': 'CNY', 'ja': 'JPY', 'ko': 'KRW',
+            'fr': 'EUR', 'de': 'EUR', 'es': 'EUR', 'it': 'EUR', 'nl': 'EUR', 'pt': 'EUR',
+            'th': 'THB', 'vi': 'VND', 'id': 'IDR', 'ms': 'MYR', 'tl': 'PHP',
+            'hi': 'INR', 'ta': 'INR', 'en': 'USD'
+        }
+        const defaultToCur = defaultCurrencyByLang[currentLanguage.value] || 'USD'
+        const exchangeSourceCol = ref('')
+        const exchangeFromCurrency = ref(defaultToCur === 'USD' ? 'JPY' : 'USD')
+        const exchangeToCurrency = ref(defaultToCur)
+        const exchangeCustomRate = ref('')
+        const loadCachedExchangeRates = () => {
+            try {
+                const raw = localStorage.getItem(EXCHANGE_CACHE_KEY)
+                return raw ? JSON.parse(raw) : {}
+            } catch {
+                return {}
+            }
+        }
+        const exchangeRates = ref(loadCachedExchangeRates())
+        const exchangeLoadingBases = ref({})
+        const exchangeFetchPromises = new Map()
         const formulaA = ref('')
         const formulaB = ref('')
         const formulaC = ref('')
@@ -2181,7 +2254,7 @@ export default {
         const confirmCancelBtnRef = ref(null)
         const CALC_TYPES = new Set(['multiply', 'multiply3', 'minus', 'add', 'divide'])
         const isCalcType = (type) => CALC_TYPES.has(type)
-        const isNumericType = (type) => type === 'number' || CALC_TYPES.has(type)
+        const isNumericType = (type) => type === 'number' || type === 'exchange' || CALC_TYPES.has(type)
         const getSafeUrl = (raw) => {
             const val = String(raw || '').trim()
             if (!val) return ''
@@ -2261,6 +2334,7 @@ export default {
                 color: 'Color',
                 number: 'Number',
                 translate: 'Translate',
+                exchange: 'Exchange Rate',
                 text: 'Text'
             }
             return translate(labelMap[type] || 'Text')
@@ -2286,6 +2360,9 @@ export default {
             ]
             if (columns.value.some(col => ['text', 'category'].includes(col.type))) {
                 opts.push({value: 'translate', label: translate('Translate')})
+            }
+            if (columns.value.some(col => isNumericType(col.type) && col.type !== 'exchange')) {
+                opts.push({value: 'exchange', label: translate('Exchange Rate')})
             }
             const numCount = columns.value.filter(col => col.type === 'number').length
             if (numCount > 1) {
@@ -2832,6 +2909,12 @@ export default {
                     const preferred = candidates.find(c => c.type === 'text') || candidates[0]
                     translateSourceCol.value = preferred ? preferred.id : ''
                 }
+            } else if (newVal === 'exchange') {
+                const candidates = exchangeSourceColumns.value
+                if (!candidates.some(c => c.id === exchangeSourceCol.value)) {
+                    const preferred = candidates.find(c => isCalcType(c.type)) || candidates[0]
+                    exchangeSourceCol.value = preferred ? preferred.id : ''
+                }
             }
         })
         watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
@@ -2945,6 +3028,7 @@ export default {
 
         const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
         const translatableColumns = computed(() => columns.value.filter(col => ['text', 'category'].includes(col.type)))
+        const exchangeSourceColumns = computed(() => columns.value.filter(col => isNumericType(col.type) && col.type !== 'exchange'))
 
         const areAllExpanded = computed(() => {
             if (rows.value.length === 0) return false
@@ -2979,9 +3063,148 @@ export default {
             }
         }
 
-        const getRowNumericValue = (row, colDef) => {
-            if (!row || !colDef) return 0
+        const getEffectiveExchangeRate = (colDef) => {
+            if (!colDef || colDef.type !== 'exchange') return 0
+            const custom = Number(colDef.customRate)
+            if (Number.isFinite(custom) && custom > 0) return custom
+            const from = String(colDef.fromCurrency || '').toLowerCase()
+            const to = String(colDef.toCurrency || '').toLowerCase()
+            if (!from || !to) return 0
+            if (from === to) return 1
+            const liveRate = Number(exchangeRates.value[from]?.rates?.[to])
+            if (Number.isFinite(liveRate) && liveRate > 0) return liveRate
+            const cached = Number(colDef.cachedRate)
+            return Number.isFinite(cached) && cached > 0 ? cached : 0
+        }
+
+        const getExchangeRateDate = (colDef) => {
+            if (!colDef) return ''
+            const from = String(colDef.fromCurrency || '').toLowerCase()
+            return exchangeRates.value[from]?.date || colDef.rateDate || ''
+        }
+
+        const getExchangeHeaderTooltip = (colDef) => {
+            if (!colDef || colDef.type !== 'exchange') return ''
+            const rate = getEffectiveExchangeRate(colDef)
+            const from = colDef.fromCurrency || ''
+            const to = colDef.toCurrency || ''
+            if (!rate) return `${from} → ${to}`
+            const formattedRate = Number(rate.toPrecision(6)).toString()
+            const custom = Number(colDef.customRate)
+            if (Number.isFinite(custom) && custom > 0) {
+                return `1 ${from} = ${formattedRate} ${to} (${translate('Custom')})`
+            }
+            const dateStr = getExchangeRateDate(colDef)
+            return `1 ${from} = ${formattedRate} ${to}${dateStr ? ` · ${dateStr}` : ''}`
+        }
+
+        const getExchangeCellTooltip = (row, colDef) => {
+            const val = getRowNumericValue(row, colDef)
+            const headerTip = getExchangeHeaderTooltip(colDef)
+            const prefix = colDef.toCurrency ? `${colDef.toCurrency} ` : ''
+            return headerTip ? `${prefix}${val.toLocaleString()} (${headerTip})` : `${prefix}${val.toLocaleString()}`
+        }
+
+        const fetchExchangeRatesForBase = async (fromCurrency, { force = false, interactive = false } = {}) => {
+            const base = String(fromCurrency || '').trim().toLowerCase()
+            if (!base) return null
+            const existing = exchangeRates.value[base]
+            if (!force && existing && existing.rates && (Date.now() - (existing.fetchedAt || 0) < EXCHANGE_CACHE_TTL_MS)) {
+                return existing
+            }
+            if (exchangeFetchPromises.has(base)) {
+                return exchangeFetchPromises.get(base)
+            }
+            exchangeLoadingBases.value = { ...exchangeLoadingBases.value, [base]: true }
+            const promise = (async () => {
+                const urls = [
+                    `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${encodeURIComponent(base)}.min.json`,
+                    `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${encodeURIComponent(base)}.json`
+                ]
+                let data = null
+                let lastErr = null
+                for (const url of urls) {
+                    try {
+                        const res = await fetch(url, { cache: force ? 'no-cache' : 'default' })
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                        const json = await res.json()
+                        if (json && json[base] && typeof json[base] === 'object') {
+                            data = { date: json.date || '', fetchedAt: Date.now(), rates: json[base] }
+                            break
+                        }
+                    } catch (err) {
+                        lastErr = err
+                    }
+                }
+                if (!data) throw lastErr || new Error('Failed to fetch exchange rates')
+                const nextCache = { ...exchangeRates.value, [base]: data }
+                exchangeRates.value = nextCache
+                try {
+                    localStorage.setItem(EXCHANGE_CACHE_KEY, JSON.stringify(nextCache))
+                } catch {}
+                let colMetaChanged = false
+                columns.value.forEach(c => {
+                    if (c.type === 'exchange' && String(c.fromCurrency || '').toLowerCase() === base && !(Number(c.customRate) > 0)) {
+                        const to = String(c.toCurrency || '').toLowerCase()
+                        const r = Number(data.rates[to])
+                        if (Number.isFinite(r) && r > 0 && (c.cachedRate !== r || c.rateDate !== data.date)) {
+                            c.cachedRate = r
+                            c.rateDate = data.date
+                            colMetaChanged = true
+                        }
+                    }
+                })
+                if (colMetaChanged) {
+                    triggerRef(columns)
+                    debouncedSave()
+                }
+                if (isChartOpen.value) {
+                    debouncedUpdateChart.cancel()
+                    debouncedUpdateChart()
+                }
+                return data
+            })().catch((err) => {
+                console.warn('Exchange rate fetch failed:', err)
+                if (interactive && !existing) {
+                    showConfirm('❌ ' + translate('Failed to fetch exchange rate.'), 1)
+                }
+                return existing || null
+            }).finally(() => {
+                exchangeFetchPromises.delete(base)
+                const next = { ...exchangeLoadingBases.value }
+                delete next[base]
+                exchangeLoadingBases.value = next
+            })
+            exchangeFetchPromises.set(base, promise)
+            return promise
+        }
+
+        const refreshExchangeColumn = async (col) => {
+            if (!col || col.type !== 'exchange' || Number(col.customRate) > 0) return
+            await fetchExchangeRatesForBase(col.fromCurrency, { force: true, interactive: true })
+        }
+
+        const refreshAllExchangeColumns = async (force = false) => {
+            const bases = [...new Set(
+                columns.value
+                    .filter(c => c.type === 'exchange' && c.fromCurrency && c.toCurrency && c.fromCurrency !== c.toCurrency && !(Number(c.customRate) > 0))
+                    .map(c => c.fromCurrency)
+            )]
+            if (!bases.length) return
+            await Promise.all(bases.map(b => fetchExchangeRatesForBase(b, { force, interactive: false })))
+        }
+
+        const getRowNumericValue = (row, colDef, depth = 0) => {
+            if (!row || !colDef || depth > 4) return 0
             if (colDef.type === 'number') return calcValue(row[colDef.id])
+            if (colDef.type === 'exchange') {
+                const srcCol = columns.value.find(c => c.id === colDef.sourceCol)
+                if (!srcCol) return 0
+                const srcVal = getRowNumericValue(row, srcCol, depth + 1)
+                const rate = getEffectiveExchangeRate(colDef)
+                if (!rate || !Number.isFinite(srcVal)) return 0
+                return Math.round(srcVal * rate * 100) / 100
+            }
             if (colDef.type === 'multiply') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB])
             if (colDef.type === 'multiply3') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB]) * calcValue(row[colDef.opC])
             if (colDef.type === 'minus') return calcValue(row[colDef.opA]) - calcValue(row[colDef.opB])
@@ -3778,6 +4001,7 @@ export default {
             isInitializing = false
             resetHistory()
             processRecurringRows(true)
+            refreshAllExchangeColumns(false)
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -4393,7 +4617,7 @@ export default {
             const rows2D = rows.value.map(row => {
                 const rowArray = [row.id]
                 columns.value.forEach(c => {
-                    if (isCalcType(c.type)) {
+                    if (isCalcType(c.type) || c.type === 'exchange') {
                         rowArray.push(getRowNumericValue(row, c))
                     } else if (c.type === 'tags') {
                         rowArray.push(normalizeTags(row[c.id]).join(', '))
@@ -4836,7 +5060,7 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'photo') return
                 let val
-                if (isCalcType(col.type)) {
+                if (isCalcType(col.type) || col.type === 'exchange') {
                     const calc = getRowNumericValue(row, col)
                     val = calc ? calc.toLocaleString() : ''
                 } else if (col.type === 'tags') {
@@ -5155,9 +5379,29 @@ export default {
                     if (existingCol.id === translateSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
                     existingCol.sourceCol = translateSourceCol.value
                     existingCol.targetLang = newColTargetLang.value || 'en'
+                    delete existingCol.fromCurrency
+                    delete existingCol.toCurrency
+                    delete existingCol.customRate
+                    delete existingCol.cachedRate
+                    delete existingCol.rateDate
+                } else if (newColType.value === 'exchange') {
+                    if (!exchangeSourceCol.value) return showConfirm(translate('Please select a source column!'), 1)
+                    if (existingCol.id === exchangeSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
+                    existingCol.sourceCol = exchangeSourceCol.value
+                    existingCol.fromCurrency = exchangeFromCurrency.value || 'USD'
+                    existingCol.toCurrency = exchangeToCurrency.value || 'TWD'
+                    const parsedCustom = Number(exchangeCustomRate.value)
+                    if (Number.isFinite(parsedCustom) && parsedCustom > 0) existingCol.customRate = parsedCustom
+                    else delete existingCol.customRate
+                    delete existingCol.targetLang
                 } else {
                     delete existingCol.sourceCol
                     delete existingCol.targetLang
+                    delete existingCol.fromCurrency
+                    delete existingCol.toCurrency
+                    delete existingCol.customRate
+                    delete existingCol.cachedRate
+                    delete existingCol.rateDate
                 }
                 existingCol.type = newColType.value
                 if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
@@ -5172,10 +5416,15 @@ export default {
                 onDataEdited('both')
                 if (existingCol.type === 'translate') {
                     translateColumnRows(existingCol, { force: true, interactive: true })
+                } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
+                    fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
                 }
                 return
             }
             if (newColType.value === 'translate' && !translateSourceCol.value) {
+                return showConfirm(translate('Please select a source column!'), 1)
+            }
+            if (newColType.value === 'exchange' && !exchangeSourceCol.value) {
                 return showConfirm(translate('Please select a source column!'), 1)
             }
             if (isCalcType(newColType.value)) {
@@ -5196,6 +5445,14 @@ export default {
             if (newColType.value === 'translate') {
                 newColData.sourceCol = translateSourceCol.value
                 newColData.targetLang = newColTargetLang.value || 'en'
+            } else if (newColType.value === 'exchange') {
+                newColData.sourceCol = exchangeSourceCol.value
+                newColData.fromCurrency = exchangeFromCurrency.value || 'USD'
+                newColData.toCurrency = exchangeToCurrency.value || 'TWD'
+                const parsedCustom = Number(exchangeCustomRate.value)
+                if (Number.isFinite(parsedCustom) && parsedCustom > 0) {
+                    newColData.customRate = parsedCustom
+                }
             }
             if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                 newColData.opA = formulaA.value
@@ -5207,7 +5464,7 @@ export default {
                 newColData.opC = formulaC.value
             }
 
-            if (newColType.value === 'translate') {
+            if (newColType.value === 'translate' || newColType.value === 'exchange') {
                 const srcIdx = columns.value.findIndex(c => c.id === newColData.sourceCol)
                 if (srcIdx !== -1) {
                     const nextCols = [...columns.value]
@@ -5219,7 +5476,7 @@ export default {
             } else {
                 columns.value = [...columns.value, newColData]
             }
-            if (!isCalcType(newColType.value)) {
+            if (!isCalcType(newColType.value) && newColType.value !== 'exchange') {
                 rows.value.forEach(row => {
                     if (newColType.value === 'number') row[newColId] = null
                     else if (newColType.value === 'checkbox') row[newColId] = false
@@ -5234,12 +5491,16 @@ export default {
             newColLabel.value = ''
             newColType.value = 'text'
             translateSourceCol.value = ''
+            exchangeSourceCol.value = ''
+            exchangeCustomRate.value = ''
             formulaA.value = ''
             formulaB.value = ''
             formulaC.value = ''
             if (newColData.type === 'date') hasDateColumn.value = true
             if (newColData.type === 'translate') {
                 translateColumnRows(newColData, { force: true, interactive: true })
+            } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
+                fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
             }
         }
 
@@ -6048,7 +6309,7 @@ export default {
         const removeColumn = async (idToRemove) => {
             if (columns.value.some(col =>
                 (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
-                (col.type === 'translate' && col.sourceCol === idToRemove)
+                ((col.type === 'translate' || col.type === 'exchange') && col.sourceCol === idToRemove)
             )) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
@@ -6218,7 +6479,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'photo') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'exchange' || col.type === 'photo') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -6359,7 +6620,7 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'number') {
                     cleanRow[col.label] = row[col.id] || 0
-                } else if (isCalcType(col.type)) {
+                } else if (isCalcType(col.type) || col.type === 'exchange') {
                     cleanRow[col.label] = getRowNumericValue(row, col)
                 } else if (col.type === 'checkbox') {
                     cleanRow[col.label] = row[col.id] ? 1 : 0
@@ -6416,6 +6677,9 @@ export default {
                 } else if (c.type === 'translate') {
                     const srcCol = columns.value.find(col => col.id === c.sourceCol)
                     meta += `|${srcCol?.label || ''}|${c.targetLang || 'en'}`
+                } else if (c.type === 'exchange') {
+                    const srcCol = columns.value.find(col => col.id === c.sourceCol)
+                    meta += `|${srcCol?.label || ''}|${c.fromCurrency || 'USD'}|${c.toCurrency || 'TWD'}|${c.customRate || ''}|${c.cachedRate || ''}`
                 }
                 return `${c.label} [${meta}]`
             })
@@ -6428,7 +6692,7 @@ export default {
                 columns.value.forEach(col => {
                     if (col.type === 'number') {
                         rowData.push(row[col.id])
-                    } else if (isCalcType(col.type)) {
+                    } else if (isCalcType(col.type) || col.type === 'exchange') {
                         rowData.push(getRowNumericValue(row, col))
                     } else if (col.type === 'checkbox') {
                         rowData.push(row[col.id] ? 1 : 0)
@@ -6577,7 +6841,7 @@ export default {
 
                 let existingCol = columns.value.find(c => c.label === key)
                 if (!existingCol) {
-                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null, targetSourceCol = null, targetLang = null
+                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null, targetSourceCol = null, targetLang = null, targetFromCurrency = null, targetToCurrency = null, targetCustomRate = null, targetCachedRate = null
 
                     if (parsedColumnMeta[key]) {
                         const metaStr = parsedColumnMeta[key].type
@@ -6593,6 +6857,13 @@ export default {
                             targetType = 'translate'
                             targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
                             targetLang = parts[2] || currentLanguage.value || 'en'
+                        } else if (parts[0] === 'exchange') {
+                            targetType = 'exchange'
+                            targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
+                            targetFromCurrency = parts[2] || 'USD'
+                            targetToCurrency = parts[3] || 'TWD'
+                            targetCustomRate = Number(parts[4]) > 0 ? Number(parts[4]) : null
+                            targetCachedRate = Number(parts[5]) > 0 ? Number(parts[5]) : null
                         } else {
                             targetType = metaStr
                         }
@@ -6618,7 +6889,14 @@ export default {
                         opA: targetOpA,
                         opB: targetOpB,
                         opC: targetOpC,
-                        ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {})
+                        ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {}),
+                        ...(targetType === 'exchange' ? {
+                            sourceCol: targetSourceCol,
+                            fromCurrency: targetFromCurrency,
+                            toCurrency: targetToCurrency,
+                            ...(targetCustomRate ? { customRate: targetCustomRate } : {}),
+                            ...(targetCachedRate ? { cachedRate: targetCachedRate } : {})
+                        } : {})
                     })
                 }
             })
@@ -8737,7 +9015,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             columns.value.forEach(col => {
                 if (col.type === 'photo' || col.type === 'password') return
                 let val
-                if (isCalcType(col.type)) {
+                if (isCalcType(col.type) || col.type === 'exchange') {
                     const calc = getRowNumericValue(row, col)
                     val = calc ? calc.toLocaleString() : ''
                 } else if (col.type === 'tags') {
@@ -9608,7 +9886,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo') {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo') {
                             let newVal = ''
                             if (isSingleValue) {
                                 newVal = singleValue
@@ -9665,7 +9943,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         if (targetColIndex < columns.value.length) {
                             const targetColId = columns.value[targetColIndex].id
                             const colType = columns.value[targetColIndex].type
-                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo') {
+                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo') {
                                 let finalVal = cellValue.trim()
                                 if (colType === 'tags') {
                                     finalVal = normalizeTags(finalVal)
@@ -9849,7 +10127,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'photo' && filteredRows.value[r]) {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo' && filteredRows.value[r]) {
                             if (colType === 'tags') filteredRows.value[r][colId] = []
                             else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
                             else if (colType === 'checkbox') filteredRows.value[r][colId] = false
@@ -10044,6 +10322,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             isInitializing = false
             resetHistory()
             processRecurringRows(true)
+            refreshAllExchangeColumns(false)
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
@@ -10124,6 +10403,17 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             translatingCells,
             translatePendingGesture,
             handleTranslateCellClick,
+            currencyOptions,
+            exchangeSourceCol,
+            exchangeSourceColumns,
+            exchangeFromCurrency,
+            exchangeToCurrency,
+            exchangeCustomRate,
+            exchangeLoadingBases,
+            getEffectiveExchangeRate,
+            getExchangeHeaderTooltip,
+            getExchangeCellTooltip,
+            refreshExchangeColumn,
             typeOptions,
             formulaA,
             formulaB,

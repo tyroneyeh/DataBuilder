@@ -235,7 +235,11 @@ export const translations = {
         "Source Column": "來源欄位",
         "Please select a source column!": "請選擇來源欄位!",
         "Translating...": "翻譯中...",
-        "Click to translate": "點擊翻譯"
+        "Click to translate": "點擊翻譯",
+        "Exchange Rate": "匯率",
+        "Auto rate": "自動匯率",
+        "Custom": "自訂",
+        "Failed to fetch exchange rate.": "無法取得匯率資料。"
     },
     "zh-CN": {
         "Action": "操作",
@@ -471,7 +475,11 @@ export const translations = {
         "Source Column": "来源列",
         "Please select a source column!": "请选择来源列!",
         "Translating...": "翻译中...",
-        "Click to translate": "点击翻译"
+        "Click to translate": "点击翻译",
+        "Exchange Rate": "汇率",
+        "Auto rate": "自动汇率",
+        "Custom": "自定义",
+        "Failed to fetch exchange rate.": "无法获取汇率数据。"
     },
     "ja": {
         "Action": "操作",
@@ -707,7 +715,11 @@ export const translations = {
         "Source Column": "翻訳元の列",
         "Please select a source column!": "翻訳元の列を選択してください!",
         "Translating...": "翻訳中...",
-        "Click to translate": "クリックして翻訳"
+        "Click to translate": "クリックして翻訳",
+        "Exchange Rate": "為替レート",
+        "Auto rate": "自動レート",
+        "Custom": "カスタム",
+        "Failed to fetch exchange rate.": "為替レートの取得に失敗しました。"
     },
     "ko": {
         "Action": "작업",
@@ -943,7 +955,11 @@ export const translations = {
         "Source Column": "원본 열",
         "Please select a source column!": "원본 열을 선택하세요!",
         "Translating...": "번역 중...",
-        "Click to translate": "클릭하여 번역"
+        "Click to translate": "클릭하여 번역",
+        "Exchange Rate": "환율",
+        "Auto rate": "자동 환율",
+        "Custom": "사용자 지정",
+        "Failed to fetch exchange rate.": "환율 정보를 가져오지 못했습니다."
     },
     "es": {
         "Action": "Acción",
@@ -1179,7 +1195,11 @@ export const translations = {
         "Source Column": "Columna de origen",
         "Please select a source column!": "¡Por favor selecciona una columna de origen!",
         "Translating...": "Traduciendo...",
-        "Click to translate": "Haz clic para traducir"
+        "Click to translate": "Haz clic para traducir",
+        "Exchange Rate": "Tipo de cambio",
+        "Auto rate": "Tasa automática",
+        "Custom": "Personalizado",
+        "Failed to fetch exchange rate.": "No se pudo obtener el tipo de cambio."
     },
     "fr": {
         "Action": "Action",
@@ -1415,7 +1435,11 @@ export const translations = {
         "Source Column": "Colonne source",
         "Please select a source column!": "Veuillez sélectionner une colonne source !",
         "Translating...": "Traduction...",
-        "Click to translate": "Cliquer pour traduire"
+        "Click to translate": "Cliquer pour traduire",
+        "Exchange Rate": "Taux de change",
+        "Auto rate": "Taux auto",
+        "Custom": "Personnalisé",
+        "Failed to fetch exchange rate.": "Impossible de récupérer le taux de change."
     },
     "de": {
         "Action": "Aktion",
@@ -1651,7 +1675,11 @@ export const translations = {
         "Source Column": "Quellspalte",
         "Please select a source column!": "Bitte wähle eine Quellspalte aus!",
         "Translating...": "Übersetzen...",
-        "Click to translate": "Zum Übersetzen klicken"
+        "Click to translate": "Zum Übersetzen klicken",
+        "Exchange Rate": "Wechselkurs",
+        "Auto rate": "Auto-Kurs",
+        "Custom": "Benutzerdefiniert",
+        "Failed to fetch exchange rate.": "Wechselkurs konnte nicht abgerufen werden."
     },
     "it": {
         "Action": "Azione",
@@ -1887,7 +1915,11 @@ export const translations = {
         "Source Column": "Colonna di origine",
         "Please select a source column!": "Seleziona una colonna di origine!",
         "Translating...": "Traduzione...",
-        "Click to translate": "Clicca per tradurre"
+        "Click to translate": "Clicca per tradurre",
+        "Exchange Rate": "Tasso di cambio",
+        "Auto rate": "Tasso auto",
+        "Custom": "Personalizzato",
+        "Failed to fetch exchange rate.": "Impossibile recuperare il tasso di cambio."
     },
     "pt": {
         "Action": "Ação",
@@ -2123,7 +2155,11 @@ export const translations = {
         "Source Column": "Coluna de origem",
         "Please select a source column!": "Selecione uma coluna de origem!",
         "Translating...": "Traduzindo...",
-        "Click to translate": "Clique para traduzir"
+        "Click to translate": "Clique para traduzir",
+        "Exchange Rate": "Taxa de câmbio",
+        "Auto rate": "Taxa automática",
+        "Custom": "Personalizado",
+        "Failed to fetch exchange rate.": "Falha ao obter a taxa de câmbio."
     },
     "ru": {
         "Action": "Действие",
@@ -2359,7 +2395,11 @@ export const translations = {
         "Source Column": "Исходный столбец",
         "Please select a source column!": "Пожалуйста, выберите исходный столбец!",
         "Translating...": "Перевод...",
-        "Click to translate": "Нажмите для перевода"
+        "Click to translate": "Нажмите для перевода",
+        "Exchange Rate": "Курс валют",
+        "Auto rate": "Автокурс",
+        "Custom": "Вручную",
+        "Failed to fetch exchange rate.": "Не удалось получить курс валют."
     },
     "id": {
         "Action": "Tindakan",
@@ -2595,7 +2635,11 @@ export const translations = {
         "Source Column": "Kolom Sumber",
         "Please select a source column!": "Silakan pilih kolom sumber!",
         "Translating...": "Menerjemahkan...",
-        "Click to translate": "Klik untuk menerjemahkan"
+        "Click to translate": "Klik untuk menerjemahkan",
+        "Exchange Rate": "Nilai Tukar",
+        "Auto rate": "Kurs otomatis",
+        "Custom": "Kustom",
+        "Failed to fetch exchange rate.": "Gagal mengambil nilai tukar."
     },
     "vi": {
         "Action": "Thao tác",
@@ -2831,7 +2875,11 @@ export const translations = {
         "Source Column": "Cột nguồn",
         "Please select a source column!": "Vui lòng chọn cột nguồn!",
         "Translating...": "Đang dịch...",
-        "Click to translate": "Nhấn để dịch"
+        "Click to translate": "Nhấn để dịch",
+        "Exchange Rate": "Tỷ giá",
+        "Auto rate": "Tỷ giá tự động",
+        "Custom": "Tùy chỉnh",
+        "Failed to fetch exchange rate.": "Không thể lấy tỷ giá hối đoái."
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3067,7 +3115,11 @@ export const translations = {
         "Source Column": "คอลัมน์ต้นทาง",
         "Please select a source column!": "กรุณาเลือกคอลัมน์ต้นทาง!",
         "Translating...": "กำลังแปล...",
-        "Click to translate": "คลิกเพื่อแปล"
+        "Click to translate": "คลิกเพื่อแปล",
+        "Exchange Rate": "อัตราแลกเปลี่ยน",
+        "Auto rate": "อัตราอัตโนมัติ",
+        "Custom": "กำหนดเอง",
+        "Failed to fetch exchange rate.": "ไม่สามารถดึงอัตราแลกเปลี่ยนได้"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3303,7 +3355,11 @@ export const translations = {
         "Source Column": "Lajur Sumber",
         "Please select a source column!": "Sila pilih lajur sumber!",
         "Translating...": "Menterjemah...",
-        "Click to translate": "Klik untuk terjemah"
+        "Click to translate": "Klik untuk terjemah",
+        "Exchange Rate": "Kadar Pertukaran",
+        "Auto rate": "Kadar auto",
+        "Custom": "Tersuai",
+        "Failed to fetch exchange rate.": "Gagal mendapatkan kadar pertukaran."
     },
     "tr": {
         "Action": "İşlem",
@@ -3539,7 +3595,11 @@ export const translations = {
         "Source Column": "Kaynak Sütun",
         "Please select a source column!": "Lütfen bir kaynak sütun seçin!",
         "Translating...": "Çevriliyor...",
-        "Click to translate": "Çevirmek için tıklayın"
+        "Click to translate": "Çevirmek için tıklayın",
+        "Exchange Rate": "Döviz Kuru",
+        "Auto rate": "Otomatik kur",
+        "Custom": "Özel",
+        "Failed to fetch exchange rate.": "Döviz kuru alınamadı."
     },
     "ar": {
         "Action": "إجراء",
@@ -3775,7 +3835,11 @@ export const translations = {
         "Source Column": "العمود المصدر",
         "Please select a source column!": "يرجى اختيار العمود المصدر!",
         "Translating...": "جاري الترجمة...",
-        "Click to translate": "انقر للترجمة"
+        "Click to translate": "انقر للترجمة",
+        "Exchange Rate": "سعر الصرف",
+        "Auto rate": "سعر تلقائي",
+        "Custom": "مخصص",
+        "Failed to fetch exchange rate.": "فشل في جلب سعر الصرف."
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4011,7 +4075,11 @@ export const translations = {
         "Source Column": "स्रोत कॉलम",
         "Please select a source column!": "कृपया एक स्रोत कॉलम चुनें!",
         "Translating...": "अनुवाद हो रहा है...",
-        "Click to translate": "अनुवाद के लिए क्लिक करें"
+        "Click to translate": "अनुवाद के लिए क्लिक करें",
+        "Exchange Rate": "विनिमय दर",
+        "Auto rate": "ऑटो दर",
+        "Custom": "कस्टम",
+        "Failed to fetch exchange rate.": "विनिमय दर प्राप्त करने में विफल।"
     },
     "pl": {
         "Action": "Akcja",
@@ -4247,7 +4315,11 @@ export const translations = {
         "Source Column": "Kolumna źródłowa",
         "Please select a source column!": "Wybierz kolumnę źródłową!",
         "Translating...": "Tłumaczenie...",
-        "Click to translate": "Kliknij, aby przetłumaczyć"
+        "Click to translate": "Kliknij, aby przetłumaczyć",
+        "Exchange Rate": "Kurs walut",
+        "Auto rate": "Auto kurs",
+        "Custom": "Własny",
+        "Failed to fetch exchange rate.": "Nie udało się pobrać kursu walut."
     },
     "nl": {
         "Action": "Actie",
@@ -4483,7 +4555,11 @@ export const translations = {
         "Source Column": "Bronkolom",
         "Please select a source column!": "Selecteer een bronkolom!",
         "Translating...": "Vertalen...",
-        "Click to translate": "Klik om te vertalen"
+        "Click to translate": "Klik om te vertalen",
+        "Exchange Rate": "Wisselkoers",
+        "Auto rate": "Autokoers",
+        "Custom": "Aangepast",
+        "Failed to fetch exchange rate.": "Kan wisselkoers niet ophalen."
     },
     "uk": {
         "Action": "Дія",
@@ -4719,7 +4795,11 @@ export const translations = {
         "Source Column": "Вихідний стовпець",
         "Please select a source column!": "Будь ласка, виберіть вихідний стовпець!",
         "Translating...": "Переклад...",
-        "Click to translate": "Натисніть для перекладу"
+        "Click to translate": "Натисніть для перекладу",
+        "Exchange Rate": "Курс валют",
+        "Auto rate": "Автокурс",
+        "Custom": "Власний",
+        "Failed to fetch exchange rate.": "Не вдалося отримати курс валют."
     },
     "tl": {
         "Action": "Aksyon",
@@ -4955,7 +5035,11 @@ export const translations = {
         "Source Column": "Pinagmulang Kolum",
         "Please select a source column!": "Mangyaring pumili ng pinagmulang kolum!",
         "Translating...": "Isinasalin...",
-        "Click to translate": "I-click upang isalin"
+        "Click to translate": "I-click upang isalin",
+        "Exchange Rate": "Palitan ng Pera",
+        "Auto rate": "Auto rate",
+        "Custom": "Custom",
+        "Failed to fetch exchange rate.": "Nabigong kunin ang palitan ng pera."
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5191,7 +5275,11 @@ export const translations = {
         "Source Column": "Källkolumn",
         "Please select a source column!": "Välj en källkolumn!",
         "Translating...": "Översätter...",
-        "Click to translate": "Klicka för att översätta"
+        "Click to translate": "Klicka för att översätta",
+        "Exchange Rate": "Växelkurs",
+        "Auto rate": "Autokurs",
+        "Custom": "Anpassad",
+        "Failed to fetch exchange rate.": "Kunde inte hämta växelkurs."
     },
     "cs": {
         "Action": "Akce",
@@ -5427,7 +5515,11 @@ export const translations = {
         "Source Column": "Zdrojový sloupec",
         "Please select a source column!": "Vyberte prosím zdrojový sloupec!",
         "Translating...": "Překládání...",
-        "Click to translate": "Klikněte pro překlad"
+        "Click to translate": "Klikněte pro překlad",
+        "Exchange Rate": "Směnný kurz",
+        "Auto rate": "Automatický kurz",
+        "Custom": "Vlastní",
+        "Failed to fetch exchange rate.": "Nepodařilo se načíst směnný kurz."
     },
     "ta": {
         "Action": "செயல்",
@@ -5663,6 +5755,10 @@ export const translations = {
         "Source Column": "மூல நெடுவரிசை",
         "Please select a source column!": "மூல நெடுவரிசையைத் தேர்ந்தெடுக்கவும்!",
         "Translating...": "மொழிபெயர்க்கிறது...",
-        "Click to translate": "மொழிபெயர்க்க கிளிக் செய்க"
+        "Click to translate": "மொழிபெயர்க்க கிளிக் செய்க",
+        "Exchange Rate": "நாணய மாற்று விகிதம்",
+        "Auto rate": "தானியங்கி விகிதம்",
+        "Custom": "தனிப்பயன்",
+        "Failed to fetch exchange rate.": "நாணய மாற்று விகிதத்தைப் பெற முடியவில்லை."
     }
 }
