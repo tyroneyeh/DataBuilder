@@ -6866,7 +6866,7 @@ export default {
             const isDropdownActive = activeRow.value !== null
             const options = isDropdownActive ? getUniqueValues(activeRow.value.col.id) : []
 
-            if (isDropdownActive && options.length > 0) {
+            if (!event.shiftKey && isDropdownActive && options.length > 0) {
                 if (event.key === 'ArrowDown') {
                     event.preventDefault()
                     activeDropdownIndex.value = (activeDropdownIndex.value + 1) % options.length
@@ -6890,6 +6890,43 @@ export default {
             const target = event.target
             const currentIndex = columns.value.findIndex(col => col.id === colId)
             const firstEditableCol = columns.value.findIndex(c => editableTypes.has(c.type))
+
+            if (event.shiftKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+                const currentRowIndex = filteredRows.value.findIndex(r => r.id === rowId)
+                const maxRowIdx = filteredRows.value.length - 1
+                if (currentRowIndex === -1 || currentIndex === -1 || maxRowIdx < 0) return
+                event.preventDefault()
+                activeRow.value = null
+                activeDropdownIndex.value = -1
+
+                const anchor = startCell.value || { row: currentRowIndex, col: currentIndex }
+                const baseEnd = endCell.value || { row: currentRowIndex, col: currentIndex }
+                const dir = event.key === 'ArrowUp' ? -1 : 1
+                const jumpToEdge = event.ctrlKey || event.metaKey
+                const nextRow = jumpToEdge
+                    ? (dir < 0 ? 0 : maxRowIdx)
+                    : Math.max(0, Math.min(maxRowIdx, baseEnd.row + dir))
+
+                startCell.value = { row: anchor.row, col: anchor.col }
+                endCell.value = { row: nextRow, col: baseEnd.col }
+                isCopied.value = false
+                target.blur()
+
+                if (jumpToEdge && tableContainer.value) {
+                    tableContainer.value.scrollTop = dir < 0 ? 0 : tableContainer.value.scrollHeight
+                } else {
+                    const nextRowData = filteredRows.value[nextRow]
+                    if (nextRowData) {
+                        const tr = tableContainer.value?.querySelector(`tr[data-id="${nextRowData.id}"]`)
+                        if (tr) {
+                            tr.scrollIntoView({ block: 'nearest' })
+                        } else if (tableContainer.value) {
+                            tableContainer.value.scrollTop += dir * averageRowHeight
+                        }
+                    }
+                }
+                return
+            }
 
             if (event.key === 'Backspace') {
                 if (currentIndex === firstEditableCol && target.value === '') {
@@ -10507,6 +10544,61 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     endCell.value = null
                     return
                 }
+            }
+
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && selectedBox.value) {
+                if (e.isComposing || ['BUTTON', 'SELECT', 'A'].includes(activeTag)) return
+                e.preventDefault()
+
+                const maxRowIdx = filteredRows.value.length - 1
+                const maxColIdx = columns.value.length - 1
+                if (maxRowIdx < 0 || maxColIdx < 0) return
+
+                const rowDelta = e.key === 'ArrowUp' ? -1 : (e.key === 'ArrowDown' ? 1 : 0)
+                const colDelta = e.key === 'ArrowLeft' ? -1 : (e.key === 'ArrowRight' ? 1 : 0)
+                const jumpToEdge = e.ctrlKey || e.metaKey
+
+                const calcTarget = (baseRow, baseCol) => {
+                    const nextRow = rowDelta !== 0
+                        ? (jumpToEdge ? (rowDelta < 0 ? 0 : maxRowIdx) : Math.max(0, Math.min(maxRowIdx, baseRow + rowDelta)))
+                        : baseRow
+                    const nextCol = colDelta !== 0
+                        ? (jumpToEdge ? (colDelta < 0 ? 0 : maxColIdx) : Math.max(0, Math.min(maxColIdx, baseCol + colDelta)))
+                        : baseCol
+                    return { nextRow, nextCol }
+                }
+
+                let targetRow = 0
+                if (e.shiftKey) {
+                    const anchor = startCell.value || { row: selectedBox.value.minRow, col: selectedBox.value.minCol }
+                    const baseEnd = endCell.value || { row: anchor.row, col: anchor.col }
+                    const { nextRow, nextCol } = calcTarget(baseEnd.row, baseEnd.col)
+                    startCell.value = { row: anchor.row, col: anchor.col }
+                    endCell.value = { row: nextRow, col: nextCol }
+                    targetRow = nextRow
+                } else {
+                    const base = startCell.value || { row: selectedBox.value.minRow, col: selectedBox.value.minCol }
+                    const { nextRow, nextCol } = calcTarget(base.row, base.col)
+                    startCell.value = { row: nextRow, col: nextCol }
+                    endCell.value = { row: nextRow, col: nextCol }
+                    targetRow = nextRow
+                }
+                isCopied.value = false
+
+                if (jumpToEdge && rowDelta !== 0 && tableContainer.value) {
+                    tableContainer.value.scrollTop = rowDelta < 0 ? 0 : tableContainer.value.scrollHeight
+                } else {
+                    const nextRowData = filteredRows.value[targetRow]
+                    if (nextRowData) {
+                        const tr = tableContainer.value?.querySelector(`tr[data-id="${nextRowData.id}"]`)
+                        if (tr) {
+                            tr.scrollIntoView({ block: 'nearest' })
+                        } else if (tableContainer.value && rowDelta !== 0) {
+                            tableContainer.value.scrollTop += rowDelta * averageRowHeight
+                        }
+                    }
+                }
+                return
             }
 
             if (e.key === 'Enter' && selectedBox.value) {
