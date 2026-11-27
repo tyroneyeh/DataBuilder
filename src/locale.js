@@ -247,7 +247,14 @@ export const translations = {
         "Failed to fetch stock price.": "無法取得股價資料。",
         "Hide chart amounts": "遮蔽圖表金額",
         "Show chart amounts": "顯示圖表金額",
-        "Translate via Google Sheets": "透過 Google 試算表翻譯"
+        "Translate via Google Sheets": "透過 Google 試算表翻譯",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI 提示詞（例如：摘要重點）",
+        "Please enter an AI prompt!": "請輸入 AI 提示詞!",
+        "Generating...": "產生中...",
+        "Run AI via Google Sheets": "透過 Google 試算表執行 AI",
+        "Please configure Google Client ID and Google Sheet URL first.": "請先設定 Google Client ID 與 Google 試算表網址。",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已將 AI 公式同步至 Google 試算表。若結果仍為空白，請開啟試算表點選「產生並插入」，再從試算表拉取。"
     },
     "zh-CN": {
         "Action": "操作",
@@ -495,7 +502,14 @@ export const translations = {
         "Failed to fetch stock price.": "无法获取股价数据。",
         "Hide chart amounts": "隐藏图表金额",
         "Show chart amounts": "显示图表金额",
-        "Translate via Google Sheets": "通过 Google 表格翻译"
+        "Translate via Google Sheets": "通过 Google 表格翻译",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI 提示词（例如：总结重点）",
+        "Please enter an AI prompt!": "请输入 AI 提示词!",
+        "Generating...": "生成中...",
+        "Run AI via Google Sheets": "通过 Google 表格运行 AI",
+        "Please configure Google Client ID and Google Sheet URL first.": "请先配置 Google Client ID 和 Google 表格网址。",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已将 AI 公式同步到 Google 表格。若结果仍为空白，请打开表格点击“生成并插入”，再从表格拉取。"
     },
     "ja": {
         "Action": "操作",
@@ -743,7 +757,14 @@ export const translations = {
         "Failed to fetch stock price.": "株価の取得に失敗しました。",
         "Hide chart amounts": "グラフの金額を隠す",
         "Show chart amounts": "グラフの金額を表示",
-        "Translate via Google Sheets": "Google スプレッドシートで翻訳"
+        "Translate via Google Sheets": "Google スプレッドシートで翻訳",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI プロンプト（例：要約する）",
+        "Please enter an AI prompt!": "AI プロンプトを入力してください!",
+        "Generating...": "生成中...",
+        "Run AI via Google Sheets": "Google スプレッドシートで AI 実行",
+        "Please configure Google Client ID and Google Sheet URL first.": "先に Google Client ID とスプレッドシート URL を設定してください。",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 数式を Google スプレッドシートに同期しました。結果が空の場合はシートで「生成して挿入」をクリックしてから再取得してください。"
     },
     "ko": {
         "Action": "작업",
@@ -991,7 +1012,14 @@ export const translations = {
         "Failed to fetch stock price.": "주가 정보를 가져오지 못했습니다.",
         "Hide chart amounts": "차트 금액 숨기기",
         "Show chart amounts": "차트 금액 표시",
-        "Translate via Google Sheets": "Google 시트로 번역"
+        "Translate via Google Sheets": "Google 시트로 번역",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI 프롬프트 (예: 요약하기)",
+        "Please enter an AI prompt!": "AI 프롬프트를 입력하세요!",
+        "Generating...": "생성 중...",
+        "Run AI via Google Sheets": "Google 시트에서 AI 실행",
+        "Please configure Google Client ID and Google Sheet URL first.": "먼저 Google Client ID와 Google 시트 URL을 설정하세요.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 수식이 Google 시트에 동기화되었습니다. 결과가 비어 있으면 시트에서 \"생성 및 삽입\"을 클릭한 뒤 다시 가져오세요."
     },
     "es": {
         "Action": "Acción",
@@ -1239,7 +1267,14 @@ export const translations = {
         "Failed to fetch stock price.": "No se pudo obtener el precio de la acción.",
         "Hide chart amounts": "Ocultar montos del gráfico",
         "Show chart amounts": "Mostrar montos del gráfico",
-        "Translate via Google Sheets": "Traducir con Google Sheets"
+        "Translate via Google Sheets": "Traducir con Google Sheets",
+        "AI": "IA",
+        "AI prompt (e.g., Summarize)": "Instrucción de IA (ej., Resumir)",
+        "Please enter an AI prompt!": "¡Por favor ingresa una instrucción de IA!",
+        "Generating...": "Generando...",
+        "Run AI via Google Sheets": "Ejecutar IA con Google Sheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Configura primero el Google Client ID y la URL de Google Sheets.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada con Google Sheets. Si sigue vacío, abre la hoja, haz clic en \"Generar e insertar\" y vuelve a importar."
     },
     "fr": {
         "Action": "Action",
@@ -1487,7 +1522,14 @@ export const translations = {
         "Failed to fetch stock price.": "Impossible de récupérer le cours de l’action.",
         "Hide chart amounts": "Masquer les montants du graphique",
         "Show chart amounts": "Afficher les montants du graphique",
-        "Translate via Google Sheets": "Traduire via Google Sheets"
+        "Translate via Google Sheets": "Traduire via Google Sheets",
+        "AI": "IA",
+        "AI prompt (e.g., Summarize)": "Prompt IA (ex. : Résumer)",
+        "Please enter an AI prompt!": "Veuillez saisir un prompt IA !",
+        "Generating...": "Génération...",
+        "Run AI via Google Sheets": "Exécuter l’IA via Google Sheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Veuillez d’abord configurer le Google Client ID et l’URL Google Sheets.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formule IA synchronisée avec Google Sheets. Si les résultats restent vides, ouvrez la feuille pour cliquer sur « Générer et insérer », puis réimportez."
     },
     "de": {
         "Action": "Aktion",
@@ -1735,7 +1777,14 @@ export const translations = {
         "Failed to fetch stock price.": "Aktienkurs konnte nicht abgerufen werden.",
         "Hide chart amounts": "Diagrammbeträge ausblenden",
         "Show chart amounts": "Diagrammbeträge anzeigen",
-        "Translate via Google Sheets": "Über Google Tabellen übersetzen"
+        "Translate via Google Sheets": "Über Google Tabellen übersetzen",
+        "AI": "KI",
+        "AI prompt (e.g., Summarize)": "KI-Prompt (z. B. Zusammenfassen)",
+        "Please enter an AI prompt!": "Bitte gib einen KI-Prompt ein!",
+        "Generating...": "Wird generiert...",
+        "Run AI via Google Sheets": "KI über Google Tabellen ausführen",
+        "Please configure Google Client ID and Google Sheet URL first.": "Bitte zuerst Google Client ID und Google-Tabellen-URL einrichten.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "KI-Formel mit Google Tabellen synchronisiert. Falls noch leer, in der Tabelle „Generieren und einfügen“ klicken und erneut abrufen."
     },
     "it": {
         "Action": "Azione",
@@ -1983,7 +2032,14 @@ export const translations = {
         "Failed to fetch stock price.": "Impossibile recuperare il prezzo dell’azione.",
         "Hide chart amounts": "Nascondi importi del grafico",
         "Show chart amounts": "Mostra importi del grafico",
-        "Translate via Google Sheets": "Traduci tramite Google Fogli"
+        "Translate via Google Sheets": "Traduci tramite Google Fogli",
+        "AI": "IA",
+        "AI prompt (e.g., Summarize)": "Prompt IA (es. Riassumi)",
+        "Please enter an AI prompt!": "Inserisci un prompt IA!",
+        "Generating...": "Generazione...",
+        "Run AI via Google Sheets": "Esegui IA tramite Google Fogli",
+        "Please configure Google Client ID and Google Sheet URL first.": "Configura prima il Google Client ID e l’URL di Google Fogli.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula IA sincronizzata con Google Fogli. Se i risultati sono vuoti, apri il foglio, fai clic su \"Genera e inserisci\" e poi reimporta."
     },
     "pt": {
         "Action": "Ação",
@@ -2231,7 +2287,14 @@ export const translations = {
         "Failed to fetch stock price.": "Falha ao obter o preço da ação.",
         "Hide chart amounts": "Ocultar valores do gráfico",
         "Show chart amounts": "Mostrar valores do gráfico",
-        "Translate via Google Sheets": "Traduzir via Google Planilhas"
+        "Translate via Google Sheets": "Traduzir via Google Planilhas",
+        "AI": "IA",
+        "AI prompt (e.g., Summarize)": "Prompt de IA (ex.: Resumir)",
+        "Please enter an AI prompt!": "Insira um prompt de IA!",
+        "Generating...": "Gerando...",
+        "Run AI via Google Sheets": "Executar IA via Google Planilhas",
+        "Please configure Google Client ID and Google Sheet URL first.": "Configure primeiro o Google Client ID e a URL do Google Planilhas.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada com o Google Planilhas. Se ainda estiver vazio, abra a planilha, clique em \"Gerar e inserir\" e puxe novamente."
     },
     "ru": {
         "Action": "Действие",
@@ -2479,7 +2542,14 @@ export const translations = {
         "Failed to fetch stock price.": "Не удалось получить цену акции.",
         "Hide chart amounts": "Скрыть суммы на графике",
         "Show chart amounts": "Показать суммы на графике",
-        "Translate via Google Sheets": "Перевести через Google Таблицы"
+        "Translate via Google Sheets": "Перевести через Google Таблицы",
+        "AI": "ИИ",
+        "AI prompt (e.g., Summarize)": "Промпт ИИ (напр., Кратко)",
+        "Please enter an AI prompt!": "Введите промпт для ИИ!",
+        "Generating...": "Генерация...",
+        "Run AI via Google Sheets": "Запустить ИИ через Google Таблицы",
+        "Please configure Google Client ID and Google Sheet URL first.": "Сначала укажите Google Client ID и URL Google Таблицы.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формула ИИ отправлена в Google Таблицы. Если пусто, откройте таблицу, нажмите «Создать и вставить», затем загрузите данные."
     },
     "id": {
         "Action": "Tindakan",
@@ -2727,7 +2797,14 @@ export const translations = {
         "Failed to fetch stock price.": "Gagal mengambil harga saham.",
         "Hide chart amounts": "Sembunyikan nominal grafik",
         "Show chart amounts": "Tampilkan nominal grafik",
-        "Translate via Google Sheets": "Terjemahkan via Google Sheets"
+        "Translate via Google Sheets": "Terjemahkan via Google Sheets",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "Prompt AI (mis., Ringkas)",
+        "Please enter an AI prompt!": "Silakan masukkan prompt AI!",
+        "Generating...": "Membuat...",
+        "Run AI via Google Sheets": "Jalankan AI via Google Sheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Konfigurasikan Google Client ID dan URL Google Sheets terlebih dahulu.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Rumus AI telah disinkronkan ke Google Sheets. Jika masih kosong, buka Sheet untuk klik \"Generate and insert\", lalu tarik kembali."
     },
     "vi": {
         "Action": "Thao tác",
@@ -2975,7 +3052,14 @@ export const translations = {
         "Failed to fetch stock price.": "Không thể lấy giá cổ phiếu.",
         "Hide chart amounts": "Ẩn số tiền biểu đồ",
         "Show chart amounts": "Hiện số tiền biểu đồ",
-        "Translate via Google Sheets": "Dịch qua Google Trang tính"
+        "Translate via Google Sheets": "Dịch qua Google Trang tính",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "Lệnh AI (vd: Tóm tắt)",
+        "Please enter an AI prompt!": "Vui lòng nhập lệnh AI!",
+        "Generating...": "Đang tạo...",
+        "Run AI via Google Sheets": "Chạy AI qua Google Trang tính",
+        "Please configure Google Client ID and Google Sheet URL first.": "Vui lòng cấu hình Google Client ID và URL Google Trang tính trước.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Đã đồng bộ công thức AI lên Google Trang tính. Nếu kết quả còn trống, mở trang tính bấm \"Tạo và chèn\" rồi kéo về."
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3223,7 +3307,14 @@ export const translations = {
         "Failed to fetch stock price.": "ไม่สามารถดึงราคาหุ้นได้",
         "Hide chart amounts": "ซ่อนยอดเงินในกราฟ",
         "Show chart amounts": "แสดงยอดเงินในกราฟ",
-        "Translate via Google Sheets": "แปลผ่าน Google ชีต"
+        "Translate via Google Sheets": "แปลผ่าน Google ชีต",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "พรอมต์ AI (เช่น สรุป)",
+        "Please enter an AI prompt!": "กรุณากรอกพรอมต์ AI!",
+        "Generating...": "กำลังสร้าง...",
+        "Run AI via Google Sheets": "รัน AI ผ่าน Google ชีต",
+        "Please configure Google Client ID and Google Sheet URL first.": "กรุณาตั้งค่า Google Client ID และ URL ของ Google ชีตก่อน",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "ซิงค์สูตร AI ไปยัง Google ชีตแล้ว หากผลลัพธ์ยังว่าง ให้เปิดชีตแล้วคลิก \"สร้างและแทรก\" จากนั้นดึงข้อมูลกลับ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3471,7 +3562,14 @@ export const translations = {
         "Failed to fetch stock price.": "Gagal mendapatkan harga saham.",
         "Hide chart amounts": "Sembunyikan amaun carta",
         "Show chart amounts": "Tunjukkan amaun carta",
-        "Translate via Google Sheets": "Terjemah melalui Google Sheets"
+        "Translate via Google Sheets": "Terjemah melalui Google Sheets",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "Gesaan AI (cth., Ringkaskan)",
+        "Please enter an AI prompt!": "Sila masukkan gesaan AI!",
+        "Generating...": "Menjana...",
+        "Run AI via Google Sheets": "Jalankan AI melalui Google Sheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Sila tetapkan Google Client ID dan URL Google Sheets dahulu.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula AI telah disegerakkan ke Google Sheets. Jika masih kosong, buka helaian dan klik \"Generate and insert\", kemudian tarik semula."
     },
     "tr": {
         "Action": "İşlem",
@@ -3719,7 +3817,14 @@ export const translations = {
         "Failed to fetch stock price.": "Hisse fiyatı alınamadı.",
         "Hide chart amounts": "Grafik tutarlarını gizle",
         "Show chart amounts": "Grafik tutarlarını göster",
-        "Translate via Google Sheets": "Google E-Tablolar ile çevir"
+        "Translate via Google Sheets": "Google E-Tablolar ile çevir",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI istemi (örn. Özetle)",
+        "Please enter an AI prompt!": "Lütfen bir AI istemi girin!",
+        "Generating...": "Oluşturuluyor...",
+        "Run AI via Google Sheets": "Google E-Tablolar ile AI çalıştır",
+        "Please configure Google Client ID and Google Sheet URL first.": "Önce Google Client ID ve Google E-Tablo URL’sini yapılandırın.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI formülü Google E-Tablolar’a aktarıldı. Hâlâ boşsa tabloda \"Oluştur ve ekle\"ye tıklayıp veriyi geri çekin."
     },
     "ar": {
         "Action": "إجراء",
@@ -3967,7 +4072,14 @@ export const translations = {
         "Failed to fetch stock price.": "فشل في جلب سعر السهم.",
         "Hide chart amounts": "إخفاء مبالغ الرسم البياني",
         "Show chart amounts": "إظهار مبالغ الرسم البياني",
-        "Translate via Google Sheets": "الترجمة عبر جداول بيانات Google"
+        "Translate via Google Sheets": "الترجمة عبر جداول بيانات Google",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "أمر AI (مثل: تلخيص)",
+        "Please enter an AI prompt!": "يرجى إدخال أمر AI!",
+        "Generating...": "جاري الإنشاء...",
+        "Run AI via Google Sheets": "تشغيل AI عبر جداول بيانات Google",
+        "Please configure Google Client ID and Google Sheet URL first.": "يرجى إعداد Google Client ID ورابط جدول بيانات Google أولاً.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "تمت مزامنة صيغة AI إلى جداول بيانات Google. إذا بقيت النتائج فارغة، افتح الجدول وانقر على \"إنشاء وإدراج\" ثم اسحب البيانات."
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4215,7 +4327,14 @@ export const translations = {
         "Failed to fetch stock price.": "शेयर मूल्य प्राप्त करने में विफल।",
         "Hide chart amounts": "चार्ट की राशि छिपाएँ",
         "Show chart amounts": "चार्ट की राशि दिखाएँ",
-        "Translate via Google Sheets": "Google Sheets से अनुवाद करें"
+        "Translate via Google Sheets": "Google Sheets से अनुवाद करें",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI प्रॉम्प्ट (जैसे: सारांश)",
+        "Please enter an AI prompt!": "कृपया AI प्रॉम्प्ट दर्ज करें!",
+        "Generating...": "उत्पन्न हो रहा है...",
+        "Run AI via Google Sheets": "Google Sheets से AI चलाएँ",
+        "Please configure Google Client ID and Google Sheet URL first.": "कृपया पहले Google Client ID और Google Sheet URL सेट करें।",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI फ़ॉर्मूला Google Sheets में सिंक हो गया है। यदि परिणाम खाली हैं, तो शीट खोलकर \"Generate and insert\" पर क्लिक करें और फिर डेटा खींचें।"
     },
     "pl": {
         "Action": "Akcja",
@@ -4463,7 +4582,14 @@ export const translations = {
         "Failed to fetch stock price.": "Nie udało się pobrać ceny akcji.",
         "Hide chart amounts": "Ukryj kwoty na wykresie",
         "Show chart amounts": "Pokaż kwoty na wykresie",
-        "Translate via Google Sheets": "Przetłumacz przez Arkusze Google"
+        "Translate via Google Sheets": "Przetłumacz przez Arkusze Google",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "Prompt AI (np. Podsumuj)",
+        "Please enter an AI prompt!": "Wprowadź prompt AI!",
+        "Generating...": "Generowanie...",
+        "Run AI via Google Sheets": "Uruchom AI przez Arkusze Google",
+        "Please configure Google Client ID and Google Sheet URL first.": "Najpierw skonfiguruj Google Client ID i adres URL Arkusza Google.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formuła AI została zsynchronizowana z Arkuszami Google. Jeśli wyniki są puste, otwórz arkusz, kliknij „Wygeneruj i wstaw”, a następnie pobierz dane."
     },
     "nl": {
         "Action": "Actie",
@@ -4711,7 +4837,14 @@ export const translations = {
         "Failed to fetch stock price.": "Kan aandelenkoers niet ophalen.",
         "Hide chart amounts": "Grafiekbedragen verbergen",
         "Show chart amounts": "Grafiekbedragen tonen",
-        "Translate via Google Sheets": "Vertalen via Google Spreadsheets"
+        "Translate via Google Sheets": "Vertalen via Google Spreadsheets",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI-prompt (bijv. Samenvatten)",
+        "Please enter an AI prompt!": "Voer een AI-prompt in!",
+        "Generating...": "Genereren...",
+        "Run AI via Google Sheets": "AI uitvoeren via Google Spreadsheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Stel eerst de Google Client ID en Google Spreadsheet-URL in.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formule gesynchroniseerd met Google Spreadsheets. Als resultaten leeg blijven, open het blad, klik op \"Genereren en invoegen\" en haal opnieuw op."
     },
     "uk": {
         "Action": "Дія",
@@ -4959,7 +5092,14 @@ export const translations = {
         "Failed to fetch stock price.": "Не вдалося отримати ціну акції.",
         "Hide chart amounts": "Приховати суми на графіку",
         "Show chart amounts": "Показати суми на графіку",
-        "Translate via Google Sheets": "Перекласти через Google Таблиці"
+        "Translate via Google Sheets": "Перекласти через Google Таблиці",
+        "AI": "ШІ",
+        "AI prompt (e.g., Summarize)": "Промпт ШІ (напр., Підсумуй)",
+        "Please enter an AI prompt!": "Введіть промпт для ШІ!",
+        "Generating...": "Генерація...",
+        "Run AI via Google Sheets": "Запустити ШІ через Google Таблиці",
+        "Please configure Google Client ID and Google Sheet URL first.": "Спочатку налаштуйте Google Client ID та URL Google Таблиці.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формулу ШІ синхронізовано з Google Таблицями. Якщо ще порожньо, відкрийте таблицю, натисніть «Згенерувати та вставити» і завантажте знову."
     },
     "tl": {
         "Action": "Aksyon",
@@ -5207,7 +5347,14 @@ export const translations = {
         "Failed to fetch stock price.": "Nabigong kunin ang presyo ng stock.",
         "Hide chart amounts": "Itago ang halaga sa chart",
         "Show chart amounts": "Ipakita ang halaga sa chart",
-        "Translate via Google Sheets": "Isalin gamit ang Google Sheets"
+        "Translate via Google Sheets": "Isalin gamit ang Google Sheets",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI prompt (hal., Ibuod)",
+        "Please enter an AI prompt!": "Mangyaring maglagay ng AI prompt!",
+        "Generating...": "Gumagawa...",
+        "Run AI via Google Sheets": "Patakbuhin ang AI gamit ang Google Sheets",
+        "Please configure Google Client ID and Google Sheet URL first.": "Paki-set muna ang Google Client ID at Google Sheet URL.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Na-sync na ang AI formula sa Google Sheets. Kung blangko pa rin, buksan ang Sheet, i-click ang \"Generate and insert\", at i-pull muli."
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5455,7 +5602,14 @@ export const translations = {
         "Failed to fetch stock price.": "Kunde inte hämta aktiekurs.",
         "Hide chart amounts": "Dölj diagrambelopp",
         "Show chart amounts": "Visa diagrambelopp",
-        "Translate via Google Sheets": "Översätt via Google Kalkylark"
+        "Translate via Google Sheets": "Översätt via Google Kalkylark",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI-prompt (t.ex. Sammanfatta)",
+        "Please enter an AI prompt!": "Ange en AI-prompt!",
+        "Generating...": "Genererar...",
+        "Run AI via Google Sheets": "Kör AI via Google Kalkylark",
+        "Please configure Google Client ID and Google Sheet URL first.": "Konfigurera Google Client ID och Google Kalkylark-URL först.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formel synkad till Google Kalkylark. Om det fortfarande är tomt, öppna arket, klicka på \"Generera och infoga\" och hämta igen."
     },
     "cs": {
         "Action": "Akce",
@@ -5703,7 +5857,14 @@ export const translations = {
         "Failed to fetch stock price.": "Nepodařilo se načíst cenu akcie.",
         "Hide chart amounts": "Skrýt částky v grafu",
         "Show chart amounts": "Zobrazit částky v grafu",
-        "Translate via Google Sheets": "Přeložit přes Tabulky Google"
+        "Translate via Google Sheets": "Přeložit přes Tabulky Google",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI prompt (např. Shrň)",
+        "Please enter an AI prompt!": "Zadejte prosím AI prompt!",
+        "Generating...": "Generování...",
+        "Run AI via Google Sheets": "Spustit AI přes Tabulky Google",
+        "Please configure Google Client ID and Google Sheet URL first.": "Nejprve nastavte Google Client ID a URL Tabulky Google.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI vzorec synchronizován do Tabulek Google. Pokud je prázdný, otevřete tabulku, klikněte na „Vygenerovat a vložit“ a stáhněte znovu."
     },
     "ta": {
         "Action": "செயல்",
@@ -5951,6 +6112,13 @@ export const translations = {
         "Failed to fetch stock price.": "பங்கு விலையைப் பெற முடியவில்லை.",
         "Hide chart amounts": "வரைபடத் தொகைகளை மறை",
         "Show chart amounts": "வரைபடத் தொகைகளைக் காட்டு",
-        "Translate via Google Sheets": "Google Sheets மூலம் மொழிபெயர்"
+        "Translate via Google Sheets": "Google Sheets மூலம் மொழிபெயர்",
+        "AI": "AI",
+        "AI prompt (e.g., Summarize)": "AI கட்டளை (எ.கா. சுருக்கம்)",
+        "Please enter an AI prompt!": "AI கட்டளையை உள்ளிடவும்!",
+        "Generating...": "உருவாக்குகிறது...",
+        "Run AI via Google Sheets": "Google Sheets மூலம் AI இயக்கு",
+        "Please configure Google Client ID and Google Sheet URL first.": "முதலில் Google Client ID மற்றும் Google Sheet URL ஐ அமைக்கவும்.",
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI சூத்திரம் Google Sheets இல் ஒத்திசைக்கப்பட்டது. காலியாக இருந்தால், தாளில் \"Generate and insert\" ஐ கிளிக் செய்து மீண்டும் பெறவும்."
     }
 }

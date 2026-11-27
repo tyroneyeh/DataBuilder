@@ -298,7 +298,7 @@
                             class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                         >
 
-                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500')))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : ''">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
+                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'))))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || '') : '')">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
                         <button v-if="!isPrinting && col.type === 'exchange' && !(Number(col.customRate) > 0)"
                             type="button"
                             @pointerdown.stop
@@ -319,6 +319,13 @@
                             @click.stop="translateViaGoogleSheets(col, { forceAll: true, interactive: true })"
                             class="shrink-0 ml-0.5 text-xs text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
                             :data-tooltip="translate('Translate via Google Sheets')"
+                        >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
+                        <button v-else-if="!isPrinting && col.type === 'ai' && canGoogleSheetsTranslate"
+                            type="button"
+                            @pointerdown.stop
+                            @click.stop="translateViaGoogleSheets(col, { forceAll: true, interactive: true })"
+                            class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                            :data-tooltip="translate('Run AI via Google Sheets')"
                         >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
                     </div>
 
@@ -422,6 +429,40 @@
                                     :class="translatePendingGesture[`${row.id}-${col.id}`] || !row[col.id] ? 'opacity-100 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40' : 'opacity-40 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-800/50'"
                                     :data-tooltip="!isBrowserTranslatorSupported && canGoogleSheetsTranslate ? translate('Translate via Google Sheets') : translate('Click to translate')"
                                 >🌐</button>
+                            </template>
+                        </template>
+                    </div>
+                    <div v-else-if="col.type === 'ai'"
+                        class="relative w-full print:w-full rounded bg-purple-50/50 dark:bg-purple-900/30 print:bg-transparent min-h-[40px] sm:min-h-0 flex items-center justify-end sm:justify-start print:justify-start">
+                        <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
+                            {{ row[col.id] || '' }}
+                        </span>
+                        <template v-else>
+                            <span v-if="translatingCells[`${row.id}-${col.id}`]" class="w-full px-2 py-2 sm:py-1 text-right sm:text-left text-xs text-purple-400 dark:text-purple-400 animate-pulse">⏳ {{ translate('Generating...') }}</span>
+                            <template v-else>
+                                <input
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                    v-model="row[col.id]"
+                                    type="text"
+                                    :data-tooltip="row[col.id] || col.aiPrompt || ''"
+                                    :placeholder="translatePendingGesture[`${row.id}-${col.id}`] ? translate('Run AI via Google Sheets') : '...'"
+                                    class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-base text-purple-700 dark:text-purple-300 dark:placeholder-purple-400/60 placeholder-purple-400/70 truncate"
+                                    :class="{ 'pr-7': canGoogleSheetsTranslate && row[col.sourceCol] }"
+                                    @paste="handlePaste($event, windowStart + index, col.id)"
+                                    @input="onTranslateCellInput(row, col)"
+                                    @focus="onTranslateCellFocus(row, col)"
+                                    @click.stop="enterInput(row, col, $event)"
+                                    @blur="saveInput(row, col)"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                >
+                                <button
+                                    v-if="canGoogleSheetsTranslate && row[col.sourceCol]"
+                                    type="button"
+                                    @click.stop="handleAiCellClick(row, col)"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded transition-opacity text-xs cursor-pointer"
+                                    :class="translatePendingGesture[`${row.id}-${col.id}`] || !row[col.id] ? 'opacity-100 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40' : 'opacity-40 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-800/50'"
+                                    :data-tooltip="translate('Run AI via Google Sheets')"
+                                >✨</button>
                             </template>
                         </template>
                     </div>
@@ -1006,7 +1047,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate', 'ai'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -1532,6 +1573,14 @@
                             <option v-for="c in translatableColumns" :key="'S'+c.id" :value="c.id">{{ c.label }}</option>
                         </select>
                         <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 shrink-0 whitespace-nowrap">{{ translate('TWSE / TPEx') }}</span>
+                    </div>
+                    <div v-else-if="newColType === 'ai'" class="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-purple-50 dark:bg-purple-900/30 px-2 py-1.5 rounded-md border border-purple-200 dark:border-purple-800 flex-[2] min-w-0">
+                        <select v-model="aiSourceCol" class="flex-1 min-w-[90px] border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option value="" disabled>{{ translate('Source Column') }}</option>
+                            <option v-for="c in aiSourceColumns" :key="'AI'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <span class="text-purple-500 dark:text-purple-400 font-bold shrink-0">✨</span>
+                        <input v-model="newColAiPrompt" type="text" :placeholder="translate('AI prompt (e.g., Summarize)')" class="flex-[1.5] min-w-[140px] border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-base">
                     </div>
                     <div class="shrink-0 w-full md:w-auto">
                         <button @click="addColumn" class="w-full bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap px-5 py-2 rounded-md transition-colors font-medium shadow-sm h-[42px]">
@@ -2296,6 +2345,8 @@ export default {
         const STOCK_CACHE_KEY = 'ty_tw_stock_quotes_cache'
         const STOCK_CACHE_TTL_MS = 5 * 60 * 1000
         const stockSourceCol = ref('')
+        const aiSourceCol = ref('')
+        const newColAiPrompt = ref('')
         const loadCachedStockQuotes = () => {
             try {
                 const raw = localStorage.getItem(STOCK_CACHE_KEY)
@@ -2418,6 +2469,7 @@ export default {
                 color: 'Color',
                 number: 'Number',
                 translate: 'Translate',
+                ai: 'AI',
                 exchange: 'Exchange Rate',
                 stock: 'TW Stock',
                 text: 'Text'
@@ -2447,6 +2499,9 @@ export default {
                 opts.push({value: 'translate', label: translate('Translate')})
                 opts.push({value: 'stock', label: translate('TW Stock')})
             }
+            if (canGoogleSheetsTranslate.value && columns.value.some(col => !['photo', 'ai'].includes(col.type))) {
+                opts.push({value: 'ai', label: translate('AI')})
+            }
             if (columns.value.some(col => isNumericType(col.type) && col.type !== 'exchange')) {
                 opts.push({value: 'exchange', label: translate('Exchange Rate')})
             }
@@ -2471,7 +2526,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'translate', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -2502,6 +2557,9 @@ export default {
         const categoryCounts = ref({})
         const googleClientId = ref(localStorage.getItem('TY_GOOGLE_CLIENT_ID') || '')
         const sheetImportUrl = ref(localStorage.getItem('TY_SHEET_IMPORT_URL') || '')
+        const canGoogleSheetsTranslate = computed(() =>
+            Boolean(googleClientId.value?.trim() && sheetImportUrl.value?.trim() && sheetImportUrl.value.includes('/d/'))
+        )
         const googleTokenExpiresAt = ref(parseInt(localStorage.getItem('TY_GOOGLE_TOKEN_EXPIRES_AT')) || 0)
         const googleAccessToken = ref(localStorage.getItem('TY_GOOGLE_ACCESS_TOKEN') || '')
         const clearGoogleToken = () => {
@@ -3009,6 +3067,14 @@ export default {
                         || candidates[0]
                     stockSourceCol.value = preferred ? preferred.id : ''
                 }
+            } else if (newVal === 'ai') {
+                const candidates = aiSourceColumns.value
+                if (!candidates.some(c => c.id === aiSourceCol.value)) {
+                    const preferred = candidates.find(c => c.type === 'text')
+                        || candidates.find(c => c.type === 'category')
+                        || candidates[0]
+                    aiSourceCol.value = preferred ? preferred.id : ''
+                }
             }
         })
         watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
@@ -3122,6 +3188,7 @@ export default {
 
         const numberColumns = computed(() => columns.value.filter(col => col.type === 'number' || col.type === 'stock' || col.type === 'exchange'))
         const translatableColumns = computed(() => columns.value.filter(col => ['text', 'category'].includes(col.type)))
+        const aiSourceColumns = computed(() => columns.value.filter(col => !['photo', 'ai'].includes(col.type)))
         const exchangeSourceColumns = computed(() => columns.value.filter(col => isNumericType(col.type) && col.type !== 'exchange'))
 
         const areAllExpanded = computed(() => {
@@ -4829,7 +4896,7 @@ export default {
                             val = normalizeTimeString(val)
                         } else if (col.type === 'checkbox') {
                             val = (val === true || String(val).trim().toUpperCase() === 'TRUE')
-                        } else if (col.type === 'translate' && isSheetPendingValue(val)) {
+                        } else if (['translate', 'ai'].includes(col.type) && isSheetPendingValue(val)) {
                             val = ''
                         }
                         newRow[col.id] = val
@@ -4948,6 +5015,23 @@ export default {
                         } else {
                             rowArray.push(row[c.id] ?? '')
                         }
+                    } else if (c.type === 'ai' && c.sourceCol && c.aiPrompt) {
+                        const existingVal = String(row[c.id] ?? '').trim()
+                        const rawSrc = row[c.sourceCol]
+                        const srcText = (Array.isArray(rawSrc) ? rawSrc.join(', ') : String(rawSrc ?? '')).trim()
+                        const srcIdx = columns.value.findIndex(col => col.id === c.sourceCol)
+                        const forceCol = forceTranslateColIds && forceTranslateColIds.has(c.id)
+                        const forceRow = !forceTranslateRowIds || forceTranslateRowIds.has(row.id)
+                        const shouldUseFormula = srcIdx !== -1 && srcText !== '' && (!existingVal || (forceCol && forceRow))
+                        if (shouldUseFormula) {
+                            const srcColLetter = getColumnLetter(srcIdx + 1)
+                            const sheetRowNum = rowIdx + 2
+                            const escapedPrompt = String(c.aiPrompt).replace(/\r?\n/g, ' ').replaceAll('"', '""')
+                            rowArray.push(`=IF(${srcColLetter}${sheetRowNum}="","",AI("${escapedPrompt}",${srcColLetter}${sheetRowNum}))`)
+                            wroteTranslateFormulas = true
+                        } else {
+                            rowArray.push(row[c.id] ?? '')
+                        }
                     } else {
                         rowArray.push(row[c.id] ?? '')
                     }
@@ -5048,12 +5132,14 @@ export default {
 
         const pullTranslationsFromGoogleSheets = async (url, targetColIds = null) => {
             const tCols = columns.value.filter(c =>
-                c.type === 'translate' && c.sourceCol && (!targetColIds || targetColIds.has(c.id))
+                ['translate', 'ai'].includes(c.type) && c.sourceCol && (!targetColIds || targetColIds.has(c.id))
             )
-            if (!tCols.length) return false
+            if (!tCols.length) return { changed: false, hasPending: false }
 
-            const delays = [800, 1200, 1600, 2200]
+            const hasAiCol = tCols.some(c => c.type === 'ai')
+            const delays = hasAiCol ? [1200, 1800, 2500, 3500] : [800, 1200, 1600, 2200]
             let anyChanged = false
+            let stillPending = false
 
             for (const delayMs of delays) {
                 await new Promise(resolve => setTimeout(resolve, delayMs))
@@ -5073,11 +5159,11 @@ export default {
                         if (!sourceText) return
                         const cellKey = `${row.id}-${col.id}`
                         const cacheKey = `${currentStorageKey.value}:${cellKey}`
-                        const targetLang = col.targetLang || currentLanguage.value || 'en'
+                        const targetKey = col.type === 'ai' ? (col.aiPrompt || '') : (col.targetLang || currentLanguage.value || 'en')
                         const translatedVal = String(cloudRow[col.id] ?? '').trim()
                         if (!isSheetPendingValue(translatedVal)) {
                             clearPendingGesture(cellKey)
-                            lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                            lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang: targetKey })
                             if (row[col.id] !== translatedVal) {
                                 row[col.id] = translatedVal
                                 anyChanged = true
@@ -5088,13 +5174,14 @@ export default {
                     })
                 })
 
+                stillPending = hasPending
                 if (anyChanged) {
                     triggerRef(rows)
                 }
                 if (!hasPending) break
             }
 
-            return anyChanged
+            return { changed: anyChanged, hasPending: stillPending }
         }
 
         const executeExportToSheets = async () => {
@@ -5780,6 +5867,19 @@ export default {
                     if (existingCol.id === stockSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
                     existingCol.sourceCol = stockSourceCol.value
                     delete existingCol.targetLang
+                    delete existingCol.aiPrompt
+                    delete existingCol.fromCurrency
+                    delete existingCol.toCurrency
+                    delete existingCol.customRate
+                    delete existingCol.cachedRate
+                    delete existingCol.rateDate
+                } else if (newColType.value === 'ai') {
+                    if (!aiSourceCol.value) return showConfirm(translate('Please select a source column!'), 1)
+                    if (!newColAiPrompt.value.trim()) return showConfirm(translate('Please enter an AI prompt!'), 1)
+                    if (existingCol.id === aiSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
+                    existingCol.sourceCol = aiSourceCol.value
+                    existingCol.aiPrompt = newColAiPrompt.value.trim()
+                    delete existingCol.targetLang
                     delete existingCol.fromCurrency
                     delete existingCol.toCurrency
                     delete existingCol.customRate
@@ -5788,6 +5888,7 @@ export default {
                 } else {
                     delete existingCol.sourceCol
                     delete existingCol.targetLang
+                    delete existingCol.aiPrompt
                     delete existingCol.fromCurrency
                     delete existingCol.toCurrency
                     delete existingCol.customRate
@@ -5805,8 +5906,10 @@ export default {
                     existingCol.opC = formulaC.value
                 }
                 onDataEdited('both')
-                if (existingCol.type === 'translate' && hasBuiltInBrowserTranslator()) {
+                if (existingCol.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                     translateColumnRows(existingCol, { force: true, interactive: true })
+                } else if (existingCol.type === 'ai' && canGoogleSheetsTranslate.value) {
+                    translateViaGoogleSheets(existingCol, { forceAll: true, interactive: true })
                 } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
                 } else if (existingCol.type === 'stock') {
@@ -5822,6 +5925,10 @@ export default {
             }
             if (newColType.value === 'stock' && !stockSourceCol.value) {
                 return showConfirm(translate('Please select a source column!'), 1)
+            }
+            if (newColType.value === 'ai') {
+                if (!aiSourceCol.value) return showConfirm(translate('Please select a source column!'), 1)
+                if (!newColAiPrompt.value.trim()) return showConfirm(translate('Please enter an AI prompt!'), 1)
             }
             if (isCalcType(newColType.value)) {
                 if (newColType.value === 'multiply3' && !formulaC.value) return showConfirm(translate('Please select columns A, B and C!'), 1)
@@ -5841,6 +5948,9 @@ export default {
             if (newColType.value === 'translate') {
                 newColData.sourceCol = translateSourceCol.value
                 newColData.targetLang = newColTargetLang.value || 'en'
+            } else if (newColType.value === 'ai') {
+                newColData.sourceCol = aiSourceCol.value
+                newColData.aiPrompt = newColAiPrompt.value.trim()
             } else if (newColType.value === 'exchange') {
                 newColData.sourceCol = exchangeSourceCol.value
                 newColData.fromCurrency = exchangeFromCurrency.value || 'USD'
@@ -5862,7 +5972,7 @@ export default {
                 newColData.opC = formulaC.value
             }
 
-            if (newColType.value === 'translate' || newColType.value === 'exchange' || newColType.value === 'stock') {
+            if (newColType.value === 'translate' || newColType.value === 'ai' || newColType.value === 'exchange' || newColType.value === 'stock') {
                 const srcIdx = columns.value.findIndex(c => c.id === newColData.sourceCol)
                 if (srcIdx !== -1) {
                     const nextCols = [...columns.value]
@@ -5889,6 +5999,8 @@ export default {
             newColLabel.value = ''
             newColType.value = 'text'
             translateSourceCol.value = ''
+            aiSourceCol.value = ''
+            newColAiPrompt.value = ''
             exchangeSourceCol.value = ''
             exchangeCustomRate.value = ''
             stockSourceCol.value = ''
@@ -5896,8 +6008,10 @@ export default {
             formulaB.value = ''
             formulaC.value = ''
             if (newColData.type === 'date') hasDateColumn.value = true
-            if (newColData.type === 'translate' && hasBuiltInBrowserTranslator()) {
+            if (newColData.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                 translateColumnRows(newColData, { force: true, interactive: true })
+            } else if (newColData.type === 'ai' && canGoogleSheetsTranslate.value) {
+                translateViaGoogleSheets(newColData, { forceAll: true, interactive: true })
             } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
             } else if (newColData.type === 'stock') {
@@ -6023,9 +6137,6 @@ export default {
             ('Translator' in globalThis && typeof globalThis.Translator?.create === 'function') ||
             Boolean(globalThis.ai?.translator && typeof globalThis.ai.translator.create === 'function')
         const isBrowserTranslatorSupported = hasBuiltInBrowserTranslator()
-        const canGoogleSheetsTranslate = computed(() =>
-            Boolean(googleClientId.value?.trim() && sheetImportUrl.value?.trim() && sheetImportUrl.value.includes('/d/'))
-        )
         const canTranslateCells = computed(() => isBrowserTranslatorSupported || canGoogleSheetsTranslate.value)
         const isSheetsTranslating = ref(false)
         const hasValidCachedGoogleToken = () =>
@@ -6228,13 +6339,21 @@ export default {
         const translateViaGoogleSheets = async (col = null, { targetRowId = null, forceAll = false, interactive = false } = {}) => {
             if (!canGoogleSheetsTranslate.value) {
                 if (interactive) {
-                    showConfirm(translate('Your browser does not support built-in translation (Chrome 138+ required).'), 1)
+                    showConfirm(
+                        col?.type === 'ai'
+                            ? translate('Please configure Google Client ID and Google Sheet URL first.')
+                            : translate('Your browser does not support built-in translation (Chrome 138+ required).'),
+                        1
+                    )
                 }
                 return false
             }
             if (isSheetsTranslating.value) return false
+            const defaultSheetCols = () => columns.value.filter(c =>
+                c.sourceCol && (c.type === 'ai' || (c.type === 'translate' && !isBrowserTranslatorSupported))
+            )
             if (!interactive && !hasValidCachedGoogleToken()) {
-                const targetCols = col ? [col] : columns.value.filter(c => c.type === 'translate' && c.sourceCol)
+                const targetCols = col ? [col] : defaultSheetCols()
                 const pendingPatch = { ...translatePendingGesture.value }
                 rows.value.forEach(row => {
                     if (targetRowId && row.id !== targetRowId) return
@@ -6250,7 +6369,7 @@ export default {
                 return false
             }
 
-            const targetCols = col ? [col] : columns.value.filter(c => c.type === 'translate' && c.sourceCol)
+            const targetCols = col ? [col] : defaultSheetCols()
             if (!targetCols.length) return false
 
             const markedKeys = []
@@ -6276,15 +6395,18 @@ export default {
                 const forceTranslateColIds = (forceAll || targetRowId) ? new Set(targetCols.map(c => c.id)) : null
                 const forceTranslateRowIds = targetRowId ? new Set([targetRowId]) : null
                 await pushToGoogleSheets(sheetImportUrl.value, syncTs, { forceTranslateRowIds, forceTranslateColIds })
-                await pullTranslationsFromGoogleSheets(sheetImportUrl.value, new Set(targetCols.map(c => c.id)))
+                const pullRes = await pullTranslationsFromGoogleSheets(sheetImportUrl.value, new Set(targetCols.map(c => c.id)))
                 updatedAt.value = syncTs
                 lastSyncDate.value = syncTs
                 localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
                 triggerRef(rows)
                 await saveCurrentWorkspaceNow()
+                if (interactive && targetCols.some(c => c.type === 'ai') && pullRes?.hasPending && !pullRes?.changed) {
+                    showConfirm(translate('AI formula synced to Google Sheets. If results are still blank, open the Sheet to click "Generate and insert", then pull from Sheets.'), 1)
+                }
                 return true
             } catch (err) {
-                console.warn('Google Sheets translate error:', err)
+                console.warn('Google Sheets formula sync error:', err)
                 if (interactive) {
                     showConfirm('❌ ' + translate('Translation failed.') + (err?.message ? ` (${err.message})` : ''), 1)
                 }
@@ -6300,7 +6422,7 @@ export default {
             }
         }
         const scheduleGoogleSheetsTranslate = debounce(() => {
-            if (!isBrowserTranslatorSupported && canGoogleSheetsTranslate.value) {
+            if (canGoogleSheetsTranslate.value) {
                 translateViaGoogleSheets(null, { interactive: false })
             }
         }, 1500)
@@ -6335,6 +6457,44 @@ export default {
             }
         }
         const scheduleAutoTranslateForCell = (row, sourceColId, immediate = false) => {
+            const dependentAiCols = columns.value.filter(c => c.type === 'ai' && c.sourceCol === sourceColId)
+            if (dependentAiCols.length && canGoogleSheetsTranslate.value) {
+                const rawSrc = row[sourceColId]
+                const srcText = (Array.isArray(rawSrc) ? rawSrc.join(', ') : String(rawSrc ?? '')).trim()
+                let aiChanged = false
+                dependentAiCols.forEach(aiCol => {
+                    const cellKey = `${row.id}-${aiCol.id}`
+                    const cacheKey = `${currentStorageKey.value}:${cellKey}`
+                    const targetKey = aiCol.aiPrompt || ''
+                    if (!srcText) {
+                        clearPendingGesture(cellKey)
+                        lastTranslatedSourceMap.delete(cacheKey)
+                        if (row[aiCol.id]) {
+                            row[aiCol.id] = ''
+                            aiChanged = true
+                        }
+                        return
+                    }
+                    const prev = lastTranslatedSourceMap.get(cacheKey)
+                    if (!prev || prev.source !== srcText || prev.targetLang !== targetKey) {
+                        if (row[aiCol.id]) {
+                            row[aiCol.id] = ''
+                            aiChanged = true
+                        }
+                        if (!hasValidCachedGoogleToken()) {
+                            translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
+                        }
+                    }
+                })
+                if (aiChanged) {
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+                if (srcText && hasValidCachedGoogleToken()) {
+                    scheduleGoogleSheetsTranslate()
+                }
+            }
+
             const dependentCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol === sourceColId)
             if (!dependentCols.length) return
             if (!isBrowserTranslatorSupported) {
@@ -6400,14 +6560,13 @@ export default {
             }
         }
         const syncAllTranslateColumns = debounce(async () => {
+            const hasAiCols = columns.value.some(c => c.type === 'ai' && c.sourceCol)
             const tCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol)
-            if (!tCols.length) return
-            if (!isBrowserTranslatorSupported) {
-                if (canGoogleSheetsTranslate.value && hasValidCachedGoogleToken()) {
-                    scheduleGoogleSheetsTranslate()
-                }
-                return
+            if (!tCols.length && !hasAiCols) return
+            if ((hasAiCols || !isBrowserTranslatorSupported) && canGoogleSheetsTranslate.value && hasValidCachedGoogleToken()) {
+                scheduleGoogleSheetsTranslate()
             }
+            if (!isBrowserTranslatorSupported || !tCols.length) return
             for (const tCol of tCols) {
                 await translateColumnRows(tCol, { force: false, interactive: false })
             }
@@ -6416,18 +6575,24 @@ export default {
             tempKey.value = String(row[col.id] ?? '')
         }
         const onTranslateCellInput = (row, col) => {
-            if (!row || !col || col.type !== 'translate') return
+            if (!row || !col || !['translate', 'ai'].includes(col.type)) return
             const cellKey = `${row.id}-${col.id}`
             const cacheKey = `${currentStorageKey.value}:${cellKey}`
             const rawVal = col.sourceCol ? row[col.sourceCol] : ''
             const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
-            const targetLang = col.targetLang || currentLanguage.value || 'en'
+            const targetKey = col.type === 'ai' ? (col.aiPrompt || '') : (col.targetLang || currentLanguage.value || 'en')
             clearPendingGesture(cellKey)
             if (String(row[col.id] ?? '').trim() !== '') {
-                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang: targetKey })
             } else {
-                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang, manualEmpty: true })
+                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang: targetKey, manualEmpty: true })
             }
+        }
+        const handleAiCellClick = async (row, col) => {
+            const rawVal = row[col.sourceCol]
+            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            if (!sourceText) return
+            await translateViaGoogleSheets(col, { targetRowId: row.id, interactive: true })
         }
         const handleTranslateCellClick = async (row, col) => {
             const rawVal = row[col.sourceCol]
@@ -6868,7 +7033,7 @@ export default {
         const removeColumn = async (idToRemove) => {
             if (columns.value.some(col =>
                 (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
-                (['translate', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
+                (['translate', 'ai', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
             )) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
@@ -7038,7 +7203,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'ai' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -7236,6 +7401,9 @@ export default {
                 } else if (c.type === 'translate') {
                     const srcCol = columns.value.find(col => col.id === c.sourceCol)
                     meta += `|${srcCol?.label || ''}|${c.targetLang || 'en'}`
+                } else if (c.type === 'ai') {
+                    const srcCol = columns.value.find(col => col.id === c.sourceCol)
+                    meta += `|${srcCol?.label || ''}|${encodeURIComponent(c.aiPrompt || '')}`
                 } else if (c.type === 'exchange') {
                     const srcCol = columns.value.find(col => col.id === c.sourceCol)
                     meta += `|${srcCol?.label || ''}|${c.fromCurrency || 'USD'}|${c.toCurrency || 'TWD'}|${c.customRate || ''}|${c.cachedRate || ''}`
@@ -7403,7 +7571,7 @@ export default {
 
                 let existingCol = columns.value.find(c => c.label === key)
                 if (!existingCol) {
-                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null, targetSourceCol = null, targetLang = null, targetFromCurrency = null, targetToCurrency = null, targetCustomRate = null, targetCachedRate = null
+                    let targetType, targetOpA = null, targetOpB = null, targetOpC = null, targetSourceCol = null, targetLang = null, targetAiPrompt = null, targetFromCurrency = null, targetToCurrency = null, targetCustomRate = null, targetCachedRate = null
 
                     if (parsedColumnMeta[key]) {
                         const metaStr = parsedColumnMeta[key].type
@@ -7419,6 +7587,14 @@ export default {
                             targetType = 'translate'
                             targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
                             targetLang = parts[2] || currentLanguage.value || 'en'
+                        } else if (parts[0] === 'ai') {
+                            targetType = 'ai'
+                            targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
+                            try {
+                                targetAiPrompt = decodeURIComponent(parts.slice(2).join('|') || '')
+                            } catch {
+                                targetAiPrompt = parts.slice(2).join('|') || ''
+                            }
                         } else if (parts[0] === 'exchange') {
                             targetType = 'exchange'
                             targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
@@ -7455,6 +7631,7 @@ export default {
                         opB: targetOpB,
                         opC: targetOpC,
                         ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {}),
+                        ...(targetType === 'ai' ? { sourceCol: targetSourceCol, aiPrompt: targetAiPrompt || '' } : {}),
                         ...(targetType === 'stock' ? { sourceCol: targetSourceCol } : {}),
                         ...(targetType === 'exchange' ? {
                             sourceCol: targetSourceCol,
@@ -10532,7 +10709,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
                             if (newRows[actualIndex][colId] !== newVal) {
                                 newRows[actualIndex][colId] = newVal
-                                if (colType === 'translate') onTranslateCellInput(newRows[actualIndex], columns.value[c])
+                                if (colType === 'translate' || colType === 'ai') onTranslateCellInput(newRows[actualIndex], columns.value[c])
                                 hasChanges = true
                             }
                         }
@@ -10609,7 +10786,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
                                 if (newRows[actualIndex][targetColId] !== finalVal) {
                                     newRows[actualIndex][targetColId] = finalVal
-                                    if (colType === 'translate') onTranslateCellInput(newRows[actualIndex], columns.value[targetColIndex])
+                                    if (colType === 'translate' || colType === 'ai') onTranslateCellInput(newRows[actualIndex], columns.value[targetColIndex])
                                     hasChanges = true
                                 }
                             }
@@ -10766,7 +10943,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                             else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
                             else if (colType === 'checkbox') filteredRows.value[r][colId] = false
                             else filteredRows.value[r][colId] = ''
-                            if (colType === 'translate') onTranslateCellInput(filteredRows.value[r], columns.value[c])
+                            if (colType === 'translate' || colType === 'ai') onTranslateCellInput(filteredRows.value[r], columns.value[c])
                         }
                     }
                 }
@@ -11044,6 +11221,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             canTranslateCells,
             isSheetsTranslating,
             translateViaGoogleSheets,
+            aiSourceCol,
+            aiSourceColumns,
+            newColAiPrompt,
+            handleAiCellClick,
             onTranslateCellFocus,
             onTranslateCellInput,
             handleTranslateCellClick,
