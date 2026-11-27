@@ -289,7 +289,7 @@
                             class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                         >
 
-                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500'))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : ''">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
+                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500')))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : ''">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
                         <button v-if="!isPrinting && col.type === 'exchange' && !(Number(col.customRate) > 0)"
                             type="button"
                             @pointerdown.stop
@@ -297,6 +297,13 @@
                             class="shrink-0 ml-0.5 text-xs text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
                             :data-tooltip="getExchangeHeaderTooltip(col)"
                         >{{ exchangeLoadingBases[(col.fromCurrency || '').toLowerCase()] ? '⏳' : '🔄' }}</button>
+                        <button v-else-if="!isPrinting && col.type === 'stock'"
+                            type="button"
+                            @pointerdown.stop
+                            @click.stop="refreshStockColumn(col)"
+                            class="shrink-0 ml-0.5 text-xs text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors"
+                            :data-tooltip="translate('Refresh stock prices')"
+                        >{{ stockLoading ? '⏳' : '🔄' }}</button>
                     </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -382,6 +389,17 @@
                         @click="speakFeedback($event.target.innerText)">
                         <span v-if="exchangeLoadingBases[(col.fromCurrency || '').toLowerCase()] && !getEffectiveExchangeRate(col)" class="text-xs text-amber-500 animate-pulse">⏳</span>
                         <span v-else>{{ formatNumber(getRowNumericValue(row, col)) }}</span>
+                    </div>
+                    <div v-else-if="col.type === 'stock'"
+                        class="w-auto sm:w-full print:w-full p-2 mr-6 print:text-black print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center font-semibold bg-emerald-50/50 dark:bg-emerald-900/30 cursor-pointer"
+                        :class="(getStockQuoteForRow(row, col)?.change ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : ((getStockQuoteForRow(row, col)?.change ?? 0) < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-200')"
+                        :data-tooltip="getStockCellTooltip(row, col)"
+                        @click="speakFeedback(getStockSpeakText(row, col))">
+                        <span v-if="stockLoading && !getRowNumericValue(row, col) && extractTwStockCode(row[col.sourceCol])" class="text-xs text-emerald-500 animate-pulse">⏳</span>
+                        <template v-else-if="getRowNumericValue(row, col)">
+                            <span>{{ formatNumber(getRowNumericValue(row, col)) }}</span>
+                            <span v-if="!isPrinting && getStockQuoteForRow(row, col)?.change" class="text-[10px] ml-0.5 align-middle">{{ getStockQuoteForRow(row, col).change > 0 ? '▲' : '▼' }}</span>
+                        </template>
                     </div>
                     <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
                         <template v-if="isPrinting">
@@ -885,7 +903,7 @@
             class="w-full sm:flex-none flex shrink-0 sm:w-[var(--col-width)] sm:border border-gray-100 sm:border-gray-300 dark:border-gray-600 bg-white sm:bg-gray-100 dark:bg-gray-800 items-center sm:items-start justify-between last:border-b-0 sm:last:border-b"
             :style="{'--col-width': colWidths[index + 1] ? colWidths[index + 1] + 'px' : 'auto'}"
             :class="[
-                isCalcType(col.type) || col.type === 'exchange' ? 'sm:justify-end' : 'sm:justify-start'
+                isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock' ? 'sm:justify-end' : 'sm:justify-start'
             ]">
 
             <span v-if="!isPrinting" class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap">{{ col.label }}</span>
@@ -1465,6 +1483,13 @@
                             <option v-for="cur in currencyOptions" :key="'To'+cur.code" :value="cur.code">{{ cur.code }}</option>
                         </select>
                         <input v-model="exchangeCustomRate" type="number" step="any" min="0" :placeholder="translate('Auto rate')" class="w-24 shrink-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-sm">
+                    </div>
+                    <div v-else-if="newColType === 'stock'" class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1.5 rounded-md border border-emerald-200 dark:border-emerald-800 flex-[1.5] min-w-0">
+                        <select v-model="stockSourceCol" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option value="" disabled>{{ translate('Source Column') }}</option>
+                            <option v-for="c in translatableColumns" :key="'S'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300 shrink-0 whitespace-nowrap">{{ translate('TWSE / TPEx') }}</span>
                     </div>
                     <div class="shrink-0 w-full md:w-auto">
                         <button @click="addColumn" class="w-full bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap px-5 py-2 rounded-md transition-colors font-medium shadow-sm h-[42px]">
@@ -2225,6 +2250,20 @@ export default {
         const exchangeRates = ref(loadCachedExchangeRates())
         const exchangeLoadingBases = ref({})
         const exchangeFetchPromises = new Map()
+        const STOCK_CACHE_KEY = 'ty_tw_stock_quotes_cache'
+        const STOCK_CACHE_TTL_MS = 5 * 60 * 1000
+        const stockSourceCol = ref('')
+        const loadCachedStockQuotes = () => {
+            try {
+                const raw = localStorage.getItem(STOCK_CACHE_KEY)
+                return raw ? JSON.parse(raw) : {}
+            } catch {
+                return {}
+            }
+        }
+        const stockQuotes = ref(loadCachedStockQuotes())
+        const stockLoading = ref(false)
+        const stockRowTimers = new Map()
         const formulaA = ref('')
         const formulaB = ref('')
         const formulaC = ref('')
@@ -2254,7 +2293,7 @@ export default {
         const confirmCancelBtnRef = ref(null)
         const CALC_TYPES = new Set(['multiply', 'multiply3', 'minus', 'add', 'divide'])
         const isCalcType = (type) => CALC_TYPES.has(type)
-        const isNumericType = (type) => type === 'number' || type === 'exchange' || CALC_TYPES.has(type)
+        const isNumericType = (type) => type === 'number' || type === 'exchange' || type === 'stock' || CALC_TYPES.has(type)
         const getSafeUrl = (raw) => {
             const val = String(raw || '').trim()
             if (!val) return ''
@@ -2335,6 +2374,7 @@ export default {
                 number: 'Number',
                 translate: 'Translate',
                 exchange: 'Exchange Rate',
+                stock: 'TW Stock',
                 text: 'Text'
             }
             return translate(labelMap[type] || 'Text')
@@ -2360,11 +2400,12 @@ export default {
             ]
             if (columns.value.some(col => ['text', 'category'].includes(col.type))) {
                 opts.push({value: 'translate', label: translate('Translate')})
+                opts.push({value: 'stock', label: translate('TW Stock')})
             }
             if (columns.value.some(col => isNumericType(col.type) && col.type !== 'exchange')) {
                 opts.push({value: 'exchange', label: translate('Exchange Rate')})
             }
-            const numCount = columns.value.filter(col => col.type === 'number').length
+            const numCount = columns.value.filter(col => col.type === 'number' || col.type === 'stock' || col.type === 'exchange').length
             if (numCount > 1) {
                 opts.push(
                     {value: 'add', label: translate('Add (A + B)')},
@@ -2915,6 +2956,14 @@ export default {
                     const preferred = candidates.find(c => isCalcType(c.type)) || candidates[0]
                     exchangeSourceCol.value = preferred ? preferred.id : ''
                 }
+            } else if (newVal === 'stock') {
+                const candidates = translatableColumns.value
+                if (!candidates.some(c => c.id === stockSourceCol.value)) {
+                    const preferred = candidates.find(c => /股|代號|stock|code|symbol|ticker/i.test(c.label))
+                        || candidates.find(c => c.type === 'text')
+                        || candidates[0]
+                    stockSourceCol.value = preferred ? preferred.id : ''
+                }
             }
         })
         watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
@@ -3026,7 +3075,7 @@ export default {
             }
         }
 
-        const numberColumns = computed(() => columns.value.filter(col => col.type === 'number'))
+        const numberColumns = computed(() => columns.value.filter(col => col.type === 'number' || col.type === 'stock' || col.type === 'exchange'))
         const translatableColumns = computed(() => columns.value.filter(col => ['text', 'category'].includes(col.type)))
         const exchangeSourceColumns = computed(() => columns.value.filter(col => isNumericType(col.type) && col.type !== 'exchange'))
 
@@ -3194,9 +3243,190 @@ export default {
             await Promise.all(bases.map(b => fetchExchangeRatesForBase(b, { force, interactive: false })))
         }
 
+        const extractTwStockCode = (raw) => {
+            const str = String(raw ?? '').trim().toUpperCase()
+            if (!str) return ''
+            const match = str.match(/(?:^|[^A-Z0-9])([0-9]{4,6}[A-Z]{0,2})(?:\.TWO?|\b)/)
+            return match ? match[1] : ''
+        }
+
+        const getStockQuoteForRow = (row, colDef) => {
+            if (!row || !colDef || colDef.type !== 'stock' || !colDef.sourceCol) return null
+            const code = extractTwStockCode(row[colDef.sourceCol])
+            return code ? (stockQuotes.value[code] || null) : null
+        }
+
+        const getStockCellTooltip = (row, colDef) => {
+            const quote = getStockQuoteForRow(row, colDef)
+            const val = getRowNumericValue(row, colDef)
+            if (!quote) return val ? val.toLocaleString() : ''
+            const marketLabel = quote.market === 'TPEx' ? translate('TPEx') : translate('TWSE')
+            const parts = [`${quote.code}${quote.name ? ` ${quote.name}` : ''}`, marketLabel, val.toLocaleString()]
+            if (quote.change !== null && quote.change !== undefined) {
+                const sign = quote.change > 0 ? '+' : ''
+                const pctStr = quote.changePct !== null && quote.changePct !== undefined ? ` / ${sign}${quote.changePct}%` : ''
+                parts.push(`(${sign}${quote.change}${pctStr})`)
+            }
+            if (quote.time) parts.push(quote.time)
+            else if (quote.date) parts.push(quote.date)
+            return parts.join(' · ')
+        }
+
+        const getStockSpeakText = (row, colDef) => {
+            const quote = getStockQuoteForRow(row, colDef)
+            const val = getRowNumericValue(row, colDef)
+            if (!val) return ''
+            return quote?.name ? `${quote.name} ${val}` : String(val)
+        }
+
+        const fetchTwStockQuotesClient = async (codes, { force = false, interactive = false } = {}) => {
+            const normalized = [...new Set(codes.map(extractTwStockCode).filter(Boolean))]
+            if (!normalized.length) return
+            const now = Date.now()
+            const targetCodes = force
+                ? normalized
+                : normalized.filter((code) => {
+                    const cached = stockQuotes.value[code]
+                    return !cached || !cached.price || (now - (cached.fetchedAt || 0) >= STOCK_CACHE_TTL_MS)
+                })
+            if (!targetCodes.length) return
+
+            stockLoading.value = true
+            try {
+                const apiBase = globalThis.location?.protocol === 'file:'
+                    ? 'https://ty-db.pages.dev/api/tw-stock'
+                    : './api/tw-stock'
+                const nextQuotes = { ...stockQuotes.value }
+                let fetchedAny = false
+                const CHUNK_SIZE = 40
+                for (let i = 0; i < targetCodes.length; i += CHUNK_SIZE) {
+                    const chunk = targetCodes.slice(i, i + CHUNK_SIZE)
+                    const url = `${apiBase}?codes=${encodeURIComponent(chunk.join(','))}`
+                    const res = await fetch(url, { cache: force ? 'no-cache' : 'default' })
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                    const data = await res.json()
+                    const ts = data?.fetchedAt || Date.now()
+                    if (data?.quotes && typeof data.quotes === 'object') {
+                        for (const [code, q] of Object.entries(data.quotes)) {
+                            if (q && Number(q.price) > 0) {
+                                nextQuotes[code] = { ...q, fetchedAt: ts }
+                                fetchedAny = true
+                            }
+                        }
+                    }
+                }
+                if (fetchedAny) {
+                    stockQuotes.value = nextQuotes
+                    try {
+                        localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify(nextQuotes))
+                    } catch {}
+                    let rowCacheChanged = false
+                    const stockCols = columns.value.filter(c => c.type === 'stock' && c.sourceCol)
+                    if (stockCols.length) {
+                        rows.value.forEach(row => {
+                            stockCols.forEach(col => {
+                                const code = extractTwStockCode(row[col.sourceCol])
+                                const price = code ? nextQuotes[code]?.price : null
+                                if (price && row[col.id] !== price) {
+                                    row[col.id] = price
+                                    rowCacheChanged = true
+                                }
+                            })
+                        })
+                    }
+                    if (rowCacheChanged) {
+                        triggerRef(rows)
+                        debouncedSave()
+                    }
+                    if (isChartOpen.value) {
+                        debouncedUpdateChart.cancel()
+                        debouncedUpdateChart()
+                    }
+                }
+            } catch (err) {
+                console.warn('TW stock fetch failed:', err)
+                if (interactive) {
+                    showConfirm('❌ ' + translate('Failed to fetch stock price.'), 1)
+                }
+            } finally {
+                stockLoading.value = false
+            }
+        }
+
+        const refreshStockColumn = async (col, { force = true, interactive = true } = {}) => {
+            if (!col || col.type !== 'stock' || !col.sourceCol) return
+            const codes = rows.value.map(r => extractTwStockCode(r[col.sourceCol])).filter(Boolean)
+            if (!codes.length) return
+            await fetchTwStockQuotesClient(codes, { force, interactive })
+        }
+
+        const refreshAllStockColumns = async (force = false) => {
+            const stockCols = columns.value.filter(c => c.type === 'stock' && c.sourceCol)
+            if (!stockCols.length) return
+            const codes = []
+            rows.value.forEach(row => {
+                stockCols.forEach(col => {
+                    const code = extractTwStockCode(row[col.sourceCol])
+                    if (code) codes.push(code)
+                })
+            })
+            if (!codes.length) return
+            await fetchTwStockQuotesClient(codes, { force, interactive: false })
+        }
+
+        const scheduleAutoFetchStockForCell = (row, sourceColId, immediate = false) => {
+            const dependentCols = columns.value.filter(c => c.type === 'stock' && c.sourceCol === sourceColId)
+            if (!dependentCols.length) return
+            const timerKey = `${row.id}-${sourceColId}`
+            if (stockRowTimers.has(timerKey)) {
+                clearTimeout(stockRowTimers.get(timerKey))
+                stockRowTimers.delete(timerKey)
+            }
+            const run = () => {
+                stockRowTimers.delete(timerKey)
+                const code = extractTwStockCode(row[sourceColId])
+                if (!code) {
+                    let cleared = false
+                    dependentCols.forEach(col => {
+                        if (row[col.id]) {
+                            row[col.id] = ''
+                            cleared = true
+                        }
+                    })
+                    if (cleared) {
+                        triggerRef(rows)
+                        debouncedSave()
+                    }
+                    return
+                }
+                fetchTwStockQuotesClient([code], { force: false, interactive: false })
+            }
+            if (immediate) run()
+            else stockRowTimers.set(timerKey, setTimeout(run, 500))
+        }
+
+        const syncAllStockColumns = debounce(() => {
+            refreshAllStockColumns(false)
+        }, 300)
+
+        const getOperandNumericValue = (row, colId, depth) => {
+            const opCol = columns.value.find(c => c.id === colId)
+            if (opCol && opCol.type !== 'number') {
+                return getRowNumericValue(row, opCol, depth)
+            }
+            return calcValue(row[colId])
+        }
+
         const getRowNumericValue = (row, colDef, depth = 0) => {
             if (!row || !colDef || depth > 4) return 0
             if (colDef.type === 'number') return calcValue(row[colDef.id])
+            if (colDef.type === 'stock') {
+                const code = extractTwStockCode(row[colDef.sourceCol])
+                if (!code) return 0
+                const livePrice = Number(stockQuotes.value[code]?.price)
+                if (Number.isFinite(livePrice) && livePrice > 0) return livePrice
+                return calcValue(row[colDef.id])
+            }
             if (colDef.type === 'exchange') {
                 const srcCol = columns.value.find(c => c.id === colDef.sourceCol)
                 if (!srcCol) return 0
@@ -3205,14 +3435,14 @@ export default {
                 if (!rate || !Number.isFinite(srcVal)) return 0
                 return Math.round(srcVal * rate * 100) / 100
             }
-            if (colDef.type === 'multiply') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB])
-            if (colDef.type === 'multiply3') return calcValue(row[colDef.opA]) * calcValue(row[colDef.opB]) * calcValue(row[colDef.opC])
-            if (colDef.type === 'minus') return calcValue(row[colDef.opA]) - calcValue(row[colDef.opB])
-            if (colDef.type === 'add') return calcValue(row[colDef.opA]) + calcValue(row[colDef.opB])
+            if (colDef.type === 'multiply') return getOperandNumericValue(row, colDef.opA, depth + 1) * getOperandNumericValue(row, colDef.opB, depth + 1)
+            if (colDef.type === 'multiply3') return getOperandNumericValue(row, colDef.opA, depth + 1) * getOperandNumericValue(row, colDef.opB, depth + 1) * getOperandNumericValue(row, colDef.opC, depth + 1)
+            if (colDef.type === 'minus') return getOperandNumericValue(row, colDef.opA, depth + 1) - getOperandNumericValue(row, colDef.opB, depth + 1)
+            if (colDef.type === 'add') return getOperandNumericValue(row, colDef.opA, depth + 1) + getOperandNumericValue(row, colDef.opB, depth + 1)
             if (colDef.type === 'divide') {
-                const denom = calcValue(row[colDef.opB])
+                const denom = getOperandNumericValue(row, colDef.opB, depth + 1)
                 if (denom === 0) return 0
-                return Math.round((calcValue(row[colDef.opA]) / denom) * 100) / 100
+                return Math.round((getOperandNumericValue(row, colDef.opA, depth + 1) / denom) * 100) / 100
             }
             return 0
         }
@@ -3885,6 +4115,7 @@ export default {
             if (target === 'rows' || target === 'both') {
                 triggerRef(rows)
                 syncAllTranslateColumns()
+                syncAllStockColumns()
             }
             if (target === 'columns' || target === 'both') {
                 triggerRef(columns)
@@ -4002,6 +4233,7 @@ export default {
             resetHistory()
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
+            refreshAllStockColumns(false)
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -4617,7 +4849,7 @@ export default {
             const rows2D = rows.value.map(row => {
                 const rowArray = [row.id]
                 columns.value.forEach(c => {
-                    if (isCalcType(c.type) || c.type === 'exchange') {
+                    if (isCalcType(c.type) || c.type === 'exchange' || c.type === 'stock') {
                         rowArray.push(getRowNumericValue(row, c))
                     } else if (c.type === 'tags') {
                         rowArray.push(normalizeTags(row[c.id]).join(', '))
@@ -5060,7 +5292,7 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'photo') return
                 let val
-                if (isCalcType(col.type) || col.type === 'exchange') {
+                if (isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock') {
                     const calc = getRowNumericValue(row, col)
                     val = calc ? calc.toLocaleString() : ''
                 } else if (col.type === 'tags') {
@@ -5394,6 +5626,16 @@ export default {
                     if (Number.isFinite(parsedCustom) && parsedCustom > 0) existingCol.customRate = parsedCustom
                     else delete existingCol.customRate
                     delete existingCol.targetLang
+                } else if (newColType.value === 'stock') {
+                    if (!stockSourceCol.value) return showConfirm(translate('Please select a source column!'), 1)
+                    if (existingCol.id === stockSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
+                    existingCol.sourceCol = stockSourceCol.value
+                    delete existingCol.targetLang
+                    delete existingCol.fromCurrency
+                    delete existingCol.toCurrency
+                    delete existingCol.customRate
+                    delete existingCol.cachedRate
+                    delete existingCol.rateDate
                 } else {
                     delete existingCol.sourceCol
                     delete existingCol.targetLang
@@ -5418,6 +5660,8 @@ export default {
                     translateColumnRows(existingCol, { force: true, interactive: true })
                 } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
+                } else if (existingCol.type === 'stock') {
+                    refreshStockColumn(existingCol, { force: false, interactive: true })
                 }
                 return
             }
@@ -5425,6 +5669,9 @@ export default {
                 return showConfirm(translate('Please select a source column!'), 1)
             }
             if (newColType.value === 'exchange' && !exchangeSourceCol.value) {
+                return showConfirm(translate('Please select a source column!'), 1)
+            }
+            if (newColType.value === 'stock' && !stockSourceCol.value) {
                 return showConfirm(translate('Please select a source column!'), 1)
             }
             if (isCalcType(newColType.value)) {
@@ -5453,6 +5700,8 @@ export default {
                 if (Number.isFinite(parsedCustom) && parsedCustom > 0) {
                     newColData.customRate = parsedCustom
                 }
+            } else if (newColType.value === 'stock') {
+                newColData.sourceCol = stockSourceCol.value
             }
             if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                 newColData.opA = formulaA.value
@@ -5464,7 +5713,7 @@ export default {
                 newColData.opC = formulaC.value
             }
 
-            if (newColType.value === 'translate' || newColType.value === 'exchange') {
+            if (newColType.value === 'translate' || newColType.value === 'exchange' || newColType.value === 'stock') {
                 const srcIdx = columns.value.findIndex(c => c.id === newColData.sourceCol)
                 if (srcIdx !== -1) {
                     const nextCols = [...columns.value]
@@ -5476,7 +5725,7 @@ export default {
             } else {
                 columns.value = [...columns.value, newColData]
             }
-            if (!isCalcType(newColType.value) && newColType.value !== 'exchange') {
+            if (!isCalcType(newColType.value) && newColType.value !== 'exchange' && newColType.value !== 'stock') {
                 rows.value.forEach(row => {
                     if (newColType.value === 'number') row[newColId] = null
                     else if (newColType.value === 'checkbox') row[newColId] = false
@@ -5493,6 +5742,7 @@ export default {
             translateSourceCol.value = ''
             exchangeSourceCol.value = ''
             exchangeCustomRate.value = ''
+            stockSourceCol.value = ''
             formulaA.value = ''
             formulaB.value = ''
             formulaC.value = ''
@@ -5501,6 +5751,8 @@ export default {
                 translateColumnRows(newColData, { force: true, interactive: true })
             } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
+            } else if (newColData.type === 'stock') {
+                refreshStockColumn(newColData, { force: false, interactive: true })
             }
         }
 
@@ -5995,6 +6247,7 @@ export default {
                 }
             } else {
                 scheduleAutoTranslateForCell(row, col.id, false)
+                scheduleAutoFetchStockForCell(row, col.id, false)
             }
         }
 
@@ -6309,7 +6562,7 @@ export default {
         const removeColumn = async (idToRemove) => {
             if (columns.value.some(col =>
                 (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
-                ((col.type === 'translate' || col.type === 'exchange') && col.sourceCol === idToRemove)
+                (['translate', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
             )) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
@@ -6479,7 +6732,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'exchange' || col.type === 'photo') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -6620,7 +6873,7 @@ export default {
             columns.value.forEach(col => {
                 if (col.type === 'number') {
                     cleanRow[col.label] = row[col.id] || 0
-                } else if (isCalcType(col.type) || col.type === 'exchange') {
+                } else if (isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock') {
                     cleanRow[col.label] = getRowNumericValue(row, col)
                 } else if (col.type === 'checkbox') {
                     cleanRow[col.label] = row[col.id] ? 1 : 0
@@ -6680,6 +6933,9 @@ export default {
                 } else if (c.type === 'exchange') {
                     const srcCol = columns.value.find(col => col.id === c.sourceCol)
                     meta += `|${srcCol?.label || ''}|${c.fromCurrency || 'USD'}|${c.toCurrency || 'TWD'}|${c.customRate || ''}|${c.cachedRate || ''}`
+                } else if (c.type === 'stock') {
+                    const srcCol = columns.value.find(col => col.id === c.sourceCol)
+                    meta += `|${srcCol?.label || ''}`
                 }
                 return `${c.label} [${meta}]`
             })
@@ -6692,7 +6948,7 @@ export default {
                 columns.value.forEach(col => {
                     if (col.type === 'number') {
                         rowData.push(row[col.id])
-                    } else if (isCalcType(col.type) || col.type === 'exchange') {
+                    } else if (isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock') {
                         rowData.push(getRowNumericValue(row, col))
                     } else if (col.type === 'checkbox') {
                         rowData.push(row[col.id] ? 1 : 0)
@@ -6864,6 +7120,9 @@ export default {
                             targetToCurrency = parts[3] || 'TWD'
                             targetCustomRate = Number(parts[4]) > 0 ? Number(parts[4]) : null
                             targetCachedRate = Number(parts[5]) > 0 ? Number(parts[5]) : null
+                        } else if (parts[0] === 'stock') {
+                            targetType = 'stock'
+                            targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
                         } else {
                             targetType = metaStr
                         }
@@ -6890,6 +7149,7 @@ export default {
                         opB: targetOpB,
                         opC: targetOpC,
                         ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {}),
+                        ...(targetType === 'stock' ? { sourceCol: targetSourceCol } : {}),
                         ...(targetType === 'exchange' ? {
                             sourceCol: targetSourceCol,
                             fromCurrency: targetFromCurrency,
@@ -8465,6 +8725,7 @@ export default {
             if (inputEl.value !== tempKey.value) {
                 onDataEdited()
                 scheduleAutoTranslateForCell(row, col.id, true)
+                scheduleAutoFetchStockForCell(row, col.id, true)
             }
             tempKey.value = null
         }
@@ -9015,7 +9276,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             columns.value.forEach(col => {
                 if (col.type === 'photo' || col.type === 'password') return
                 let val
-                if (isCalcType(col.type) || col.type === 'exchange') {
+                if (isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock') {
                     const calc = getRowNumericValue(row, col)
                     val = calc ? calc.toLocaleString() : ''
                 } else if (col.type === 'tags') {
@@ -9886,7 +10147,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo') {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
                             let newVal = ''
                             if (isSingleValue) {
                                 newVal = singleValue
@@ -9943,7 +10204,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         if (targetColIndex < columns.value.length) {
                             const targetColId = columns.value[targetColIndex].id
                             const colType = columns.value[targetColIndex].type
-                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo') {
+                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
                                 let finalVal = cellValue.trim()
                                 if (colType === 'tags') {
                                     finalVal = normalizeTags(finalVal)
@@ -10127,7 +10388,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'photo' && filteredRows.value[r]) {
+                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo' && filteredRows.value[r]) {
                             if (colType === 'tags') filteredRows.value[r][colId] = []
                             else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
                             else if (colType === 'checkbox') filteredRows.value[r][colId] = false
@@ -10323,6 +10584,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             resetHistory()
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
+            refreshAllStockColumns(false)
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
@@ -10414,6 +10676,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             getExchangeHeaderTooltip,
             getExchangeCellTooltip,
             refreshExchangeColumn,
+            stockSourceCol,
+            stockLoading,
+            extractTwStockCode,
+            getStockQuoteForRow,
+            getStockCellTooltip,
+            getStockSpeakText,
+            refreshStockColumn,
             typeOptions,
             formulaA,
             formulaB,

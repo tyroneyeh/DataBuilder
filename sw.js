@@ -46,6 +46,7 @@ globalThis.addEventListener('fetch', (event) => {
     if (
         !url.protocol.startsWith('http') ||
         event.request.headers.has('Authorization') ||
+        url.pathname.startsWith('/api/') ||
         !ALLOWED_CACHE_ORIGINS.has(url.origin)
     ) {
         return

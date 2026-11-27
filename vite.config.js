@@ -6,6 +6,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
+import { fetchTwStockQuotes } from './functions/api/tw-stock.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const distDir = path.resolve(__dirname, 'node_modules', '.vite-build')
@@ -31,13 +32,30 @@ function rootStaticMiddleware(req, res, next) {
     fs.createReadStream(filePath).pipe(res)
 }
 
+async function twStockDevMiddleware(req, res, next) {
+    const reqUrl = new URL(req.url || '/', 'http://localhost')
+    if (reqUrl.pathname !== '/api/tw-stock') return next()
+    try {
+        const codes = (reqUrl.searchParams.get('codes') || '').split(',').filter(Boolean)
+        const result = await fetchTwStockQuotes(codes)
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.end(JSON.stringify(result))
+    } catch (err) {
+        res.statusCode = 502
+        res.setHeader('Content-Type', 'application/json; charset=utf-8')
+        res.end(JSON.stringify({ error: err?.message || 'Failed to fetch stock quotes', quotes: {} }))
+    }
+}
+
 function serveRootStaticAssets() {
     return {
         name: 'serve-root-static-assets',
         configureServer(server) {
+            server.middlewares.use(twStockDevMiddleware)
             server.middlewares.use(rootStaticMiddleware)
         },
         configurePreviewServer(server) {
+            server.middlewares.use(twStockDevMiddleware)
             server.middlewares.use(rootStaticMiddleware)
         },
     }

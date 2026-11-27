@@ -239,7 +239,13 @@ export const translations = {
         "Exchange Rate": "匯率",
         "Auto rate": "自動匯率",
         "Custom": "自訂",
-        "Failed to fetch exchange rate.": "無法取得匯率資料。"
+        "Failed to fetch exchange rate.": "無法取得匯率資料。",
+        "TW Stock": "台股股價",
+        "TWSE / TPEx": "上市 / 上櫃",
+        "TWSE": "上市",
+        "TPEx": "上櫃",
+        "Refresh stock prices": "重新整理股價",
+        "Failed to fetch stock price.": "無法取得股價資料。"
     },
     "zh-CN": {
         "Action": "操作",
@@ -479,7 +485,13 @@ export const translations = {
         "Exchange Rate": "汇率",
         "Auto rate": "自动汇率",
         "Custom": "自定义",
-        "Failed to fetch exchange rate.": "无法获取汇率数据。"
+        "Failed to fetch exchange rate.": "无法获取汇率数据。",
+        "TW Stock": "台股股价",
+        "TWSE / TPEx": "上市 / 上柜",
+        "TWSE": "上市",
+        "TPEx": "上柜",
+        "Refresh stock prices": "刷新股价",
+        "Failed to fetch stock price.": "无法获取股价数据。"
     },
     "ja": {
         "Action": "操作",
@@ -719,7 +731,13 @@ export const translations = {
         "Exchange Rate": "為替レート",
         "Auto rate": "自動レート",
         "Custom": "カスタム",
-        "Failed to fetch exchange rate.": "為替レートの取得に失敗しました。"
+        "Failed to fetch exchange rate.": "為替レートの取得に失敗しました。",
+        "TW Stock": "台湾株価",
+        "TWSE / TPEx": "上場 / 店頭 (TWSE/TPEx)",
+        "TWSE": "上場",
+        "TPEx": "店頭",
+        "Refresh stock prices": "株価を更新",
+        "Failed to fetch stock price.": "株価の取得に失敗しました。"
     },
     "ko": {
         "Action": "작업",
@@ -959,7 +977,13 @@ export const translations = {
         "Exchange Rate": "환율",
         "Auto rate": "자동 환율",
         "Custom": "사용자 지정",
-        "Failed to fetch exchange rate.": "환율 정보를 가져오지 못했습니다."
+        "Failed to fetch exchange rate.": "환율 정보를 가져오지 못했습니다.",
+        "TW Stock": "대만 주가",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "주가 새로고침",
+        "Failed to fetch stock price.": "주가 정보를 가져오지 못했습니다."
     },
     "es": {
         "Action": "Acción",
@@ -1199,7 +1223,13 @@ export const translations = {
         "Exchange Rate": "Tipo de cambio",
         "Auto rate": "Tasa automática",
         "Custom": "Personalizado",
-        "Failed to fetch exchange rate.": "No se pudo obtener el tipo de cambio."
+        "Failed to fetch exchange rate.": "No se pudo obtener el tipo de cambio.",
+        "TW Stock": "Acciones TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Actualizar precios",
+        "Failed to fetch stock price.": "No se pudo obtener el precio de la acción."
     },
     "fr": {
         "Action": "Action",
@@ -1439,7 +1469,13 @@ export const translations = {
         "Exchange Rate": "Taux de change",
         "Auto rate": "Taux auto",
         "Custom": "Personnalisé",
-        "Failed to fetch exchange rate.": "Impossible de récupérer le taux de change."
+        "Failed to fetch exchange rate.": "Impossible de récupérer le taux de change.",
+        "TW Stock": "Actions TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Actualiser les cours",
+        "Failed to fetch stock price.": "Impossible de récupérer le cours de l’action."
     },
     "de": {
         "Action": "Aktion",
@@ -1679,7 +1715,13 @@ export const translations = {
         "Exchange Rate": "Wechselkurs",
         "Auto rate": "Auto-Kurs",
         "Custom": "Benutzerdefiniert",
-        "Failed to fetch exchange rate.": "Wechselkurs konnte nicht abgerufen werden."
+        "Failed to fetch exchange rate.": "Wechselkurs konnte nicht abgerufen werden.",
+        "TW Stock": "TW-Aktien",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Kurse aktualisieren",
+        "Failed to fetch stock price.": "Aktienkurs konnte nicht abgerufen werden."
     },
     "it": {
         "Action": "Azione",
@@ -1919,7 +1961,13 @@ export const translations = {
         "Exchange Rate": "Tasso di cambio",
         "Auto rate": "Tasso auto",
         "Custom": "Personalizzato",
-        "Failed to fetch exchange rate.": "Impossibile recuperare il tasso di cambio."
+        "Failed to fetch exchange rate.": "Impossibile recuperare il tasso di cambio.",
+        "TW Stock": "Azioni TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Aggiorna quotazioni",
+        "Failed to fetch stock price.": "Impossibile recuperare il prezzo dell’azione."
     },
     "pt": {
         "Action": "Ação",
@@ -2159,7 +2207,13 @@ export const translations = {
         "Exchange Rate": "Taxa de câmbio",
         "Auto rate": "Taxa automática",
         "Custom": "Personalizado",
-        "Failed to fetch exchange rate.": "Falha ao obter a taxa de câmbio."
+        "Failed to fetch exchange rate.": "Falha ao obter a taxa de câmbio.",
+        "TW Stock": "Ações TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Atualizar cotações",
+        "Failed to fetch stock price.": "Falha ao obter o preço da ação."
     },
     "ru": {
         "Action": "Действие",
@@ -2399,7 +2453,13 @@ export const translations = {
         "Exchange Rate": "Курс валют",
         "Auto rate": "Автокурс",
         "Custom": "Вручную",
-        "Failed to fetch exchange rate.": "Не удалось получить курс валют."
+        "Failed to fetch exchange rate.": "Не удалось получить курс валют.",
+        "TW Stock": "Акции TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Обновить котировки",
+        "Failed to fetch stock price.": "Не удалось получить цену акции."
     },
     "id": {
         "Action": "Tindakan",
@@ -2639,7 +2699,13 @@ export const translations = {
         "Exchange Rate": "Nilai Tukar",
         "Auto rate": "Kurs otomatis",
         "Custom": "Kustom",
-        "Failed to fetch exchange rate.": "Gagal mengambil nilai tukar."
+        "Failed to fetch exchange rate.": "Gagal mengambil nilai tukar.",
+        "TW Stock": "Saham TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Segarkan harga saham",
+        "Failed to fetch stock price.": "Gagal mengambil harga saham."
     },
     "vi": {
         "Action": "Thao tác",
@@ -2879,7 +2945,13 @@ export const translations = {
         "Exchange Rate": "Tỷ giá",
         "Auto rate": "Tỷ giá tự động",
         "Custom": "Tùy chỉnh",
-        "Failed to fetch exchange rate.": "Không thể lấy tỷ giá hối đoái."
+        "Failed to fetch exchange rate.": "Không thể lấy tỷ giá hối đoái.",
+        "TW Stock": "Cổ phiếu TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Làm mới giá cổ phiếu",
+        "Failed to fetch stock price.": "Không thể lấy giá cổ phiếu."
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3119,7 +3191,13 @@ export const translations = {
         "Exchange Rate": "อัตราแลกเปลี่ยน",
         "Auto rate": "อัตราอัตโนมัติ",
         "Custom": "กำหนดเอง",
-        "Failed to fetch exchange rate.": "ไม่สามารถดึงอัตราแลกเปลี่ยนได้"
+        "Failed to fetch exchange rate.": "ไม่สามารถดึงอัตราแลกเปลี่ยนได้",
+        "TW Stock": "หุ้นไต้หวัน",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "รีเฟรชราคาหุ้น",
+        "Failed to fetch stock price.": "ไม่สามารถดึงราคาหุ้นได้"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3359,7 +3437,13 @@ export const translations = {
         "Exchange Rate": "Kadar Pertukaran",
         "Auto rate": "Kadar auto",
         "Custom": "Tersuai",
-        "Failed to fetch exchange rate.": "Gagal mendapatkan kadar pertukaran."
+        "Failed to fetch exchange rate.": "Gagal mendapatkan kadar pertukaran.",
+        "TW Stock": "Saham TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Muat semula harga saham",
+        "Failed to fetch stock price.": "Gagal mendapatkan harga saham."
     },
     "tr": {
         "Action": "İşlem",
@@ -3599,7 +3683,13 @@ export const translations = {
         "Exchange Rate": "Döviz Kuru",
         "Auto rate": "Otomatik kur",
         "Custom": "Özel",
-        "Failed to fetch exchange rate.": "Döviz kuru alınamadı."
+        "Failed to fetch exchange rate.": "Döviz kuru alınamadı.",
+        "TW Stock": "TW Hisse",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Hisse fiyatlarını yenile",
+        "Failed to fetch stock price.": "Hisse fiyatı alınamadı."
     },
     "ar": {
         "Action": "إجراء",
@@ -3839,7 +3929,13 @@ export const translations = {
         "Exchange Rate": "سعر الصرف",
         "Auto rate": "سعر تلقائي",
         "Custom": "مخصص",
-        "Failed to fetch exchange rate.": "فشل في جلب سعر الصرف."
+        "Failed to fetch exchange rate.": "فشل في جلب سعر الصرف.",
+        "TW Stock": "أسهم تايوان",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "تحديث أسعار الأسهم",
+        "Failed to fetch stock price.": "فشل في جلب سعر السهم."
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4079,7 +4175,13 @@ export const translations = {
         "Exchange Rate": "विनिमय दर",
         "Auto rate": "ऑटो दर",
         "Custom": "कस्टम",
-        "Failed to fetch exchange rate.": "विनिमय दर प्राप्त करने में विफल।"
+        "Failed to fetch exchange rate.": "विनिमय दर प्राप्त करने में विफल।",
+        "TW Stock": "TW स्टॉक",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "शेयर मूल्य रीफ़्रेश करें",
+        "Failed to fetch stock price.": "शेयर मूल्य प्राप्त करने में विफल।"
     },
     "pl": {
         "Action": "Akcja",
@@ -4319,7 +4421,13 @@ export const translations = {
         "Exchange Rate": "Kurs walut",
         "Auto rate": "Auto kurs",
         "Custom": "Własny",
-        "Failed to fetch exchange rate.": "Nie udało się pobrać kursu walut."
+        "Failed to fetch exchange rate.": "Nie udało się pobrać kursu walut.",
+        "TW Stock": "Akcje TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Odśwież ceny akcji",
+        "Failed to fetch stock price.": "Nie udało się pobrać ceny akcji."
     },
     "nl": {
         "Action": "Actie",
@@ -4559,7 +4667,13 @@ export const translations = {
         "Exchange Rate": "Wisselkoers",
         "Auto rate": "Autokoers",
         "Custom": "Aangepast",
-        "Failed to fetch exchange rate.": "Kan wisselkoers niet ophalen."
+        "Failed to fetch exchange rate.": "Kan wisselkoers niet ophalen.",
+        "TW Stock": "TW Aandelen",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Koersen vernieuwen",
+        "Failed to fetch stock price.": "Kan aandelenkoers niet ophalen."
     },
     "uk": {
         "Action": "Дія",
@@ -4799,7 +4913,13 @@ export const translations = {
         "Exchange Rate": "Курс валют",
         "Auto rate": "Автокурс",
         "Custom": "Власний",
-        "Failed to fetch exchange rate.": "Не вдалося отримати курс валют."
+        "Failed to fetch exchange rate.": "Не вдалося отримати курс валют.",
+        "TW Stock": "Акції TW",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Оновити ціни акцій",
+        "Failed to fetch stock price.": "Не вдалося отримати ціну акції."
     },
     "tl": {
         "Action": "Aksyon",
@@ -5039,7 +5159,13 @@ export const translations = {
         "Exchange Rate": "Palitan ng Pera",
         "Auto rate": "Auto rate",
         "Custom": "Custom",
-        "Failed to fetch exchange rate.": "Nabigong kunin ang palitan ng pera."
+        "Failed to fetch exchange rate.": "Nabigong kunin ang palitan ng pera.",
+        "TW Stock": "TW Stock",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "I-refresh ang presyo ng stock",
+        "Failed to fetch stock price.": "Nabigong kunin ang presyo ng stock."
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5279,7 +5405,13 @@ export const translations = {
         "Exchange Rate": "Växelkurs",
         "Auto rate": "Autokurs",
         "Custom": "Anpassad",
-        "Failed to fetch exchange rate.": "Kunde inte hämta växelkurs."
+        "Failed to fetch exchange rate.": "Kunde inte hämta växelkurs.",
+        "TW Stock": "TW-aktier",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Uppdatera aktiekurser",
+        "Failed to fetch stock price.": "Kunde inte hämta aktiekurs."
     },
     "cs": {
         "Action": "Akce",
@@ -5519,7 +5651,13 @@ export const translations = {
         "Exchange Rate": "Směnný kurz",
         "Auto rate": "Automatický kurz",
         "Custom": "Vlastní",
-        "Failed to fetch exchange rate.": "Nepodařilo se načíst směnný kurz."
+        "Failed to fetch exchange rate.": "Nepodařilo se načíst směnný kurz.",
+        "TW Stock": "TW akcie",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "Obnovit ceny akcií",
+        "Failed to fetch stock price.": "Nepodařilo se načíst cenu akcie."
     },
     "ta": {
         "Action": "செயல்",
@@ -5759,6 +5897,12 @@ export const translations = {
         "Exchange Rate": "நாணய மாற்று விகிதம்",
         "Auto rate": "தானியங்கி விகிதம்",
         "Custom": "தனிப்பயன்",
-        "Failed to fetch exchange rate.": "நாணய மாற்று விகிதத்தைப் பெற முடியவில்லை."
+        "Failed to fetch exchange rate.": "நாணய மாற்று விகிதத்தைப் பெற முடியவில்லை.",
+        "TW Stock": "TW பங்கு",
+        "TWSE / TPEx": "TWSE / TPEx",
+        "TWSE": "TWSE",
+        "TPEx": "TPEx",
+        "Refresh stock prices": "பங்கு விலைகளைப் புதுப்பி",
+        "Failed to fetch stock price.": "பங்கு விலையைப் பெற முடியவில்லை."
     }
 }
