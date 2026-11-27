@@ -226,7 +226,8 @@ export const translations = {
         "Include this month total": "加入這個月總計",
         "This Month Total": "本月總計",
         "Include TY-DB link": "附帶 TY-DB 連結",
-        "Already up to date!": "資料已是最新，無需同步！"
+        "Already up to date!": "資料已是最新，無需同步！",
+        "Include total": "加入總計"
     },
     "zh-CN": {
         "Action": "操作",
@@ -453,7 +454,8 @@ export const translations = {
         "Include this month total": "加入本月总计",
         "This Month Total": "本月总计",
         "Include TY-DB link": "附带 TY-DB 链接",
-        "Already up to date!": "数据已是最新，无需同步！"
+        "Already up to date!": "数据已是最新，无需同步！",
+        "Include total": "包含总计"
     },
     "ja": {
         "Action": "操作",
@@ -680,7 +682,8 @@ export const translations = {
         "Include this month total": "今月の合計を含める",
         "This Month Total": "今月の合計",
         "Include TY-DB link": "TY-DB リンクを含める",
-        "Already up to date!": "すでに最新の状態です！"
+        "Already up to date!": "すでに最新の状態です！",
+        "Include total": "合計を含める"
     },
     "ko": {
         "Action": "작업",
@@ -907,7 +910,8 @@ export const translations = {
         "Include this month total": "이번 달 합계 포함",
         "This Month Total": "이번 달 합계",
         "Include TY-DB link": "TY-DB 링크 포함",
-        "Already up to date!": "이미 최신 상태입니다!"
+        "Already up to date!": "이미 최신 상태입니다!",
+        "Include total": "합계 포함"
     },
     "es": {
         "Action": "Acción",
@@ -1134,7 +1138,8 @@ export const translations = {
         "Include this month total": "Incluir total de este mes",
         "This Month Total": "Total de este mes",
         "Include TY-DB link": "Incluir enlace de TY-DB",
-        "Already up to date!": "¡Ya está actualizado!"
+        "Already up to date!": "¡Ya está actualizado!",
+        "Include total": "Incluir total"
     },
     "fr": {
         "Action": "Action",
@@ -1361,7 +1366,8 @@ export const translations = {
         "Include this month total": "Inclure le total du mois",
         "This Month Total": "Total du mois",
         "Include TY-DB link": "Inclure le lien TY-DB",
-        "Already up to date!": "Déjà à jour !"
+        "Already up to date!": "Déjà à jour !",
+        "Include total": "Inclure le total"
     },
     "de": {
         "Action": "Aktion",
@@ -1588,7 +1594,8 @@ export const translations = {
         "Include this month total": "Monatssumme einbeziehen",
         "This Month Total": "Monatssumme",
         "Include TY-DB link": "TY-DB-Link einbeziehen",
-        "Already up to date!": "Bereits auf dem neuesten Stand!"
+        "Already up to date!": "Bereits auf dem neuesten Stand!",
+        "Include total": "Gesamtbetrag einschließen"
     },
     "it": {
         "Action": "Azione",
@@ -1815,7 +1822,8 @@ export const translations = {
         "Include this month total": "Includi totale del mese",
         "This Month Total": "Totale del mese",
         "Include TY-DB link": "Includi link TY-DB",
-        "Already up to date!": "Già aggiornato!"
+        "Already up to date!": "Già aggiornato!",
+        "Include total": "Includi totale"
     },
     "pt": {
         "Action": "Ação",
@@ -2042,7 +2050,8 @@ export const translations = {
         "Include this month total": "Incluir total deste mês",
         "This Month Total": "Total deste mês",
         "Include TY-DB link": "Incluir link do TY-DB",
-        "Already up to date!": "Já está atualizado!"
+        "Already up to date!": "Já está atualizado!",
+        "Include total": "Incluir total"
     },
     "ru": {
         "Action": "Действие",
@@ -2269,7 +2278,8 @@ export const translations = {
         "Include this month total": "Включить итог за месяц",
         "This Month Total": "Итог за месяц",
         "Include TY-DB link": "Добавить ссылку TY-DB",
-        "Already up to date!": "Данные уже актуальны!"
+        "Already up to date!": "Данные уже актуальны!",
+        "Include total": "Включить итог"
     },
     "id": {
         "Action": "Tindakan",
@@ -2496,7 +2506,8 @@ export const translations = {
         "Include this month total": "Sertakan total bulan ini",
         "This Month Total": "Total Bulan Ini",
         "Include TY-DB link": "Sertakan tautan TY-DB",
-        "Already up to date!": "Sudah terbaru!"
+        "Already up to date!": "Sudah terbaru!",
+        "Include total": "Sertakan total"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2723,7 +2734,8 @@ export const translations = {
         "Include this month total": "Kèm tổng tháng này",
         "This Month Total": "Tổng tháng này",
         "Include TY-DB link": "Kèm liên kết TY-DB",
-        "Already up to date!": "Dữ liệu đã mới nhất!"
+        "Already up to date!": "Dữ liệu đã mới nhất!",
+        "Include total": "Bao gồm tổng cộng"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -2950,7 +2962,8 @@ export const translations = {
         "Include this month total": "รวมยอดเดือนนี้",
         "This Month Total": "ยอดรวมเดือนนี้",
         "Include TY-DB link": "แนบลิงก์ TY-DB",
-        "Already up to date!": "ข้อมูลเป็นปัจจุบันแล้ว!"
+        "Already up to date!": "ข้อมูลเป็นปัจจุบันแล้ว!",
+        "Include total": "รวมยอดทั้งหมด"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3177,7 +3190,8 @@ export const translations = {
         "Include this month total": "Sertakan jumlah bulan ini",
         "This Month Total": "Jumlah Bulan Ini",
         "Include TY-DB link": "Sertakan pautan TY-DB",
-        "Already up to date!": "Sudah terkini!"
+        "Already up to date!": "Sudah terkini!",
+        "Include total": "Sertakan jumlah"
     },
     "tr": {
         "Action": "İşlem",
@@ -3404,7 +3418,8 @@ export const translations = {
         "Include this month total": "Bu ayın toplamını ekle",
         "This Month Total": "Bu Ay Toplam",
         "Include TY-DB link": "TY-DB bağlantısını ekle",
-        "Already up to date!": "Zaten güncel!"
+        "Already up to date!": "Zaten güncel!",
+        "Include total": "Toplamı dahil et"
     },
     "ar": {
         "Action": "إجراء",
@@ -3631,7 +3646,8 @@ export const translations = {
         "Include this month total": "تضمين إجمالي هذا الشهر",
         "This Month Total": "إجمالي هذا الشهر",
         "Include TY-DB link": "تضمين رابط TY-DB",
-        "Already up to date!": "البيانات محدثة بالفعل!"
+        "Already up to date!": "البيانات محدثة بالفعل!",
+        "Include total": "تضمين الإجمالي"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -3858,7 +3874,8 @@ export const translations = {
         "Include this month total": "इस महीने का कुल जोड़ें",
         "This Month Total": "इस महीने का कुल",
         "Include TY-DB link": "TY-DB लिंक शामिल करें",
-        "Already up to date!": "डेटा पहले से ही नवीनतम है!"
+        "Already up to date!": "डेटा पहले से ही नवीनतम है!",
+        "Include total": "कुल शामिल करें"
     },
     "pl": {
         "Action": "Akcja",
@@ -4085,7 +4102,8 @@ export const translations = {
         "Include this month total": "Dołącz sumę z tego miesiąca",
         "This Month Total": "Suma w tym miesiącu",
         "Include TY-DB link": "Dołącz link TY-DB",
-        "Already up to date!": "Dane są już aktualne!"
+        "Already up to date!": "Dane są już aktualne!",
+        "Include total": "Dołącz sumę"
     },
     "nl": {
         "Action": "Actie",
@@ -4312,7 +4330,8 @@ export const translations = {
         "Include this month total": "Maandtotaal bijvoegen",
         "This Month Total": "Maandtotaal",
         "Include TY-DB link": "TY-DB-link bijvoegen",
-        "Already up to date!": "Al helemaal up-to-date!"
+        "Already up to date!": "Al helemaal up-to-date!",
+        "Include total": "Totaal opnemen"
     },
     "uk": {
         "Action": "Дія",
@@ -4539,7 +4558,8 @@ export const translations = {
         "Include this month total": "Додати підсумок за місяць",
         "This Month Total": "Підсумок за місяць",
         "Include TY-DB link": "Додати посилання TY-DB",
-        "Already up to date!": "Дані вже актуальні!"
+        "Already up to date!": "Дані вже актуальні!",
+        "Include total": "Додати підсумок"
     },
     "tl": {
         "Action": "Aksyon",
@@ -4766,7 +4786,8 @@ export const translations = {
         "Include this month total": "Isama ang kabuuan ngayong buwan",
         "This Month Total": "Kabuuan Ngayong Buwan",
         "Include TY-DB link": "Isama ang link ng TY-DB",
-        "Already up to date!": "Napapanahon na!"
+        "Already up to date!": "Napapanahon na!",
+        "Include total": "Isama ang kabuuan"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -4993,7 +5014,8 @@ export const translations = {
         "Include this month total": "Inkludera månadens summa",
         "This Month Total": "Månadens summa",
         "Include TY-DB link": "Inkludera TY-DB-länk",
-        "Already up to date!": "Redan uppdaterad!"
+        "Already up to date!": "Redan uppdaterad!",
+        "Include total": "Inkludera totalt"
     },
     "cs": {
         "Action": "Akce",
@@ -5220,7 +5242,8 @@ export const translations = {
         "Include this month total": "Zahrnout součet tohoto měsíce",
         "This Month Total": "Součet tohoto měsíce",
         "Include TY-DB link": "Zahrnout odkaz TY-DB",
-        "Already up to date!": "Již aktuální!"
+        "Already up to date!": "Již aktuální!",
+        "Include total": "Zahrnout celkem"
     },
     "ta": {
         "Action": "செயல்",
@@ -5447,6 +5470,7 @@ export const translations = {
         "Include this month total": "இந்த மாத மொத்தத்தைச் சேர்",
         "This Month Total": "இந்த மாத மொத்தம்",
         "Include TY-DB link": "TY-DB இணைப்பைச் சேர்",
-        "Already up to date!": "ஏற்கனவே புதுப்பிக்கப்பட்டுள்ளது!"
+        "Already up to date!": "ஏற்கனவே புதுப்பிக்கப்பட்டுள்ளது!",
+        "Include total": "மொத்தத்தைச் சேர்"
     }
 }

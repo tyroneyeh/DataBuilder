@@ -1875,7 +1875,7 @@
             <label v-if="shareModal.monthlyTotalText" class="flex items-start gap-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer select-none">
                 <input type="checkbox" v-model="shareModal.includeMonthlyTotal" class="mt-0.5 w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer shrink-0">
                 <span class="leading-snug">
-                    <span class="font-bold">📊 {{ translate('Include this month total') }}</span>
+                    <span class="font-bold">📊 {{ hasDateColumn ? translate('Include this month total') : translate('Include total') }}</span>
                     <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{{ shareModal.monthlyTotalText }}</span>
                 </span>
             </label>
@@ -2915,7 +2915,7 @@ export default {
 
         const getHistoricalSpent = (catId) => {
             const amountColId = selectedChartNumColId.value || columns.value.find(c => isNumericType(c.type))?.id
-            const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+            const dateColId = getPrimaryDateColumn()?.id || ''
             const catColId = mainCatColId.value
             const amountColDef = columns.value.find(c => c.id === amountColId)
 
@@ -6511,7 +6511,7 @@ export default {
                     }
                 })
                 const getLegendBudgetMultiplier = () => {
-                    const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+                    const dateColId = getPrimaryDateColumn()?.id || ''
                     if (!dateColId) return 1
 
                     if (selectedChartDate.value) {
@@ -8083,7 +8083,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 || columns.value.find(c => c.type === 'number')
             if (!numCol) return ''
 
-            const dateColId = selectedChartDateColId.value || columns.value.find(c => c.type === 'date')?.id
+            const dateColId = getPrimaryDateColumn()?.id || ''
             const now = new Date()
             const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 
