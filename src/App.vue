@@ -1588,49 +1588,8 @@
                         </button>
                     </div>
                 </div>
-                <h3 class="font-extrabold text-lg flex items-center gap-2 text-gray-800 dark:text-white transition-colors">
-                    <span>🐙 {{ translate('GitHub Gist Sync Settings') }}</span>
-                    <button
-                        type="button"
-                        @click="showGistTokenTips"
-                        class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-base transition-colors cursor-pointer"
-                        :data-tooltip="translate('How to get a Token?')"
-                    >💡</button>
-                </h3>
-                <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('GitHub Personal Access Token (PAT)') }}</label>
-                            <div class="relative w-full flex items-center">
-                                <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
-                                <div class="absolute right-2 flex items-center h-full">
-                                    <button
-                                        v-if="githubToken"
-                                        @click="githubToken = ''"
-                                        class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
-                                        :title="translate('Clear')"
-                                    >✖</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</label>
-                            <div class="relative w-full flex items-center">
-                                <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="[&:not(:focus)]:[-webkit-text-security:disc] w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
-                                <div class="absolute right-2 flex items-center h-full">
-                                    <button
-                                        v-if="gistId"
-                                        @click="gistId = ''"
-                                        class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
-                                        :title="translate('Clear')"
-                                    >✖</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ translate('Google Client ID (OAuth)') }}
                     </label>
@@ -1694,7 +1653,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 p-6 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">👁️ {{ translate('Google Vision API') }} {{ translate('Text recognized') }}</h4>
                     </div>
@@ -1710,10 +1669,52 @@
                     <p class="text-xs text-gray-500 mt-1">{{ translate('Get your API key from Google Cloud Console.') }} ({{ translate('There are 1000 free uses per month.') }})</p>
                 </div>
 
-                <div class="mt-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                    <div class="text-sm font-extrabold flex items-center gap-2 text-gray-800 dark:text-white transition-colors">
+                        <span>🐙 {{ translate('GitHub Gist Sync Settings') }}</span>
+                        <button
+                            type="button"
+                            @click="showGistTokenTips"
+                            class="w-7 h-7 flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-base transition-colors cursor-pointer"
+                            :data-tooltip="translate('How to get a Token?')"
+                        >💡</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('GitHub Personal Access Token (PAT)') }}</label>
+                            <div class="relative w-full flex items-center">
+                                <input v-model="githubToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                <div class="absolute right-2 flex items-center h-full">
+                                    <button
+                                        v-if="githubToken"
+                                        @click="githubToken = ''"
+                                        class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+                                        :title="translate('Clear')"
+                                    >✖</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5">{{ translate('Gist ID (Leave blank to create new)') }}</label>
+                            <div class="relative w-full flex items-center">
+                                <input v-model="gistId" type="text" placeholder="e.g., 9a8b7c6d5e4f3g2h1i0j" class="[&:not(:focus)]:[-webkit-text-security:disc] w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors shadow-inner">
+                                <div class="absolute right-2 flex items-center h-full">
+                                    <button
+                                        v-if="gistId"
+                                        @click="gistId = ''"
+                                        class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
+                                        :title="translate('Clear')"
+                                    >✖</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ translate('Voice settings') }}</h3>
+                            <h3 class="text-sm font-semibold text-gray-800 dark:text-white">{{ translate('Voice settings') }}</h3>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" v-model="isVoiceEnabled" class="sr-only peer">
@@ -8809,7 +8810,7 @@ export default {
                     }
                 })
             }
-            
+
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
