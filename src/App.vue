@@ -376,12 +376,38 @@
                         {{ formatNumber(getRowNumericValue(row, col)) }}
                     </div>
                     <div v-else-if="col.type === 'translate'"
-                        class="w-auto sm:w-full print:w-full p-2 print:text-black print:bg-transparent rounded text-left text-base print:py-0 print:px-0 print:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50/50 dark:bg-indigo-900/30 truncate cursor-pointer min-h-[40px] flex items-center"
-                        :data-tooltip="row[col.id] || ''"
-                        @click="handleTranslateCellClick(row, col)">
-                        <span v-if="translatingCells[`${row.id}-${col.id}`]" class="text-xs text-indigo-400 dark:text-indigo-400 animate-pulse">⏳ {{ translate('Translating...') }}</span>
-                        <span v-else-if="translatePendingGesture[`${row.id}-${col.id}`]" class="text-xs text-amber-600 dark:text-amber-400 underline">🌐 {{ translate('Click to translate') }}</span>
-                        <span v-else class="truncate">{{ row[col.id] || '' }}</span>
+                        class="relative w-full print:w-full rounded bg-indigo-50/50 dark:bg-indigo-900/30 print:bg-transparent min-h-[40px] sm:min-h-0 flex items-center justify-end sm:justify-start print:justify-start">
+                        <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
+                            {{ row[col.id] || '' }}
+                        </span>
+                        <template v-else>
+                            <span v-if="translatingCells[`${row.id}-${col.id}`]" class="w-full px-2 py-2 sm:py-1 text-right sm:text-left text-xs text-indigo-400 dark:text-indigo-400 animate-pulse">⏳ {{ translate('Translating...') }}</span>
+                            <template v-else>
+                                <input
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                    v-model="row[col.id]"
+                                    type="text"
+                                    :data-tooltip="row[col.id] || ''"
+                                    :placeholder="translatePendingGesture[`${row.id}-${col.id}`] ? translate('Click to translate') : '...'"
+                                    class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-base text-indigo-700 dark:text-indigo-300 dark:placeholder-indigo-400/60 placeholder-indigo-400/70 truncate"
+                                    :class="{ 'pr-7': isBrowserTranslatorSupported && row[col.sourceCol] }"
+                                    @paste="handlePaste($event, windowStart + index, col.id)"
+                                    @input="onTranslateCellInput(row, col)"
+                                    @focus="onTranslateCellFocus(row, col)"
+                                    @click.stop="enterInput(row, col, $event)"
+                                    @blur="saveInput(row, col)"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                >
+                                <button
+                                    v-if="isBrowserTranslatorSupported && row[col.sourceCol]"
+                                    type="button"
+                                    @click.stop="handleTranslateCellClick(row, col)"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded transition-opacity text-xs cursor-pointer"
+                                    :class="translatePendingGesture[`${row.id}-${col.id}`] || !row[col.id] ? 'opacity-100 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40' : 'opacity-40 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-800/50'"
+                                    :data-tooltip="translate('Click to translate')"
+                                >🌐</button>
+                            </template>
+                        </template>
                     </div>
                     <div v-else-if="col.type === 'exchange'"
                         class="w-auto sm:w-full print:w-full p-2 mr-6 print:text-black print:bg-transparent rounded text-right sm:text-right print:text-right text-base print:py-0 print:px-0 print:text-sm print:!text-center text-amber-700 dark:text-amber-300 font-semibold bg-amber-50/50 dark:bg-amber-900/30 cursor-pointer"
@@ -2426,7 +2452,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'translate', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -4234,6 +4260,7 @@ export default {
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
             refreshAllStockColumns(false)
+            syncAllTranslateColumns()
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -4388,6 +4415,7 @@ export default {
             await loadData(0)
             isInitializing = false
             resetHistory()
+            syncAllTranslateColumns()
 
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
@@ -5021,6 +5049,8 @@ export default {
                 lastSyncDate.value = syncTs
                 localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
                 await saveCurrentWorkspaceNow()
+                clearWorkspaceTranslateCache()
+                syncAllTranslateColumns()
                 if (isChartOpen.value) {
                     debouncedUpdateChart.cancel()
                     debouncedUpdateChart()
@@ -5191,6 +5221,8 @@ export default {
                             lastSyncDate.value = cloudUpdatedAt
                             localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, cloudUpdatedAt.toString())
                             await saveCurrentWorkspaceNow()
+                            clearWorkspaceTranslateCache()
+                            syncAllTranslateColumns()
                             if (isChartOpen.value) {
                                 debouncedUpdateChart.cancel()
                                 debouncedUpdateChart()
@@ -5215,6 +5247,8 @@ export default {
                             lastSyncDate.value = syncTs
                             localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
                             await saveCurrentWorkspaceNow()
+                            clearWorkspaceTranslateCache()
+                            syncAllTranslateColumns()
                             if (isChartOpen.value) {
                                 debouncedUpdateChart.cancel()
                                 debouncedUpdateChart()
@@ -5656,7 +5690,7 @@ export default {
                     existingCol.opC = formulaC.value
                 }
                 onDataEdited('both')
-                if (existingCol.type === 'translate') {
+                if (existingCol.type === 'translate' && hasBuiltInBrowserTranslator()) {
                     translateColumnRows(existingCol, { force: true, interactive: true })
                 } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
@@ -5747,7 +5781,7 @@ export default {
             formulaB.value = ''
             formulaC.value = ''
             if (newColData.type === 'date') hasDateColumn.value = true
-            if (newColData.type === 'translate') {
+            if (newColData.type === 'translate' && hasBuiltInBrowserTranslator()) {
                 translateColumnRows(newColData, { force: true, interactive: true })
             } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
@@ -5873,6 +5907,13 @@ export default {
         const hasBuiltInBrowserTranslator = () =>
             ('Translator' in globalThis && typeof globalThis.Translator?.create === 'function') ||
             Boolean(globalThis.ai?.translator && typeof globalThis.ai.translator.create === 'function')
+        const isBrowserTranslatorSupported = hasBuiltInBrowserTranslator()
+        const clearWorkspaceTranslateCache = (wsKey = currentStorageKey.value) => {
+            const prefix = `${wsKey}:`
+            for (const key of lastTranslatedSourceMap.keys()) {
+                if (key.startsWith(prefix)) lastTranslatedSourceMap.delete(key)
+            }
+        }
         const getBrowserTranslatorPair = async (src, tgt) => {
             const pairKey = `${src}->${tgt}`
             if (translatorCache.has(pairKey)) {
@@ -6000,7 +6041,7 @@ export default {
 
             const prev = lastTranslatedSourceMap.get(cacheKey)
             if (!force) {
-                if (prev && prev.source === sourceText && prev.targetLang === targetLang && row[col.id]) {
+                if (prev && prev.source === sourceText && prev.targetLang === targetLang && (row[col.id] || prev.manualEmpty)) {
                     return { changed: false }
                 }
                 if (!prev && row[col.id]) {
@@ -6012,9 +6053,6 @@ export default {
             if (translatingCells.value[cellKey]) return { changed: false }
 
             if (!hasBuiltInBrowserTranslator()) {
-                if (interactive) {
-                    showConfirm(translate('Your browser does not support built-in translation (Chrome 138+ required).'), 1)
-                }
                 return { changed: false, unsupported: true }
             }
 
@@ -6067,10 +6105,7 @@ export default {
         }
         const translateColumnRows = async (col, { force = false, interactive = false } = {}) => {
             if (!col || col.type !== 'translate' || !col.sourceCol) return
-            if (interactive && !hasBuiltInBrowserTranslator()) {
-                showConfirm(translate('Your browser does not support built-in translation (Chrome 138+ required).'), 1)
-                return
-            }
+            if (!hasBuiltInBrowserTranslator()) return
             const colLockKey = `${currentStorageKey.value}:${col.id}`
             if (activeColumnTranslations.has(colLockKey)) return
             activeColumnTranslations.add(colLockKey)
@@ -6127,24 +6162,35 @@ export default {
                 await translateColumnRows(tCol, { force: false, interactive: false })
             }
         }, 250)
-        const handleTranslateCellClick = async (row, col) => {
+        const onTranslateCellFocus = (row, col) => {
+            tempKey.value = String(row[col.id] ?? '')
+        }
+        const onTranslateCellInput = (row, col) => {
+            if (!row || !col || col.type !== 'translate') return
             const cellKey = `${row.id}-${col.id}`
+            const cacheKey = `${currentStorageKey.value}:${cellKey}`
+            const rawVal = col.sourceCol ? row[col.sourceCol] : ''
+            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            const targetLang = col.targetLang || currentLanguage.value || 'en'
+            clearPendingGesture(cellKey)
+            if (String(row[col.id] ?? '').trim() !== '') {
+                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang })
+            } else {
+                lastTranslatedSourceMap.set(cacheKey, { source: sourceText, targetLang, manualEmpty: true })
+            }
+        }
+        const handleTranslateCellClick = async (row, col) => {
             const rawVal = row[col.sourceCol]
             const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
-            if (translatePendingGesture.value[cellKey] || (!row[col.id] && sourceText)) {
-                const res = await translateSingleCell(row, col, { force: true, interactive: true })
-                if (res.changed) {
-                    updatedAt.value = Date.now()
-                    triggerRef(rows)
-                    debouncedSave()
-                }
-                if (!res.error && !res.unsupported && !res.needsGesture) {
-                    await translateColumnRows(col, { force: false, interactive: false })
-                }
-                return
+            if (!sourceText) return
+            const res = await translateSingleCell(row, col, { force: true, interactive: true })
+            if (res.changed) {
+                updatedAt.value = Date.now()
+                triggerRef(rows)
+                debouncedSave()
             }
-            if (row[col.id]) {
-                speakFeedback(row[col.id])
+            if (!res.error && !res.unsupported && !res.needsGesture) {
+                await translateColumnRows(col, { force: false, interactive: false })
             }
         }
 
@@ -8629,6 +8675,7 @@ export default {
                         hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                     }
                     syncMaxRowId()
+                    clearWorkspaceTranslateCache()
                     onDataEdited('both')
                     showConfirm(translate('Restored from GitHub Gist successfully!'), 1)
                 } else {
@@ -10147,7 +10194,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
+                        if (!isCalcType(colType) && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
                             let newVal = ''
                             if (isSingleValue) {
                                 newVal = singleValue
@@ -10161,6 +10208,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
                             if (newRows[actualIndex][colId] !== newVal) {
                                 newRows[actualIndex][colId] = newVal
+                                if (colType === 'translate') onTranslateCellInput(newRows[actualIndex], columns.value[c])
                                 hasChanges = true
                             }
                         }
@@ -10204,7 +10252,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                         if (targetColIndex < columns.value.length) {
                             const targetColId = columns.value[targetColIndex].id
                             const colType = columns.value[targetColIndex].type
-                            if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
+                            if (!isCalcType(colType) && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo') {
                                 let finalVal = cellValue.trim()
                                 if (colType === 'tags') {
                                     finalVal = normalizeTags(finalVal)
@@ -10237,6 +10285,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
                                 if (newRows[actualIndex][targetColId] !== finalVal) {
                                     newRows[actualIndex][targetColId] = finalVal
+                                    if (colType === 'translate') onTranslateCellInput(newRows[actualIndex], columns.value[targetColIndex])
                                     hasChanges = true
                                 }
                             }
@@ -10388,11 +10437,12 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     for (let c = minCol; c <= maxCol; c++) {
                         const colId = columns.value[c].id
                         const colType = columns.value[c].type
-                        if (!isCalcType(colType) && colType !== 'translate' && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo' && filteredRows.value[r]) {
+                        if (!isCalcType(colType) && colType !== 'exchange' && colType !== 'stock' && colType !== 'photo' && filteredRows.value[r]) {
                             if (colType === 'tags') filteredRows.value[r][colId] = []
                             else if (colType === 'rating' || colType === 'progress') filteredRows.value[r][colId] = 0
                             else if (colType === 'checkbox') filteredRows.value[r][colId] = false
                             else filteredRows.value[r][colId] = ''
+                            if (colType === 'translate') onTranslateCellInput(filteredRows.value[r], columns.value[c])
                         }
                     }
                 }
@@ -10585,6 +10635,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
             refreshAllStockColumns(false)
+            syncAllTranslateColumns()
             if (isChartOpen.value) {
                 debouncedUpdateChart.cancel()
                 debouncedUpdateChart()
@@ -10664,6 +10715,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             translateTargetLangOptions,
             translatingCells,
             translatePendingGesture,
+            isBrowserTranslatorSupported,
+            onTranslateCellFocus,
+            onTranslateCellInput,
             handleTranslateCellClick,
             currencyOptions,
             exchangeSourceCol,
