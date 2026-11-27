@@ -1,9 +1,14 @@
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
 
-@media screen {
-    html, body {
-        background-color: #111827;
+@layer base {
+    @media screen {
+        html, body {
+            background-color: #f3f4f6;
+        }
+        html.dark, html.dark body {
+            background-color: #111827;
+        }
     }
 }
 [v-cloak] { display: none; }
