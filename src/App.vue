@@ -853,7 +853,7 @@
 <div ref="filterContainer" @scroll="handleFilterScroll" @focusin="onFilterFocusIn" @focusout="onFilterFocusOut" class="font-semibold text-gray-700 dark:text-gray-200 print:hidden mt-4 sm:mt-0 bg-white dark:bg-gray-800 sm:bg-transparent dark:sm:bg-transparent rounded-lg border border-gray-200 dark:border-gray-700 sm:border-none shadow-sm sm:shadow-none p-2 sm:p-0 flex flex-col w-full overflow-x-auto">
     <div class="flex flex-col items-center sm:flex-row w-full print:flex-row">
 
-        <div class="py-1 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
+        <div class="py-1.5 bg-gray-100 sm:bg-gray-200 dark:bg-gray-700 dark:sm:bg-gray-800 border-b sm:border-t-2 border-gray-200 sm:border-gray-300 dark:border-gray-600 text-left sm:text-center shadow-[2px_0_4px_rgba(0,0,0,0.05)] rounded-t-lg sm:rounded-none shrink-0 w-full sm:w-[var(--col-width)]"
             :style="{'--col-width': colWidths[0] ? colWidths[0] + 'px' : 'auto'}"
             :data-tooltip="filteredRows.length">
             {{ translate('Total') }}
