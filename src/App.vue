@@ -1710,13 +1710,14 @@
             <button v-if="!confirmModal.onlyOK"
                 ref="confirmCancelBtnRef"
                 @click="onConfirmCancel"
-                accesskey="n"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-gray-200 transition-colors"
+                :title="'Alt+C / Esc'"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 focus:bg-gray-200 dark:focus:bg-gray-600 transition-colors"
             >{{ translate('Cancel') }}</button>
             <button
+                ref="confirmOkBtnRef"
                 @click="onConfirmOk"
-                accesskey="y"
-                class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                :title="'Alt+O'"
+                class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition-colors"
             >{{ translate('OK') }}</button>
         </div>
     </div>
@@ -2317,6 +2318,7 @@ export default {
             resolvePromise: null
         })
         const confirmCancelBtnRef = ref(null)
+        const confirmOkBtnRef = ref(null)
         const CALC_TYPES = new Set(['multiply', 'multiply3', 'minus', 'add', 'divide'])
         const isCalcType = (type) => CALC_TYPES.has(type)
         const isNumericType = (type) => type === 'number' || type === 'exchange' || type === 'stock' || CALC_TYPES.has(type)
@@ -8371,8 +8373,10 @@ export default {
                     resolvePromise: resolve
                 }
                 nextTick().then(() => {
-                    if (confirmCancelBtnRef.value) {
+                    if (!onlyOK && confirmCancelBtnRef.value) {
                         confirmCancelBtnRef.value.focus()
+                    } else if (confirmOkBtnRef.value) {
+                        confirmOkBtnRef.value.focus()
                     }
                 })
             })
@@ -9953,6 +9957,47 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const handleKeydown = async (e) => {
+            if (confirmModal.value.isOpen) {
+                const code = e.code
+                if (e.key === 'Escape') {
+                    e.preventDefault()
+                    confirmModal.value.onlyOK ? onConfirmOk() : onConfirmCancel()
+                    return
+                }
+                if (e.altKey && (code === 'KeyO' || code === 'KeyY')) {
+                    e.preventDefault()
+                    onConfirmOk()
+                    return
+                }
+                if (e.altKey && (code === 'KeyC' || code === 'KeyN') && !confirmModal.value.onlyOK) {
+                    e.preventDefault()
+                    onConfirmCancel()
+                    return
+                }
+                if (!confirmModal.value.onlyOK) {
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault()
+                        confirmCancelBtnRef.value?.focus()
+                        return
+                    }
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault()
+                        confirmOkBtnRef.value?.focus()
+                        return
+                    }
+                    if (e.key === 'Tab') {
+                        e.preventDefault()
+                        if (document.activeElement === confirmCancelBtnRef.value) {
+                            confirmOkBtnRef.value?.focus()
+                        } else {
+                            confirmCancelBtnRef.value?.focus()
+                        }
+                        return
+                    }
+                }
+                return
+            }
+
             const activeEl = document.activeElement
             const activeTag = activeEl?.tagName
 
@@ -10786,6 +10831,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             toggleFilter,
             confirmModal,
             confirmCancelBtnRef,
+            confirmOkBtnRef,
             showConfirm,
             onConfirmOk,
             onConfirmCancel,
