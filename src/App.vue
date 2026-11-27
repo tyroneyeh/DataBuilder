@@ -8240,6 +8240,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             if (platform === 'native' && canWebShare) {
                 try {
+                    const shareData = { title: currentStorageKey.value || translate('TY Data Builder') }
                     const files = (shareModal.value.includePhotos && shareModal.value.photos?.length)
                         ? shareModal.value.photos.map((src, idx) => dataUrlToFile(src, idx)).filter(Boolean)
                         : []
@@ -8247,24 +8248,15 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     if (files.length > 0 && typeof navigator.canShare === 'function' && navigator.canShare({ files })) {
                         if (textWithLink) {
                             navigator.clipboard?.writeText(textWithLink).catch(() => {})
+                            shareData.text = textWithLink
                         }
-                        await navigator.share({
-                            title: currentStorageKey.value || translate('TY Data Builder'),
-                            text: textWithLink,
-                            files
-                        })
-                    } else if (link) {
-                        await navigator.share({
-                            title: currentStorageKey.value || translate('TY Data Builder'),
-                            text: shareText || undefined,
-                            url: link
-                        })
+                        shareData.files = files
                     } else {
-                        await navigator.share({
-                            title: currentStorageKey.value || translate('TY Data Builder'),
-                            text: shareText
-                        })
+                        if (shareText) shareData.text = shareText
+                        if (link) shareData.url = link
                     }
+
+                    await navigator.share(shareData)
                     markSharedPlatform('native')
                 } catch (err) {
                     if (err?.name !== 'AbortError') {
