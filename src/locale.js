@@ -244,7 +244,9 @@ export const translations = {
         "TWSE": "上市",
         "TPEx": "上櫃",
         "Refresh stock prices": "重新整理股價",
-        "Failed to fetch stock price.": "無法取得股價資料。"
+        "Failed to fetch stock price.": "無法取得股價資料。",
+        "Hide chart amounts": "遮蔽圖表金額",
+        "Show chart amounts": "顯示圖表金額"
     },
     "zh-CN": {
         "Action": "操作",
@@ -489,7 +491,9 @@ export const translations = {
         "TWSE": "上市",
         "TPEx": "上柜",
         "Refresh stock prices": "刷新股价",
-        "Failed to fetch stock price.": "无法获取股价数据。"
+        "Failed to fetch stock price.": "无法获取股价数据。",
+        "Hide chart amounts": "隐藏图表金额",
+        "Show chart amounts": "显示图表金额"
     },
     "ja": {
         "Action": "操作",
@@ -734,7 +738,9 @@ export const translations = {
         "TWSE": "上場",
         "TPEx": "店頭",
         "Refresh stock prices": "株価を更新",
-        "Failed to fetch stock price.": "株価の取得に失敗しました。"
+        "Failed to fetch stock price.": "株価の取得に失敗しました。",
+        "Hide chart amounts": "グラフの金額を隠す",
+        "Show chart amounts": "グラフの金額を表示"
     },
     "ko": {
         "Action": "작업",
@@ -979,7 +985,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "주가 새로고침",
-        "Failed to fetch stock price.": "주가 정보를 가져오지 못했습니다."
+        "Failed to fetch stock price.": "주가 정보를 가져오지 못했습니다.",
+        "Hide chart amounts": "차트 금액 숨기기",
+        "Show chart amounts": "차트 금액 표시"
     },
     "es": {
         "Action": "Acción",
@@ -1224,7 +1232,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Actualizar precios",
-        "Failed to fetch stock price.": "No se pudo obtener el precio de la acción."
+        "Failed to fetch stock price.": "No se pudo obtener el precio de la acción.",
+        "Hide chart amounts": "Ocultar montos del gráfico",
+        "Show chart amounts": "Mostrar montos del gráfico"
     },
     "fr": {
         "Action": "Action",
@@ -1469,7 +1479,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Actualiser les cours",
-        "Failed to fetch stock price.": "Impossible de récupérer le cours de l’action."
+        "Failed to fetch stock price.": "Impossible de récupérer le cours de l’action.",
+        "Hide chart amounts": "Masquer les montants du graphique",
+        "Show chart amounts": "Afficher les montants du graphique"
     },
     "de": {
         "Action": "Aktion",
@@ -1714,7 +1726,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Kurse aktualisieren",
-        "Failed to fetch stock price.": "Aktienkurs konnte nicht abgerufen werden."
+        "Failed to fetch stock price.": "Aktienkurs konnte nicht abgerufen werden.",
+        "Hide chart amounts": "Diagrammbeträge ausblenden",
+        "Show chart amounts": "Diagrammbeträge anzeigen"
     },
     "it": {
         "Action": "Azione",
@@ -1959,7 +1973,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Aggiorna quotazioni",
-        "Failed to fetch stock price.": "Impossibile recuperare il prezzo dell’azione."
+        "Failed to fetch stock price.": "Impossibile recuperare il prezzo dell’azione.",
+        "Hide chart amounts": "Nascondi importi del grafico",
+        "Show chart amounts": "Mostra importi del grafico"
     },
     "pt": {
         "Action": "Ação",
@@ -2204,7 +2220,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Atualizar cotações",
-        "Failed to fetch stock price.": "Falha ao obter o preço da ação."
+        "Failed to fetch stock price.": "Falha ao obter o preço da ação.",
+        "Hide chart amounts": "Ocultar valores do gráfico",
+        "Show chart amounts": "Mostrar valores do gráfico"
     },
     "ru": {
         "Action": "Действие",
@@ -2449,7 +2467,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Обновить котировки",
-        "Failed to fetch stock price.": "Не удалось получить цену акции."
+        "Failed to fetch stock price.": "Не удалось получить цену акции.",
+        "Hide chart amounts": "Скрыть суммы на графике",
+        "Show chart amounts": "Показать суммы на графике"
     },
     "id": {
         "Action": "Tindakan",
@@ -2694,7 +2714,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Segarkan harga saham",
-        "Failed to fetch stock price.": "Gagal mengambil harga saham."
+        "Failed to fetch stock price.": "Gagal mengambil harga saham.",
+        "Hide chart amounts": "Sembunyikan nominal grafik",
+        "Show chart amounts": "Tampilkan nominal grafik"
     },
     "vi": {
         "Action": "Thao tác",
@@ -2939,7 +2961,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Làm mới giá cổ phiếu",
-        "Failed to fetch stock price.": "Không thể lấy giá cổ phiếu."
+        "Failed to fetch stock price.": "Không thể lấy giá cổ phiếu.",
+        "Hide chart amounts": "Ẩn số tiền biểu đồ",
+        "Show chart amounts": "Hiện số tiền biểu đồ"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3184,7 +3208,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "รีเฟรชราคาหุ้น",
-        "Failed to fetch stock price.": "ไม่สามารถดึงราคาหุ้นได้"
+        "Failed to fetch stock price.": "ไม่สามารถดึงราคาหุ้นได้",
+        "Hide chart amounts": "ซ่อนยอดเงินในกราฟ",
+        "Show chart amounts": "แสดงยอดเงินในกราฟ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3429,7 +3455,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Muat semula harga saham",
-        "Failed to fetch stock price.": "Gagal mendapatkan harga saham."
+        "Failed to fetch stock price.": "Gagal mendapatkan harga saham.",
+        "Hide chart amounts": "Sembunyikan amaun carta",
+        "Show chart amounts": "Tunjukkan amaun carta"
     },
     "tr": {
         "Action": "İşlem",
@@ -3674,7 +3702,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Hisse fiyatlarını yenile",
-        "Failed to fetch stock price.": "Hisse fiyatı alınamadı."
+        "Failed to fetch stock price.": "Hisse fiyatı alınamadı.",
+        "Hide chart amounts": "Grafik tutarlarını gizle",
+        "Show chart amounts": "Grafik tutarlarını göster"
     },
     "ar": {
         "Action": "إجراء",
@@ -3919,7 +3949,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "تحديث أسعار الأسهم",
-        "Failed to fetch stock price.": "فشل في جلب سعر السهم."
+        "Failed to fetch stock price.": "فشل في جلب سعر السهم.",
+        "Hide chart amounts": "إخفاء مبالغ الرسم البياني",
+        "Show chart amounts": "إظهار مبالغ الرسم البياني"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4164,7 +4196,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "शेयर मूल्य रीफ़्रेश करें",
-        "Failed to fetch stock price.": "शेयर मूल्य प्राप्त करने में विफल।"
+        "Failed to fetch stock price.": "शेयर मूल्य प्राप्त करने में विफल।",
+        "Hide chart amounts": "चार्ट की राशि छिपाएँ",
+        "Show chart amounts": "चार्ट की राशि दिखाएँ"
     },
     "pl": {
         "Action": "Akcja",
@@ -4409,7 +4443,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Odśwież ceny akcji",
-        "Failed to fetch stock price.": "Nie udało się pobrać ceny akcji."
+        "Failed to fetch stock price.": "Nie udało się pobrać ceny akcji.",
+        "Hide chart amounts": "Ukryj kwoty na wykresie",
+        "Show chart amounts": "Pokaż kwoty na wykresie"
     },
     "nl": {
         "Action": "Actie",
@@ -4654,7 +4690,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Koersen vernieuwen",
-        "Failed to fetch stock price.": "Kan aandelenkoers niet ophalen."
+        "Failed to fetch stock price.": "Kan aandelenkoers niet ophalen.",
+        "Hide chart amounts": "Grafiekbedragen verbergen",
+        "Show chart amounts": "Grafiekbedragen tonen"
     },
     "uk": {
         "Action": "Дія",
@@ -4899,7 +4937,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Оновити ціни акцій",
-        "Failed to fetch stock price.": "Не вдалося отримати ціну акції."
+        "Failed to fetch stock price.": "Не вдалося отримати ціну акції.",
+        "Hide chart amounts": "Приховати суми на графіку",
+        "Show chart amounts": "Показати суми на графіку"
     },
     "tl": {
         "Action": "Aksyon",
@@ -5144,7 +5184,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "I-refresh ang presyo ng stock",
-        "Failed to fetch stock price.": "Nabigong kunin ang presyo ng stock."
+        "Failed to fetch stock price.": "Nabigong kunin ang presyo ng stock.",
+        "Hide chart amounts": "Itago ang halaga sa chart",
+        "Show chart amounts": "Ipakita ang halaga sa chart"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5389,7 +5431,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Uppdatera aktiekurser",
-        "Failed to fetch stock price.": "Kunde inte hämta aktiekurs."
+        "Failed to fetch stock price.": "Kunde inte hämta aktiekurs.",
+        "Hide chart amounts": "Dölj diagrambelopp",
+        "Show chart amounts": "Visa diagrambelopp"
     },
     "cs": {
         "Action": "Akce",
@@ -5634,7 +5678,9 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "Obnovit ceny akcií",
-        "Failed to fetch stock price.": "Nepodařilo se načíst cenu akcie."
+        "Failed to fetch stock price.": "Nepodařilo se načíst cenu akcie.",
+        "Hide chart amounts": "Skrýt částky v grafu",
+        "Show chart amounts": "Zobrazit částky v grafu"
     },
     "ta": {
         "Action": "செயல்",
@@ -5879,6 +5925,8 @@ export const translations = {
         "TWSE": "TWSE",
         "TPEx": "TPEx",
         "Refresh stock prices": "பங்கு விலைகளைப் புதுப்பி",
-        "Failed to fetch stock price.": "பங்கு விலையைப் பெற முடியவில்லை."
+        "Failed to fetch stock price.": "பங்கு விலையைப் பெற முடியவில்லை.",
+        "Hide chart amounts": "வரைபடத் தொகைகளை மறை",
+        "Show chart amounts": "வரைபடத் தொகைகளைக் காட்டு"
     }
 }

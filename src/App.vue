@@ -60,8 +60,17 @@
         :class="canOpenSummary ? 'hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer' : 'opacity-50 cursor-not-allowed'"
     >
         <span class="flex items-center">📊 {{ translate('Summary') }}</span>
-        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
-            <span class="transform transition-transform duration-300" :class="canOpenSummary && isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+        <div class="flex items-center gap-1">
+            <button v-if="canOpenSummary && isChartOpen"
+                type="button"
+                @click.stop="toggleChartPrivacy"
+                class="w-8 h-8 flex items-center justify-center rounded-full transition-all text-base"
+                :class="isChartPrivacyMode ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-600'"
+                :data-tooltip="isChartPrivacyMode ? translate('Show chart amounts') : translate('Hide chart amounts')"
+            >{{ isChartPrivacyMode ? '🙈' : '👁️' }}</button>
+            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700 text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 dark:group-hover:bg-gray-600 transition-all">
+                <span class="transform transition-transform duration-300" :class="canOpenSummary && isChartOpen ? 'rotate-180' : 'rotate-0'">▼</span>
+            </div>
         </div>
     </div>
     <div ref="chartContainer" v-show="canOpenSummary && isChartOpen" class="w-full mt-2"
@@ -149,14 +158,14 @@
                             :style="{
                                 width: item.budget > 0 ? Math.min((Math.abs(item.value) / item.budget) * 100, 100) + '%' : (Math.abs(item.value) > 0 ? '100%' : '0%')
                             }"
-                            :data-tooltip="item.budget > 0 ? item.budget.toLocaleString() +' ('+ ((Math.abs(item.value) / item.budget) * 100).toFixed(1) + '%)' : translate('Over!')">
+                            :data-tooltip="item.budget > 0 ? (isChartPrivacyMode ? '***' : item.budget.toLocaleString()) +' ('+ ((Math.abs(item.value) / item.budget) * 100).toFixed(1) + '%)' : translate('Over!')">
                         </div>
 
                     </div>
                     <div class="text-right pl-4">
-                        <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :data-tooltip="item.value.toLocaleString()">
-                            {{ formatNumber(item.value) }}
-                            <span v-if="item.budget" class="text-xs text-gray-400 font-normal ml-1">/ {{ formatNumber(item.budget) }}</span>
+                        <div class="text-gray-900 dark:text-white font-bold tracking-tight text-nowrap" :data-tooltip="isChartPrivacyMode ? '***' : item.value.toLocaleString()">
+                            {{ isChartPrivacyMode ? '***' : formatNumber(item.value) }}
+                            <span v-if="item.budget" class="text-xs text-gray-400 font-normal ml-1">/ {{ isChartPrivacyMode ? '***' : formatNumber(item.budget) }}</span>
                         </div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 font-medium">
                             {{ item.percentage }}%
@@ -2299,6 +2308,7 @@ export default {
         const fileInput = ref(null)
 
         const isChartOpen = ref(localStorage.getItem('ty_chart_open'))
+        const isChartPrivacyMode = ref(localStorage.getItem('ty_chart_privacy') === '1')
         const customLegendItems = ref([])
         const hiddenCategoryNames = ref([])
         const selectedChartCatColId = ref(null)
@@ -7536,7 +7546,7 @@ export default {
                 ctx.fillStyle = cachedTotalSum < 0
                     ? (isDarkMode ? '#f87171' : '#dc2626')
                     : (isDarkMode ? '#f3f4f6' : '#1f2937')
-                ctx.fillText(formatNumber(cachedTotalSum), centerX, centerY + 15)
+                ctx.fillText(isChartPrivacyMode.value ? '***' : formatNumber(cachedTotalSum), centerX, centerY + 15)
                 ctx.restore()
             },
             afterEvent(chart, args) {
@@ -7558,7 +7568,7 @@ export default {
 
                     if (distance < innerRadius) {
                         chart.canvas.style.cursor = 'pointer'
-                        tooltipState.value.text = cachedTotalSum.toLocaleString()
+                        tooltipState.value.text = isChartPrivacyMode.value ? '***' : cachedTotalSum.toLocaleString()
                         tooltipState.value.x = args.event.native.clientX
                         tooltipState.value.y = args.event.native.clientY
                         tooltipState.value.show = true
@@ -7783,7 +7793,9 @@ export default {
                                         const total = dataset.data.reduce((sum, val) => sum + val, 0)
                                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0
                                         const sign = realValue > 0 ? '+' : ''
-                                        return `${sign}${realValue.toLocaleString()} (${percentage}%)`
+                                        return isChartPrivacyMode.value
+                                            ? `*** (${percentage}%)`
+                                            : `${sign}${realValue.toLocaleString()} (${percentage}%)`
                                     }
                                 }
                             }
@@ -7963,7 +7975,7 @@ export default {
                                 stacked: !isLine,
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: (v) => formatNumber(v),
+                                    callback: (v) => isChartPrivacyMode.value ? '***' : formatNumber(v),
                                     color: isDark.value ? '#9ca3af' : '#6b7280'
                                 },
                                 grid: { color: isDark.value ? '#374151' : '#e5e7eb' }
@@ -7985,8 +7997,15 @@ export default {
                                 footerFont: { size: 13, weight: 'bold' },
                                 footerMarginTop: 8,
                                 callbacks: {
+                                    label: (context) => {
+                                        const label = context.dataset.label || ''
+                                        if (isChartPrivacyMode.value) return `${label}: ***`
+                                        const val = context.parsed.y
+                                        return `${label}: ${val !== null && val !== undefined ? val.toLocaleString() : ''}`
+                                    },
                                     footer: (tooltipItems) => {
                                         if (tooltipItems.length === 0 || trendChartType.value === 'total') return null
+                                        if (isChartPrivacyMode.value) return translate('Total') + ': ***'
                                         let total = 0
                                         tooltipItems.forEach((tooltipItem) => {
                                             if (tooltipItem.dataset.label !== translate('Budget')) total += tooltipItem.parsed.y
@@ -8138,7 +8157,7 @@ export default {
                                 title: () => '',
                                 label: (context) => {
                                     const item = context.raw;
-                                    return `${item.date}${getWeekdayStr(item.date)}: ${formatNumber(item.v)}`
+                                    return `${item.date}${getWeekdayStr(item.date)}: ${isChartPrivacyMode.value ? '***' : formatNumber(item.v)}`
                                 }
                             }
                         }
@@ -8186,6 +8205,18 @@ export default {
                     heatmapScrollContainer.value.scrollLeft = heatmapScrollContainer.value.scrollWidth;
                 }
             }, 100);
+        }
+
+        const toggleChartPrivacy = () => {
+            isChartPrivacyMode.value = !isChartPrivacyMode.value
+            if (isChartPrivacyMode.value) {
+                localStorage.setItem('ty_chart_privacy', '1')
+            } else {
+                localStorage.removeItem('ty_chart_privacy')
+            }
+            if (expenseChart.value) expenseChart.value.update('none')
+            if (trendChart.value) trendChart.value.update('none')
+            if (heatmapChartInstance) heatmapChartInstance.update('none')
         }
 
         const updateChart = async (unit) => {
@@ -10819,6 +10850,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             toggleChart,
             canOpenSummary,
             isChartOpen,
+            isChartPrivacyMode,
+            toggleChartPrivacy,
             customLegendItems,
             toggleLegend,
             debouncedUpdateChart,
