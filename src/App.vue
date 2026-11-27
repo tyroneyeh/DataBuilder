@@ -2160,7 +2160,6 @@ export default {
         const fileInput = ref(null)
 
         const isChartOpen = ref(localStorage.getItem('ty_chart_open'))
-        const isTitleOpen = ref(localStorage.getItem('ty_title_open'))
         const customLegendItems = ref([])
         const hiddenCategoryNames = ref([])
         const selectedChartCatColId = ref(null)
@@ -9329,11 +9328,6 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             onDataEdited()
         }
 
-        const toggleTitle = () => {
-            isTitleOpen.value = !isTitleOpen.value
-            isTitleOpen.value ? localStorage.setItem('ty_title_open', 1) : localStorage.removeItem('ty_title_open')
-        }
-
         const saveScrollPosition = debounce((scrollTop) => {
             if (!currentStorageKey.value) return
             localStorage.setItem(`${currentStorageKey.value}_scrollTop`, scrollTop)
@@ -10165,8 +10159,6 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             toggleChart,
             canOpenSummary,
             isChartOpen,
-            toggleTitle,
-            isTitleOpen,
             customLegendItems,
             toggleLegend,
             debouncedUpdateChart,
