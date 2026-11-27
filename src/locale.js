@@ -254,7 +254,10 @@ export const translations = {
         "Generating...": "產生中...",
         "Run AI via Google Sheets": "透過 Google 試算表執行 AI",
         "Please configure Google Client ID and Google Sheet URL first.": "請先設定 Google Client ID 與 Google 試算表網址。",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已將 AI 公式同步至 Google 試算表。若結果仍為空白，請開啟試算表點選「產生並插入」，再從試算表拉取。"
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已將 AI 公式同步至 Google 試算表。若結果仍為空白，請開啟試算表點選「產生並插入」，再從試算表拉取。",
+        "Edit AI prompt": "編輯 AI 提示詞",
+        "Re-run AI after saving": "儲存後立即透過 Google Sheets 重新執行 AI",
+        "AI Prompt": "AI 提示詞"
     },
     "zh-CN": {
         "Action": "操作",
@@ -509,7 +512,10 @@ export const translations = {
         "Generating...": "生成中...",
         "Run AI via Google Sheets": "通过 Google 表格运行 AI",
         "Please configure Google Client ID and Google Sheet URL first.": "请先配置 Google Client ID 和 Google 表格网址。",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已将 AI 公式同步到 Google 表格。若结果仍为空白，请打开表格点击“生成并插入”，再从表格拉取。"
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "已将 AI 公式同步到 Google 表格。若结果仍为空白，请打开表格点击“生成并插入”，再从表格拉取。",
+        "Edit AI prompt": "编辑 AI 提示词",
+        "Re-run AI after saving": "保存后立即通过 Google Sheets 重新运行 AI",
+        "AI Prompt": "AI 提示词"
     },
     "ja": {
         "Action": "操作",
@@ -764,7 +770,10 @@ export const translations = {
         "Generating...": "生成中...",
         "Run AI via Google Sheets": "Google スプレッドシートで AI 実行",
         "Please configure Google Client ID and Google Sheet URL first.": "先に Google Client ID とスプレッドシート URL を設定してください。",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 数式を Google スプレッドシートに同期しました。結果が空の場合はシートで「生成して挿入」をクリックしてから再取得してください。"
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 数式を Google スプレッドシートに同期しました。結果が空の場合はシートで「生成して挿入」をクリックしてから再取得してください。",
+        "Edit AI prompt": "AIプロンプトを編集",
+        "Re-run AI after saving": "保存後にGoogleスプレッドシートでAIを再実行",
+        "AI Prompt": "AIプロンプト"
     },
     "ko": {
         "Action": "작업",
@@ -1019,7 +1028,10 @@ export const translations = {
         "Generating...": "생성 중...",
         "Run AI via Google Sheets": "Google 시트에서 AI 실행",
         "Please configure Google Client ID and Google Sheet URL first.": "먼저 Google Client ID와 Google 시트 URL을 설정하세요.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 수식이 Google 시트에 동기화되었습니다. 결과가 비어 있으면 시트에서 \"생성 및 삽입\"을 클릭한 뒤 다시 가져오세요."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI 수식이 Google 시트에 동기화되었습니다. 결과가 비어 있으면 시트에서 \"생성 및 삽입\"을 클릭한 뒤 다시 가져오세요.",
+        "Edit AI prompt": "AI 프롬프트 편집",
+        "Re-run AI after saving": "저장 후 Google Sheets에서 AI 다시 실행",
+        "AI Prompt": "AI 프롬프트"
     },
     "es": {
         "Action": "Acción",
@@ -1274,7 +1286,10 @@ export const translations = {
         "Generating...": "Generando...",
         "Run AI via Google Sheets": "Ejecutar IA con Google Sheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Configura primero el Google Client ID y la URL de Google Sheets.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada con Google Sheets. Si sigue vacío, abre la hoja, haz clic en \"Generar e insertar\" y vuelve a importar."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada con Google Sheets. Si sigue vacío, abre la hoja, haz clic en \"Generar e insertar\" y vuelve a importar.",
+        "Edit AI prompt": "Editar prompt de IA",
+        "Re-run AI after saving": "Volver a ejecutar IA tras guardar",
+        "AI Prompt": "Prompt de IA"
     },
     "fr": {
         "Action": "Action",
@@ -1529,7 +1544,10 @@ export const translations = {
         "Generating...": "Génération...",
         "Run AI via Google Sheets": "Exécuter l’IA via Google Sheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Veuillez d’abord configurer le Google Client ID et l’URL Google Sheets.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formule IA synchronisée avec Google Sheets. Si les résultats restent vides, ouvrez la feuille pour cliquer sur « Générer et insérer », puis réimportez."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formule IA synchronisée avec Google Sheets. Si les résultats restent vides, ouvrez la feuille pour cliquer sur « Générer et insérer », puis réimportez.",
+        "Edit AI prompt": "Modifier le prompt IA",
+        "Re-run AI after saving": "Relancer l’IA après l’enregistrement",
+        "AI Prompt": "Prompt IA"
     },
     "de": {
         "Action": "Aktion",
@@ -1784,7 +1802,10 @@ export const translations = {
         "Generating...": "Wird generiert...",
         "Run AI via Google Sheets": "KI über Google Tabellen ausführen",
         "Please configure Google Client ID and Google Sheet URL first.": "Bitte zuerst Google Client ID und Google-Tabellen-URL einrichten.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "KI-Formel mit Google Tabellen synchronisiert. Falls noch leer, in der Tabelle „Generieren und einfügen“ klicken und erneut abrufen."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "KI-Formel mit Google Tabellen synchronisiert. Falls noch leer, in der Tabelle „Generieren und einfügen“ klicken und erneut abrufen.",
+        "Edit AI prompt": "KI-Prompt bearbeiten",
+        "Re-run AI after saving": "KI nach dem Speichern erneut ausführen",
+        "AI Prompt": "KI-Prompt"
     },
     "it": {
         "Action": "Azione",
@@ -2039,7 +2060,10 @@ export const translations = {
         "Generating...": "Generazione...",
         "Run AI via Google Sheets": "Esegui IA tramite Google Fogli",
         "Please configure Google Client ID and Google Sheet URL first.": "Configura prima il Google Client ID e l’URL di Google Fogli.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula IA sincronizzata con Google Fogli. Se i risultati sono vuoti, apri il foglio, fai clic su \"Genera e inserisci\" e poi reimporta."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula IA sincronizzata con Google Fogli. Se i risultati sono vuoti, apri il foglio, fai clic su \"Genera e inserisci\" e poi reimporta.",
+        "Edit AI prompt": "Modifica prompt IA",
+        "Re-run AI after saving": "Riesegui IA dopo il salvataggio",
+        "AI Prompt": "Prompt IA"
     },
     "pt": {
         "Action": "Ação",
@@ -2294,7 +2318,10 @@ export const translations = {
         "Generating...": "Gerando...",
         "Run AI via Google Sheets": "Executar IA via Google Planilhas",
         "Please configure Google Client ID and Google Sheet URL first.": "Configure primeiro o Google Client ID e a URL do Google Planilhas.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada com o Google Planilhas. Se ainda estiver vazio, abra a planilha, clique em \"Gerar e inserir\" e puxe novamente."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Fórmula de IA sincronizada com o Google Planilhas. Se ainda estiver vazio, abra a planilha, clique em \"Gerar e inserir\" e puxe novamente.",
+        "Edit AI prompt": "Editar prompt de IA",
+        "Re-run AI after saving": "Executar IA novamente após salvar",
+        "AI Prompt": "Prompt de IA"
     },
     "ru": {
         "Action": "Действие",
@@ -2549,7 +2576,10 @@ export const translations = {
         "Generating...": "Генерация...",
         "Run AI via Google Sheets": "Запустить ИИ через Google Таблицы",
         "Please configure Google Client ID and Google Sheet URL first.": "Сначала укажите Google Client ID и URL Google Таблицы.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формула ИИ отправлена в Google Таблицы. Если пусто, откройте таблицу, нажмите «Создать и вставить», затем загрузите данные."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формула ИИ отправлена в Google Таблицы. Если пусто, откройте таблицу, нажмите «Создать и вставить», затем загрузите данные.",
+        "Edit AI prompt": "Изменить ИИ-промпт",
+        "Re-run AI after saving": "Перезапустить ИИ после сохранения",
+        "AI Prompt": "ИИ-промпт"
     },
     "id": {
         "Action": "Tindakan",
@@ -2804,7 +2834,10 @@ export const translations = {
         "Generating...": "Membuat...",
         "Run AI via Google Sheets": "Jalankan AI via Google Sheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Konfigurasikan Google Client ID dan URL Google Sheets terlebih dahulu.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Rumus AI telah disinkronkan ke Google Sheets. Jika masih kosong, buka Sheet untuk klik \"Generate and insert\", lalu tarik kembali."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Rumus AI telah disinkronkan ke Google Sheets. Jika masih kosong, buka Sheet untuk klik \"Generate and insert\", lalu tarik kembali.",
+        "Edit AI prompt": "Edit prompt AI",
+        "Re-run AI after saving": "Jalankan ulang AI setelah menyimpan",
+        "AI Prompt": "Prompt AI"
     },
     "vi": {
         "Action": "Thao tác",
@@ -3059,7 +3092,10 @@ export const translations = {
         "Generating...": "Đang tạo...",
         "Run AI via Google Sheets": "Chạy AI qua Google Trang tính",
         "Please configure Google Client ID and Google Sheet URL first.": "Vui lòng cấu hình Google Client ID và URL Google Trang tính trước.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Đã đồng bộ công thức AI lên Google Trang tính. Nếu kết quả còn trống, mở trang tính bấm \"Tạo và chèn\" rồi kéo về."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Đã đồng bộ công thức AI lên Google Trang tính. Nếu kết quả còn trống, mở trang tính bấm \"Tạo và chèn\" rồi kéo về.",
+        "Edit AI prompt": "Sửa prompt AI",
+        "Re-run AI after saving": "Chạy lại AI sau khi lưu",
+        "AI Prompt": "Prompt AI"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3314,7 +3350,10 @@ export const translations = {
         "Generating...": "กำลังสร้าง...",
         "Run AI via Google Sheets": "รัน AI ผ่าน Google ชีต",
         "Please configure Google Client ID and Google Sheet URL first.": "กรุณาตั้งค่า Google Client ID และ URL ของ Google ชีตก่อน",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "ซิงค์สูตร AI ไปยัง Google ชีตแล้ว หากผลลัพธ์ยังว่าง ให้เปิดชีตแล้วคลิก \"สร้างและแทรก\" จากนั้นดึงข้อมูลกลับ"
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "ซิงค์สูตร AI ไปยัง Google ชีตแล้ว หากผลลัพธ์ยังว่าง ให้เปิดชีตแล้วคลิก \"สร้างและแทรก\" จากนั้นดึงข้อมูลกลับ",
+        "Edit AI prompt": "แก้ไขพรอมต์ AI",
+        "Re-run AI after saving": "รัน AI ใหม่หลังบันทึก",
+        "AI Prompt": "พรอมต์ AI"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3569,7 +3608,10 @@ export const translations = {
         "Generating...": "Menjana...",
         "Run AI via Google Sheets": "Jalankan AI melalui Google Sheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Sila tetapkan Google Client ID dan URL Google Sheets dahulu.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula AI telah disegerakkan ke Google Sheets. Jika masih kosong, buka helaian dan klik \"Generate and insert\", kemudian tarik semula."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formula AI telah disegerakkan ke Google Sheets. Jika masih kosong, buka helaian dan klik \"Generate and insert\", kemudian tarik semula.",
+        "Edit AI prompt": "Edit prompt AI",
+        "Re-run AI after saving": "Jalankan semula AI selepas menyimpan",
+        "AI Prompt": "Prompt AI"
     },
     "tr": {
         "Action": "İşlem",
@@ -3824,7 +3866,10 @@ export const translations = {
         "Generating...": "Oluşturuluyor...",
         "Run AI via Google Sheets": "Google E-Tablolar ile AI çalıştır",
         "Please configure Google Client ID and Google Sheet URL first.": "Önce Google Client ID ve Google E-Tablo URL’sini yapılandırın.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI formülü Google E-Tablolar’a aktarıldı. Hâlâ boşsa tabloda \"Oluştur ve ekle\"ye tıklayıp veriyi geri çekin."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI formülü Google E-Tablolar’a aktarıldı. Hâlâ boşsa tabloda \"Oluştur ve ekle\"ye tıklayıp veriyi geri çekin.",
+        "Edit AI prompt": "AI istemini düzenle",
+        "Re-run AI after saving": "Kaydettikten sonra AI’yi yeniden çalıştır",
+        "AI Prompt": "AI İstemi"
     },
     "ar": {
         "Action": "إجراء",
@@ -4079,7 +4124,10 @@ export const translations = {
         "Generating...": "جاري الإنشاء...",
         "Run AI via Google Sheets": "تشغيل AI عبر جداول بيانات Google",
         "Please configure Google Client ID and Google Sheet URL first.": "يرجى إعداد Google Client ID ورابط جدول بيانات Google أولاً.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "تمت مزامنة صيغة AI إلى جداول بيانات Google. إذا بقيت النتائج فارغة، افتح الجدول وانقر على \"إنشاء وإدراج\" ثم اسحب البيانات."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "تمت مزامنة صيغة AI إلى جداول بيانات Google. إذا بقيت النتائج فارغة، افتح الجدول وانقر على \"إنشاء وإدراج\" ثم اسحب البيانات.",
+        "Edit AI prompt": "تعديل موجه الذكاء الاصطناعي",
+        "Re-run AI after saving": "إعادة تشغيل الذكاء الاصطناعي بعد الحفظ",
+        "AI Prompt": "موجه الذكاء الاصطناعي"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4334,7 +4382,10 @@ export const translations = {
         "Generating...": "उत्पन्न हो रहा है...",
         "Run AI via Google Sheets": "Google Sheets से AI चलाएँ",
         "Please configure Google Client ID and Google Sheet URL first.": "कृपया पहले Google Client ID और Google Sheet URL सेट करें।",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI फ़ॉर्मूला Google Sheets में सिंक हो गया है। यदि परिणाम खाली हैं, तो शीट खोलकर \"Generate and insert\" पर क्लिक करें और फिर डेटा खींचें।"
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI फ़ॉर्मूला Google Sheets में सिंक हो गया है। यदि परिणाम खाली हैं, तो शीट खोलकर \"Generate and insert\" पर क्लिक करें और फिर डेटा खींचें।",
+        "Edit AI prompt": "AI प्रॉम्प्ट संपादित करें",
+        "Re-run AI after saving": "सहेजने के बाद AI पुनः चलाएं",
+        "AI Prompt": "AI प्रॉम्प्ट"
     },
     "pl": {
         "Action": "Akcja",
@@ -4589,7 +4640,10 @@ export const translations = {
         "Generating...": "Generowanie...",
         "Run AI via Google Sheets": "Uruchom AI przez Arkusze Google",
         "Please configure Google Client ID and Google Sheet URL first.": "Najpierw skonfiguruj Google Client ID i adres URL Arkusza Google.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formuła AI została zsynchronizowana z Arkuszami Google. Jeśli wyniki są puste, otwórz arkusz, kliknij „Wygeneruj i wstaw”, a następnie pobierz dane."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Formuła AI została zsynchronizowana z Arkuszami Google. Jeśli wyniki są puste, otwórz arkusz, kliknij „Wygeneruj i wstaw”, a następnie pobierz dane.",
+        "Edit AI prompt": "Edytuj prompt AI",
+        "Re-run AI after saving": "Uruchom ponownie AI po zapisaniu",
+        "AI Prompt": "Prompt AI"
     },
     "nl": {
         "Action": "Actie",
@@ -4844,7 +4898,10 @@ export const translations = {
         "Generating...": "Genereren...",
         "Run AI via Google Sheets": "AI uitvoeren via Google Spreadsheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Stel eerst de Google Client ID en Google Spreadsheet-URL in.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formule gesynchroniseerd met Google Spreadsheets. Als resultaten leeg blijven, open het blad, klik op \"Genereren en invoegen\" en haal opnieuw op."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formule gesynchroniseerd met Google Spreadsheets. Als resultaten leeg blijven, open het blad, klik op \"Genereren en invoegen\" en haal opnieuw op.",
+        "Edit AI prompt": "AI-prompt bewerken",
+        "Re-run AI after saving": "AI opnieuw uitvoeren na opslaan",
+        "AI Prompt": "AI-prompt"
     },
     "uk": {
         "Action": "Дія",
@@ -5099,7 +5156,10 @@ export const translations = {
         "Generating...": "Генерація...",
         "Run AI via Google Sheets": "Запустити ШІ через Google Таблиці",
         "Please configure Google Client ID and Google Sheet URL first.": "Спочатку налаштуйте Google Client ID та URL Google Таблиці.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формулу ШІ синхронізовано з Google Таблицями. Якщо ще порожньо, відкрийте таблицю, натисніть «Згенерувати та вставити» і завантажте знову."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Формулу ШІ синхронізовано з Google Таблицями. Якщо ще порожньо, відкрийте таблицю, натисніть «Згенерувати та вставити» і завантажте знову.",
+        "Edit AI prompt": "Редагувати ШІ-промпт",
+        "Re-run AI after saving": "Перезапустити ШІ після збереження",
+        "AI Prompt": "ШІ-промпт"
     },
     "tl": {
         "Action": "Aksyon",
@@ -5354,7 +5414,10 @@ export const translations = {
         "Generating...": "Gumagawa...",
         "Run AI via Google Sheets": "Patakbuhin ang AI gamit ang Google Sheets",
         "Please configure Google Client ID and Google Sheet URL first.": "Paki-set muna ang Google Client ID at Google Sheet URL.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Na-sync na ang AI formula sa Google Sheets. Kung blangko pa rin, buksan ang Sheet, i-click ang \"Generate and insert\", at i-pull muli."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "Na-sync na ang AI formula sa Google Sheets. Kung blangko pa rin, buksan ang Sheet, i-click ang \"Generate and insert\", at i-pull muli.",
+        "Edit AI prompt": "I-edit ang AI prompt",
+        "Re-run AI after saving": "Patakbuhin muli ang AI pagkatapos i-save",
+        "AI Prompt": "AI Prompt"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5609,7 +5672,10 @@ export const translations = {
         "Generating...": "Genererar...",
         "Run AI via Google Sheets": "Kör AI via Google Kalkylark",
         "Please configure Google Client ID and Google Sheet URL first.": "Konfigurera Google Client ID och Google Kalkylark-URL först.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formel synkad till Google Kalkylark. Om det fortfarande är tomt, öppna arket, klicka på \"Generera och infoga\" och hämta igen."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI-formel synkad till Google Kalkylark. Om det fortfarande är tomt, öppna arket, klicka på \"Generera och infoga\" och hämta igen.",
+        "Edit AI prompt": "Redigera AI-prompt",
+        "Re-run AI after saving": "Kör AI igen efter sparande",
+        "AI Prompt": "AI-prompt"
     },
     "cs": {
         "Action": "Akce",
@@ -5864,7 +5930,10 @@ export const translations = {
         "Generating...": "Generování...",
         "Run AI via Google Sheets": "Spustit AI přes Tabulky Google",
         "Please configure Google Client ID and Google Sheet URL first.": "Nejprve nastavte Google Client ID a URL Tabulky Google.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI vzorec synchronizován do Tabulek Google. Pokud je prázdný, otevřete tabulku, klikněte na „Vygenerovat a vložit“ a stáhněte znovu."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI vzorec synchronizován do Tabulek Google. Pokud je prázdný, otevřete tabulku, klikněte na „Vygenerovat a vložit“ a stáhněte znovu.",
+        "Edit AI prompt": "Upravit AI prompt",
+        "Re-run AI after saving": "Znovu spustit AI po uložení",
+        "AI Prompt": "AI prompt"
     },
     "ta": {
         "Action": "செயல்",
@@ -6119,6 +6188,9 @@ export const translations = {
         "Generating...": "உருவாக்குகிறது...",
         "Run AI via Google Sheets": "Google Sheets மூலம் AI இயக்கு",
         "Please configure Google Client ID and Google Sheet URL first.": "முதலில் Google Client ID மற்றும் Google Sheet URL ஐ அமைக்கவும்.",
-        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI சூத்திரம் Google Sheets இல் ஒத்திசைக்கப்பட்டது. காலியாக இருந்தால், தாளில் \"Generate and insert\" ஐ கிளிக் செய்து மீண்டும் பெறவும்."
+        "AI formula synced to Google Sheets. If results are still blank, open the Sheet to click \"Generate and insert\", then pull from Sheets.": "AI சூத்திரம் Google Sheets இல் ஒத்திசைக்கப்பட்டது. காலியாக இருந்தால், தாளில் \"Generate and insert\" ஐ கிளிக் செய்து மீண்டும் பெறவும்.",
+        "Edit AI prompt": "AI தூண்டுதலைத் திருத்து",
+        "Re-run AI after saving": "சேமித்த பிறகு AI ஐ மீண்டும் இயக்கு",
+        "AI Prompt": "AI தூண்டுதல்"
     }
 }

@@ -298,7 +298,15 @@
                             class="w-full min-w-[60px] max-w-24 px-1 py-0.5 text-sm font-semibold text-blue-700 dark:text-blue-300 bg-white dark:bg-gray-800 border border-blue-400 dark:border-blue-500 rounded outline-none shadow-inner"
                         >
 
-                        <span v-if="!isPrinting" class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap" :class="isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'))))" :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || '') : '')">({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
+                        <span v-if="!isPrinting"
+                            @pointerdown="col.type === 'ai' && $event.stopPropagation()"
+                            @click="col.type === 'ai' && openAiPromptModal(col)"
+                            class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap"
+                            :class="[
+                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'))))
+                            ]"
+                            :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || translate('Edit AI prompt')) : '')"
+                        >({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
                         <button v-if="!isPrinting && col.type === 'exchange' && !(Number(col.customRate) > 0)"
                             type="button"
                             @pointerdown.stop
@@ -320,13 +328,22 @@
                             class="shrink-0 ml-0.5 text-xs text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
                             :data-tooltip="translate('Translate via Google Sheets')"
                         >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
-                        <button v-else-if="!isPrinting && col.type === 'ai' && canGoogleSheetsTranslate"
-                            type="button"
-                            @pointerdown.stop
-                            @click.stop="translateViaGoogleSheets(col, { forceAll: true, interactive: true })"
-                            class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
-                            :data-tooltip="translate('Run AI via Google Sheets')"
-                        >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
+                        <template v-else-if="!isPrinting && col.type === 'ai'">
+                            <button
+                                type="button"
+                                @pointerdown.stop
+                                @click.stop="openAiPromptModal(col)"
+                                class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                                :data-tooltip="translate('Edit AI prompt')"
+                            >✏️</button>
+                            <button v-if="canGoogleSheetsTranslate"
+                                type="button"
+                                @pointerdown.stop
+                                @click.stop="translateViaGoogleSheets(col, { forceAll: true, interactive: true })"
+                                class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                                :data-tooltip="translate('Run AI via Google Sheets')"
+                            >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
+                        </template>
                     </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id, index)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -1868,6 +1885,54 @@
         </div>
     </div>
 </div>
+<div v-if="aiPromptModal.isOpen"
+    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    @click.self="closeAiPromptModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all flex flex-col">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <span class="mr-2">✨</span>
+            {{ translate('Edit AI prompt') }} — {{ aiPromptModal.colLabel }}
+        </h3>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{{ translate('Source Column') }}</label>
+        <select
+            v-model="aiPromptModal.sourceCol"
+            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full text-sm bg-white dark:bg-gray-700 dark:text-white mb-3"
+        >
+            <option v-for="c in aiSourceColumns.filter(col => col.id !== aiPromptModal.colId)" :key="'edit-ai-' + c.id" :value="c.id">{{ c.label }}</option>
+        </select>
+        <label class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{{ translate('AI Prompt') }}</label>
+        <textarea
+            ref="aiPromptInputRef"
+            v-model="aiPromptModal.prompt"
+            rows="3"
+            :placeholder="translate('e.g., Summarize in 10 words')"
+            @input="aiPromptModal.error = ''"
+            @keydown.ctrl.enter.prevent="saveAiPromptModal"
+            @keydown.meta.enter.prevent="saveAiPromptModal"
+            @keydown.escape="closeAiPromptModal"
+            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 resize-y"
+        ></textarea>
+        <label v-if="canGoogleSheetsTranslate" class="flex items-center gap-2 mt-3 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+            <input type="checkbox" v-model="aiPromptModal.rerun" class="w-4 h-4 text-purple-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500 cursor-pointer">
+            <span>🔄 {{ translate('Re-run AI after saving') }}</span>
+        </label>
+        <p v-if="aiPromptModal.error" class="text-xs text-red-500 dark:text-red-400 mt-2">
+            {{ aiPromptModal.error }}
+        </p>
+        <div class="flex justify-end space-x-3 mt-6">
+            <button
+                type="button"
+                @click="closeAiPromptModal"
+                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+            >{{ translate('Cancel') }}</button>
+            <button
+                type="button"
+                @click="saveAiPromptModal"
+                class="px-4 py-2 bg-purple-600 text-white font-medium rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+            >{{ translate('OK') }}</button>
+        </div>
+    </div>
+</div>
 <div v-if="photoViewer.isOpen"
     class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer select-none"
     @click="photoViewer.isOpen = false">
@@ -2364,6 +2429,58 @@ export default {
         const STOCK_CACHE_TTL_MS = 5 * 60 * 1000
         const stockSourceCol = ref('')
         const aiSourceCol = ref('')
+        const aiPromptInputRef = ref(null)
+        const aiPromptModal = ref({
+            isOpen: false,
+            colId: '',
+            colLabel: '',
+            sourceCol: '',
+            prompt: '',
+            rerun: true,
+            error: ''
+        })
+        const openAiPromptModal = async (col) => {
+            if (!col || col.type !== 'ai') return
+            aiPromptModal.value = {
+                isOpen: true,
+                colId: col.id,
+                colLabel: col.label,
+                sourceCol: col.sourceCol || '',
+                prompt: col.aiPrompt || '',
+                rerun: Boolean(canGoogleSheetsTranslate.value),
+                error: ''
+            }
+            await nextTick()
+            aiPromptInputRef.value?.focus()
+        }
+        const closeAiPromptModal = () => {
+            aiPromptModal.value.isOpen = false
+            aiPromptModal.value.error = ''
+        }
+        const saveAiPromptModal = () => {
+            const promptText = aiPromptModal.value.prompt.trim()
+            if (!aiPromptModal.value.sourceCol) {
+                aiPromptModal.value.error = translate('Please select a source column!')
+                return
+            }
+            if (!promptText) {
+                aiPromptModal.value.error = translate('Please enter an AI prompt!')
+                return
+            }
+            const targetCol = columns.value.find(c => c.id === aiPromptModal.value.colId)
+            if (!targetCol) {
+                closeAiPromptModal()
+                return
+            }
+            targetCol.sourceCol = aiPromptModal.value.sourceCol
+            targetCol.aiPrompt = promptText
+            const shouldRerun = aiPromptModal.value.rerun && canGoogleSheetsTranslate.value
+            onDataEdited('both')
+            closeAiPromptModal()
+            if (shouldRerun) {
+                translateViaGoogleSheets(targetCol, { forceAll: true, interactive: true })
+            }
+        }
         const newColAiPrompt = ref('')
         const loadCachedStockQuotes = () => {
             try {
@@ -5045,7 +5162,7 @@ export default {
                             const srcColLetter = getColumnLetter(srcIdx + 1)
                             const sheetRowNum = rowIdx + 2
                             const escapedPrompt = String(c.aiPrompt).replace(/\r?\n/g, ' ').replaceAll('"', '""')
-                            rowArray.push(`=IF(${srcColLetter}${sheetRowNum}="","",AI("${escapedPrompt}",${srcColLetter}${sheetRowNum}))`)
+                            rowArray.push(`=AI("${escapedPrompt}",${srcColLetter}${sheetRowNum})`)
                             wroteTranslateFormulas = true
                         } else {
                             rowArray.push(row[c.id] ?? '')
@@ -10558,6 +10675,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
+                if (aiPromptModal.value.isOpen) {
+                    closeAiPromptModal()
+                    return
+                }
                 if (recurringModal.value.isOpen) {
                     closeRecurringModal()
                     return
@@ -11362,6 +11483,11 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             translateViaGoogleSheets,
             aiSourceCol,
             aiSourceColumns,
+            aiPromptInputRef,
+            aiPromptModal,
+            openAiPromptModal,
+            closeAiPromptModal,
+            saveAiPromptModal,
             newColAiPrompt,
             handleAiCellClick,
             onTranslateCellFocus,
