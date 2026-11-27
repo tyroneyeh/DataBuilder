@@ -2476,6 +2476,14 @@ export default {
                 return false
             }
         })()
+        const isIosPwa = (() => {
+            if (typeof navigator === 'undefined') return false
+            const isIos = /iP(hone|od|ad)/.test(navigator.userAgent)
+                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+            const isStandalone = navigator.standalone === true
+                || (typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches)
+            return isIos && isStandalone
+        })()
 
         const isVoiceEnabled = ref(localStorage.getItem('ty_voice_enabled'))
         const voiceSettings = reactive(localStorage.getItem('ty_voice_settings') ? JSON.parse(localStorage.getItem('ty_voice_settings')) :
@@ -8299,7 +8307,11 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             if (targetUrl) {
                 markSharedPlatform(platform)
-                window.open(targetUrl, '_blank', 'noopener,noreferrer')
+                if (isIosPwa && /^https:\/\//i.test(targetUrl)) {
+                    window.location.href = targetUrl.replace(/^https:\/\//i, 'x-safari-https://')
+                } else {
+                    window.open(targetUrl, '_blank', 'noopener,noreferrer')
+                }
             }
         }
 
