@@ -6477,13 +6477,15 @@ export default {
 
                     if (rows.value.length > 1) {
                         const currentRowIndex = rows.value.findIndex(row => row.id === rowId)
-                        const nextFocusRow = rows.value[currentRowIndex - 1] || rows.value[currentRowIndex + 1]
+                        let focusRowId = rowId
                         if (await showConfirm(translate('Are you sure you want to delete this row?'))) {
+                            const nextFocusRow = rows.value[currentRowIndex - 1] || rows.value[currentRowIndex + 1]
                             removeRow(rowId)
-                            await nextTick()
-                            if (nextFocusRow) {
-                                inputRefs.value[`${nextFocusRow.id}-${colId}`]?.focus({ preventScroll: true })
-                            }
+                            focusRowId = nextFocusRow?.id
+                        }
+                        await nextTick()
+                        if (focusRowId) {
+                            inputRefs.value[`${focusRowId}-${colId}`]?.focus({ preventScroll: true })
                         }
                     }
                 }
