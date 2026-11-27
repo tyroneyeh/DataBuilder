@@ -84,7 +84,7 @@ export const translations = {
         "If this is your first time using it, please leave the Gist ID blank.": "如果是第一次使用,請將 Gist ID 留空.",
         "Imported items successfully!": "已成功匯入項目!",
         "Invalid Google Sheets URL!": "Google Sheets 網址無效!",
-        "Item": "筆",
+        "Item": "項目",
         "Items": "筆",
         "Items merged successfully!": "已成功合併項目!",
         "Label": "標籤",
