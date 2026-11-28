@@ -6402,6 +6402,15 @@ export default {
         const isSheetsTranslating = ref(false)
         const AI_SYSTEM_INSTRUCTION = 'You are a helpful assistant filling in a single spreadsheet cell. Follow the user instruction accurately using the target column value and row context. Reply concisely in plain text without markdown formatting, code fences, or unnecessary preamble.'
         const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        const BROWSER_AI_SUPPORTED_LANGS = new Set(['de', 'en', 'es', 'fr', 'ja'])
+        const getBrowserAiLanguageOptions = () => {
+            const primary = String(currentLanguage.value || 'en').split('-')[0].toLowerCase()
+            const lang = BROWSER_AI_SUPPORTED_LANGS.has(primary) ? primary : 'en'
+            return {
+                expectedInputs: [{ type: 'text', languages: [lang] }],
+                expectedOutputs: [{ type: 'text', languages: [lang] }]
+            }
+        }
         const getBuiltInLanguageModelApi = () => {
             if ('LanguageModel' in globalThis && typeof globalThis.LanguageModel?.create === 'function') {
                 return { api: globalThis.LanguageModel, mode: 'standard' }
@@ -6420,8 +6429,9 @@ export default {
             }
             try {
                 if (lm.mode === 'standard') {
+                    const langOpts = getBrowserAiLanguageOptions()
                     const avail = typeof lm.api.availability === 'function'
-                        ? await lm.api.availability()
+                        ? await lm.api.availability(langOpts)
                         : 'available'
                     browserAiAvailability.value = avail || 'unavailable'
                     return browserAiAvailability.value
@@ -6501,7 +6511,9 @@ export default {
             let session = null
             try {
                 if (lm.mode === 'standard') {
+                    const langOpts = getBrowserAiLanguageOptions()
                     session = await lm.api.create({
+                        ...langOpts,
                         initialPrompts: [{ role: 'system', content: AI_SYSTEM_INSTRUCTION }]
                     })
                 } else {
