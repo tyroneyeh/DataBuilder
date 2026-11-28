@@ -303,7 +303,7 @@
                             @click="col.type === 'ai' && openAiPromptModal(col)"
                             class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap"
                             :class="[
-                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-gray-500'))))
+                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500')))))
                             ]"
                             :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || translate('Edit AI prompt')) : '')"
                         >({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
@@ -500,6 +500,25 @@
                             <span>{{ formatNumber(getRowNumericValue(row, col)) }}</span>
                             <span v-if="!isPrinting && getStockQuoteForRow(row, col)?.change" class="text-[10px] ml-0.5 align-middle">{{ getStockQuoteForRow(row, col).change > 0 ? '▲' : '▼' }}</span>
                         </template>
+                    </div>
+                    <div v-else-if="col.type === 'updatedAt'"
+                        class="relative w-full print:w-full rounded bg-cyan-50/50 dark:bg-cyan-900/20 print:bg-transparent min-h-[40px] sm:min-h-0 flex items-center justify-end sm:justify-start print:justify-start">
+                        <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm font-mono whitespace-nowrap print:!text-center">
+                            {{ row[col.id] || '' }}
+                        </span>
+                        <input v-else
+                            :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                            v-model="row[col.id]"
+                            type="text"
+                            :data-tooltip="row[col.id] || ''"
+                            placeholder="YYYY-MM-DD HH:mm:ss"
+                            class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-sm font-mono text-cyan-700 dark:text-cyan-300 dark:placeholder-cyan-400/50 placeholder-cyan-400/60 truncate"
+                            @paste="handlePaste($event, windowStart + index, col.id)"
+                            @focus="openGlobalMenu($event, row, col)"
+                            @click.stop="enterInput(row, col, $event)"
+                            @blur="saveInput(row, col)"
+                            @keydown="focusNextInput($event, row.id, col.id)"
+                        >
                     </div>
                     <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
                         <template v-if="isPrinting">
@@ -1064,7 +1083,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate', 'ai'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate', 'ai', 'updatedAt'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -2612,6 +2631,7 @@ export default {
             const labelMap = {
                 date: 'Date',
                 time: 'Time',
+                updatedAt: 'Updated At',
                 checkbox: 'Checkbox',
                 category: 'Category',
                 photo: 'Photo',
@@ -2648,6 +2668,7 @@ export default {
                 {value: 'color', label: translate('Color')},
                 {value: 'date', label: translate('Date')},
                 {value: 'time', label: translate('Time')},
+                {value: 'updatedAt', label: translate('Updated At')},
                 {value: 'checkbox', label: translate('Checkbox')},
                 {value: 'photo', label: translate('Photo')}
             ]
@@ -2682,7 +2703,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'updatedAt', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -3083,7 +3104,81 @@ export default {
             }
         }
 
+        const rowContentSnapshots = new Map()
+        const getDateTimeNow = () => {
+            const now = new Date()
+            const localOffset = now.getTimezoneOffset() * 60000
+            const localDate = new Date(now.getTime() - localOffset)
+            return localDate.toISOString().slice(0, 19).replace('T', ' ')
+        }
+        const getRowContentFingerprint = (row) => {
+            if (!row) return ''
+            const parts = [String(row.note ?? '')]
+            for (const col of columns.value) {
+                if (col.type === 'updatedAt' || isCalcType(col.type) || col.type === 'exchange' || col.type === 'stock') continue
+                const val = row[col.id]
+                if (col.type === 'photo') {
+                    const list = Array.isArray(val) ? val : []
+                    parts.push(`${col.id}:[${list.map(p => {
+                        const s = String(p ?? '')
+                        return `${s.length}:${s.slice(0, 24)}:${s.slice(-16)}`
+                    }).join(',')}]`)
+                } else if (Array.isArray(val)) {
+                    parts.push(`${col.id}:[${val.map(v => String(v ?? '')).join('\u001f')}]`)
+                } else {
+                    parts.push(`${col.id}:${String(val ?? '')}`)
+                }
+            }
+            return parts.join('\u001e')
+        }
+        const syncRowUpdatedAtSnapshots = () => {
+            rowContentSnapshots.clear()
+            for (const row of rows.value) {
+                if (row && row.id != null) {
+                    rowContentSnapshots.set(row.id, getRowContentFingerprint(row))
+                }
+            }
+        }
+        const touchRowUpdatedAt = (row, timestamp = getDateTimeNow()) => {
+            if (!row) return false
+            const updatedAtCols = columns.value.filter(c => c.type === 'updatedAt')
+            if (!updatedAtCols.length) return false
+            let changed = false
+            updatedAtCols.forEach(col => {
+                if (row[col.id] !== timestamp) {
+                    row[col.id] = timestamp
+                    changed = true
+                }
+            })
+            return changed
+        }
+        const stampModifiedRowsUpdatedAt = () => {
+            const updatedAtCols = columns.value.filter(c => c.type === 'updatedAt')
+            if (!updatedAtCols.length) {
+                syncRowUpdatedAtSnapshots()
+                return false
+            }
+            const nowStr = getDateTimeNow()
+            let anyStamped = false
+            const seenIds = new Set()
+            for (const row of rows.value) {
+                if (!row || row.id == null) continue
+                seenIds.add(row.id)
+                const fp = getRowContentFingerprint(row)
+                const prevFp = rowContentSnapshots.get(row.id)
+                if (prevFp === undefined || prevFp !== fp) {
+                    if (touchRowUpdatedAt(row, nowStr)) anyStamped = true
+                    rowContentSnapshots.set(row.id, fp)
+                }
+            }
+            for (const id of rowContentSnapshots.keys()) {
+                if (!seenIds.has(id)) rowContentSnapshots.delete(id)
+            }
+            return anyStamped
+        }
+
         const resetHistory = () => {
+            syncRowUpdatedAtSnapshots()
             const snap = createHistorySnapshot()
             if (snap) {
                 historyStack = [snap]
@@ -3127,6 +3222,7 @@ export default {
                 hasNumberColumn.value = columns.value.some(c => c.type === 'number')
                 updateColumns()
                 syncMaxRowId()
+                syncRowUpdatedAtSnapshots()
                 refreshYearFilters()
                 debouncedSave()
                 if (isChartOpen.value) {
@@ -4386,6 +4482,9 @@ export default {
             if (isInitializing) return
             updatedAt.value = Date.now()
             if (target === 'rows' || target === 'both') {
+                if (!isRestoringHistory) {
+                    stampModifiedRowsUpdatedAt()
+                }
                 triggerRef(rows)
                 syncAllTranslateColumns()
                 syncAllStockColumns()
@@ -5324,6 +5423,7 @@ export default {
 
                 stillPending = hasPending
                 if (anyChanged) {
+                    stampModifiedRowsUpdatedAt()
                     triggerRef(rows)
                 }
                 if (!hasPending) break
@@ -5390,6 +5490,7 @@ export default {
                 isInitializing = true
                 rows.value = cloudData.rows
                 syncMaxRowId()
+                syncRowUpdatedAtSnapshots()
                 await nextTick()
                 isInitializing = false
                 updatedAt.value = syncTs
@@ -5562,6 +5663,7 @@ export default {
                             isInitializing = true
                             rows.value = cloudData.rows
                             syncMaxRowId()
+                            syncRowUpdatedAtSnapshots()
                             await nextTick()
                             isInitializing = false
                             updatedAt.value = cloudUpdatedAt
@@ -5588,6 +5690,7 @@ export default {
                             isInitializing = true
                             rows.value = cloudData.rows
                             syncMaxRowId()
+                            syncRowUpdatedAtSnapshots()
                             await nextTick()
                             isInitializing = false
                             updatedAt.value = syncTs
@@ -6063,6 +6166,7 @@ export default {
                     existingCol.opB = formulaB.value
                     existingCol.opC = formulaC.value
                 }
+                syncRowUpdatedAtSnapshots()
                 onDataEdited('both')
                 if (existingCol.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                     translateColumnRows(existingCol, { force: true, interactive: true })
@@ -6151,6 +6255,7 @@ export default {
                 })
             }
             updateColumns()
+            syncRowUpdatedAtSnapshots()
             onDataEdited('both')
             newColLabel.value = ''
             newColType.value = 'text'
@@ -6601,6 +6706,7 @@ export default {
                     }
                 }
                 if (anyChanged) {
+                    stampModifiedRowsUpdatedAt()
                     updatedAt.value = Date.now()
                     triggerRef(rows)
                     debouncedSave()
@@ -6652,6 +6758,7 @@ export default {
                     if (res.changed) anyChanged = true
                 }
                 if (anyChanged) {
+                    stampModifiedRowsUpdatedAt()
                     updatedAt.value = Date.now()
                     triggerRef(rows)
                     debouncedSave()
@@ -6975,6 +7082,7 @@ export default {
                     if (res.unsupported) break
                 }
                 if (anyChanged) {
+                    stampModifiedRowsUpdatedAt()
                     updatedAt.value = Date.now()
                     triggerRef(rows)
                     debouncedSave()
@@ -7048,6 +7156,7 @@ export default {
                     }
                 }
                 if (anyChanged) {
+                    stampModifiedRowsUpdatedAt()
                     updatedAt.value = Date.now()
                     triggerRef(rows)
                     debouncedSave()
@@ -7103,6 +7212,7 @@ export default {
             if (!sourceText) return
             const res = await runAiSingleCell(row, col, { force: true, interactive: true })
             if (res.changed) {
+                stampModifiedRowsUpdatedAt()
                 updatedAt.value = Date.now()
                 triggerRef(rows)
                 debouncedSave()
@@ -7122,6 +7232,7 @@ export default {
             }
             const res = await translateSingleCell(row, col, { force: true, interactive: true })
             if (res.changed) {
+                stampModifiedRowsUpdatedAt()
                 updatedAt.value = Date.now()
                 triggerRef(rows)
                 debouncedSave()
@@ -7155,11 +7266,13 @@ export default {
             const newRowId = generateId()
             const newRow = {id: newRowId, note: '', isExpanded: areAllExpanded.value}
             const {todayDate, currentTime} = getDate()
+            const nowDateTime = getDateTimeNow()
             const isAppending = !activeMenuRow.value
 
             columns.value.forEach(col => {
                 if (col.type === 'date') newRow[col.id] = todayDate
                 else if (col.type === 'time') newRow[col.id] = currentTime
+                else if (col.type === 'updatedAt') newRow[col.id] = nowDateTime
                 else if (col.type === 'photo' || col.type === 'tags') newRow[col.id] = []
                 else if (col.type === 'rating' || col.type === 'progress') newRow[col.id] = 0
                 else if (col.type === 'color') newRow[col.id] = '#3b82f6'
@@ -7241,6 +7354,7 @@ export default {
             let newVal = currentVal + delta
             newVal = Number(newVal.toFixed(4))
             row[colId] = String(newVal)
+            stampModifiedRowsUpdatedAt()
             triggerRef(rows)
         }
 
@@ -7602,6 +7716,7 @@ export default {
             if (!hasRemainingSameId) {
                 rows.value.forEach(row => delete row[idToRemove])
             }
+            syncRowUpdatedAtSnapshots()
             onDataEdited()
         }
 
@@ -7616,6 +7731,10 @@ export default {
             const clonedRow = structuredClone(originalRow)
             clonedRow.id = generateId()
             delete clonedRow.recurring
+            const nowDateTime = getDateTimeNow()
+            for (const column of columns.value) {
+                if (column.type === 'updatedAt') clonedRow[column.id] = nowDateTime
+            }
             const isAppendToEnd = ignoreDate || !columns.value.some(col => col.type === 'date')
 
             if (isAppendToEnd) {
@@ -8167,6 +8286,8 @@ export default {
                         } else {
                             targetType = metaStr
                         }
+                    } else if (key.toLowerCase().includes(translate('Updated At').toLowerCase())) {
+                        targetType = 'updatedAt'
                     } else if (key.toLowerCase().includes(translate('Date').toLowerCase())) {
                         targetType = 'date'
                     } else if (key.toLowerCase().includes(translate('Time').toLowerCase())) {
@@ -8283,6 +8404,7 @@ export default {
                     addCount += await processImportText(text)
                 }
                 if (addCount > 0) {
+                    syncRowUpdatedAtSnapshots()
                     onDataEdited('both')
                     await nextTick()
                     heightCache = {}
@@ -9708,6 +9830,7 @@ export default {
                         hasNumberColumn.value = columns.value.some(column => column.type === 'number')
                     }
                     syncMaxRowId()
+                    syncRowUpdatedAtSnapshots()
                     clearWorkspaceTranslateCache()
                     onDataEdited('both')
                     showConfirm(translate('Restored from GitHub Gist successfully!'), 1)
@@ -9885,6 +10008,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     const { row, col } = scanningTarget.value
                     if (row) {
                         row[col.id] = decodedText
+                        stampModifiedRowsUpdatedAt()
                         const currentIndex = rows.value.findIndex(r => r.id === row.id)
                         if (currentIndex !== -1) {
                             addRow()
@@ -11355,6 +11479,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 if (startColIndex === -1) return
                 const absoluteStartRow = index
                 const { todayDate, currentTime } = getDate()
+                const nowDateTime = getDateTimeNow()
 
                 pastedRows.forEach((rowString, i) => {
                     const targetFilteredIndex = absoluteStartRow + i
@@ -11372,6 +11497,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                             else if (col.type === 'checkbox') newRow[col.id] = false
                             else if (col.type === 'date') newRow[col.id] = todayDate
                             else if (col.type === 'time') newRow[col.id] = currentTime
+                            else if (col.type === 'updatedAt') newRow[col.id] = nowDateTime
                             else newRow[col.id] = ''
                         })
                         newRows.push(newRow)

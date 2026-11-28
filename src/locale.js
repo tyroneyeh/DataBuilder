@@ -263,7 +263,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "可從 Google AI Studio 免費取得 API 金鑰（會優先使用 Chrome 內建 AI）。",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "請先在「設定」中填入 Gemini API 金鑰，或使用支援內建 AI 的 Chrome 瀏覽器。",
         "AI generation failed.": "AI 產生失敗。",
-        "e.g., Summarize in 10 words": "例如：用 10 個字摘要重點"
+        "e.g., Summarize in 10 words": "例如：用 10 個字摘要重點",
+        "Updated At": "更新時間"
     },
     "zh-CN": {
         "Action": "操作",
@@ -527,7 +528,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "可从 Google AI Studio 免费获取 API 密钥（优先使用 Chrome 内置 AI）。",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "请先在“设置”中填写 Gemini API 密钥，或使用支持内置 AI 的 Chrome 浏览器。",
         "AI generation failed.": "AI 生成失败。",
-        "e.g., Summarize in 10 words": "例如：用 10 个字总结重点"
+        "e.g., Summarize in 10 words": "例如：用 10 个字总结重点",
+        "Updated At": "更新时间"
     },
     "ja": {
         "Action": "操作",
@@ -791,7 +793,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Google AI Studio から無料の API キーを取得できます（Chrome 組み込み AI を優先）。",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "設定で Gemini API キーを入力するか、組み込み AI 対応の Chrome をご利用ください。",
         "AI generation failed.": "AI の生成に失敗しました。",
-        "e.g., Summarize in 10 words": "例：10語以内で要約"
+        "e.g., Summarize in 10 words": "例：10語以内で要約",
+        "Updated At": "更新日時"
     },
     "ko": {
         "Action": "작업",
@@ -1055,7 +1058,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Google AI Studio에서 무료 API 키를 발급받으세요 (Chrome 내장 AI 우선).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "설정에서 Gemini API 키를 입력하거나 내장 AI를 지원하는 Chrome을 사용하세요.",
         "AI generation failed.": "AI 생성에 실패했습니다.",
-        "e.g., Summarize in 10 words": "예: 10단어 이내로 요약"
+        "e.g., Summarize in 10 words": "예: 10단어 이내로 요약",
+        "Updated At": "수정 일시"
     },
     "es": {
         "Action": "Acción",
@@ -1319,7 +1323,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Obtén tu clave API gratuita en Google AI Studio (prioriza la IA integrada de Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Configura una clave API de Gemini en Ajustes o usa Chrome con IA integrada.",
         "AI generation failed.": "Error al generar con IA.",
-        "e.g., Summarize in 10 words": "p. ej., Resumir en 10 palabras"
+        "e.g., Summarize in 10 words": "p. ej., Resumir en 10 palabras",
+        "Updated At": "Actualizado"
     },
     "fr": {
         "Action": "Action",
@@ -1583,7 +1588,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Obtenez votre clé API gratuite sur Google AI Studio (IA intégrée à Chrome prioritaire).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Définissez une clé API Gemini dans les Paramètres ou utilisez Chrome avec IA intégrée.",
         "AI generation failed.": "Échec de la génération par IA.",
-        "e.g., Summarize in 10 words": "ex. : Résumer en 10 mots"
+        "e.g., Summarize in 10 words": "ex. : Résumer en 10 mots",
+        "Updated At": "Mis à jour"
     },
     "de": {
         "Action": "Aktion",
@@ -1847,7 +1853,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Kostenlosen API-Schlüssel in Google AI Studio holen (integrierte Chrome-KI hat Vorrang).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Bitte in den Einstellungen einen Gemini API-Schlüssel hinterlegen oder Chrome mit integrierter KI verwenden.",
         "AI generation failed.": "KI-Generierung fehlgeschlagen.",
-        "e.g., Summarize in 10 words": "z. B. In 10 Wörtern zusammenfassen"
+        "e.g., Summarize in 10 words": "z. B. In 10 Wörtern zusammenfassen",
+        "Updated At": "Aktualisiert"
     },
     "it": {
         "Action": "Azione",
@@ -2111,7 +2118,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Ottieni la tua chiave API gratuita da Google AI Studio (priorità all’IA integrata di Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Imposta una chiave API Gemini nelle Impostazioni oppure usa Chrome con IA integrata.",
         "AI generation failed.": "Generazione IA non riuscita.",
-        "e.g., Summarize in 10 words": "es. Riassumi in 10 parole"
+        "e.g., Summarize in 10 words": "es. Riassumi in 10 parole",
+        "Updated At": "Aggiornato"
     },
     "pt": {
         "Action": "Ação",
@@ -2375,7 +2383,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Obtenha sua chave API gratuita no Google AI Studio (prioriza a IA integrada do Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Defina uma chave API Gemini em Configurações ou use o Chrome com IA integrada.",
         "AI generation failed.": "Falha na geração por IA.",
-        "e.g., Summarize in 10 words": "ex.: Resumir em 10 palavras"
+        "e.g., Summarize in 10 words": "ex.: Resumir em 10 palavras",
+        "Updated At": "Atualizado"
     },
     "ru": {
         "Action": "Действие",
@@ -2639,7 +2648,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Получите бесплатный API-ключ в Google AI Studio (приоритет — встроенный ИИ Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Укажите API-ключ Gemini в настройках или используйте Chrome со встроенным ИИ.",
         "AI generation failed.": "Ошибка генерации ИИ.",
-        "e.g., Summarize in 10 words": "напр., Кратко в 10 словах"
+        "e.g., Summarize in 10 words": "напр., Кратко в 10 словах",
+        "Updated At": "Обновлено"
     },
     "id": {
         "Action": "Tindakan",
@@ -2903,7 +2913,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Dapatkan kunci API gratis dari Google AI Studio (prioritas AI bawaan Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Masukkan Kunci API Gemini di Pengaturan, atau gunakan Chrome dengan AI bawaan.",
         "AI generation failed.": "Pembuatan AI gagal.",
-        "e.g., Summarize in 10 words": "mis., Ringkas dalam 10 kata"
+        "e.g., Summarize in 10 words": "mis., Ringkas dalam 10 kata",
+        "Updated At": "Diperbarui"
     },
     "vi": {
         "Action": "Thao tác",
@@ -3167,7 +3178,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Lấy khóa API miễn phí từ Google AI Studio (ưu tiên AI tích hợp Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Vui lòng nhập Khóa API Gemini trong Cài đặt hoặc dùng Chrome có AI tích hợp.",
         "AI generation failed.": "Tạo nội dung AI thất bại.",
-        "e.g., Summarize in 10 words": "vd: Tóm tắt trong 10 từ"
+        "e.g., Summarize in 10 words": "vd: Tóm tắt trong 10 từ",
+        "Updated At": "Cập nhật lúc"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3431,7 +3443,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "รับคีย์ API ฟรีได้จาก Google AI Studio (ใช้ AI ในตัวของ Chrome ก่อน)",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "กรุณาตั้งค่า Gemini API Key ในการตั้งค่า หรือใช้ Chrome ที่มี AI ในตัว",
         "AI generation failed.": "การสร้างด้วย AI ล้มเหลว",
-        "e.g., Summarize in 10 words": "เช่น สรุปภายใน 10 คำ"
+        "e.g., Summarize in 10 words": "เช่น สรุปภายใน 10 คำ",
+        "Updated At": "อัปเดตเมื่อ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3695,7 +3708,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Dapatkan kunci API percuma dari Google AI Studio (mengutamakan AI terbina Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Sila tetapkan Kunci API Gemini dalam Tetapan, atau gunakan Chrome dengan AI terbina.",
         "AI generation failed.": "Penjanaan AI gagal.",
-        "e.g., Summarize in 10 words": "cth., Ringkaskan dalam 10 patah perkataan"
+        "e.g., Summarize in 10 words": "cth., Ringkaskan dalam 10 patah perkataan",
+        "Updated At": "Dikemas kini"
     },
     "tr": {
         "Action": "İşlem",
@@ -3959,7 +3973,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Google AI Studio’dan ücretsiz API anahtarı alın (önce Chrome Yerleşik AI kullanılır).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Lütfen Ayarlar’da bir Gemini API Anahtarı girin veya Yerleşik AI destekli Chrome kullanın.",
         "AI generation failed.": "AI oluşturma başarısız oldu.",
-        "e.g., Summarize in 10 words": "örn. 10 kelimede özetle"
+        "e.g., Summarize in 10 words": "örn. 10 kelimede özetle",
+        "Updated At": "Güncelleme"
     },
     "ar": {
         "Action": "إجراء",
@@ -4223,7 +4238,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "احصل على مفتاح API مجاني من Google AI Studio (الأولوية لذكاء Chrome المدمج).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "يرجى تعيين مفتاح Gemini API في الإعدادات، أو استخدام Chrome المزوّد بالذكاء الاصطناعي المدمج.",
         "AI generation failed.": "فشل التوليد بالذكاء الاصطناعي.",
-        "e.g., Summarize in 10 words": "مثال: لخّص في 10 كلمات"
+        "e.g., Summarize in 10 words": "مثال: لخّص في 10 كلمات",
+        "Updated At": "تاريخ التحديث"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4487,7 +4503,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Google AI Studio से अपनी मुफ़्त API कुंजी प्राप्त करें (Chrome बिल्ट-इन AI को प्राथमिकता)।",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "कृपया सेटिंग्स में Gemini API कुंजी सेट करें, या बिल्ट-इन AI वाले Chrome का उपयोग करें।",
         "AI generation failed.": "AI जनरेशन विफल रहा।",
-        "e.g., Summarize in 10 words": "उदा., 10 शब्दों में सारांश लिखें"
+        "e.g., Summarize in 10 words": "उदा., 10 शब्दों में सारांश लिखें",
+        "Updated At": "अपडेट समय"
     },
     "pl": {
         "Action": "Akcja",
@@ -4751,7 +4768,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Uzyskaj darmowy klucz API w Google AI Studio (priorytet ma wbudowane AI Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Ustaw klucz API Gemini w Ustawieniach lub użyj Chrome z wbudowanym AI.",
         "AI generation failed.": "Generowanie AI nie powiodło się.",
-        "e.g., Summarize in 10 words": "np. Podsumuj w 10 słowach"
+        "e.g., Summarize in 10 words": "np. Podsumuj w 10 słowach",
+        "Updated At": "Zaktualizowano"
     },
     "nl": {
         "Action": "Actie",
@@ -5015,7 +5033,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Haal je gratis API-sleutel op via Google AI Studio (ingebouwde Chrome AI krijgt voorrang).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Stel een Gemini API-sleutel in bij Instellingen of gebruik Chrome met ingebouwde AI.",
         "AI generation failed.": "AI-generatie mislukt.",
-        "e.g., Summarize in 10 words": "bijv. Samenvatten in 10 woorden"
+        "e.g., Summarize in 10 words": "bijv. Samenvatten in 10 woorden",
+        "Updated At": "Bijgewerkt"
     },
     "uk": {
         "Action": "Дія",
@@ -5279,7 +5298,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Отримайте безкоштовний API-ключ у Google AI Studio (пріоритет — вбудований ШІ Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Вкажіть API-ключ Gemini у Налаштуваннях або використовуйте Chrome із вбудованим ШІ.",
         "AI generation failed.": "Помилка генерації ШІ.",
-        "e.g., Summarize in 10 words": "напр., Підсумувати в 10 словах"
+        "e.g., Summarize in 10 words": "напр., Підсумувати в 10 словах",
+        "Updated At": "Оновлено"
     },
     "tl": {
         "Action": "Aksyon",
@@ -5543,7 +5563,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Kumuha ng libreng API key sa Google AI Studio (uuna ang Chrome Built-in AI).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Mangyaring maglagay ng Gemini API Key sa Mga Setting, o gumamit ng Chrome na may Built-in AI.",
         "AI generation failed.": "Nabigo ang pagbuo ng AI.",
-        "e.g., Summarize in 10 words": "hal., Ibuod sa 10 salita"
+        "e.g., Summarize in 10 words": "hal., Ibuod sa 10 salita",
+        "Updated At": "Na-update"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5807,7 +5828,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Hämta din kostnadsfria API-nyckel från Google AI Studio (Chromes inbyggda AI prioriteras).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Ange en Gemini API-nyckel i Inställningar eller använd Chrome med inbyggd AI.",
         "AI generation failed.": "AI-generering misslyckades.",
-        "e.g., Summarize in 10 words": "t.ex. Sammanfatta med 10 ord"
+        "e.g., Summarize in 10 words": "t.ex. Sammanfatta med 10 ord",
+        "Updated At": "Uppdaterad"
     },
     "cs": {
         "Action": "Akce",
@@ -6071,7 +6093,8 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Získejte bezplatný klíč API v Google AI Studio (přednost má vestavěná AI v Chrome).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Nastavte prosím klíč API Gemini v Nastavení, nebo použijte Chrome s vestavěnou AI.",
         "AI generation failed.": "Generování AI selhalo.",
-        "e.g., Summarize in 10 words": "např. Shrň do 10 slov"
+        "e.g., Summarize in 10 words": "např. Shrň do 10 slov",
+        "Updated At": "Aktualizováno"
     },
     "ta": {
         "Action": "செயல்",
@@ -6335,6 +6358,7 @@ export const translations = {
         "Get your free API key from Google AI Studio.": "Google AI Studio இலிருந்து இலவச API திறவுகோலைப் பெறுங்கள் (Chrome உள்ளமைந்த AI முன்னுரிமை).",
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "அமைப்புகளில் Gemini API திறவுகோலை அமைக்கவும் அல்லது உள்ளமைந்த AI கொண்ட Chrome ஐப் பயன்படுத்தவும்.",
         "AI generation failed.": "AI உருவாக்கம் தோல்வியடைந்தது.",
-        "e.g., Summarize in 10 words": "எ.கா., 10 சொற்களில் சுருக்கவும்"
+        "e.g., Summarize in 10 words": "எ.கா., 10 சொற்களில் சுருக்கவும்",
+        "Updated At": "புதுப்பிக்கப்பட்ட நேரம்"
     }
 }
