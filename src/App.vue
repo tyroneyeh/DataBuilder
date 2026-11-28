@@ -9257,10 +9257,20 @@ export default {
             const dailySums = {}
             const dateColId = selectedChartDateColId.value
             const amountColId = selectedChartNumColId.value
+            const catColId = selectedChartCatColId.value
             const amountColDef = columns.value.find(c => c.id === amountColId)
             chartBaseRows.value.forEach(row => {
                 const rawDate = row[dateColId]
                 if (!rawDate) return
+                if (catColId) {
+                    const rawCat = row[catColId]
+                    const catLabel = rawCat && String(rawCat).trim() !== ''
+                        ? String(rawCat).trim()
+                        : translate('Uncategorized')
+                    if (hiddenCategoryNames.value.includes(catLabel)) return
+                    const isIncome = categoryBudgets.value[catLabel]?.type === 'income'
+                    if (chartViewMode.value === 'income' ? !isIncome : isIncome) return
+                }
                 const cleanDateStr = String(rawDate).substring(0, 10).replace(/\//g, '-')
                 const amt = amountColDef ? getRowNumericValue(row, amountColDef) : 0
                 dailySums[cleanDateStr] = (dailySums[cleanDateStr] || 0) + amt
@@ -9288,7 +9298,7 @@ export default {
                 const dateStr = `${dYear}-${dMonth}-${dDay}`
 
                 const sum = dailySums[dateStr] || 0
-                if (sum > currentMaxValue) currentMaxValue = sum
+                if (Math.abs(sum) > currentMaxValue) currentMaxValue = Math.abs(sum)
                 const dayOfWeek = d.getDay()
                 const y = yLabels[6 - dayOfWeek]
 
@@ -9320,6 +9330,9 @@ export default {
 
             if (heatmapChartInstance && heatmapChartInstance.ctx === canvasCtx) {
                 heatmapChartInstance.data.datasets[0].data = dataMatrix
+                heatmapChartInstance.data.datasets[0].hoverBackgroundColor = chartViewMode.value === 'income'
+                    ? 'rgba(5, 150, 105, 1)'
+                    : 'rgba(79, 70, 229, 1)'
                 heatmapChartInstance.options.scales.x.adapters.date.locale = safeLocale
                 heatmapChartInstance.options.scales.x.ticks.color = textColor
                 heatmapChartInstance.options.scales.y.labels = yLabels
@@ -9337,15 +9350,19 @@ export default {
                     datasets: [{
                         data: dataMatrix,
                         backgroundColor: (context) => {
-                            const value = context.dataset.data[context.dataIndex]?.v || 0
+                            const value = Math.abs(context.dataset.data[context.dataIndex]?.v || 0)
                             if (value === 0) return isDark.value ? 'rgba(31, 41, 55, 1)' : 'rgba(235, 237, 240, 1)'
                             const maxVal = currentMaxValue || 1;
                             const alpha = 0.2 + (value / maxVal) * 0.8
-                            return `rgba(99, 102, 241, ${alpha})`;
+                            return chartViewMode.value === 'income'
+                                ? `rgba(16, 185, 129, ${alpha})`
+                                : `rgba(99, 102, 241, ${alpha})`;
                         },
                         borderWidth: 0,
                         borderRadius: 2,
-                        hoverBackgroundColor: 'rgba(79, 70, 229, 1)',
+                        hoverBackgroundColor: chartViewMode.value === 'income'
+                            ? 'rgba(5, 150, 105, 1)'
+                            : 'rgba(79, 70, 229, 1)',
                         width: 20,
                         height: 20
                     }]
