@@ -303,7 +303,7 @@
                             @click="col.type === 'ai' && openAiPromptModal(col)"
                             class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap"
                             :class="[
-                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : (col.type === 'location' ? 'text-rose-600 dark:text-rose-400' : (col.type === 'weather' ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500')))))))
+                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : (col.type === 'location' ? 'text-rose-600 dark:text-rose-400' : (col.type === 'weather' ? 'text-sky-600 dark:text-sky-400' : (col.type === 'mood' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-400 dark:text-gray-500'))))))))
                             ]"
                             :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || translate('Edit AI prompt')) : '')"
                         >({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
@@ -616,6 +616,30 @@
                                 :title="`${star} / 5`"
                             >★</button>
                         </template>
+                    </div>
+                    <div v-else-if="col.type === 'mood'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 select-none">
+                        <span v-if="isPrinting" class="text-sm text-gray-800 whitespace-nowrap">
+                            {{ getMoodDisplay(row[col.id]) }}
+                        </span>
+                        <button
+                            v-else
+                            type="button"
+                            @click.stop="openMoodPicker($event, row, col)"
+                            class="inline-flex items-center justify-center gap-1 px-2 py-1 rounded-full text-sm transition-all cursor-pointer active:scale-95 max-w-full"
+                            :class="row[col.id] ? 'bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/50 border border-pink-200/70 dark:border-pink-800/70' : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700/60 border border-dashed border-gray-300 dark:border-gray-600'"
+                            :data-tooltip="getMoodDisplay(row[col.id]) || translate('Select mood')"
+                        >
+                            <template v-if="getMoodOption(row[col.id])">
+                                <span class="text-base leading-none">{{ getMoodOption(row[col.id]).emoji }}</span>
+                                <span class="text-xs font-medium truncate">{{ getMoodOption(row[col.id]).label }}</span>
+                            </template>
+                            <template v-else-if="row[col.id]">
+                                <span class="truncate">{{ row[col.id] }}</span>
+                            </template>
+                            <template v-else>
+                                <span class="text-xs">😊 +</span>
+                            </template>
+                        </button>
                     </div>
                     <div v-else-if="col.type === 'progress'" class="flex items-center justify-end sm:justify-start print:justify-center w-full gap-2 px-2 py-1">
                         <template v-if="isPrinting">
@@ -1291,6 +1315,23 @@
                         <option value="2" class="bg-white dark:bg-gray-700">★★+ (2+)</option>
                         <option value="1" class="bg-white dark:bg-gray-700">★+ (1+)</option>
                         <option value="0" class="bg-white dark:bg-gray-700">☆ (0)</option>
+                    </select>
+                    <button
+                        v-show="columnFilters[col.id]"
+                        @click="clearFilter(col.id)"
+                        class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors bg-white dark:bg-gray-700 rounded-full w-4 h-4 flex items-center justify-center"
+                        :title="translate('Clear filter')"
+                    >✖</button>
+                </div>
+
+                <div v-else-if="col.type === 'mood' && !isPrinting" class="relative w-full sm:w-auto">
+                    <select
+                        v-model="columnFilters[col.id]"
+                        class="w-full text-sm px-2 py-2 bg-white dark:bg-gray-700 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-pink-600 dark:text-pink-400 font-medium transition-colors shadow-inner pr-8 cursor-pointer"
+                    >
+                        <option value="" class="bg-white dark:bg-gray-700">{{ translate('All') }}</option>
+                        <option v-for="m in moodOptions" :key="'flt-mood-' + m.emoji" :value="m.emoji" class="bg-white dark:bg-gray-700">{{ m.emoji }} {{ m.label }}</option>
+                        <option value="__none__" class="bg-white dark:bg-gray-700">— {{ translate('None') }}</option>
                     </select>
                     <button
                         v-show="columnFilters[col.id]"
@@ -2163,6 +2204,38 @@
         </div>
     </div>
 </div>
+<Teleport to="body">
+    <div v-if="moodPicker.isOpen" class="fixed inset-0 z-[70]" @click="closeMoodPicker">
+        <div
+            @click.stop
+            :style="{ top: moodPicker.top + 'px', left: moodPicker.left + 'px' }"
+            class="fixed w-[264px] p-2.5 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
+        >
+            <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400">{{ translate('Select mood') }}</span>
+                <button
+                    v-if="moodPicker.current"
+                    type="button"
+                    @click="selectMood('')"
+                    class="text-[11px] text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                >✖ {{ translate('Clear') }}</button>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5">
+                <button
+                    v-for="m in moodOptions"
+                    :key="'pick-mood-' + m.emoji"
+                    type="button"
+                    @click="selectMood(m.emoji)"
+                    class="flex flex-col items-center justify-center py-1.5 px-1 rounded-lg border transition-all cursor-pointer active:scale-95"
+                    :class="moodPicker.current === m.emoji ? 'bg-pink-50 dark:bg-pink-900/40 border-pink-400 dark:border-pink-500 shadow-sm' : 'bg-gray-50/70 dark:bg-gray-700/40 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'"
+                >
+                    <span class="text-xl leading-none">{{ m.emoji }}</span>
+                    <span class="text-[10px] mt-1 text-gray-600 dark:text-gray-300 truncate max-w-full">{{ m.label }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</Teleport>
 <div v-if="photoViewer.isOpen"
     class="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 cursor-pointer select-none"
     @click="photoViewer.isOpen = false">
@@ -2820,6 +2893,74 @@ export default {
             row[colId] = Number(row[colId]) === star ? 0 : star
             onDataEdited('rows')
         }
+        const moodOptions = computed(() => [
+            { emoji: '🤩', key: 'Excited', label: translate('Excited') },
+            { emoji: '😄', key: 'Happy', label: translate('Happy') },
+            { emoji: '🙂', key: 'Calm', label: translate('Calm') },
+            { emoji: '😴', key: 'Tired', label: translate('Tired') },
+            { emoji: '🤔', key: 'Thoughtful', label: translate('Thoughtful') },
+            { emoji: '😔', key: 'Sad', label: translate('Sad') },
+            { emoji: '😰', key: 'Anxious', label: translate('Anxious') },
+            { emoji: '😡', key: 'Angry', label: translate('Angry') }
+        ])
+        const moodPicker = ref({
+            isOpen: false,
+            rowId: null,
+            colId: '',
+            current: '',
+            top: 0,
+            left: 0
+        })
+        const getMoodOption = (val) => {
+            const s = String(val || '').trim()
+            if (!s) return null
+            return moodOptions.value.find(m => s === m.emoji || s.startsWith(m.emoji) || s.toLowerCase() === m.label.toLowerCase() || s.toLowerCase() === m.key.toLowerCase()) || null
+        }
+        const getMoodDisplay = (val) => {
+            const opt = getMoodOption(val)
+            return opt ? `${opt.emoji} ${opt.label}` : String(val || '').trim()
+        }
+        const normalizeMood = (val) => {
+            const opt = getMoodOption(val)
+            return opt ? opt.emoji : String(val || '').trim()
+        }
+        const openMoodPicker = (event, row, col) => {
+            if (!row || !col) return
+            const rect = event?.currentTarget?.getBoundingClientRect?.()
+            const pickerWidth = 264
+            const pickerHeight = 165
+            let left = rect ? rect.left : (window.innerWidth - pickerWidth) / 2
+            let top = rect ? rect.bottom + 6 : (window.innerHeight - pickerHeight) / 2
+            if (left + pickerWidth > window.innerWidth - 12) {
+                left = Math.max(12, window.innerWidth - pickerWidth - 12)
+            }
+            if (top + pickerHeight > window.innerHeight - 12 && rect) {
+                top = Math.max(12, rect.top - pickerHeight - 6)
+            }
+            moodPicker.value = {
+                isOpen: true,
+                rowId: row.id,
+                colId: col.id,
+                current: normalizeMood(row[col.id]),
+                top,
+                left
+            }
+        }
+        const closeMoodPicker = () => {
+            moodPicker.value.isOpen = false
+            moodPicker.value.rowId = null
+            moodPicker.value.colId = ''
+        }
+        const selectMood = (emoji) => {
+            const row = rows.value.find(r => r.id === moodPicker.value.rowId)
+            const colId = moodPicker.value.colId
+            if (row && colId) {
+                const current = normalizeMood(row[colId])
+                row[colId] = (!emoji || current === emoji) ? '' : emoji
+                onDataEdited('rows')
+            }
+            closeMoodPicker()
+        }
         const clampProgress = (val) => {
             const num = Number(val)
             if (!Number.isFinite(num)) return 0
@@ -2841,6 +2982,7 @@ export default {
                 location: 'Location',
                 weather: 'Weather',
                 rating: 'Rating',
+                mood: 'Mood',
                 progress: 'Progress',
                 tags: 'Tags',
                 color: 'Color',
@@ -2866,6 +3008,7 @@ export default {
                 {value: 'weather', label: translate('Weather')},
                 {value: 'number', label: translate('Number')},
                 {value: 'rating', label: translate('Rating')},
+                {value: 'mood', label: translate('Mood')},
                 {value: 'progress', label: translate('Progress')},
                 {value: 'tags', label: translate('Tags')},
                 {value: 'color', label: translate('Color')},
@@ -4739,6 +4882,11 @@ export default {
                             if (targetStar === 0) return starVal === 0
                             if (Number.isFinite(targetStar)) return starVal >= targetStar
                             return true
+                        }
+                        if (colDef.type === 'mood') {
+                            const normalized = normalizeMood(rawValue)
+                            if (filterTextStr === '__none__') return !normalized
+                            return normalized === filterTextStr || String(rawValue || '').includes(filterTextStr)
                         }
                         if (colDef.type === 'progress') {
                             const pct = clampProgress(rawValue)
@@ -9137,6 +9285,8 @@ export default {
                         } else {
                             targetType = metaStr
                         }
+                    } else if (key.toLowerCase().includes(translate('Mood').toLowerCase())) {
+                        targetType = 'mood'
                     } else if (key.toLowerCase().includes(translate('Weather').toLowerCase())) {
                         targetType = 'weather'
                     } else if (key.toLowerCase().includes(translate('Location').toLowerCase())) {
@@ -12048,6 +12198,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
+                if (moodPicker.value.isOpen) {
+                    closeMoodPicker()
+                    return
+                }
                 if (locationPickerModal.value.isOpen) {
                     closeLocationPickerModal()
                     return
@@ -13037,6 +13191,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             weatherCellTooltips,
             fetchWeatherForCell,
             refreshWeatherColumn,
+            moodOptions,
+            moodPicker,
+            getMoodOption,
+            getMoodDisplay,
+            openMoodPicker,
+            closeMoodPicker,
+            selectMood,
             captureForOCR,
             isAutoScanEnabled,
             isZoomSupported,

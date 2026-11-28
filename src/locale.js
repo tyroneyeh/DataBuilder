@@ -298,7 +298,17 @@ export const translations = {
         "Rain": "下雨",
         "Heavy rain": "大雨",
         "Snow": "下雪",
-        "Thunderstorm": "雷雨"
+        "Thunderstorm": "雷雨",
+        "Mood": "心情",
+        "Select mood": "選擇心情",
+        "Excited": "興奮",
+        "Happy": "開心",
+        "Calm": "平靜",
+        "Tired": "疲倦",
+        "Thoughtful": "思考",
+        "Sad": "難過",
+        "Anxious": "焦慮",
+        "Angry": "生氣"
     },
     "zh-CN": {
         "Action": "操作",
@@ -597,7 +607,17 @@ export const translations = {
         "Rain": "下雨",
         "Heavy rain": "大雨",
         "Snow": "下雪",
-        "Thunderstorm": "雷雨"
+        "Thunderstorm": "雷雨",
+        "Mood": "心情",
+        "Select mood": "选择心情",
+        "Excited": "兴奋",
+        "Happy": "开心",
+        "Calm": "平静",
+        "Tired": "疲倦",
+        "Thoughtful": "思考",
+        "Sad": "难过",
+        "Anxious": "焦虑",
+        "Angry": "生气"
     },
     "ja": {
         "Action": "操作",
@@ -896,7 +916,17 @@ export const translations = {
         "Rain": "雨",
         "Heavy rain": "大雨",
         "Snow": "雪",
-        "Thunderstorm": "雷雨"
+        "Thunderstorm": "雷雨",
+        "Mood": "気分",
+        "Select mood": "気分を選択",
+        "Excited": "ワクワク",
+        "Happy": "うれしい",
+        "Calm": "穏やか",
+        "Tired": "疲れた",
+        "Thoughtful": "考え中",
+        "Sad": "悲しい",
+        "Anxious": "不安",
+        "Angry": "怒り"
     },
     "ko": {
         "Action": "작업",
@@ -1195,7 +1225,17 @@ export const translations = {
         "Rain": "비",
         "Heavy rain": "폭우",
         "Snow": "눈",
-        "Thunderstorm": "뇌우"
+        "Thunderstorm": "뇌우",
+        "Mood": "기분",
+        "Select mood": "기분 선택",
+        "Excited": "신남",
+        "Happy": "행복",
+        "Calm": "평온",
+        "Tired": "피곤",
+        "Thoughtful": "생각중",
+        "Sad": "슬픔",
+        "Anxious": "불안",
+        "Angry": "화남"
     },
     "es": {
         "Action": "Acción",
@@ -1494,7 +1534,17 @@ export const translations = {
         "Rain": "Lluvia",
         "Heavy rain": "Lluvia intensa",
         "Snow": "Nieve",
-        "Thunderstorm": "Tormenta"
+        "Thunderstorm": "Tormenta",
+        "Mood": "Estado de ánimo",
+        "Select mood": "Elegir ánimo",
+        "Excited": "Emocionado",
+        "Happy": "Feliz",
+        "Calm": "Tranquilo",
+        "Tired": "Cansado",
+        "Thoughtful": "Pensativo",
+        "Sad": "Triste",
+        "Anxious": "Ansioso",
+        "Angry": "Enojado"
     },
     "fr": {
         "Action": "Action",
@@ -1793,7 +1843,17 @@ export const translations = {
         "Rain": "Pluie",
         "Heavy rain": "Forte pluie",
         "Snow": "Neige",
-        "Thunderstorm": "Orage"
+        "Thunderstorm": "Orage",
+        "Mood": "Humeur",
+        "Select mood": "Choisir l’humeur",
+        "Excited": "Enthousiaste",
+        "Happy": "Heureux",
+        "Calm": "Calme",
+        "Tired": "Fatigué",
+        "Thoughtful": "Pensif",
+        "Sad": "Triste",
+        "Anxious": "Anxieux",
+        "Angry": "En colère"
     },
     "de": {
         "Action": "Aktion",
@@ -2092,7 +2152,17 @@ export const translations = {
         "Rain": "Regen",
         "Heavy rain": "Starkregen",
         "Snow": "Schnee",
-        "Thunderstorm": "Gewitter"
+        "Thunderstorm": "Gewitter",
+        "Mood": "Stimmung",
+        "Select mood": "Stimmung wählen",
+        "Excited": "Begeistert",
+        "Happy": "Glücklich",
+        "Calm": "Ruhig",
+        "Tired": "Müde",
+        "Thoughtful": "Nachdenklich",
+        "Sad": "Traurig",
+        "Anxious": "Ängstlich",
+        "Angry": "Wütend"
     },
     "it": {
         "Action": "Azione",
@@ -2391,7 +2461,17 @@ export const translations = {
         "Rain": "Pioggia",
         "Heavy rain": "Pioggia intensa",
         "Snow": "Neve",
-        "Thunderstorm": "Temporale"
+        "Thunderstorm": "Temporale",
+        "Mood": "Umore",
+        "Select mood": "Scegli umore",
+        "Excited": "Entusiasta",
+        "Happy": "Felice",
+        "Calm": "Calmo",
+        "Tired": "Stanco",
+        "Thoughtful": "Pensieroso",
+        "Sad": "Triste",
+        "Anxious": "Ansioso",
+        "Angry": "Arrabbiato"
     },
     "pt": {
         "Action": "Ação",
@@ -2690,7 +2770,17 @@ export const translations = {
         "Rain": "Chuva",
         "Heavy rain": "Chuva forte",
         "Snow": "Neve",
-        "Thunderstorm": "Tempestade"
+        "Thunderstorm": "Tempestade",
+        "Mood": "Humor",
+        "Select mood": "Escolher humor",
+        "Excited": "Animado",
+        "Happy": "Feliz",
+        "Calm": "Calmo",
+        "Tired": "Cansado",
+        "Thoughtful": "Pensativo",
+        "Sad": "Triste",
+        "Anxious": "Ansioso",
+        "Angry": "Bravo"
     },
     "ru": {
         "Action": "Действие",
@@ -2989,7 +3079,17 @@ export const translations = {
         "Rain": "Дождь",
         "Heavy rain": "Ливень",
         "Snow": "Снег",
-        "Thunderstorm": "Гроза"
+        "Thunderstorm": "Гроза",
+        "Mood": "Настроение",
+        "Select mood": "Выбрать настроение",
+        "Excited": "Восторг",
+        "Happy": "Радость",
+        "Calm": "Спокойно",
+        "Tired": "Усталость",
+        "Thoughtful": "Задумчиво",
+        "Sad": "Грустно",
+        "Anxious": "Тревожно",
+        "Angry": "Злость"
     },
     "id": {
         "Action": "Tindakan",
@@ -3288,7 +3388,17 @@ export const translations = {
         "Rain": "Hujan",
         "Heavy rain": "Hujan deras",
         "Snow": "Salju",
-        "Thunderstorm": "Badai petir"
+        "Thunderstorm": "Badai petir",
+        "Mood": "Suasana hati",
+        "Select mood": "Pilih suasana hati",
+        "Excited": "Bersemangat",
+        "Happy": "Senang",
+        "Calm": "Tenang",
+        "Tired": "Lelah",
+        "Thoughtful": "Berpikir",
+        "Sad": "Sedih",
+        "Anxious": "Cemas",
+        "Angry": "Marah"
     },
     "vi": {
         "Action": "Thao tác",
@@ -3587,7 +3697,17 @@ export const translations = {
         "Rain": "Mưa",
         "Heavy rain": "Mưa to",
         "Snow": "Tuyết",
-        "Thunderstorm": "Giông bão"
+        "Thunderstorm": "Giông bão",
+        "Mood": "Tâm trạng",
+        "Select mood": "Chọn tâm trạng",
+        "Excited": "Hào hứng",
+        "Happy": "Vui vẻ",
+        "Calm": "Bình tĩnh",
+        "Tired": "Mệt mỏi",
+        "Thoughtful": "Suy tư",
+        "Sad": "Buồn",
+        "Anxious": "Lo lắng",
+        "Angry": "Tức giận"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3886,7 +4006,17 @@ export const translations = {
         "Rain": "ฝนตก",
         "Heavy rain": "ฝนตกหนัก",
         "Snow": "หิมะตก",
-        "Thunderstorm": "พายุฝนฟ้าคะนอง"
+        "Thunderstorm": "พายุฝนฟ้าคะนอง",
+        "Mood": "อารมณ์",
+        "Select mood": "เลือกอารมณ์",
+        "Excited": "ตื่นเต้น",
+        "Happy": "มีความสุข",
+        "Calm": "สงบ",
+        "Tired": "เหนื่อย",
+        "Thoughtful": "ครุ่นคิด",
+        "Sad": "เศร้า",
+        "Anxious": "กังวล",
+        "Angry": "โกรธ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -4185,7 +4315,17 @@ export const translations = {
         "Rain": "Hujan",
         "Heavy rain": "Hujan lebat",
         "Snow": "Salji",
-        "Thunderstorm": "Ribut petir"
+        "Thunderstorm": "Ribut petir",
+        "Mood": "Mood",
+        "Select mood": "Pilih mood",
+        "Excited": "Teruja",
+        "Happy": "Gembira",
+        "Calm": "Tenang",
+        "Tired": "Penat",
+        "Thoughtful": "Berfikir",
+        "Sad": "Sedih",
+        "Anxious": "Cemas",
+        "Angry": "Marah"
     },
     "tr": {
         "Action": "İşlem",
@@ -4484,7 +4624,17 @@ export const translations = {
         "Rain": "Yağmurlu",
         "Heavy rain": "Şiddetli yağmur",
         "Snow": "Karlı",
-        "Thunderstorm": "Gök gürültülü"
+        "Thunderstorm": "Gök gürültülü",
+        "Mood": "Ruh Hali",
+        "Select mood": "Ruh hali seç",
+        "Excited": "Heyecanlı",
+        "Happy": "Mutlu",
+        "Calm": "Sakin",
+        "Tired": "Yorgun",
+        "Thoughtful": "Düşünceli",
+        "Sad": "Üzgün",
+        "Anxious": "Endişeli",
+        "Angry": "Kızgın"
     },
     "ar": {
         "Action": "إجراء",
@@ -4783,7 +4933,17 @@ export const translations = {
         "Rain": "ممطر",
         "Heavy rain": "مطر غزير",
         "Snow": "ثلج",
-        "Thunderstorm": "عاصفة رعدية"
+        "Thunderstorm": "عاصفة رعدية",
+        "Mood": "المزاج",
+        "Select mood": "اختر المزاج",
+        "Excited": "متحمس",
+        "Happy": "سعيد",
+        "Calm": "هادئ",
+        "Tired": "متعب",
+        "Thoughtful": "متأمل",
+        "Sad": "حزين",
+        "Anxious": "قلق",
+        "Angry": "غاضب"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -5082,7 +5242,17 @@ export const translations = {
         "Rain": "बारिश",
         "Heavy rain": "तेज़ बारिश",
         "Snow": "बर्फबारी",
-        "Thunderstorm": "आंधी-तूफ़ान"
+        "Thunderstorm": "आंधी-तूफ़ान",
+        "Mood": "मूड",
+        "Select mood": "मूड चुनें",
+        "Excited": "उत्साहित",
+        "Happy": "खुश",
+        "Calm": "शांत",
+        "Tired": "थका हुआ",
+        "Thoughtful": "विचारशील",
+        "Sad": "उदास",
+        "Anxious": "चिंतित",
+        "Angry": "गुस्सा"
     },
     "pl": {
         "Action": "Akcja",
@@ -5381,7 +5551,17 @@ export const translations = {
         "Rain": "Deszcz",
         "Heavy rain": "Ulewa",
         "Snow": "Śnieg",
-        "Thunderstorm": "Burza"
+        "Thunderstorm": "Burza",
+        "Mood": "Nastrój",
+        "Select mood": "Wybierz nastrój",
+        "Excited": "Podekscytowany",
+        "Happy": "Szczęśliwy",
+        "Calm": "Spokojny",
+        "Tired": "Zmęczony",
+        "Thoughtful": "Zamyślony",
+        "Sad": "Smutny",
+        "Anxious": "Zaniepokojony",
+        "Angry": "Zły"
     },
     "nl": {
         "Action": "Actie",
@@ -5680,7 +5860,17 @@ export const translations = {
         "Rain": "Regen",
         "Heavy rain": "Zware regen",
         "Snow": "Sneeuw",
-        "Thunderstorm": "Onweer"
+        "Thunderstorm": "Onweer",
+        "Mood": "Stemming",
+        "Select mood": "Stemming kiezen",
+        "Excited": "Enthousiast",
+        "Happy": "Blij",
+        "Calm": "Kalm",
+        "Tired": "Moe",
+        "Thoughtful": "Bedachtzaam",
+        "Sad": "Verdrietig",
+        "Anxious": "Angstig",
+        "Angry": "Boos"
     },
     "uk": {
         "Action": "Дія",
@@ -5979,7 +6169,17 @@ export const translations = {
         "Rain": "Дощ",
         "Heavy rain": "Злива",
         "Snow": "Сніг",
-        "Thunderstorm": "Гроза"
+        "Thunderstorm": "Гроза",
+        "Mood": "Настрій",
+        "Select mood": "Вибрати настрій",
+        "Excited": "Захоплення",
+        "Happy": "Радість",
+        "Calm": "Спокій",
+        "Tired": "Втома",
+        "Thoughtful": "Задумливість",
+        "Sad": "Сум",
+        "Anxious": "Тривога",
+        "Angry": "Злість"
     },
     "tl": {
         "Action": "Aksyon",
@@ -6278,7 +6478,17 @@ export const translations = {
         "Rain": "Ulan",
         "Heavy rain": "Malakas na ulan",
         "Snow": "Niyebe",
-        "Thunderstorm": "Bagyo na may kulog"
+        "Thunderstorm": "Bagyo na may kulog",
+        "Mood": "Mood",
+        "Select mood": "Pumili ng mood",
+        "Excited": "Nasasabik",
+        "Happy": "Masaya",
+        "Calm": "Kalmado",
+        "Tired": "Pagod",
+        "Thoughtful": "Nag-iisip",
+        "Sad": "Malungkot",
+        "Anxious": "Kinakabahan",
+        "Angry": "Galit"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -6577,7 +6787,17 @@ export const translations = {
         "Rain": "Regn",
         "Heavy rain": "Kraftigt regn",
         "Snow": "Snö",
-        "Thunderstorm": "Åskväder"
+        "Thunderstorm": "Åskväder",
+        "Mood": "Humör",
+        "Select mood": "Välj humör",
+        "Excited": "Exalterad",
+        "Happy": "Glad",
+        "Calm": "Lugn",
+        "Tired": "Trött",
+        "Thoughtful": "Tankfull",
+        "Sad": "Ledsen",
+        "Anxious": "Orolig",
+        "Angry": "Arg"
     },
     "cs": {
         "Action": "Akce",
@@ -6876,7 +7096,17 @@ export const translations = {
         "Rain": "Déšť",
         "Heavy rain": "Silný déšť",
         "Snow": "Sníh",
-        "Thunderstorm": "Bouřka"
+        "Thunderstorm": "Bouřka",
+        "Mood": "Nálada",
+        "Select mood": "Vybrat náladu",
+        "Excited": "Nadšený",
+        "Happy": "Šťastný",
+        "Calm": "Klidný",
+        "Tired": "Unavený",
+        "Thoughtful": "Zamyšlený",
+        "Sad": "Smutný",
+        "Anxious": "Úzkostný",
+        "Angry": "Naštvaný"
     },
     "ta": {
         "Action": "செயல்",
@@ -7175,6 +7405,16 @@ export const translations = {
         "Rain": "மழை",
         "Heavy rain": "கனமழை",
         "Snow": "பனி",
-        "Thunderstorm": "இடி மின்னல் மழை"
+        "Thunderstorm": "இடி மின்னல் மழை",
+        "Mood": "மனநிலை",
+        "Select mood": "மனநிலையைத் தேர்ந்தெடு",
+        "Excited": "உற்சாகம்",
+        "Happy": "மகிழ்ச்சி",
+        "Calm": "அமைதி",
+        "Tired": "சோர்வு",
+        "Thoughtful": "சிந்தனை",
+        "Sad": "சோகம்",
+        "Anxious": "பதட்டம்",
+        "Angry": "கோபம்"
     }
 }
