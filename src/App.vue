@@ -6615,6 +6615,7 @@ export default {
         const scheduleAutoAiForCell = (row, sourceColId, immediate = false) => {
             const dependentAiCols = columns.value.filter(c => c.type === 'ai' && c.sourceCol === sourceColId && c.aiPrompt)
             if (!dependentAiCols.length) return
+            if (browserAiAvailability.value !== 'available' && !immediate) return
             const srcColObj = columns.value.find(c => c.id === sourceColId)
             const srcText = srcColObj
                 ? getColumnDisplayTextForAi(row, srcColObj)
@@ -6988,6 +6989,7 @@ export default {
             const dependentCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol === sourceColId)
             if (!dependentCols.length) return
             if (!isBrowserTranslatorSupported) {
+                if (!immediate) return
                 if (!canGoogleSheetsTranslate.value) return
                 const rawSrc = row[sourceColId]
                 const srcText = (Array.isArray(rawSrc) ? rawSrc.join(', ') : String(rawSrc ?? '')).trim()
@@ -7037,7 +7039,12 @@ export default {
                     const res = await translateSingleCell(row, tCol, { force: true, interactive: false })
                     if (res.changed) {
                         anyChanged = true
-                        scheduleAutoAiForCell(row, tCol.id)
+                        if (!immediate) {
+                            scheduleAutoAiForCell(row, tCol.id, false)
+                        }
+                    }
+                    if (immediate) {
+                        scheduleAutoAiForCell(row, tCol.id, true)
                     }
                 }
                 if (anyChanged) {
@@ -7118,7 +7125,7 @@ export default {
                 updatedAt.value = Date.now()
                 triggerRef(rows)
                 debouncedSave()
-                scheduleAutoAiForCell(row, col.id)
+                scheduleAutoAiForCell(row, col.id, true)
             }
             if (!res.error && !res.unsupported && !res.needsGesture) {
                 await translateColumnRows(col, { force: false, interactive: false })
@@ -9477,15 +9484,6 @@ export default {
                         pTopAtStart = currentY
                     }
                     currentY += h
-                    if (start !== -1 && currentY > scrollTop + clientHeight) {
-                        end = i + 1
-                        break
-                    }
-                }
-
-                if (start === -1) {
-                    end = total
-                    const estimatedItems = Math.ceil(clientHeight / safeItemHeight)
                     start = Math.max(0, total - estimatedItems)
                     let preciseTop = currentY
                     for (let i = total - 1; i >= start; i--) {
@@ -10865,6 +10863,9 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const openGlobalMenu = (event, row, col) => {
+            if (row && col && (!event || event.type === 'focus')) {
+                tempKey.value = String(row[col.id] ?? '')
+            }
             if (!col || !['number', 'category'].includes(col.type)) {
                 isKeyboardOpen.value = false
                 activeRow.value = null
