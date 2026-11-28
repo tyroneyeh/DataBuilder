@@ -336,13 +336,13 @@
                                 class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                                 :data-tooltip="translate('Edit AI prompt')"
                             >✏️</button>
-                            <button v-if="canGoogleSheetsTranslate"
+                            <button
                                 type="button"
                                 @pointerdown.stop
-                                @click.stop="translateViaGoogleSheets(col, { forceAll: true, interactive: true })"
+                                @click.stop="runAiColumn(col, { force: true, interactive: true })"
                                 class="shrink-0 ml-0.5 text-xs text-purple-500 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
-                                :data-tooltip="translate('Run AI via Google Sheets')"
-                            >{{ isSheetsTranslating ? '⏳' : '🔄' }}</button>
+                                :data-tooltip="translate('Run AI')"
+                            >{{ aiRunningColumns[col.id] ? '⏳' : '🔄' }}</button>
                         </template>
                     </div>
 
@@ -462,9 +462,9 @@
                                     v-model="row[col.id]"
                                     type="text"
                                     :data-tooltip="row[col.id] || col.aiPrompt || ''"
-                                    :placeholder="translatePendingGesture[`${row.id}-${col.id}`] ? translate('Run AI via Google Sheets') : '...'"
+                                    :placeholder="translatePendingGesture[`${row.id}-${col.id}`] ? translate('Click to run AI') : '...'"
                                     class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-base text-purple-700 dark:text-purple-300 dark:placeholder-purple-400/60 placeholder-purple-400/70 truncate"
-                                    :class="{ 'pr-7': canGoogleSheetsTranslate && row[col.sourceCol] }"
+                                    :class="{ 'pr-7': row[col.sourceCol] }"
                                     @paste="handlePaste($event, windowStart + index, col.id)"
                                     @input="onTranslateCellInput(row, col)"
                                     @focus="onTranslateCellFocus(row, col)"
@@ -473,12 +473,12 @@
                                     @keydown="focusNextInput($event, row.id, col.id)"
                                 >
                                 <button
-                                    v-if="canGoogleSheetsTranslate && row[col.sourceCol]"
+                                    v-if="row[col.sourceCol]"
                                     type="button"
                                     @click.stop="handleAiCellClick(row, col)"
                                     class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded transition-opacity text-xs cursor-pointer"
-                                    :class="translatePendingGesture[`${row.id}-${col.id}`] || !row[col.id] ? 'opacity-100 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40' : 'opacity-40 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-800/50'"
-                                    :data-tooltip="translate('Run AI via Google Sheets')"
+                                    :class="translatePendingGesture[`${row.id}-${col.id}`] || !row[col.id] || /^=AI\(/i.test(String(row[col.id])) ? 'opacity-100 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/40' : 'opacity-40 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-800/50'"
+                                    :data-tooltip="translate('Run AI')"
                                 >✨</button>
                             </template>
                         </template>
@@ -1687,6 +1687,27 @@
                 </div>
 
                 <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">✨ {{ translate('Gemini API Key') }} (AI)</h4>
+                        <span v-if="browserAiAvailability === 'available'" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">✅ {{ translate('Chrome Built-in AI') }}</span>
+                        <span v-else-if="browserAiAvailability === 'downloadable' || browserAiAvailability === 'downloading'" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">⬇️ {{ translate('Chrome Built-in AI') }}</span>
+                    </div>
+                    <div class="relative w-full flex items-center">
+                        <input v-model="geminiApiKey" type="password" placeholder="AIzaSy..." class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
+                        <button
+                            v-if="geminiApiKey"
+                            @click="geminiApiKey = ''"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
+                            :title="translate('Clear')"
+                        >✖</button>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ translate('Get your free API key from Google AI Studio.') }}
+                        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" class="text-purple-600 dark:text-purple-400 hover:underline ml-1">Google AI Studio ↗</a>
+                    </p>
+                </div>
+
+                <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <div class="text-sm font-extrabold flex items-center gap-2 text-gray-800 dark:text-white transition-colors">
                         <span>🐙 {{ translate('GitHub Gist Sync Settings') }}</span>
                         <button
@@ -1912,7 +1933,7 @@
             @keydown.escape="closeAiPromptModal"
             class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 resize-y"
         ></textarea>
-        <label v-if="canGoogleSheetsTranslate" class="flex items-center gap-2 mt-3 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+        <label v-if="canRunAiCells" class="flex items-center gap-2 mt-3 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
             <input type="checkbox" v-model="aiPromptModal.rerun" class="w-4 h-4 text-purple-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500 cursor-pointer">
             <span>🔄 {{ translate('Re-run AI after saving') }}</span>
         </label>
@@ -2447,7 +2468,7 @@ export default {
                 colLabel: col.label,
                 sourceCol: col.sourceCol || '',
                 prompt: col.aiPrompt || '',
-                rerun: Boolean(canGoogleSheetsTranslate.value),
+                rerun: Boolean(canRunAiCells.value),
                 error: ''
             }
             await nextTick()
@@ -2474,11 +2495,11 @@ export default {
             }
             targetCol.sourceCol = aiPromptModal.value.sourceCol
             targetCol.aiPrompt = promptText
-            const shouldRerun = aiPromptModal.value.rerun && canGoogleSheetsTranslate.value
+            const shouldRerun = aiPromptModal.value.rerun && canRunAiCells.value
             onDataEdited('both')
             closeAiPromptModal()
             if (shouldRerun) {
-                translateViaGoogleSheets(targetCol, { forceAll: true, interactive: true })
+                runAiColumn(targetCol, { force: true, interactive: true })
             }
         }
         const newColAiPrompt = ref('')
@@ -2634,7 +2655,7 @@ export default {
                 opts.push({value: 'translate', label: translate('Translate')})
                 opts.push({value: 'stock', label: translate('TW Stock')})
             }
-            if (canGoogleSheetsTranslate.value && columns.value.some(col => !['photo', 'ai'].includes(col.type))) {
+            if (columns.value.some(col => !['photo', 'ai'].includes(col.type))) {
                 opts.push({value: 'ai', label: translate('AI')})
             }
             if (columns.value.some(col => isNumericType(col.type) && col.type !== 'exchange')) {
@@ -2680,6 +2701,7 @@ export default {
         const isScannerOpen = ref(false)
         const scanningTarget = ref(null)
         const googleVisionKey = ref(localStorage.getItem('ty_google_vision_key') || '')
+        const geminiApiKey = ref(localStorage.getItem('ty_gemini_api_key') || '')
         const isAutoScanEnabled = ref(false)
         const isZoomSupported = ref(false)
         const minZoom = ref(1)
@@ -3244,6 +3266,10 @@ export default {
 
         watch(googleVisionKey, (newVal) => {
             localStorage.setItem('ty_google_vision_key', newVal.trim())
+        })
+
+        watch(geminiApiKey, (newVal) => {
+            localStorage.setItem('ty_gemini_api_key', newVal.trim())
         })
 
         watch(isAutoScanEnabled, async (newVal) => {
@@ -4478,6 +4504,7 @@ export default {
 
             isInitializing = false
             resetHistory()
+            await refreshBrowserAiAvailability()
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
             refreshAllStockColumns(false)
@@ -5099,6 +5126,7 @@ export default {
         const isSheetPendingValue = (val) => {
             const s = String(val ?? '').trim()
             if (!s) return true
+            if (/^=AI\(/i.test(s)) return true
             if (/^#(VALUE|N\/A|ERROR|REF|NAME\?|LOADING)/i.test(s)) return true
             if (/^(loading|載入中|正在加载|読み込み中|로드 중|cargando|chargement|laden)\.{0,3}$/i.test(s)) return true
             return false
@@ -5150,23 +5178,9 @@ export default {
                         } else {
                             rowArray.push(row[c.id] ?? '')
                         }
-                    } else if (c.type === 'ai' && c.sourceCol && c.aiPrompt) {
+                    } else if (c.type === 'ai') {
                         const existingVal = String(row[c.id] ?? '').trim()
-                        const rawSrc = row[c.sourceCol]
-                        const srcText = (Array.isArray(rawSrc) ? rawSrc.join(', ') : String(rawSrc ?? '')).trim()
-                        const srcIdx = columns.value.findIndex(col => col.id === c.sourceCol)
-                        const forceCol = forceTranslateColIds && forceTranslateColIds.has(c.id)
-                        const forceRow = !forceTranslateRowIds || forceTranslateRowIds.has(row.id)
-                        const shouldUseFormula = srcIdx !== -1 && srcText !== '' && (!existingVal || (forceCol && forceRow))
-                        if (shouldUseFormula) {
-                            const srcColLetter = getColumnLetter(srcIdx + 1)
-                            const sheetRowNum = rowIdx + 2
-                            const escapedPrompt = String(c.aiPrompt).replace(/\r?\n/g, ' ').replaceAll('"', '""')
-                            rowArray.push(`=AI("${escapedPrompt}",${srcColLetter}${sheetRowNum})`)
-                            wroteTranslateFormulas = true
-                        } else {
-                            rowArray.push(row[c.id] ?? '')
-                        }
+                        rowArray.push(/^=AI\(/i.test(existingVal) ? '' : (row[c.id] ?? ''))
                     } else {
                         rowArray.push(row[c.id] ?? '')
                     }
@@ -5267,12 +5281,11 @@ export default {
 
         const pullTranslationsFromGoogleSheets = async (url, targetColIds = null) => {
             const tCols = columns.value.filter(c =>
-                ['translate', 'ai'].includes(c.type) && c.sourceCol && (!targetColIds || targetColIds.has(c.id))
+                c.type === 'translate' && c.sourceCol && (!targetColIds || targetColIds.has(c.id))
             )
             if (!tCols.length) return { changed: false, hasPending: false }
 
-            const hasAiCol = tCols.some(c => c.type === 'ai')
-            const delays = hasAiCol ? [1200, 1800, 2500, 3500] : [800, 1200, 1600, 2200]
+            const delays = [800, 1200, 1600, 2200]
             let anyChanged = false
             let stillPending = false
 
@@ -5294,7 +5307,7 @@ export default {
                         if (!sourceText) return
                         const cellKey = `${row.id}-${col.id}`
                         const cacheKey = `${currentStorageKey.value}:${cellKey}`
-                        const targetKey = col.type === 'ai' ? (col.aiPrompt || '') : (col.targetLang || currentLanguage.value || 'en')
+                        const targetKey = col.targetLang || currentLanguage.value || 'en'
                         const translatedVal = String(cloudRow[col.id] ?? '').trim()
                         if (!isSheetPendingValue(translatedVal)) {
                             clearPendingGesture(cellKey)
@@ -6053,8 +6066,8 @@ export default {
                 onDataEdited('both')
                 if (existingCol.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                     translateColumnRows(existingCol, { force: true, interactive: true })
-                } else if (existingCol.type === 'ai' && canGoogleSheetsTranslate.value) {
-                    translateViaGoogleSheets(existingCol, { forceAll: true, interactive: true })
+                } else if (existingCol.type === 'ai') {
+                    runAiColumn(existingCol, { force: true, interactive: true })
                 } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
                 } else if (existingCol.type === 'stock') {
@@ -6153,8 +6166,8 @@ export default {
             if (newColData.type === 'date') hasDateColumn.value = true
             if (newColData.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                 translateColumnRows(newColData, { force: true, interactive: true })
-            } else if (newColData.type === 'ai' && canGoogleSheetsTranslate.value) {
-                translateViaGoogleSheets(newColData, { forceAll: true, interactive: true })
+            } else if (newColData.type === 'ai') {
+                runAiColumn(newColData, { force: true, interactive: true })
             } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
             } else if (newColData.type === 'stock') {
@@ -6282,6 +6295,372 @@ export default {
         const isBrowserTranslatorSupported = hasBuiltInBrowserTranslator()
         const canTranslateCells = computed(() => isBrowserTranslatorSupported || canGoogleSheetsTranslate.value)
         const isSheetsTranslating = ref(false)
+        const AI_SYSTEM_INSTRUCTION = 'You are a helpful assistant filling in a single spreadsheet cell. Follow the user instruction accurately using the target column value and row context. Reply concisely in plain text without markdown formatting, code fences, or unnecessary preamble.'
+        const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        const getBuiltInLanguageModelApi = () => {
+            if ('LanguageModel' in globalThis && typeof globalThis.LanguageModel?.create === 'function') {
+                return { api: globalThis.LanguageModel, mode: 'standard' }
+            }
+            if (globalThis.ai?.languageModel && typeof globalThis.ai.languageModel.create === 'function') {
+                return { api: globalThis.ai.languageModel, mode: 'legacy' }
+            }
+            return null
+        }
+        const browserAiAvailability = ref(getBuiltInLanguageModelApi() ? 'downloadable' : 'unavailable')
+        const refreshBrowserAiAvailability = async () => {
+            const lm = getBuiltInLanguageModelApi()
+            if (!lm) {
+                browserAiAvailability.value = 'unavailable'
+                return 'unavailable'
+            }
+            try {
+                if (lm.mode === 'standard') {
+                    const avail = typeof lm.api.availability === 'function'
+                        ? await lm.api.availability()
+                        : 'available'
+                    browserAiAvailability.value = avail || 'unavailable'
+                    return browserAiAvailability.value
+                }
+                const caps = typeof lm.api.capabilities === 'function'
+                    ? await lm.api.capabilities()
+                    : { available: 'readily' }
+                const map = { readily: 'available', 'after-download': 'downloadable', no: 'unavailable' }
+                browserAiAvailability.value = map[caps?.available] || 'unavailable'
+                return browserAiAvailability.value
+            } catch (e) {
+                console.warn('LanguageModel availability check failed:', e)
+                browserAiAvailability.value = 'unavailable'
+                return 'unavailable'
+            }
+        }
+        const isBrowserAiSupported = computed(() => browserAiAvailability.value !== 'unavailable')
+        const canRunAiCells = computed(() => isBrowserAiSupported.value || Boolean(geminiApiKey.value.trim()))
+        const aiRunningColumns = ref({})
+        const activeColumnAiRuns = new Set()
+        const rowAiTimers = new Map()
+        const getColumnDisplayTextForAi = (row, colObj) => {
+            if (!row || !colObj) return ''
+            if (isCalcType(colObj.type) || colObj.type === 'exchange' || colObj.type === 'stock') {
+                const num = getRowNumericValue(row, colObj)
+                return Number.isFinite(num) ? String(num) : ''
+            }
+            if (colObj.type === 'checkbox') return row[colObj.id] ? 'Yes' : 'No'
+            const raw = row[colObj.id]
+            if (Array.isArray(raw)) return raw.map(v => String(v ?? '').trim()).filter(Boolean).join(', ')
+            const text = String(raw ?? '').trim()
+            if (!text || /^=AI\(/i.test(text)) return ''
+            return text
+        }
+        const buildAiPromptInput = (row, col) => {
+            const srcColObj = columns.value.find(c => c.id === col.sourceCol)
+            const srcText = srcColObj
+                ? getColumnDisplayTextForAi(row, srcColObj)
+                : String(row[col.sourceCol] ?? '').trim()
+            const srcLabel = srcColObj?.label || col.sourceCol
+            const contextLines = []
+            columns.value.forEach(c => {
+                if (c.id === col.id || c.type === 'photo' || c.type === 'password') return
+                const val = getColumnDisplayTextForAi(row, c)
+                if (!val) return
+                const marker = c.id === col.sourceCol ? ' (Target)' : ''
+                contextLines.push(`- ${c.label}${marker}: ${val}`)
+            })
+            if (row.note && String(row.note).trim()) {
+                contextLines.push(`- ${translate('Note')}: ${String(row.note).trim()}`)
+            }
+            const parts = [
+                `Instruction: ${col.aiPrompt}`,
+                `Target column (${srcLabel}): ${srcText}`
+            ]
+            if (contextLines.length > 1) {
+                parts.push(`Row context (in column order):\n${contextLines.join('\n')}`)
+            }
+            return parts.join('\n\n')
+        }
+        const cleanAiOutput = (raw) => {
+            return String(raw ?? '')
+                .trim()
+                .replace(/^```[a-zA-Z0-9_-]*\n?/, '')
+                .replace(/\n?```$/, '')
+                .trim()
+        }
+        const runAiWithBrowser = async (promptText, { interactive = false } = {}) => {
+            const lm = getBuiltInLanguageModelApi()
+            if (!lm) return { skipped: true }
+            const avail = await refreshBrowserAiAvailability()
+            if (avail === 'unavailable') return { skipped: true }
+            if ((avail === 'downloadable' || avail === 'downloading') && !interactive) {
+                return { needsGesture: true }
+            }
+            let session = null
+            try {
+                if (lm.mode === 'standard') {
+                    session = await lm.api.create({
+                        initialPrompts: [{ role: 'system', content: AI_SYSTEM_INSTRUCTION }]
+                    })
+                } else {
+                    session = await lm.api.create({
+                        systemPrompt: AI_SYSTEM_INSTRUCTION
+                    })
+                }
+                browserAiAvailability.value = 'available'
+                const output = await session.prompt(promptText)
+                const cleaned = cleanAiOutput(output)
+                if (cleaned) return { text: cleaned, engine: 'browser' }
+                return { skipped: true }
+            } catch (err) {
+                if (err?.name === 'NotAllowedError') {
+                    return { needsGesture: true, error: err }
+                }
+                console.warn('Built-in AI execution error:', err)
+                return { error: err }
+            } finally {
+                try { session?.destroy?.() } catch {}
+            }
+        }
+        const runAiWithGemini = async (promptText) => {
+            const apiKey = geminiApiKey.value.trim()
+            if (!apiKey) return { skipped: true }
+            if (!isOnline.value) {
+                return { error: new Error(translate('Offline')) }
+            }
+            let lastError = null
+            for (const model of GEMINI_MODELS) {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-goog-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        system_instruction: {
+                            parts: [{ text: AI_SYSTEM_INSTRUCTION }]
+                        },
+                        contents: [
+                            {
+                                role: 'user',
+                                parts: [{ text: promptText }]
+                            }
+                        ],
+                        generationConfig: {
+                            temperature: 0.3,
+                            maxOutputTokens: 512
+                        }
+                    })
+                })
+                const data = await res.json().catch(() => ({}))
+                if (res.ok) {
+                    const rawText = data?.candidates?.[0]?.content?.parts
+                        ?.map(p => p?.text || '')
+                        .join('') || ''
+                    const cleaned = cleanAiOutput(rawText)
+                    if (cleaned) return { text: cleaned, engine: 'gemini' }
+                    const blockReason = data?.promptFeedback?.blockReason || data?.candidates?.[0]?.finishReason
+                    return { error: new Error(blockReason ? `Empty response (${blockReason})` : 'Empty AI response') }
+                }
+                const errMsg = data?.error?.message || `HTTP ${res.status}`
+                const err = new Error(errMsg)
+                err.status = res.status
+                lastError = err
+                if (res.status === 404) {
+                    continue
+                }
+                return { error: err }
+            }
+            return { error: lastError || new Error('Gemini API request failed') }
+        }
+        const runAiText = async (promptText, { interactive = false } = {}) => {
+            const hasGeminiKey = Boolean(geminiApiKey.value.trim())
+            const browserRes = await runAiWithBrowser(promptText, { interactive })
+            if (browserRes?.text) return browserRes
+            if (hasGeminiKey) {
+                const geminiRes = await runAiWithGemini(promptText)
+                if (geminiRes?.text) return geminiRes
+                return { error: geminiRes?.error || browserRes?.error || new Error('AI request failed') }
+            }
+            if (browserRes?.needsGesture) {
+                return { needsGesture: true }
+            }
+            if (browserRes?.error) {
+                return { error: browserRes.error }
+            }
+            return { unsupported: true }
+        }
+        const runAiSingleCell = async (row, col, { force = false, interactive = false } = {}) => {
+            if (!row || !col || col.type !== 'ai' || !col.sourceCol || !col.aiPrompt) return { changed: false }
+            const cellKey = `${row.id}-${col.id}`
+            const cacheKey = `${currentStorageKey.value}:${cellKey}`
+            const srcColObj = columns.value.find(c => c.id === col.sourceCol)
+            const sourceText = srcColObj
+                ? getColumnDisplayTextForAi(row, srcColObj)
+                : String(row[col.sourceCol] ?? '').trim()
+            const targetKey = col.aiPrompt || ''
+
+            if (!sourceText) {
+                clearPendingGesture(cellKey)
+                lastTranslatedSourceMap.delete(cacheKey)
+                if (row[col.id]) {
+                    row[col.id] = ''
+                    return { changed: true }
+                }
+                return { changed: false }
+            }
+
+            const promptText = buildAiPromptInput(row, col)
+            const currentVal = String(row[col.id] ?? '').trim()
+            const hasValidVal = Boolean(currentVal && !/^=AI\(/i.test(currentVal))
+            const prev = lastTranslatedSourceMap.get(cacheKey)
+            if (!force) {
+                if (prev && prev.source === promptText && prev.targetLang === targetKey && (hasValidVal || prev.manualEmpty)) {
+                    return { changed: false }
+                }
+                if (!prev && hasValidVal) {
+                    lastTranslatedSourceMap.set(cacheKey, { source: promptText, targetLang: targetKey })
+                    return { changed: false }
+                }
+            }
+
+            if (translatingCells.value[cellKey]) return { changed: false }
+
+            translatingCells.value = { ...translatingCells.value, [cellKey]: true }
+            try {
+                const res = await runAiText(promptText, { interactive })
+                if (res?.text) {
+                    const latestSource = srcColObj
+                        ? getColumnDisplayTextForAi(row, srcColObj)
+                        : String(row[col.sourceCol] ?? '').trim()
+                    if (latestSource !== sourceText) {
+                        return { changed: false, engine: res.engine }
+                    }
+                    clearPendingGesture(cellKey)
+                    lastTranslatedSourceMap.set(cacheKey, { source: promptText, targetLang: targetKey })
+                    if (row[col.id] !== res.text) {
+                        row[col.id] = res.text
+                        return { changed: true, engine: res.engine }
+                    }
+                    return { changed: false, engine: res.engine }
+                }
+                if (res?.needsGesture) {
+                    translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
+                    return { changed: false, needsGesture: true }
+                }
+                if (res?.unsupported) {
+                    if (interactive) {
+                        showConfirm(translate('Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.'), 1)
+                    }
+                    return { changed: false, unsupported: true }
+                }
+                const err = res?.error || new Error('AI generation failed')
+                console.warn('AI cell error:', err)
+                if (!interactive) {
+                    translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
+                } else {
+                    showConfirm('❌ ' + translate('AI generation failed.') + (err?.message ? ` (${err.message})` : ''), 1)
+                }
+                return { changed: false, error: err }
+            } finally {
+                const next = { ...translatingCells.value }
+                delete next[cellKey]
+                translatingCells.value = next
+            }
+        }
+        const runAiColumn = async (col, { force = false, interactive = false } = {}) => {
+            if (!col || col.type !== 'ai' || !col.sourceCol || !col.aiPrompt) return
+            if (!canRunAiCells.value) {
+                await refreshBrowserAiAvailability()
+            }
+            if (!canRunAiCells.value) {
+                if (interactive) {
+                    showConfirm(translate('Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.'), 1)
+                }
+                return
+            }
+            const colLockKey = `${currentStorageKey.value}:${col.id}`
+            if (activeColumnAiRuns.has(colLockKey)) return
+            activeColumnAiRuns.add(colLockKey)
+            aiRunningColumns.value = { ...aiRunningColumns.value, [col.id]: true }
+            let anyChanged = false
+            try {
+                for (let i = 0; i < rows.value.length; i++) {
+                    const row = rows.value[i]
+                    const res = await runAiSingleCell(row, col, { force, interactive })
+                    if (res.changed) {
+                        anyChanged = true
+                        triggerRef(rows)
+                    }
+                    if (res.unsupported || res.needsGesture) break
+                    if (res.error) {
+                        const status = res.error?.status
+                        if (interactive || status === 400 || status === 401 || status === 403 || status === 429) {
+                            break
+                        }
+                    }
+                    if (res.engine === 'gemini' && i < rows.value.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 250))
+                    }
+                }
+                if (anyChanged) {
+                    updatedAt.value = Date.now()
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+            } finally {
+                activeColumnAiRuns.delete(colLockKey)
+                const next = { ...aiRunningColumns.value }
+                delete next[col.id]
+                aiRunningColumns.value = next
+            }
+        }
+        const scheduleAutoAiForCell = (row, sourceColId, immediate = false) => {
+            const dependentAiCols = columns.value.filter(c => c.type === 'ai' && c.sourceCol === sourceColId && c.aiPrompt)
+            if (!dependentAiCols.length) return
+            const srcColObj = columns.value.find(c => c.id === sourceColId)
+            const srcText = srcColObj
+                ? getColumnDisplayTextForAi(row, srcColObj)
+                : String(row[sourceColId] ?? '').trim()
+            if (!srcText) {
+                let cleared = false
+                dependentAiCols.forEach(aiCol => {
+                    const cellKey = `${row.id}-${aiCol.id}`
+                    const cacheKey = `${currentStorageKey.value}:${cellKey}`
+                    clearPendingGesture(cellKey)
+                    lastTranslatedSourceMap.delete(cacheKey)
+                    if (row[aiCol.id]) {
+                        row[aiCol.id] = ''
+                        cleared = true
+                    }
+                })
+                if (cleared) {
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+                return
+            }
+            if (!canRunAiCells.value) return
+            const timerKey = `${row.id}-${sourceColId}`
+            if (rowAiTimers.has(timerKey)) {
+                clearTimeout(rowAiTimers.get(timerKey))
+                rowAiTimers.delete(timerKey)
+            }
+            const run = async () => {
+                rowAiTimers.delete(timerKey)
+                let anyChanged = false
+                for (const aiCol of dependentAiCols) {
+                    const res = await runAiSingleCell(row, aiCol, { force: true, interactive: false })
+                    if (res.changed) anyChanged = true
+                }
+                if (anyChanged) {
+                    updatedAt.value = Date.now()
+                    triggerRef(rows)
+                    debouncedSave()
+                }
+            }
+            if (immediate) {
+                run()
+            } else {
+                rowAiTimers.set(timerKey, setTimeout(run, 800))
+            }
+        }
         const hasValidCachedGoogleToken = () =>
             Boolean(googleAccessToken.value && googleTokenExpiresAt.value > 0 && Date.now() < googleTokenExpiresAt.value)
         const clearWorkspaceTranslateCache = (wsKey = currentStorageKey.value) => {
@@ -6483,9 +6862,7 @@ export default {
             if (!canGoogleSheetsTranslate.value) {
                 if (interactive) {
                     showConfirm(
-                        col?.type === 'ai'
-                            ? translate('Please configure Google Client ID and Google Sheet URL first.')
-                            : translate('Your browser does not support built-in translation (Chrome 138+ required).'),
+                        translate('Your browser does not support built-in translation (Chrome 138+ required).'),
                         1
                     )
                 }
@@ -6493,7 +6870,7 @@ export default {
             }
             if (isSheetsTranslating.value) return false
             const defaultSheetCols = () => columns.value.filter(c =>
-                c.sourceCol && (c.type === 'ai' || (c.type === 'translate' && !isBrowserTranslatorSupported))
+                c.sourceCol && c.type === 'translate' && !isBrowserTranslatorSupported
             )
             if (!interactive && !hasValidCachedGoogleToken()) {
                 const targetCols = col ? [col] : defaultSheetCols()
@@ -6544,8 +6921,12 @@ export default {
                 localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
                 triggerRef(rows)
                 await saveCurrentWorkspaceNow()
-                if (interactive && targetCols.some(c => c.type === 'ai') && pullRes?.hasPending && !pullRes?.changed) {
-                    showConfirm(translate('AI formula synced to Google Sheets. If results are still blank, open the Sheet to click "Generate and insert", then pull from Sheets.'), 1)
+                if (pullRes?.changed && canRunAiCells.value) {
+                    const translatedColIds = new Set(targetCols.map(c => c.id))
+                    const dependentAiCols = columns.value.filter(c => c.type === 'ai' && translatedColIds.has(c.sourceCol) && c.aiPrompt)
+                    for (const aiCol of dependentAiCols) {
+                        runAiColumn(aiCol, { force: false, interactive: false })
+                    }
                 }
                 return true
             } catch (err) {
@@ -6587,6 +6968,7 @@ export default {
                     if (res.changed) {
                         anyChanged = true
                         triggerRef(rows)
+                        scheduleAutoAiForCell(row, col.id)
                     }
                     if (res.unsupported) break
                 }
@@ -6600,43 +6982,7 @@ export default {
             }
         }
         const scheduleAutoTranslateForCell = (row, sourceColId, immediate = false) => {
-            const dependentAiCols = columns.value.filter(c => c.type === 'ai' && c.sourceCol === sourceColId)
-            if (dependentAiCols.length && canGoogleSheetsTranslate.value) {
-                const rawSrc = row[sourceColId]
-                const srcText = (Array.isArray(rawSrc) ? rawSrc.join(', ') : String(rawSrc ?? '')).trim()
-                let aiChanged = false
-                dependentAiCols.forEach(aiCol => {
-                    const cellKey = `${row.id}-${aiCol.id}`
-                    const cacheKey = `${currentStorageKey.value}:${cellKey}`
-                    const targetKey = aiCol.aiPrompt || ''
-                    if (!srcText) {
-                        clearPendingGesture(cellKey)
-                        lastTranslatedSourceMap.delete(cacheKey)
-                        if (row[aiCol.id]) {
-                            row[aiCol.id] = ''
-                            aiChanged = true
-                        }
-                        return
-                    }
-                    const prev = lastTranslatedSourceMap.get(cacheKey)
-                    if (!prev || prev.source !== srcText || prev.targetLang !== targetKey) {
-                        if (row[aiCol.id]) {
-                            row[aiCol.id] = ''
-                            aiChanged = true
-                        }
-                        if (!hasValidCachedGoogleToken()) {
-                            translatePendingGesture.value = { ...translatePendingGesture.value, [cellKey]: true }
-                        }
-                    }
-                })
-                if (aiChanged) {
-                    triggerRef(rows)
-                    debouncedSave()
-                }
-                if (srcText && hasValidCachedGoogleToken()) {
-                    scheduleGoogleSheetsTranslate()
-                }
-            }
+            scheduleAutoAiForCell(row, sourceColId, immediate)
 
             const dependentCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol === sourceColId)
             if (!dependentCols.length) return
@@ -6688,7 +7034,10 @@ export default {
                 let anyChanged = false
                 for (const tCol of dependentCols) {
                     const res = await translateSingleCell(row, tCol, { force: true, interactive: false })
-                    if (res.changed) anyChanged = true
+                    if (res.changed) {
+                        anyChanged = true
+                        scheduleAutoAiForCell(row, tCol.id)
+                    }
                 }
                 if (anyChanged) {
                     updatedAt.value = Date.now()
@@ -6703,15 +7052,21 @@ export default {
             }
         }
         const syncAllTranslateColumns = debounce(async () => {
-            const hasAiCols = columns.value.some(c => c.type === 'ai' && c.sourceCol)
+            const aiCols = columns.value.filter(c => c.type === 'ai' && c.sourceCol && c.aiPrompt)
             const tCols = columns.value.filter(c => c.type === 'translate' && c.sourceCol)
-            if (!tCols.length && !hasAiCols) return
-            if ((hasAiCols || !isBrowserTranslatorSupported) && canGoogleSheetsTranslate.value && hasValidCachedGoogleToken()) {
+            if (!tCols.length && !aiCols.length) return
+            if (tCols.length && !isBrowserTranslatorSupported && canGoogleSheetsTranslate.value && hasValidCachedGoogleToken()) {
                 scheduleGoogleSheetsTranslate()
             }
-            if (!isBrowserTranslatorSupported || !tCols.length) return
-            for (const tCol of tCols) {
-                await translateColumnRows(tCol, { force: false, interactive: false })
+            if (isBrowserTranslatorSupported && tCols.length) {
+                for (const tCol of tCols) {
+                    await translateColumnRows(tCol, { force: false, interactive: false })
+                }
+            }
+            if (aiCols.length && canRunAiCells.value) {
+                for (const aiCol of aiCols) {
+                    await runAiColumn(aiCol, { force: false, interactive: false })
+                }
             }
         }, 250)
         const onTranslateCellFocus = (row, col) => {
@@ -6721,8 +7076,9 @@ export default {
             if (!row || !col || !['translate', 'ai'].includes(col.type)) return
             const cellKey = `${row.id}-${col.id}`
             const cacheKey = `${currentStorageKey.value}:${cellKey}`
-            const rawVal = col.sourceCol ? row[col.sourceCol] : ''
-            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            const sourceText = col.type === 'ai'
+                ? buildAiPromptInput(row, col)
+                : (Array.isArray(row[col.sourceCol]) ? row[col.sourceCol].join(', ') : String(row[col.sourceCol] ?? '')).trim()
             const targetKey = col.type === 'ai' ? (col.aiPrompt || '') : (col.targetLang || currentLanguage.value || 'en')
             clearPendingGesture(cellKey)
             if (String(row[col.id] ?? '').trim() !== '') {
@@ -6732,10 +7088,17 @@ export default {
             }
         }
         const handleAiCellClick = async (row, col) => {
-            const rawVal = row[col.sourceCol]
-            const sourceText = (Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal ?? '')).trim()
+            const srcColObj = columns.value.find(c => c.id === col.sourceCol)
+            const sourceText = srcColObj
+                ? getColumnDisplayTextForAi(row, srcColObj)
+                : String(row[col.sourceCol] ?? '').trim()
             if (!sourceText) return
-            await translateViaGoogleSheets(col, { targetRowId: row.id, interactive: true })
+            const res = await runAiSingleCell(row, col, { force: true, interactive: true })
+            if (res.changed) {
+                updatedAt.value = Date.now()
+                triggerRef(rows)
+                debouncedSave()
+            }
         }
         const handleTranslateCellClick = async (row, col) => {
             const rawVal = row[col.sourceCol]
@@ -6754,6 +7117,7 @@ export default {
                 updatedAt.value = Date.now()
                 triggerRef(rows)
                 debouncedSave()
+                scheduleAutoAiForCell(row, col.id)
             }
             if (!res.error && !res.unsupported && !res.needsGesture) {
                 await translateColumnRows(col, { force: false, interactive: false })
@@ -11393,6 +11757,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
 
             isInitializing = false
             resetHistory()
+            await refreshBrowserAiAvailability()
             processRecurringRows(true)
             refreshAllExchangeColumns(false)
             refreshAllStockColumns(false)
@@ -11481,6 +11846,11 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             canTranslateCells,
             isSheetsTranslating,
             translateViaGoogleSheets,
+            browserAiAvailability,
+            isBrowserAiSupported,
+            canRunAiCells,
+            aiRunningColumns,
+            runAiColumn,
             aiSourceCol,
             aiSourceColumns,
             aiPromptInputRef,
@@ -11636,6 +12006,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             copySharePhoto,
             copyQuickAddLink,
             googleVisionKey,
+            geminiApiKey,
             captureForOCR,
             isAutoScanEnabled,
             isZoomSupported,
