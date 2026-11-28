@@ -308,7 +308,10 @@ export const translations = {
         "Thoughtful": "思考",
         "Sad": "難過",
         "Anxious": "焦慮",
-        "Angry": "生氣"
+        "Angry": "生氣",
+        "Speak": "朗讀",
+        "Stop": "停止",
+        "Auto-play": "自動播放"
     },
     "zh-CN": {
         "Action": "操作",
@@ -617,7 +620,10 @@ export const translations = {
         "Thoughtful": "思考",
         "Sad": "难过",
         "Anxious": "焦虑",
-        "Angry": "生气"
+        "Angry": "生气",
+        "Speak": "朗读",
+        "Stop": "停止",
+        "Auto-play": "自动播放"
     },
     "ja": {
         "Action": "操作",
@@ -926,7 +932,10 @@ export const translations = {
         "Thoughtful": "考え中",
         "Sad": "悲しい",
         "Anxious": "不安",
-        "Angry": "怒り"
+        "Angry": "怒り",
+        "Speak": "読み上げ",
+        "Stop": "停止",
+        "Auto-play": "自動再生"
     },
     "ko": {
         "Action": "작업",
@@ -1235,7 +1244,10 @@ export const translations = {
         "Thoughtful": "생각중",
         "Sad": "슬픔",
         "Anxious": "불안",
-        "Angry": "화남"
+        "Angry": "화남",
+        "Speak": "읽기",
+        "Stop": "중지",
+        "Auto-play": "자동 재생"
     },
     "es": {
         "Action": "Acción",
@@ -1544,7 +1556,10 @@ export const translations = {
         "Thoughtful": "Pensativo",
         "Sad": "Triste",
         "Anxious": "Ansioso",
-        "Angry": "Enojado"
+        "Angry": "Enojado",
+        "Speak": "Leer",
+        "Stop": "Detener",
+        "Auto-play": "Reproducción automática"
     },
     "fr": {
         "Action": "Action",
@@ -1853,7 +1868,10 @@ export const translations = {
         "Thoughtful": "Pensif",
         "Sad": "Triste",
         "Anxious": "Anxieux",
-        "Angry": "En colère"
+        "Angry": "En colère",
+        "Speak": "Lire",
+        "Stop": "Arrêter",
+        "Auto-play": "Lecture automatique"
     },
     "de": {
         "Action": "Aktion",
@@ -2162,7 +2180,10 @@ export const translations = {
         "Thoughtful": "Nachdenklich",
         "Sad": "Traurig",
         "Anxious": "Ängstlich",
-        "Angry": "Wütend"
+        "Angry": "Wütend",
+        "Speak": "Vorlesen",
+        "Stop": "Stopp",
+        "Auto-play": "Automatisch abspielen"
     },
     "it": {
         "Action": "Azione",
@@ -2471,7 +2492,10 @@ export const translations = {
         "Thoughtful": "Pensieroso",
         "Sad": "Triste",
         "Anxious": "Ansioso",
-        "Angry": "Arrabbiato"
+        "Angry": "Arrabbiato",
+        "Speak": "Leggi",
+        "Stop": "Ferma",
+        "Auto-play": "Riproduzione automatica"
     },
     "pt": {
         "Action": "Ação",
@@ -2780,7 +2804,10 @@ export const translations = {
         "Thoughtful": "Pensativo",
         "Sad": "Triste",
         "Anxious": "Ansioso",
-        "Angry": "Bravo"
+        "Angry": "Bravo",
+        "Speak": "Ouvir",
+        "Stop": "Parar",
+        "Auto-play": "Reprodução automática"
     },
     "ru": {
         "Action": "Действие",
@@ -3089,7 +3116,10 @@ export const translations = {
         "Thoughtful": "Задумчиво",
         "Sad": "Грустно",
         "Anxious": "Тревожно",
-        "Angry": "Злость"
+        "Angry": "Злость",
+        "Speak": "Озвучить",
+        "Stop": "Стоп",
+        "Auto-play": "Автовоспроизведение"
     },
     "id": {
         "Action": "Tindakan",
@@ -3398,7 +3428,10 @@ export const translations = {
         "Thoughtful": "Berpikir",
         "Sad": "Sedih",
         "Anxious": "Cemas",
-        "Angry": "Marah"
+        "Angry": "Marah",
+        "Speak": "Bacakan",
+        "Stop": "Hentikan",
+        "Auto-play": "Putar otomatis"
     },
     "vi": {
         "Action": "Thao tác",
@@ -3707,7 +3740,10 @@ export const translations = {
         "Thoughtful": "Suy tư",
         "Sad": "Buồn",
         "Anxious": "Lo lắng",
-        "Angry": "Tức giận"
+        "Angry": "Tức giận",
+        "Speak": "Đọc",
+        "Stop": "Dừng",
+        "Auto-play": "Tự động phát"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -4016,7 +4052,10 @@ export const translations = {
         "Thoughtful": "ครุ่นคิด",
         "Sad": "เศร้า",
         "Anxious": "กังวล",
-        "Angry": "โกรธ"
+        "Angry": "โกรธ",
+        "Speak": "อ่านออกเสียง",
+        "Stop": "หยุด",
+        "Auto-play": "เล่นอัตโนมัติ"
     },
     "ms": {
         "Action": "Tindakan",
@@ -4325,7 +4364,10 @@ export const translations = {
         "Thoughtful": "Berfikir",
         "Sad": "Sedih",
         "Anxious": "Cemas",
-        "Angry": "Marah"
+        "Angry": "Marah",
+        "Speak": "Baca",
+        "Stop": "Henti",
+        "Auto-play": "Main automatik"
     },
     "tr": {
         "Action": "İşlem",
@@ -4634,7 +4676,10 @@ export const translations = {
         "Thoughtful": "Düşünceli",
         "Sad": "Üzgün",
         "Anxious": "Endişeli",
-        "Angry": "Kızgın"
+        "Angry": "Kızgın",
+        "Speak": "Oku",
+        "Stop": "Durdur",
+        "Auto-play": "Otomatik oynat"
     },
     "ar": {
         "Action": "إجراء",
@@ -4943,7 +4988,10 @@ export const translations = {
         "Thoughtful": "متأمل",
         "Sad": "حزين",
         "Anxious": "قلق",
-        "Angry": "غاضب"
+        "Angry": "غاضب",
+        "Speak": "نطق",
+        "Stop": "إيقاف",
+        "Auto-play": "تشغيل تلقائي"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -5252,7 +5300,10 @@ export const translations = {
         "Thoughtful": "विचारशील",
         "Sad": "उदास",
         "Anxious": "चिंतित",
-        "Angry": "गुस्सा"
+        "Angry": "गुस्सा",
+        "Speak": "बोलें",
+        "Stop": "रोकें",
+        "Auto-play": "स्वतः चलाएँ"
     },
     "pl": {
         "Action": "Akcja",
@@ -5561,7 +5612,10 @@ export const translations = {
         "Thoughtful": "Zamyślony",
         "Sad": "Smutny",
         "Anxious": "Zaniepokojony",
-        "Angry": "Zły"
+        "Angry": "Zły",
+        "Speak": "Czytaj",
+        "Stop": "Zatrzymaj",
+        "Auto-play": "Autoodtwarzanie"
     },
     "nl": {
         "Action": "Actie",
@@ -5870,7 +5924,10 @@ export const translations = {
         "Thoughtful": "Bedachtzaam",
         "Sad": "Verdrietig",
         "Anxious": "Angstig",
-        "Angry": "Boos"
+        "Angry": "Boos",
+        "Speak": "Voorlezen",
+        "Stop": "Stoppen",
+        "Auto-play": "Automatisch afspelen"
     },
     "uk": {
         "Action": "Дія",
@@ -6179,7 +6236,10 @@ export const translations = {
         "Thoughtful": "Задумливість",
         "Sad": "Сум",
         "Anxious": "Тривога",
-        "Angry": "Злість"
+        "Angry": "Злість",
+        "Speak": "Озвучити",
+        "Stop": "Зупинити",
+        "Auto-play": "Автовідтворення"
     },
     "tl": {
         "Action": "Aksyon",
@@ -6488,7 +6548,10 @@ export const translations = {
         "Thoughtful": "Nag-iisip",
         "Sad": "Malungkot",
         "Anxious": "Kinakabahan",
-        "Angry": "Galit"
+        "Angry": "Galit",
+        "Speak": "Basahin",
+        "Stop": "Ihinto",
+        "Auto-play": "Auto-play"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -6797,7 +6860,10 @@ export const translations = {
         "Thoughtful": "Tankfull",
         "Sad": "Ledsen",
         "Anxious": "Orolig",
-        "Angry": "Arg"
+        "Angry": "Arg",
+        "Speak": "Läs upp",
+        "Stop": "Stoppa",
+        "Auto-play": "Spela upp automatiskt"
     },
     "cs": {
         "Action": "Akce",
@@ -7106,7 +7172,10 @@ export const translations = {
         "Thoughtful": "Zamyšlený",
         "Sad": "Smutný",
         "Anxious": "Úzkostný",
-        "Angry": "Naštvaný"
+        "Angry": "Naštvaný",
+        "Speak": "Přečíst",
+        "Stop": "Zastavit",
+        "Auto-play": "Automatické přehrávání"
     },
     "ta": {
         "Action": "செயல்",
@@ -7415,6 +7484,9 @@ export const translations = {
         "Thoughtful": "சிந்தனை",
         "Sad": "சோகம்",
         "Anxious": "பதட்டம்",
-        "Angry": "கோபம்"
+        "Angry": "கோபம்",
+        "Speak": "வாசி",
+        "Stop": "நிறுத்து",
+        "Auto-play": "தானியங்கி இயக்கம்"
     }
 }

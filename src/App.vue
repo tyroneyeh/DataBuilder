@@ -1915,16 +1915,10 @@
                 </div>
 
                 <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-800 dark:text-white">{{ translate('Voice settings') }}</h3>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" v-model="isVoiceEnabled" class="sr-only peer">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-800 dark:text-white">🔊 {{ translate('Voice settings') }}</h3>
                     </div>
-                    <div class="space-y-4 transition-opacity duration-300" :class="isVoiceEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'">
+                    <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm mb-1">
                                 <label class="text-gray-700 dark:text-gray-300">{{ translate('Rate') }}</label>
@@ -1953,6 +1947,13 @@
                                 class="mt-4 w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-lg transition-colors border border-indigo-200 dark:bg-gray-700 dark:text-indigo-300 dark:border-gray-600 dark:hover:bg-gray-600">
                             ▶️ {{ translate('Play test sound') }}
                         </button>
+                        <div class="pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">{{ translate('Auto-play') }}</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" v-model="isVoiceEnabled" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -2149,7 +2150,7 @@
     </div>
 </div>
 <div v-if="cellTextModal.isOpen"
-    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 bg-black/50 z-20 flex items-center justify-center p-4"
     @click.self="closeCellTextModal">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-5 transform transition-all flex flex-col max-h-[85vh]">
         <div class="flex items-center justify-between gap-2 mb-3">
@@ -2157,12 +2158,19 @@
                 <span class="truncate">{{ cellTextModal.colLabel }}</span>
                 <span v-if="cellTextModal.colTypeLabel" class="ml-1.5 text-xs font-normal text-gray-400 dark:text-gray-500 shrink-0">({{ cellTextModal.colTypeLabel }})</span>
             </h3>
-            <button
-                v-if="cellTextModal.value"
-                type="button"
-                @click="copyCellTextModal"
-                class="shrink-0 px-2 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >📋 {{ translate('Copy') }}</button>
+            <div v-if="cellTextModal.value" class="flex items-center gap-1.5 shrink-0">
+                <button
+                    type="button"
+                    @click="speakCellTextModal"
+                    class="px-2 py-1 text-xs rounded-md transition-colors"
+                    :class="isCellTextSpeaking ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/60' : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50'"
+                >{{ isCellTextSpeaking ? '⏹️ ' + translate('Stop') : '🔊 ' + translate('Speak') }}</button>
+                <button
+                    type="button"
+                    @click="copyCellTextModal"
+                    class="px-2 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                >📋 {{ translate('Copy') }}</button>
+            </div>
         </div>
         <textarea
             ref="cellTextInputRef"
@@ -2810,24 +2818,28 @@ export default {
         const CELL_TEXT_EXPANDABLE_TYPES = new Set(['text', 'translate', 'ai', 'location', 'weather', 'url', 'tel', 'email', 'updatedAt'])
         const isCellTextExpandable = (type) => CELL_TEXT_EXPANDABLE_TYPES.has(type)
         const cellTextInputRef = ref(null)
+        const isCellTextSpeaking = ref(false)
         const cellTextModal = ref({
             isOpen: false,
             rowId: null,
             colId: '',
             colLabel: '',
             colTypeLabel: '',
+            lang: '',
             value: '',
             initialValue: ''
         })
         const openCellTextModal = async (row, col) => {
             if (!row || !col || !isCellTextExpandable(col.type)) return
             const val = String(row[col.id] ?? '')
+            isCellTextSpeaking.value = false
             cellTextModal.value = {
                 isOpen: true,
                 rowId: row.id,
                 colId: col.id,
                 colLabel: col.label,
                 colTypeLabel: getColumnTypeLabel(col.type),
+                lang: col.type === 'translate' ? (col.targetLang || '') : '',
                 value: val,
                 initialValue: val
             }
@@ -2835,9 +2847,44 @@ export default {
             cellTextInputRef.value?.focus()
         }
         const closeCellTextModal = () => {
+            if (isCellTextSpeaking.value && 'speechSynthesis' in globalThis) {
+                window.speechSynthesis.cancel()
+            }
+            isCellTextSpeaking.value = false
             cellTextModal.value.isOpen = false
             cellTextModal.value.rowId = null
             cellTextModal.value.colId = ''
+        }
+        const speakCellTextModal = () => {
+            if (!('speechSynthesis' in globalThis)) return
+            if (isCellTextSpeaking.value) {
+                window.speechSynthesis.cancel()
+                isCellTextSpeaking.value = false
+                return
+            }
+            const text = String(cellTextModal.value.value || '').trim()
+            if (!text) return
+            window.speechSynthesis.cancel()
+            const utterance = new SpeechSynthesisUtterance(text)
+            let lang = cellTextModal.value.lang || ''
+            if (!lang) {
+                const scriptLang = guessLanguageFromScript(text)
+                if (scriptLang === 'zh') {
+                    lang = /^zh/i.test(currentLanguage.value) ? currentLanguage.value : 'zh-TW'
+                } else if (scriptLang === 'en') {
+                    lang = /^(zh|ja|ko|th|ar|hi|ru|uk|ta)/i.test(currentLanguage.value) ? 'en-US' : currentLanguage.value
+                } else {
+                    lang = scriptLang
+                }
+            }
+            utterance.lang = lang || currentLanguage.value || 'en-US'
+            utterance.volume = voiceSettings.volume
+            utterance.rate = voiceSettings.rate
+            utterance.pitch = voiceSettings.pitch
+            utterance.onend = () => { isCellTextSpeaking.value = false }
+            utterance.onerror = () => { isCellTextSpeaking.value = false }
+            isCellTextSpeaking.value = true
+            window.speechSynthesis.speak(utterance)
         }
         const copyCellTextModal = () => {
             const text = cellTextModal.value.value
@@ -12105,8 +12152,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             return str
         }
 
-        const speakFeedback = (text, isError = false) => {
-            if (!window.speechSynthesis || !isVoiceEnabled.value) return
+        const speakFeedback = (text, isError = false, force = false) => {
+            if (!window.speechSynthesis || (!force && !isVoiceEnabled.value)) return
 
             window.speechSynthesis.cancel()
 
@@ -12126,7 +12173,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const playTestSound = () => {
-            speakFeedback(translate('This is a test message.'))
+            speakFeedback(translate('This is a test message.'), false, true)
         }
 
         const openGlobalMenu = (event, row, col) => {
@@ -13144,9 +13191,11 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             saveAiPromptModal,
             isCellTextExpandable,
             cellTextInputRef,
+            isCellTextSpeaking,
             cellTextModal,
             openCellTextModal,
             closeCellTextModal,
+            speakCellTextModal,
             copyCellTextModal,
             saveCellTextModal,
             handleMobileLabelClick,
