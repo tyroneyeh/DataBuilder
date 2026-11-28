@@ -303,7 +303,7 @@
                             @click="col.type === 'ai' && openAiPromptModal(col)"
                             class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap"
                             :class="[
-                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : (col.type === 'location' ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400 dark:text-gray-500'))))))
+                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : (col.type === 'location' ? 'text-rose-600 dark:text-rose-400' : (col.type === 'weather' ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500')))))))
                             ]"
                             :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || translate('Edit AI prompt')) : '')"
                         >({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
@@ -344,6 +344,13 @@
                                 :data-tooltip="translate('Run AI')"
                             >{{ aiRunningColumns[col.id] ? '⏳' : '🔄' }}</button>
                         </template>
+                        <button v-else-if="!isPrinting && col.type === 'weather'"
+                            type="button"
+                            @pointerdown.stop
+                            @click.stop="refreshWeatherColumn(col, { force: true, interactive: true })"
+                            class="shrink-0 ml-0.5 text-xs text-sky-500 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 transition-colors"
+                            :data-tooltip="translate('Fetch weather')"
+                        >{{ weatherRunningColumns[col.id] ? '⏳' : '🔄' }}</button>
                     </div>
 
                     <button v-if="!isPrinting" @click="removeColumn(col.id, index)" class="absolute top-1/2 -translate-y-1/2 right-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 opacity-100 [@media(any-hover:hover)]:opacity-0 [@media(any-hover:hover)]:group-hover:opacity-100 transition-opacity p-1" :data-tooltip="translate('Remove column')">✖</button>
@@ -559,6 +566,38 @@
                                     :class="!row[col.id] ? 'opacity-100 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40' : 'opacity-50 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/40'"
                                     :data-tooltip="translate('Get current location')"
                                 >📍</button>
+                            </template>
+                        </template>
+                    </div>
+                    <div v-else-if="col.type === 'weather'"
+                        class="relative w-full print:w-full rounded bg-sky-50/50 dark:bg-sky-900/20 print:bg-transparent min-h-[40px] sm:min-h-0 flex items-center justify-end sm:justify-start print:justify-start">
+                        <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
+                            {{ row[col.id] || '' }}
+                        </span>
+                        <template v-else>
+                            <span v-if="weatherLoadingCells[`${row.id}-${col.id}`]" class="w-full px-2 py-2 sm:py-1 text-right sm:text-left text-xs text-sky-500 dark:text-sky-400 animate-pulse">⏳ {{ translate('Fetching weather...') }}</span>
+                            <template v-else>
+                                <input
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                    v-model="row[col.id]"
+                                    type="text"
+                                    :data-tooltip="weatherCellTooltips[`${row.id}-${col.id}`] || row[col.id] || ''"
+                                    :placeholder="translate('Weather') + '...'"
+                                    class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-base text-sky-700 dark:text-sky-300 dark:placeholder-sky-400/50 placeholder-sky-400/60 truncate pr-7"
+                                    @paste="handlePaste($event, windowStart + index, col.id)"
+                                    @focus="openGlobalMenu($event, row, col)"
+                                    @click.stop="enterInput(row, col, $event)"
+                                    @blur="saveInput(row, col)"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                >
+                                <button
+                                    type="button"
+                                    tabindex="-1"
+                                    @click.stop="fetchWeatherForCell(row, col, { force: true, interactive: true })"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded transition-opacity text-xs cursor-pointer"
+                                    :class="!row[col.id] ? 'opacity-100 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/40' : 'opacity-50 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-sky-500 hover:bg-sky-100 dark:hover:bg-sky-900/40'"
+                                    :data-tooltip="translate('Fetch weather')"
+                                >🌤️</button>
                             </template>
                         </template>
                     </div>
@@ -1125,7 +1164,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'location', 'tags', 'color', 'translate', 'ai', 'updatedAt'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'location', 'weather', 'tags', 'color', 'translate', 'ai', 'updatedAt'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -1659,6 +1698,13 @@
                         </select>
                         <span class="text-purple-500 dark:text-purple-400 font-bold shrink-0">✨</span>
                         <input v-model="newColAiPrompt" type="text" :placeholder="translate('AI prompt (e.g., Summarize)')" class="flex-[1.5] min-w-[140px] border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-base">
+                    </div>
+                    <div v-else-if="newColType === 'weather'" class="flex items-center gap-2 bg-sky-50 dark:bg-sky-900/30 px-2 py-1.5 rounded-md border border-sky-200 dark:border-sky-800 flex-[1.5] min-w-0">
+                        <select v-model="weatherSourceCol" class="flex-1 min-w-0 border border-gray-300 dark:border-gray-600 px-2 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white dark:bg-gray-700 dark:text-white text-base">
+                            <option value="">{{ translate('Current GPS') }}</option>
+                            <option v-for="c in weatherSourceColumns" :key="'W'+c.id" :value="c.id">{{ c.label }}</option>
+                        </select>
+                        <span class="text-sky-600 dark:text-sky-400 font-bold shrink-0">🌤️</span>
                     </div>
                     <div class="shrink-0 w-full md:w-auto">
                         <button @click="addColumn" class="w-full bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap px-5 py-2 rounded-md transition-colors font-medium shadow-sm h-[42px]">
@@ -2615,6 +2661,7 @@ export default {
         const STOCK_CACHE_KEY = 'ty_tw_stock_quotes_cache'
         const STOCK_CACHE_TTL_MS = 5 * 60 * 1000
         const stockSourceCol = ref('')
+        const weatherSourceCol = ref('')
         const aiSourceCol = ref('')
         const aiPromptInputRef = ref(null)
         const aiPromptModal = ref({
@@ -2792,6 +2839,7 @@ export default {
                 tel: 'Phone',
                 email: 'Email',
                 location: 'Location',
+                weather: 'Weather',
                 rating: 'Rating',
                 progress: 'Progress',
                 tags: 'Tags',
@@ -2815,6 +2863,7 @@ export default {
                 {value: 'tel', label: translate('Phone')},
                 {value: 'email', label: translate('Email')},
                 {value: 'location', label: translate('Location')},
+                {value: 'weather', label: translate('Weather')},
                 {value: 'number', label: translate('Number')},
                 {value: 'rating', label: translate('Rating')},
                 {value: 'progress', label: translate('Progress')},
@@ -2857,7 +2906,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'location', 'tags', 'color', 'date', 'time', 'updatedAt', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'location', 'weather', 'tags', 'color', 'date', 'time', 'updatedAt', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -2879,6 +2928,9 @@ export default {
         const geminiApiKey = ref(localStorage.getItem('ty_gemini_api_key') || '')
         const googleMapsKey = ref(localStorage.getItem('ty_google_maps_key') || '')
         const locatingCells = ref({})
+        const weatherLoadingCells = ref({})
+        const weatherRunningColumns = ref({})
+        const weatherCellTooltips = ref({})
         const locationPickerModal = ref({
             isOpen: false,
             rowId: null,
@@ -2887,6 +2939,8 @@ export default {
             places: [],
             address: '',
             coordsText: '',
+            lat: null,
+            lng: null,
             includeAddress: false
         })
         const isAutoScanEnabled = ref(false)
@@ -3494,6 +3548,12 @@ export default {
                         || candidates[0]
                     aiSourceCol.value = preferred ? preferred.id : ''
                 }
+            } else if (newVal === 'weather') {
+                const candidates = weatherSourceColumns.value
+                if (!candidates.some(c => c.id === weatherSourceCol.value)) {
+                    const preferred = candidates.find(c => c.type === 'location')
+                    weatherSourceCol.value = preferred ? preferred.id : ''
+                }
             }
         })
         watch([selectedChartCatColId, selectedChartNumColId, selectedChartDateColId], () => {
@@ -3713,6 +3773,9 @@ export default {
             places.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999))
             return { places: places.slice(0, 8), address, source: 'OpenStreetMap' }
         }
+        const locationCoordsCache = new Map()
+        const geocodeTextCache = new Map()
+        const activeWeatherColumnRuns = new Set()
         const closeLocationPickerModal = () => {
             locationPickerModal.value.isOpen = false
             locationPickerModal.value.rowId = null
@@ -3721,6 +3784,8 @@ export default {
         const applyPickedLocation = (item) => {
             const row = rows.value.find(r => r.id === locationPickerModal.value.rowId)
             const colId = locationPickerModal.value.colId
+            const pickedLat = locationPickerModal.value.lat
+            const pickedLng = locationPickerModal.value.lng
             if (row && colId && item) {
                 let finalVal = ''
                 if (item.isAddress || item.isCoords) {
@@ -3733,7 +3798,19 @@ export default {
                 }
                 if (finalVal) {
                     row[colId] = finalVal
+                    if (Number.isFinite(pickedLat) && Number.isFinite(pickedLng)) {
+                        locationCoordsCache.set(`${currentStorageKey.value}:${row.id}-${colId}`, {
+                            lat: pickedLat,
+                            lng: pickedLng,
+                            text: finalVal
+                        })
+                    }
                     onDataEdited('rows')
+                    if (Number.isFinite(pickedLat) && Number.isFinite(pickedLng)) {
+                        autoFetchDependentWeatherCols(row, colId, { lat: pickedLat, lng: pickedLng })
+                    } else {
+                        autoFetchDependentWeatherCols(row, colId)
+                    }
                 }
             }
             closeLocationPickerModal()
@@ -3748,6 +3825,7 @@ export default {
                 const coordsText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
                 if (!isOnline.value) {
                     row[col.id] = coordsText
+                    locationCoordsCache.set(`${currentStorageKey.value}:${cellKey}`, { lat, lng, text: coordsText })
                     onDataEdited('rows')
                     return
                 }
@@ -3778,11 +3856,16 @@ export default {
                         places,
                         address,
                         coordsText,
+                        lat,
+                        lng,
                         includeAddress: false
                     }
                 } else {
-                    row[col.id] = address || coordsText
+                    const finalVal = address || coordsText
+                    row[col.id] = finalVal
+                    locationCoordsCache.set(`${currentStorageKey.value}:${cellKey}`, { lat, lng, text: finalVal })
                     onDataEdited('rows')
+                    autoFetchDependentWeatherCols(row, col.id, { lat, lng })
                 }
             } catch (err) {
                 showConfirm('❌ ' + (err?.message || translate('Unable to get current location.')), 1)
@@ -3791,6 +3874,243 @@ export default {
                 delete next[cellKey]
                 locatingCells.value = next
             }
+        }
+        const parseLatLngText = (raw) => {
+            const s = String(raw || '').trim()
+            const m = s.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/)
+            if (!m) return null
+            const lat = Number(m[1])
+            const lng = Number(m[2])
+            if (Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                return { lat, lng }
+            }
+            return null
+        }
+        const geocodeLocationText = async (raw) => {
+            const text = String(raw || '').trim()
+            if (!text) return null
+            const parsedDirect = parseLatLngText(text)
+            if (parsedDirect) return parsedDirect
+            const cacheKey = text.toLowerCase()
+            if (geocodeTextCache.has(cacheKey)) {
+                return geocodeTextCache.get(cacheKey)
+            }
+            const candidates = []
+            const parenMatch = text.match(/\(([^()]{4,})\)\s*$/)
+            if (parenMatch) candidates.push(parenMatch[1].trim())
+            candidates.push(text)
+            const lang = encodeURIComponent(currentLanguage.value || 'zh-TW')
+            for (const q of [...new Set(candidates)]) {
+                try {
+                    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}&accept-language=${lang}`
+                    const data = await fetchJsonWithTimeout(url, {}, 8000)
+                    if (Array.isArray(data) && data.length > 0) {
+                        const lat = Number(data[0].lat)
+                        const lng = Number(data[0].lon)
+                        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                            const coords = { lat, lng }
+                            geocodeTextCache.set(cacheKey, coords)
+                            return coords
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Geocode lookup failed:', err)
+                }
+            }
+            return null
+        }
+        const getWeatherCodeDisplay = (code) => {
+            const c = Number(code)
+            if (c === 0) return { icon: '☀️', label: translate('Sunny') }
+            if (c === 1 || c === 2) return { icon: '⛅', label: translate('Partly cloudy') }
+            if (c === 3) return { icon: '☁️', label: translate('Cloudy') }
+            if (c === 45 || c === 48) return { icon: '🌫️', label: translate('Foggy') }
+            if ([51, 53, 55, 56, 57].includes(c)) return { icon: '🌦️', label: translate('Drizzle') }
+            if ([61, 63, 66, 80, 81].includes(c)) return { icon: '🌧️', label: translate('Rain') }
+            if ([65, 67, 82].includes(c)) return { icon: '⛈️', label: translate('Heavy rain') }
+            if ([71, 73, 75, 77, 85, 86].includes(c)) return { icon: '❄️', label: translate('Snow') }
+            if ([95, 96, 99].includes(c)) return { icon: '⛈️', label: translate('Thunderstorm') }
+            return { icon: '🌤️', label: translate('Weather') }
+        }
+        const fetchOpenMeteoWeather = async (lat, lng, targetDateStr = '') => {
+            const { todayDate } = getDate()
+            const parsedTarget = parseYmd(targetDateStr)
+            const targetYmd = parsedTarget ? formatYmd(parsedTarget.year, parsedTarget.month, parsedTarget.day) : ''
+
+            const formatDailyResult = (code, minT, maxT, dateLabel) => {
+                const { icon, label } = getWeatherCodeDisplay(code)
+                const minR = Number.isFinite(minT) ? Math.round(minT) : null
+                const maxR = Number.isFinite(maxT) ? Math.round(maxT) : null
+                const tempPart = (minR !== null && maxR !== null)
+                    ? (minR === maxR ? `${maxR}°C` : `${minR}~${maxR}°C`)
+                    : (maxR !== null ? `${maxR}°C` : '')
+                const text = [icon, label, tempPart].filter(Boolean).join(' ')
+                return { text, tooltip: dateLabel ? `${dateLabel} · ${text}` : text }
+            }
+
+            // Current / today real-time weather
+            if (!targetYmd || targetYmd === todayDate) {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code&timezone=auto`
+                const data = await fetchJsonWithTimeout(url, {}, 8000)
+                const cur = data?.current
+                if (!cur || cur.temperature_2m === undefined) throw new Error('No weather data')
+                const { icon, label } = getWeatherCodeDisplay(cur.weather_code)
+                const temp = Math.round(cur.temperature_2m)
+                const text = `${icon} ${label} ${temp}°C`
+                const extra = []
+                if (Number.isFinite(cur.apparent_temperature)) {
+                    extra.push(`${translate('Feels like')} ${Math.round(cur.apparent_temperature)}°C`)
+                }
+                if (Number.isFinite(cur.relative_humidity_2m)) {
+                    extra.push(`${translate('Humidity')} ${Math.round(cur.relative_humidity_2m)}%`)
+                }
+                return { text, tooltip: extra.length ? `${text} (${extra.join(', ')})` : text }
+            }
+
+            // Historical date weather
+            if (targetYmd < todayDate) {
+                try {
+                    const archiveUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${targetYmd}&end_date=${targetYmd}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+                    const data = await fetchJsonWithTimeout(archiveUrl, {}, 8000)
+                    const d = data?.daily
+                    if (d && Array.isArray(d.time) && d.time.length && d.temperature_2m_max?.[0] != null) {
+                        return formatDailyResult(d.weather_code?.[0], d.temperature_2m_min?.[0], d.temperature_2m_max?.[0], targetYmd)
+                    }
+                } catch {}
+                // Fallback for recent 1-7 days where archive API may still be catching up
+                const recentUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&past_days=10&forecast_days=1&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+                const recentData = await fetchJsonWithTimeout(recentUrl, {}, 8000)
+                const rd = recentData?.daily
+                const idx = Array.isArray(rd?.time) ? rd.time.indexOf(targetYmd) : -1
+                if (idx !== -1 && rd.temperature_2m_max?.[idx] != null) {
+                    return formatDailyResult(rd.weather_code?.[idx], rd.temperature_2m_min?.[idx], rd.temperature_2m_max?.[idx], targetYmd)
+                }
+                throw new Error('No weather data for date')
+            }
+
+            // Near-future date forecast (up to 16 days)
+            const futureUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&start_date=${targetYmd}&end_date=${targetYmd}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`
+            const futureData = await fetchJsonWithTimeout(futureUrl, {}, 8000)
+            const fd = futureData?.daily
+            if (fd && Array.isArray(fd.time) && fd.time.length && fd.temperature_2m_max?.[0] != null) {
+                return formatDailyResult(fd.weather_code?.[0], fd.temperature_2m_min?.[0], fd.temperature_2m_max?.[0], targetYmd)
+            }
+            throw new Error('Forecast unavailable for this date')
+        }
+        const resolveWeatherCoords = async (row, col, { interactive = false, explicitCoords = null } = {}) => {
+            if (explicitCoords && Number.isFinite(explicitCoords.lat) && Number.isFinite(explicitCoords.lng)) {
+                return explicitCoords
+            }
+            if (col.sourceCol) {
+                const rawSrc = String(row[col.sourceCol] ?? '').trim()
+                if (rawSrc) {
+                    const cached = locationCoordsCache.get(`${currentStorageKey.value}:${row.id}-${col.sourceCol}`)
+                    if (cached && cached.text === rawSrc && Number.isFinite(cached.lat) && Number.isFinite(cached.lng)) {
+                        return { lat: cached.lat, lng: cached.lng }
+                    }
+                    const geocoded = await geocodeLocationText(rawSrc)
+                    if (geocoded) {
+                        locationCoordsCache.set(`${currentStorageKey.value}:${row.id}-${col.sourceCol}`, {
+                            ...geocoded,
+                            text: rawSrc
+                        })
+                        return geocoded
+                    }
+                    if (!interactive) return null
+                }
+            }
+            if (interactive) {
+                return await getCurrentPositionCoords()
+            }
+            return null
+        }
+        const fetchWeatherForCell = async (row, col, { force = false, interactive = false, explicitCoords = null } = {}) => {
+            if (!row || !col || col.type !== 'weather') return { changed: false }
+            if (!force && String(row[col.id] ?? '').trim()) return { changed: false }
+            if (!isOnline.value) {
+                if (interactive) showConfirm('❌ ' + translate('Failed to fetch weather.'), 1)
+                return { changed: false }
+            }
+            const cellKey = `${row.id}-${col.id}`
+            if (weatherLoadingCells.value[cellKey]) return { changed: false }
+            weatherLoadingCells.value = { ...weatherLoadingCells.value, [cellKey]: true }
+            try {
+                const coords = await resolveWeatherCoords(row, col, { interactive, explicitCoords })
+                if (!coords) {
+                    if (interactive) showConfirm('❌ ' + translate('Unable to find coordinates for weather.'), 1)
+                    return { changed: false }
+                }
+                const dateCol = getPrimaryDateColumn()
+                const rowDateStr = dateCol ? String(row[dateCol.id] ?? '').trim() : ''
+                const result = await fetchOpenMeteoWeather(coords.lat, coords.lng, rowDateStr)
+                if (result?.text) {
+                    weatherCellTooltips.value = { ...weatherCellTooltips.value, [cellKey]: result.tooltip || result.text }
+                    if (row[col.id] !== result.text) {
+                        row[col.id] = result.text
+                        stampModifiedRowsUpdatedAt()
+                        updatedAt.value = Date.now()
+                        triggerRef(rows)
+                        debouncedSave()
+                        return { changed: true }
+                    }
+                }
+                return { changed: false }
+            } catch (err) {
+                console.warn('Weather fetch error:', err)
+                if (interactive) {
+                    showConfirm('❌ ' + translate('Failed to fetch weather.') + (err?.message ? ` (${err.message})` : ''), 1)
+                }
+                return { changed: false, error: err }
+            } finally {
+                const next = { ...weatherLoadingCells.value }
+                delete next[cellKey]
+                weatherLoadingCells.value = next
+            }
+        }
+        const refreshWeatherColumn = async (col, { force = false, interactive = false } = {}) => {
+            if (!col || col.type !== 'weather') return
+            if (!isOnline.value) {
+                if (interactive) showConfirm('❌ ' + translate('Failed to fetch weather.'), 1)
+                return
+            }
+            const lockKey = `${currentStorageKey.value}:${col.id}`
+            if (activeWeatherColumnRuns.has(lockKey)) return
+            activeWeatherColumnRuns.add(lockKey)
+            weatherRunningColumns.value = { ...weatherRunningColumns.value, [col.id]: true }
+            try {
+                let sharedGps = null
+                if (!col.sourceCol && interactive) {
+                    try {
+                        sharedGps = await getCurrentPositionCoords()
+                    } catch (err) {
+                        showConfirm('❌ ' + (err?.message || translate('Unable to get current location.')), 1)
+                        return
+                    }
+                }
+                for (let i = 0; i < rows.value.length; i++) {
+                    const row = rows.value[i]
+                    if (col.sourceCol && !String(row[col.sourceCol] ?? '').trim()) continue
+                    await fetchWeatherForCell(row, col, { force, interactive: false, explicitCoords: sharedGps })
+                    if (i < rows.value.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 250))
+                    }
+                }
+            } finally {
+                activeWeatherColumnRuns.delete(lockKey)
+                const next = { ...weatherRunningColumns.value }
+                delete next[col.id]
+                weatherRunningColumns.value = next
+            }
+        }
+        const autoFetchDependentWeatherCols = (row, sourceColId, explicitCoords = null) => {
+            if (!row || !sourceColId || !isOnline.value) return
+            const depWeatherCols = columns.value.filter(c => c.type === 'weather' && c.sourceCol === sourceColId)
+            if (!depWeatherCols.length) return
+            const srcVal = String(row[sourceColId] ?? '').trim()
+            if (!srcVal) return
+            depWeatherCols.forEach(wCol => {
+                fetchWeatherForCell(row, wCol, { force: true, interactive: false, explicitCoords })
+            })
         }
 
         watch(isAutoScanEnabled, async (newVal) => {
@@ -3871,6 +4191,7 @@ export default {
         const numberColumns = computed(() => columns.value.filter(col => col.type === 'number' || col.type === 'stock' || col.type === 'exchange'))
         const translatableColumns = computed(() => columns.value.filter(col => ['text', 'category'].includes(col.type)))
         const aiSourceColumns = computed(() => columns.value.filter(col => !['photo', 'ai'].includes(col.type)))
+        const weatherSourceColumns = computed(() => columns.value.filter(col => ['location', 'text', 'category'].includes(col.type)))
         const exchangeSourceColumns = computed(() => columns.value.filter(col => isNumericType(col.type) && col.type !== 'exchange'))
 
         const areAllExpanded = computed(() => {
@@ -6571,6 +6892,17 @@ export default {
                     delete existingCol.customRate
                     delete existingCol.cachedRate
                     delete existingCol.rateDate
+                } else if (newColType.value === 'weather') {
+                    if (weatherSourceCol.value && existingCol.id === weatherSourceCol.value) return showConfirm(translate('Source columns cannot be the same!'), 1)
+                    if (weatherSourceCol.value) existingCol.sourceCol = weatherSourceCol.value
+                    else delete existingCol.sourceCol
+                    delete existingCol.targetLang
+                    delete existingCol.aiPrompt
+                    delete existingCol.fromCurrency
+                    delete existingCol.toCurrency
+                    delete existingCol.customRate
+                    delete existingCol.cachedRate
+                    delete existingCol.rateDate
                 } else {
                     delete existingCol.sourceCol
                     delete existingCol.targetLang
@@ -6601,6 +6933,8 @@ export default {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
                 } else if (existingCol.type === 'stock') {
                     refreshStockColumn(existingCol, { force: false, interactive: true })
+                } else if (existingCol.type === 'weather' && existingCol.sourceCol) {
+                    refreshWeatherColumn(existingCol, { force: false, interactive: false })
                 }
                 return
             }
@@ -6646,6 +6980,8 @@ export default {
                 }
             } else if (newColType.value === 'stock') {
                 newColData.sourceCol = stockSourceCol.value
+            } else if (newColType.value === 'weather' && weatherSourceCol.value) {
+                newColData.sourceCol = weatherSourceCol.value
             }
             if (isCalcType(newColType.value) && newColType.value !== 'multiply3') {
                 newColData.opA = formulaA.value
@@ -6657,7 +6993,7 @@ export default {
                 newColData.opC = formulaC.value
             }
 
-            if (newColType.value === 'translate' || newColType.value === 'ai' || newColType.value === 'exchange' || newColType.value === 'stock') {
+            if (newColType.value === 'translate' || newColType.value === 'ai' || newColType.value === 'exchange' || newColType.value === 'stock' || (newColType.value === 'weather' && newColData.sourceCol)) {
                 const srcIdx = columns.value.findIndex(c => c.id === newColData.sourceCol)
                 if (srcIdx !== -1) {
                     const nextCols = [...columns.value]
@@ -6690,6 +7026,7 @@ export default {
             exchangeSourceCol.value = ''
             exchangeCustomRate.value = ''
             stockSourceCol.value = ''
+            weatherSourceCol.value = ''
             formulaA.value = ''
             formulaB.value = ''
             formulaC.value = ''
@@ -6702,6 +7039,8 @@ export default {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
             } else if (newColData.type === 'stock') {
                 refreshStockColumn(newColData, { force: false, interactive: true })
+            } else if (newColData.type === 'weather' && newColData.sourceCol) {
+                refreshWeatherColumn(newColData, { force: false, interactive: false })
             }
         }
 
@@ -8138,7 +8477,7 @@ export default {
             if (!hasRemainingSameId && columns.value.some((col, idx) => {
                 if (colIndex >= 0 ? idx === colIndex : col.id === idToRemove) return false
                 return (isCalcType(col.type) && (col.opA === idToRemove || col.opB === idToRemove || col.opC === idToRemove)) ||
-                    (['translate', 'ai', 'exchange', 'stock'].includes(col.type) && col.sourceCol === idToRemove)
+                    (['translate', 'ai', 'exchange', 'stock', 'weather'].includes(col.type) && col.sourceCol === idToRemove)
             })) {
                 return showConfirm(translate("Cannot delete! Other 'Calculate' columns depend on this."), 1)
             }
@@ -8367,7 +8706,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'ai' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo' || col.type === 'updatedAt') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'ai' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo' || col.type === 'updatedAt' || col.type === 'weather') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -8594,6 +8933,9 @@ export default {
                 } else if (c.type === 'stock') {
                     const srcCol = columns.value.find(col => col.id === c.sourceCol)
                     meta += `|${srcCol?.label || ''}`
+                } else if (c.type === 'weather' && c.sourceCol) {
+                    const srcCol = columns.value.find(col => col.id === c.sourceCol)
+                    meta += `|${srcCol?.label || ''}`
                 }
                 return `${c.label} [${meta}]`
             })
@@ -8789,9 +9131,14 @@ export default {
                         } else if (parts[0] === 'stock') {
                             targetType = 'stock'
                             targetSourceCol = columns.value.find(col => col.label === parts[1])?.id || null
+                        } else if (parts[0] === 'weather') {
+                            targetType = 'weather'
+                            targetSourceCol = parts[1] ? (columns.value.find(col => col.label === parts[1])?.id || null) : null
                         } else {
                             targetType = metaStr
                         }
+                    } else if (key.toLowerCase().includes(translate('Weather').toLowerCase())) {
+                        targetType = 'weather'
                     } else if (key.toLowerCase().includes(translate('Location').toLowerCase())) {
                         targetType = 'location'
                     } else if (key.toLowerCase().includes(translate('Updated At').toLowerCase())) {
@@ -8820,6 +9167,7 @@ export default {
                         ...(targetType === 'translate' ? { sourceCol: targetSourceCol, targetLang } : {}),
                         ...(targetType === 'ai' ? { sourceCol: targetSourceCol, aiPrompt: targetAiPrompt || '' } : {}),
                         ...(targetType === 'stock' ? { sourceCol: targetSourceCol } : {}),
+                        ...(targetType === 'weather' && targetSourceCol ? { sourceCol: targetSourceCol } : {}),
                         ...(targetType === 'exchange' ? {
                             sourceCol: targetSourceCol,
                             fromCurrency: targetFromCurrency,
@@ -10454,6 +10802,7 @@ export default {
                 onDataEdited()
                 scheduleAutoTranslateForCell(row, col.id, true)
                 scheduleAutoFetchStockForCell(row, col.id, true)
+                autoFetchDependentWeatherCols(row, col.id)
             }
             tempKey.value = null
         }
@@ -12681,6 +13030,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             detectLocationForCell,
             closeLocationPickerModal,
             applyPickedLocation,
+            weatherSourceCol,
+            weatherSourceColumns,
+            weatherLoadingCells,
+            weatherRunningColumns,
+            weatherCellTooltips,
+            fetchWeatherForCell,
+            refreshWeatherColumn,
             captureForOCR,
             isAutoScanEnabled,
             isZoomSupported,
