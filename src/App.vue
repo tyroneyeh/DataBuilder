@@ -393,12 +393,13 @@
                     class="cursor-cell group/cell border-b sm:border print:border border-gray-100 sm:border-gray-300 dark:border-gray-700 px-4 sm:px-0 bg-white dark:bg-gray-800 print:bg-transparent group-hover:bg-gray-50 dark:group-hover:bg-gray-700/50 print:group-hover:bg-transparent transition-colors flex items-center justify-between sm:table-cell print:table-cell last:border-b-0 sm:last:border-b print:last:border-b">
 
                     <label v-if="!isPrinting"
-                        @click.stop="openGlobalMenu($event, row, col)"
+                        @click.stop="handleMobileLabelClick($event, row, col)"
                         class="sm:hidden text-gray-500 dark:text-gray-400 font-bold text-sm mr-4 whitespace-nowrap flex-shrink-0 transition-colors"
-                        :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': col.type === 'category'}"
+                        :class="{'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400': ['category', 'number'].includes(col.type) || isCellTextExpandable(col.type)}"
                     >
                         {{ col.label }}
                         <span v-if="['category', 'number'].includes(col.type)" class="text-xs ml-1 opacity-50">▼</span>
+                        <span v-else-if="isCellTextExpandable(col.type)" class="text-xs ml-1 opacity-50">⤢</span>
                     </label>
 
                     <div v-if="col.type === 'checkbox'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1">
@@ -2147,6 +2148,48 @@
         </div>
     </div>
 </div>
+<div v-if="cellTextModal.isOpen"
+    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    @click.self="closeCellTextModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-5 transform transition-all flex flex-col max-h-[85vh]">
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center min-w-0">
+                <span class="truncate">{{ cellTextModal.colLabel }}</span>
+                <span v-if="cellTextModal.colTypeLabel" class="ml-1.5 text-xs font-normal text-gray-400 dark:text-gray-500 shrink-0">({{ cellTextModal.colTypeLabel }})</span>
+            </h3>
+            <button
+                v-if="cellTextModal.value"
+                type="button"
+                @click="copyCellTextModal"
+                class="shrink-0 px-2 py-1 text-xs rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >📋 {{ translate('Copy') }}</button>
+        </div>
+        <textarea
+            ref="cellTextInputRef"
+            v-model="cellTextModal.value"
+            rows="7"
+            @keydown.ctrl.enter.prevent="saveCellTextModal"
+            @keydown.meta.enter.prevent="saveCellTextModal"
+            @keydown.escape="closeCellTextModal"
+            class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full text-base bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 resize-y flex-1"
+        ></textarea>
+        <div class="flex items-center justify-between mt-4">
+            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ cellTextModal.value.length }}</span>
+            <div class="flex space-x-3">
+                <button
+                    type="button"
+                    @click="closeCellTextModal"
+                    class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                >{{ translate('Cancel') }}</button>
+                <button
+                    type="button"
+                    @click="saveCellTextModal"
+                    class="px-4 py-2 bg-indigo-600 text-white font-medium rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                >{{ translate('OK') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div v-if="locationPickerModal.isOpen"
     class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
     @click.self="closeLocationPickerModal">
@@ -2763,6 +2806,69 @@ export default {
         const closeAiPromptModal = () => {
             aiPromptModal.value.isOpen = false
             aiPromptModal.value.error = ''
+        }
+        const CELL_TEXT_EXPANDABLE_TYPES = new Set(['text', 'translate', 'ai', 'location', 'weather', 'url', 'tel', 'email', 'updatedAt'])
+        const isCellTextExpandable = (type) => CELL_TEXT_EXPANDABLE_TYPES.has(type)
+        const cellTextInputRef = ref(null)
+        const cellTextModal = ref({
+            isOpen: false,
+            rowId: null,
+            colId: '',
+            colLabel: '',
+            colTypeLabel: '',
+            value: '',
+            initialValue: ''
+        })
+        const openCellTextModal = async (row, col) => {
+            if (!row || !col || !isCellTextExpandable(col.type)) return
+            const val = String(row[col.id] ?? '')
+            cellTextModal.value = {
+                isOpen: true,
+                rowId: row.id,
+                colId: col.id,
+                colLabel: col.label,
+                colTypeLabel: getColumnTypeLabel(col.type),
+                value: val,
+                initialValue: val
+            }
+            await nextTick()
+            cellTextInputRef.value?.focus()
+        }
+        const closeCellTextModal = () => {
+            cellTextModal.value.isOpen = false
+            cellTextModal.value.rowId = null
+            cellTextModal.value.colId = ''
+        }
+        const copyCellTextModal = () => {
+            const text = cellTextModal.value.value
+            if (!text) return
+            navigator.clipboard?.writeText(text).then(() => {
+                showConfirm(translate('Copied to clipboard!'), 1)
+            }).catch(() => {})
+        }
+        const saveCellTextModal = () => {
+            const row = rows.value.find(r => r.id === cellTextModal.value.rowId)
+            const col = columns.value.find(c => c.id === cellTextModal.value.colId)
+            const nextVal = cellTextModal.value.value
+            const changed = nextVal !== cellTextModal.value.initialValue
+            closeCellTextModal()
+            if (!row || !col || !changed) return
+            row[col.id] = nextVal
+            if (col.type === 'translate' || col.type === 'ai') {
+                onTranslateCellInput(row, col)
+            }
+            onDataEdited('rows')
+            scheduleAutoTranslateForCell(row, col.id, true)
+            scheduleAutoFetchStockForCell(row, col.id, true)
+            autoFetchDependentWeatherCols(row, col.id)
+        }
+        const handleMobileLabelClick = (event, row, col) => {
+            if (!col) return
+            if (['category', 'number'].includes(col.type)) {
+                openGlobalMenu(event, row, col)
+            } else if (isCellTextExpandable(col.type)) {
+                openCellTextModal(row, col)
+            }
         }
         const saveAiPromptModal = () => {
             const promptText = aiPromptModal.value.prompt.trim()
@@ -12130,7 +12236,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const selectAllTableCells = () => {
-            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || aiPromptModal.value.isOpen || locationPickerModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
+            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || aiPromptModal.value.isOpen || cellTextModal.value.isOpen || locationPickerModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
             if (filteredRows.value.length === 0 || columns.value.length === 0) return false
             startCell.value = { row: 0, col: 0 }
             endCell.value = { row: filteredRows.value.length - 1, col: columns.value.length - 1 }
@@ -12204,6 +12310,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (e.key === 'Escape') {
                 if (moodPicker.value.isOpen) {
                     closeMoodPicker()
+                    return
+                }
+                if (cellTextModal.value.isOpen) {
+                    closeCellTextModal()
                     return
                 }
                 if (locationPickerModal.value.isOpen) {
@@ -13032,6 +13142,14 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             openAiPromptModal,
             closeAiPromptModal,
             saveAiPromptModal,
+            isCellTextExpandable,
+            cellTextInputRef,
+            cellTextModal,
+            openCellTextModal,
+            closeCellTextModal,
+            copyCellTextModal,
+            saveCellTextModal,
+            handleMobileLabelClick,
             newColAiPrompt,
             handleAiCellClick,
             onTranslateCellFocus,
