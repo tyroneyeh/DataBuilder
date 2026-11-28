@@ -1933,7 +1933,7 @@
             @keydown.escape="closeAiPromptModal"
             class="border border-gray-300 dark:border-gray-600 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 w-full text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 resize-y"
         ></textarea>
-        <label v-if="canRunAiCells" class="flex items-center gap-2 mt-3 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+        <label v-if="canAutoBatchRunAi" class="flex items-center gap-2 mt-3 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
             <input type="checkbox" v-model="aiPromptModal.rerun" class="w-4 h-4 text-purple-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-purple-500 cursor-pointer">
             <span>🔄 {{ translate('Re-run AI after saving') }}</span>
         </label>
@@ -2468,7 +2468,7 @@ export default {
                 colLabel: col.label,
                 sourceCol: col.sourceCol || '',
                 prompt: col.aiPrompt || '',
-                rerun: Boolean(canRunAiCells.value),
+                rerun: Boolean(canAutoBatchRunAi.value),
                 error: ''
             }
             await nextTick()
@@ -2495,7 +2495,7 @@ export default {
             }
             targetCol.sourceCol = aiPromptModal.value.sourceCol
             targetCol.aiPrompt = promptText
-            const shouldRerun = aiPromptModal.value.rerun && canRunAiCells.value
+            const shouldRerun = aiPromptModal.value.rerun && canAutoBatchRunAi.value
             onDataEdited('both')
             closeAiPromptModal()
             if (shouldRerun) {
@@ -6066,7 +6066,7 @@ export default {
                 onDataEdited('both')
                 if (existingCol.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                     translateColumnRows(existingCol, { force: true, interactive: true })
-                } else if (existingCol.type === 'ai') {
+                } else if (existingCol.type === 'ai' && canAutoBatchRunAi.value) {
                     runAiColumn(existingCol, { force: true, interactive: true })
                 } else if (existingCol.type === 'exchange' && !(Number(existingCol.customRate) > 0)) {
                     fetchExchangeRatesForBase(existingCol.fromCurrency, { force: false, interactive: true })
@@ -6166,7 +6166,7 @@ export default {
             if (newColData.type === 'date') hasDateColumn.value = true
             if (newColData.type === 'translate' && (hasBuiltInBrowserTranslator() || canGoogleSheetsTranslate.value)) {
                 translateColumnRows(newColData, { force: true, interactive: true })
-            } else if (newColData.type === 'ai') {
+            } else if (newColData.type === 'ai' && canAutoBatchRunAi.value) {
                 runAiColumn(newColData, { force: true, interactive: true })
             } else if (newColData.type === 'exchange' && !(Number(newColData.customRate) > 0)) {
                 fetchExchangeRatesForBase(newColData.fromCurrency, { force: false, interactive: true })
@@ -6335,6 +6335,7 @@ export default {
         }
         const isBrowserAiSupported = computed(() => browserAiAvailability.value !== 'unavailable')
         const canRunAiCells = computed(() => isBrowserAiSupported.value || Boolean(geminiApiKey.value.trim()))
+        const canAutoBatchRunAi = computed(() => isBrowserAiSupported.value && !geminiApiKey.value.trim())
         const aiRunningColumns = ref({})
         const activeColumnAiRuns = new Set()
         const rowAiTimers = new Map()
@@ -6921,7 +6922,7 @@ export default {
                 localStorage.setItem(`${currentStorageKey.value}_last_sync_time`, syncTs.toString())
                 triggerRef(rows)
                 await saveCurrentWorkspaceNow()
-                if (pullRes?.changed && canRunAiCells.value) {
+                if (pullRes?.changed && canAutoBatchRunAi.value) {
                     const translatedColIds = new Set(targetCols.map(c => c.id))
                     const dependentAiCols = columns.value.filter(c => c.type === 'ai' && translatedColIds.has(c.sourceCol) && c.aiPrompt)
                     for (const aiCol of dependentAiCols) {
@@ -7063,7 +7064,7 @@ export default {
                     await translateColumnRows(tCol, { force: false, interactive: false })
                 }
             }
-            if (aiCols.length && canRunAiCells.value) {
+            if (aiCols.length && canAutoBatchRunAi.value) {
                 for (const aiCol of aiCols) {
                     await runAiColumn(aiCol, { force: false, interactive: false })
                 }
