@@ -11509,6 +11509,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                     val = calc ? calc.toLocaleString() : ''
                 } else if (col.type === 'tags') {
                     val = Array.isArray(row[col.id]) ? row[col.id].join(', ') : ''
+                } else if (col.type === 'mood') {
+                    val = getMoodDisplay(row[col.id])
                 } else if (col.type === 'checkbox') {
                     val = row[col.id] ? translate('Checked') : ''
                 } else {
@@ -11522,7 +11524,8 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
                 parts.push(`${translate('Note')}: ${row.note.trim()}`)
             }
             const summary = parts.join('\n')
-            return summary.length > 300 ? `${summary.slice(0, 297)}...` : summary
+            const chars = Array.from(summary)
+            return chars.length > 300 ? `${chars.slice(0, 297).join('')}...` : summary
         }
 
         const shareToPlatform = async (platform) => {
@@ -11572,6 +11575,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             } else if (platform === 'whatsapp') {
                 targetUrl = `https://wa.me/?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'threads') {
+                navigator.clipboard?.writeText(textWithLink).catch(() => {})
                 targetUrl = `https://www.threads.com/intent/post?text=${encodeURIComponent(textWithLink)}`
             } else if (platform === 'x') {
                 targetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`
