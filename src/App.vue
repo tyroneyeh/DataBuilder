@@ -9484,6 +9484,15 @@ export default {
                         pTopAtStart = currentY
                     }
                     currentY += h
+                    if (start !== -1 && currentY > scrollTop + clientHeight) {
+                        end = i + 1
+                        break
+                    }
+                }
+
+                if (start === -1) {
+                    end = total
+                    const estimatedItems = Math.ceil(clientHeight / safeItemHeight)
                     start = Math.max(0, total - estimatedItems)
                     let preciseTop = currentY
                     for (let i = total - 1; i >= start; i--) {
