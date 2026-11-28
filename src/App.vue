@@ -303,7 +303,7 @@
                             @click="col.type === 'ai' && openAiPromptModal(col)"
                             class="shrink-0 text-xs font-normal ml-1 select-none whitespace-nowrap"
                             :class="[
-                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500')))))
+                                isCalcType(col.type) ? 'text-blue-500 dark:text-blue-400' : (col.type === 'translate' ? 'text-indigo-500 dark:text-indigo-400' : (col.type === 'ai' ? 'text-purple-600 dark:text-purple-400 cursor-pointer hover:underline' : (col.type === 'exchange' ? 'text-amber-600 dark:text-amber-400' : (col.type === 'stock' ? 'text-emerald-600 dark:text-emerald-400' : (col.type === 'updatedAt' ? 'text-cyan-600 dark:text-cyan-400' : (col.type === 'location' ? 'text-rose-600 dark:text-rose-400' : 'text-gray-400 dark:text-gray-500'))))))
                             ]"
                             :data-tooltip="col.type === 'exchange' ? getExchangeHeaderTooltip(col) : (col.type === 'ai' ? (col.aiPrompt || translate('Edit AI prompt')) : '')"
                         >({{ col.type === 'translate' && col.targetLang ? `${getColumnTypeLabel(col.type)} · ${col.targetLang}` : (col.type === 'exchange' && col.fromCurrency && col.toCurrency ? `${col.fromCurrency}→${col.toCurrency}` : getColumnTypeLabel(col.type)) }})</span>
@@ -519,6 +519,48 @@
                             @blur="saveInput(row, col)"
                             @keydown="focusNextInput($event, row.id, col.id)"
                         >
+                    </div>
+                    <div v-else-if="col.type === 'location'"
+                        class="relative w-full print:w-full rounded bg-rose-50/40 dark:bg-rose-900/20 print:bg-transparent min-h-[40px] sm:min-h-0 flex items-center justify-end sm:justify-start print:justify-start">
+                        <span v-if="isPrinting" class="w-full text-right sm:text-left text-gray-800 text-sm whitespace-pre-wrap print:!text-center">
+                            {{ row[col.id] || '' }}
+                        </span>
+                        <template v-else>
+                            <span v-if="locatingCells[`${row.id}-${col.id}`]" class="w-full px-2 py-2 sm:py-1 text-right sm:text-left text-xs text-rose-500 dark:text-rose-400 animate-pulse">⏳ {{ translate('Locating...') }}</span>
+                            <template v-else>
+                                <input
+                                    :ref="(el) => { if (el) inputRefs[`${row.id}-${col.id}`] = el; else delete inputRefs[`${row.id}-${col.id}`] }"
+                                    v-model="row[col.id]"
+                                    type="text"
+                                    :data-tooltip="row[col.id] || ''"
+                                    :placeholder="translate('Location') + '...'"
+                                    class="w-full min-w-0 text-right sm:text-left bg-transparent outline-none px-2 py-2 sm:py-1 text-base text-rose-700 dark:text-rose-300 dark:placeholder-rose-400/50 placeholder-rose-400/60 truncate"
+                                    :class="getSafeMapUrl(row[col.id]) ? 'pr-12' : 'pr-7'"
+                                    @paste="handlePaste($event, windowStart + index, col.id)"
+                                    @focus="openGlobalMenu($event, row, col)"
+                                    @click.stop="enterInput(row, col, $event)"
+                                    @blur="saveInput(row, col)"
+                                    @keydown="focusNextInput($event, row.id, col.id)"
+                                >
+                                <a v-if="getSafeMapUrl(row[col.id])"
+                                    :href="getSafeMapUrl(row[col.id])"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    tabindex="-1"
+                                    @click.stop
+                                    class="absolute right-7 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded opacity-70 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-opacity text-xs"
+                                    :data-tooltip="translate('Open in Google Maps')"
+                                >🗺️</a>
+                                <button
+                                    type="button"
+                                    tabindex="-1"
+                                    @click.stop="detectLocationForCell(row, col)"
+                                    class="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded transition-opacity text-xs cursor-pointer"
+                                    :class="!row[col.id] ? 'opacity-100 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40' : 'opacity-50 sm:opacity-0 group-hover/cell:opacity-100 focus:opacity-100 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/40'"
+                                    :data-tooltip="translate('Get current location')"
+                                >📍</button>
+                            </template>
+                        </template>
                     </div>
                     <div v-else-if="col.type === 'rating'" class="flex items-center justify-end sm:justify-center print:justify-center w-full py-1 px-1 gap-0.5 select-none">
                         <template v-if="isPrinting">
@@ -1083,7 +1125,7 @@
                     </Teleport>
                 </div>
 
-                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'tags', 'color', 'translate', 'ai', 'updatedAt'].includes(col.type) && !isPrinting" class="relative flex">
+                <div v-else-if="['text', 'category', 'url', 'tel', 'email', 'location', 'tags', 'color', 'translate', 'ai', 'updatedAt'].includes(col.type) && !isPrinting" class="relative flex">
                     <input
                         type="text"
                         enterkeyhint="search"
@@ -1727,6 +1769,22 @@
                 </div>
 
                 <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">📍 {{ translate('Google Maps API Key') }} ({{ translate('Location') }})</h4>
+                    </div>
+                    <div class="relative w-full flex items-center">
+                        <input v-model="googleMapsKey" type="password" placeholder="AIzaSy..." class="w-full border border-gray-300 dark:border-gray-600 pl-3 pr-10 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-white placeholder-gray-400 shadow-inner">
+                        <button
+                            v-if="googleMapsKey"
+                            @click="googleMapsKey = ''"
+                            class="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
+                            :title="translate('Clear')"
+                        >✖</button>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ translate('Optional: Enable Places API for nearby store names. Defaults to free OpenStreetMap.') }}</p>
+                </div>
+
+                <div class="mt-4 p-4 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <div class="text-sm font-extrabold flex items-center gap-2 text-gray-800 dark:text-white transition-colors">
                         <span>🐙 {{ translate('GitHub Gist Sync Settings') }}</span>
                         <button
@@ -1999,6 +2057,63 @@
                 @click="saveAiPromptModal"
                 class="px-4 py-2 bg-purple-600 text-white font-medium rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
             >{{ translate('OK') }}</button>
+        </div>
+    </div>
+</div>
+<div v-if="locationPickerModal.isOpen"
+    class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    @click.self="closeLocationPickerModal">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-5 transform transition-all flex flex-col max-h-[85vh]">
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <h3 class="text-base font-bold text-gray-900 dark:text-white flex items-center">
+                <span class="mr-1.5">📍</span>
+                {{ translate('Select Location') }}
+            </h3>
+            <span v-if="locationPickerModal.source" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ locationPickerModal.source }}</span>
+        </div>
+        <label v-if="locationPickerModal.places.length && locationPickerModal.address" class="flex items-center gap-2 mb-2.5 text-xs text-gray-600 dark:text-gray-300 cursor-pointer select-none">
+            <input type="checkbox" v-model="locationPickerModal.includeAddress" class="w-3.5 h-3.5 text-rose-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-rose-500 cursor-pointer">
+            <span>{{ translate('Include address') }}</span>
+        </label>
+        <div class="overflow-y-auto space-y-1.5 flex-1 pr-0.5">
+            <button
+                v-for="(place, idx) in locationPickerModal.places"
+                :key="'loc-poi-' + idx"
+                type="button"
+                @click="applyPickedLocation(place)"
+                class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-700/50 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:border-rose-300 dark:hover:border-rose-700 transition-colors"
+            >
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-white truncate">🏪 {{ place.name }}</span>
+                    <span v-if="place.distance != null" class="text-[11px] font-mono text-rose-600 dark:text-rose-400 shrink-0">{{ place.distance }}m</span>
+                </div>
+                <p v-if="place.subtext" class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ place.subtext }}</p>
+            </button>
+            <button
+                v-if="locationPickerModal.address"
+                type="button"
+                @click="applyPickedLocation({ value: locationPickerModal.address, isAddress: true })"
+                class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors"
+            >
+                <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-0.5">🏠 {{ translate('Address') }}</div>
+                <div class="text-sm text-gray-800 dark:text-gray-200 break-words">{{ locationPickerModal.address }}</div>
+            </button>
+            <button
+                v-if="locationPickerModal.coordsText"
+                type="button"
+                @click="applyPickedLocation({ value: locationPickerModal.coordsText, isCoords: true })"
+                class="w-full text-left px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+                <div class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-0.5">🌐 GPS</div>
+                <div class="text-xs font-mono text-gray-700 dark:text-gray-300">{{ locationPickerModal.coordsText }}</div>
+            </button>
+        </div>
+        <div class="flex justify-end mt-4">
+            <button
+                type="button"
+                @click="closeLocationPickerModal"
+                class="px-4 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >{{ translate('Cancel') }}</button>
         </div>
     </div>
 </div>
@@ -2612,6 +2727,11 @@ export default {
             const val = String(raw || '').trim()
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ? `mailto:${val}` : ''
         }
+        const getSafeMapUrl = (raw) => {
+            const val = String(raw || '').trim()
+            if (!val) return ''
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(val)}`
+        }
         const isValidHexColor = (val) => /^#[0-9a-fA-F]{6}$/.test(String(val || '').trim())
         const normalizeTags = (val) => {
             if (Array.isArray(val)) return val.map(v => String(v).trim()).filter(Boolean)
@@ -2671,6 +2791,7 @@ export default {
                 url: 'URL',
                 tel: 'Phone',
                 email: 'Email',
+                location: 'Location',
                 rating: 'Rating',
                 progress: 'Progress',
                 tags: 'Tags',
@@ -2693,6 +2814,7 @@ export default {
                 {value: 'url', label: translate('URL')},
                 {value: 'tel', label: translate('Phone')},
                 {value: 'email', label: translate('Email')},
+                {value: 'location', label: translate('Location')},
                 {value: 'number', label: translate('Number')},
                 {value: 'rating', label: translate('Rating')},
                 {value: 'progress', label: translate('Progress')},
@@ -2735,7 +2857,7 @@ export default {
         const expenseChart = shallowRef(null)
         const trendChart = shallowRef(null)
 
-        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'tags', 'color', 'date', 'time', 'updatedAt', 'number', 'checkbox', 'category'])
+        const editableTypes = new Set(['text', 'translate', 'ai', 'password', 'url', 'tel', 'email', 'location', 'tags', 'color', 'date', 'time', 'updatedAt', 'number', 'checkbox', 'category'])
         const windowStart = ref(0)
         const windowEnd = ref(50)
         const bottomSentinel = ref(null)
@@ -2755,6 +2877,18 @@ export default {
         const scanningTarget = ref(null)
         const googleVisionKey = ref(localStorage.getItem('ty_google_vision_key') || '')
         const geminiApiKey = ref(localStorage.getItem('ty_gemini_api_key') || '')
+        const googleMapsKey = ref(localStorage.getItem('ty_google_maps_key') || '')
+        const locatingCells = ref({})
+        const locationPickerModal = ref({
+            isOpen: false,
+            rowId: null,
+            colId: '',
+            source: '',
+            places: [],
+            address: '',
+            coordsText: '',
+            includeAddress: false
+        })
         const isAutoScanEnabled = ref(false)
         const isZoomSupported = ref(false)
         const minZoom = ref(1)
@@ -3399,6 +3533,265 @@ export default {
         watch(geminiApiKey, (newVal) => {
             localStorage.setItem('ty_gemini_api_key', newVal.trim())
         })
+
+        watch(googleMapsKey, (newVal) => {
+            localStorage.setItem('ty_google_maps_key', newVal.trim())
+        })
+
+        let loadedGoogleMapsKey = ''
+        let googleMapsLoadPromise = null
+        const calcDistanceMeters = (lat1, lng1, lat2, lng2) => {
+            const toRad = (deg) => (deg * Math.PI) / 180
+            const R = 6371000
+            const dLat = toRad(lat2 - lat1)
+            const dLng = toRad(lng2 - lng1)
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+            return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
+        }
+        const getCurrentPositionCoords = () => new Promise((resolve, reject) => {
+            if (!('geolocation' in navigator)) {
+                reject(new Error(translate('Geolocation is not supported by this browser.')))
+                return
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => {
+                    if (err?.code === 1) reject(new Error(translate('Location permission denied.')))
+                    else if (err?.code === 3) reject(new Error(translate('Location request timed out.')))
+                    else reject(new Error(translate('Unable to get current location.')))
+                },
+                { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+            )
+        })
+        const loadGoogleMapsPlacesSdk = (apiKey) => {
+            if (window.google?.maps?.importLibrary && loadedGoogleMapsKey === apiKey) {
+                return Promise.resolve(window.google.maps)
+            }
+            if (googleMapsLoadPromise && loadedGoogleMapsKey === apiKey) {
+                return googleMapsLoadPromise
+            }
+            loadedGoogleMapsKey = apiKey
+            googleMapsLoadPromise = new Promise((resolve, reject) => {
+                const existing = document.querySelector('script[data-ty-gmaps="1"]')
+                if (existing) existing.remove()
+                const lang = encodeURIComponent(currentLanguage.value || 'zh-TW')
+                const script = document.createElement('script')
+                script.dataset.tyGmaps = '1'
+                script.async = true
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&language=${lang}&loading=async`
+                script.onload = () => {
+                    let tries = 0
+                    const waitReady = () => {
+                        if (window.google?.maps?.importLibrary) {
+                            resolve(window.google.maps)
+                        } else if (tries++ < 40) {
+                            setTimeout(waitReady, 50)
+                        } else {
+                            googleMapsLoadPromise = null
+                            reject(new Error('Google Maps SDK failed to initialize'))
+                        }
+                    }
+                    waitReady()
+                }
+                script.onerror = () => {
+                    googleMapsLoadPromise = null
+                    reject(new Error('Failed to load Google Maps SDK'))
+                }
+                document.head.appendChild(script)
+            })
+            return googleMapsLoadPromise
+        }
+        const queryGooglePlacesNearby = async (lat, lng, apiKey) => {
+            const gmaps = await loadGoogleMapsPlacesSdk(apiKey)
+            const { Place, SearchNearbyRankPreference } = await gmaps.importLibrary('places')
+            const searchTask = Place.searchNearby({
+                fields: ['displayName', 'formattedAddress', 'location', 'primaryTypeDisplayName'],
+                locationRestriction: { center: { lat, lng }, radius: 100 },
+                maxResultCount: 8,
+                rankPreference: SearchNearbyRankPreference?.DISTANCE || 'DISTANCE'
+            })
+            const geocodeTask = gmaps.importLibrary('geocoding')
+                .then(({ Geocoder }) => new Geocoder().geocode({ location: { lat, lng } }))
+                .catch(() => null)
+            const [searchRes, geoRes] = await Promise.all([searchTask, geocodeTask])
+            const places = []
+            const seen = new Set()
+            for (const p of (searchRes?.places || [])) {
+                const name = String(p?.displayName || '').trim()
+                if (!name) continue
+                const key = name.toLowerCase()
+                if (seen.has(key)) continue
+                seen.add(key)
+                const pLat = typeof p.location?.lat === 'function' ? p.location.lat() : p.location?.lat
+                const pLng = typeof p.location?.lng === 'function' ? p.location.lng() : p.location?.lng
+                const distance = (Number.isFinite(pLat) && Number.isFinite(pLng))
+                    ? calcDistanceMeters(lat, lng, pLat, pLng)
+                    : null
+                const addr = String(p?.formattedAddress || '').trim()
+                const typeLabel = String(p?.primaryTypeDisplayName || '').trim()
+                places.push({
+                    name,
+                    address: addr,
+                    subtext: [typeLabel, addr].filter(Boolean).join(' · '),
+                    distance
+                })
+            }
+            places.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999))
+            const address = String(geoRes?.results?.[0]?.formatted_address || places[0]?.address || '').trim()
+            return { places, address, source: 'Google Places' }
+        }
+        const formatOsmAddress = (data) => {
+            if (!data) return ''
+            const a = data.address || {}
+            const isCjk = /^(zh|ja|ko)/i.test(currentLanguage.value || '')
+            if (isCjk) {
+                const city = a.city || a.county || a.state || ''
+                const district = a.suburb || a.town || a.city_district || a.district || a.village || ''
+                const road = a.road || a.pedestrian || a.footway || ''
+                const house = a.house_number || ''
+                const composed = `${city}${district}${road}${house}`.trim()
+                if (composed) return composed
+            }
+            return String(data.display_name || '').trim()
+        }
+        const fetchJsonWithTimeout = async (url, options = {}, timeoutMs = 8000) => {
+            const controller = new AbortController()
+            const timer = setTimeout(() => controller.abort(), timeoutMs)
+            try {
+                const res = await fetch(url, { ...options, signal: controller.signal })
+                if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                return await res.json()
+            } finally {
+                clearTimeout(timer)
+            }
+        }
+        const queryOsmNearbyAndAddress = async (lat, lng) => {
+            const lang = currentLanguage.value || 'zh-TW'
+            const overpassQuery = `[out:json][timeout:8];(nwr(around:80,${lat},${lng})["shop"]["name"];nwr(around:80,${lat},${lng})["amenity"]["name"];nwr(around:80,${lat},${lng})["tourism"]["name"];nwr(around:80,${lat},${lng})["leisure"]["name"];nwr(around:80,${lat},${lng})["office"]["name"];);out center tags 15;`
+            const overpassUrl = 'https://overpass-api.de/api/interpreter'
+            const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=${encodeURIComponent(lang)}`
+            const [overpassRes, nominatimRes] = await Promise.allSettled([
+                fetchJsonWithTimeout(overpassUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: 'data=' + encodeURIComponent(overpassQuery)
+                }, 8000),
+                fetchJsonWithTimeout(nominatimUrl, {}, 8000)
+            ])
+            const nomData = nominatimRes.status === 'fulfilled' ? nominatimRes.value : null
+            const address = formatOsmAddress(nomData)
+            const places = []
+            const seen = new Set()
+            const isZh = /^zh/i.test(lang)
+            const primaryLang = lang.split('-')[0].toLowerCase()
+            const addPlace = (name, distance, subtext = '', addr = '') => {
+                const clean = String(name || '').trim()
+                if (!clean) return
+                const key = clean.toLowerCase()
+                if (seen.has(key)) return
+                seen.add(key)
+                places.push({ name: clean, distance, subtext, address: addr || address })
+            }
+            const elements = overpassRes.status === 'fulfilled' ? (overpassRes.value?.elements || []) : []
+            for (const el of elements) {
+                const tags = el?.tags || {}
+                const name = tags[`name:${lang}`]
+                    || (isZh ? (tags['name:zh-Hant'] || tags['name:zh'] || tags.name) : (tags[`name:${primaryLang}`] || tags.name))
+                if (!name) continue
+                const pLat = el.lat ?? el.center?.lat
+                const pLng = el.lon ?? el.center?.lon
+                const distance = (Number.isFinite(pLat) && Number.isFinite(pLng))
+                    ? calcDistanceMeters(lat, lng, pLat, pLng)
+                    : null
+                const category = tags.shop || tags.amenity || tags.tourism || tags.leisure || tags.office || ''
+                const addrParts = [tags['addr:street'] || '', tags['addr:housenumber'] || ''].filter(Boolean).join('')
+                addPlace(name, distance, [category, addrParts || address].filter(Boolean).join(' · '), addrParts || address)
+            }
+            if (nomData?.name && nomData.name !== nomData?.address?.road) {
+                addPlace(nomData.name, 0, [nomData.type, address].filter(Boolean).join(' · '), address)
+            }
+            places.sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999))
+            return { places: places.slice(0, 8), address, source: 'OpenStreetMap' }
+        }
+        const closeLocationPickerModal = () => {
+            locationPickerModal.value.isOpen = false
+            locationPickerModal.value.rowId = null
+            locationPickerModal.value.colId = ''
+        }
+        const applyPickedLocation = (item) => {
+            const row = rows.value.find(r => r.id === locationPickerModal.value.rowId)
+            const colId = locationPickerModal.value.colId
+            if (row && colId && item) {
+                let finalVal = ''
+                if (item.isAddress || item.isCoords) {
+                    finalVal = item.value || ''
+                } else {
+                    const addr = item.address || locationPickerModal.value.address
+                    finalVal = (locationPickerModal.value.includeAddress && addr)
+                        ? `${item.name} (${addr})`
+                        : item.name
+                }
+                if (finalVal) {
+                    row[colId] = finalVal
+                    onDataEdited('rows')
+                }
+            }
+            closeLocationPickerModal()
+        }
+        const detectLocationForCell = async (row, col) => {
+            if (!row || !col) return
+            const cellKey = `${row.id}-${col.id}`
+            if (locatingCells.value[cellKey]) return
+            locatingCells.value = { ...locatingCells.value, [cellKey]: true }
+            try {
+                const { lat, lng } = await getCurrentPositionCoords()
+                const coordsText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+                if (!isOnline.value) {
+                    row[col.id] = coordsText
+                    onDataEdited('rows')
+                    return
+                }
+                let result = null
+                const mapsKey = googleMapsKey.value.trim()
+                if (mapsKey) {
+                    try {
+                        result = await queryGooglePlacesNearby(lat, lng, mapsKey)
+                    } catch (err) {
+                        console.warn('Google Places lookup failed, falling back to OpenStreetMap:', err)
+                    }
+                }
+                if (!result || (!result.places.length && !result.address)) {
+                    try {
+                        result = await queryOsmNearbyAndAddress(lat, lng)
+                    } catch (err) {
+                        console.warn('OSM lookup failed:', err)
+                    }
+                }
+                const places = result?.places || []
+                const address = result?.address || ''
+                if (places.length > 0) {
+                    locationPickerModal.value = {
+                        isOpen: true,
+                        rowId: row.id,
+                        colId: col.id,
+                        source: result?.source || 'OpenStreetMap',
+                        places,
+                        address,
+                        coordsText,
+                        includeAddress: false
+                    }
+                } else {
+                    row[col.id] = address || coordsText
+                    onDataEdited('rows')
+                }
+            } catch (err) {
+                showConfirm('❌ ' + (err?.message || translate('Unable to get current location.')), 1)
+            } finally {
+                const next = { ...locatingCells.value }
+                delete next[cellKey]
+                locatingCells.value = next
+            }
+        }
 
         watch(isAutoScanEnabled, async (newVal) => {
             if (newVal) {
@@ -8399,6 +8792,8 @@ export default {
                         } else {
                             targetType = metaStr
                         }
+                    } else if (key.toLowerCase().includes(translate('Location').toLowerCase())) {
+                        targetType = 'location'
                     } else if (key.toLowerCase().includes(translate('Updated At').toLowerCase())) {
                         targetType = 'updatedAt'
                     } else if (key.toLowerCase().includes(translate('Date').toLowerCase())) {
@@ -11232,7 +11627,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
         }
 
         const selectAllTableCells = () => {
-            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
+            if (confirmModal.value.isOpen || workspaceModal.value.isOpen || recurringModal.value.isOpen || aiPromptModal.value.isOpen || locationPickerModal.value.isOpen || shareModal.value.isOpen || photoViewer.value.isOpen) return false
             if (filteredRows.value.length === 0 || columns.value.length === 0) return false
             startCell.value = { row: 0, col: 0 }
             endCell.value = { row: filteredRows.value.length - 1, col: columns.value.length - 1 }
@@ -11304,6 +11699,10 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return
 
             if (e.key === 'Escape') {
+                if (locationPickerModal.value.isOpen) {
+                    closeLocationPickerModal()
+                    return
+                }
                 if (aiPromptModal.value.isOpen) {
                     closeAiPromptModal()
                     return
@@ -12275,6 +12674,13 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             copyQuickAddLink,
             googleVisionKey,
             geminiApiKey,
+            googleMapsKey,
+            locatingCells,
+            locationPickerModal,
+            getSafeMapUrl,
+            detectLocationForCell,
+            closeLocationPickerModal,
+            applyPickedLocation,
             captureForOCR,
             isAutoScanEnabled,
             isZoomSupported,
