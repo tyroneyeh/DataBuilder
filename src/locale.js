@@ -264,7 +264,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "請先在「設定」中填入 Gemini API 金鑰，或使用支援內建 AI 的 Chrome 瀏覽器。",
         "AI generation failed.": "AI 產生失敗。",
         "e.g., Summarize in 10 words": "例如：用 10 個字摘要重點",
-        "Updated At": "更新時間"
+        "Updated At": "更新時間",
+        "Skip weekends (Sat/Sun)": "跳過週六、日",
+        "Generate up to date": "預先產生至指定日期",
+        "End of month": "月底",
+        "End of year": "年底"
     },
     "zh-CN": {
         "Action": "操作",
@@ -529,7 +533,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "请先在“设置”中填写 Gemini API 密钥，或使用支持内置 AI 的 Chrome 浏览器。",
         "AI generation failed.": "AI 生成失败。",
         "e.g., Summarize in 10 words": "例如：用 10 个字总结重点",
-        "Updated At": "更新时间"
+        "Updated At": "更新时间",
+        "Skip weekends (Sat/Sun)": "跳过周六、日",
+        "Generate up to date": "预先生成至指定日期",
+        "End of month": "月底",
+        "End of year": "年底"
     },
     "ja": {
         "Action": "操作",
@@ -794,7 +802,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "設定で Gemini API キーを入力するか、組み込み AI 対応の Chrome をご利用ください。",
         "AI generation failed.": "AI の生成に失敗しました。",
         "e.g., Summarize in 10 words": "例：10語以内で要約",
-        "Updated At": "更新日時"
+        "Updated At": "更新日時",
+        "Skip weekends (Sat/Sun)": "土日をスキップ",
+        "Generate up to date": "指定日まで事前作成",
+        "End of month": "月末",
+        "End of year": "年末"
     },
     "ko": {
         "Action": "작업",
@@ -1059,7 +1071,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "설정에서 Gemini API 키를 입력하거나 내장 AI를 지원하는 Chrome을 사용하세요.",
         "AI generation failed.": "AI 생성에 실패했습니다.",
         "e.g., Summarize in 10 words": "예: 10단어 이내로 요약",
-        "Updated At": "수정 일시"
+        "Updated At": "수정 일시",
+        "Skip weekends (Sat/Sun)": "주말(토/일) 건너뛰기",
+        "Generate up to date": "지정 날짜까지 미리 생성",
+        "End of month": "월말",
+        "End of year": "연말"
     },
     "es": {
         "Action": "Acción",
@@ -1324,7 +1340,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Configura una clave API de Gemini en Ajustes o usa Chrome con IA integrada.",
         "AI generation failed.": "Error al generar con IA.",
         "e.g., Summarize in 10 words": "p. ej., Resumir en 10 palabras",
-        "Updated At": "Actualizado"
+        "Updated At": "Actualizado",
+        "Skip weekends (Sat/Sun)": "Omitir fines de semana (Sáb/Dom)",
+        "Generate up to date": "Generar hasta la fecha",
+        "End of month": "Fin de mes",
+        "End of year": "Fin de año"
     },
     "fr": {
         "Action": "Action",
@@ -1589,7 +1609,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Définissez une clé API Gemini dans les Paramètres ou utilisez Chrome avec IA intégrée.",
         "AI generation failed.": "Échec de la génération par IA.",
         "e.g., Summarize in 10 words": "ex. : Résumer en 10 mots",
-        "Updated At": "Mis à jour"
+        "Updated At": "Mis à jour",
+        "Skip weekends (Sat/Sun)": "Ignorer les week-ends (Sam/Dim)",
+        "Generate up to date": "Générer jusqu’à la date",
+        "End of month": "Fin du mois",
+        "End of year": "Fin d’année"
     },
     "de": {
         "Action": "Aktion",
@@ -1854,7 +1878,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Bitte in den Einstellungen einen Gemini API-Schlüssel hinterlegen oder Chrome mit integrierter KI verwenden.",
         "AI generation failed.": "KI-Generierung fehlgeschlagen.",
         "e.g., Summarize in 10 words": "z. B. In 10 Wörtern zusammenfassen",
-        "Updated At": "Aktualisiert"
+        "Updated At": "Aktualisiert",
+        "Skip weekends (Sat/Sun)": "Wochenenden überspringen (Sa/So)",
+        "Generate up to date": "Bis Datum vorausgenerieren",
+        "End of month": "Monatsende",
+        "End of year": "Jahresende"
     },
     "it": {
         "Action": "Azione",
@@ -2119,7 +2147,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Imposta una chiave API Gemini nelle Impostazioni oppure usa Chrome con IA integrata.",
         "AI generation failed.": "Generazione IA non riuscita.",
         "e.g., Summarize in 10 words": "es. Riassumi in 10 parole",
-        "Updated At": "Aggiornato"
+        "Updated At": "Aggiornato",
+        "Skip weekends (Sat/Sun)": "Salta fine settimana (Sab/Dom)",
+        "Generate up to date": "Genera fino alla data",
+        "End of month": "Fine mese",
+        "End of year": "Fine anno"
     },
     "pt": {
         "Action": "Ação",
@@ -2384,7 +2416,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Defina uma chave API Gemini em Configurações ou use o Chrome com IA integrada.",
         "AI generation failed.": "Falha na geração por IA.",
         "e.g., Summarize in 10 words": "ex.: Resumir em 10 palavras",
-        "Updated At": "Atualizado"
+        "Updated At": "Atualizado",
+        "Skip weekends (Sat/Sun)": "Pular fins de semana (Sáb/Dom)",
+        "Generate up to date": "Gerar até a data",
+        "End of month": "Fim do mês",
+        "End of year": "Fim do ano"
     },
     "ru": {
         "Action": "Действие",
@@ -2649,7 +2685,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Укажите API-ключ Gemini в настройках или используйте Chrome со встроенным ИИ.",
         "AI generation failed.": "Ошибка генерации ИИ.",
         "e.g., Summarize in 10 words": "напр., Кратко в 10 словах",
-        "Updated At": "Обновлено"
+        "Updated At": "Обновлено",
+        "Skip weekends (Sat/Sun)": "Пропускать выходные (Сб/Вс)",
+        "Generate up to date": "Создать до указанной даты",
+        "End of month": "Конец месяца",
+        "End of year": "Конец года"
     },
     "id": {
         "Action": "Tindakan",
@@ -2914,7 +2954,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Masukkan Kunci API Gemini di Pengaturan, atau gunakan Chrome dengan AI bawaan.",
         "AI generation failed.": "Pembuatan AI gagal.",
         "e.g., Summarize in 10 words": "mis., Ringkas dalam 10 kata",
-        "Updated At": "Diperbarui"
+        "Updated At": "Diperbarui",
+        "Skip weekends (Sat/Sun)": "Lewati akhir pekan (Sab/Min)",
+        "Generate up to date": "Buat hingga tanggal",
+        "End of month": "Akhir bulan",
+        "End of year": "Akhir tahun"
     },
     "vi": {
         "Action": "Thao tác",
@@ -3179,7 +3223,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Vui lòng nhập Khóa API Gemini trong Cài đặt hoặc dùng Chrome có AI tích hợp.",
         "AI generation failed.": "Tạo nội dung AI thất bại.",
         "e.g., Summarize in 10 words": "vd: Tóm tắt trong 10 từ",
-        "Updated At": "Cập nhật lúc"
+        "Updated At": "Cập nhật lúc",
+        "Skip weekends (Sat/Sun)": "Bỏ qua cuối tuần (T7/CN)",
+        "Generate up to date": "Tạo trước đến ngày",
+        "End of month": "Cuối tháng",
+        "End of year": "Cuối năm"
     },
     "th": {
         "Action": "การดำเนินการ",
@@ -3444,7 +3492,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "กรุณาตั้งค่า Gemini API Key ในการตั้งค่า หรือใช้ Chrome ที่มี AI ในตัว",
         "AI generation failed.": "การสร้างด้วย AI ล้มเหลว",
         "e.g., Summarize in 10 words": "เช่น สรุปภายใน 10 คำ",
-        "Updated At": "อัปเดตเมื่อ"
+        "Updated At": "อัปเดตเมื่อ",
+        "Skip weekends (Sat/Sun)": "ข้ามวันเสาร์-อาทิตย์",
+        "Generate up to date": "สร้างล่วงหน้าถึงวันที่",
+        "End of month": "สิ้นเดือน",
+        "End of year": "สิ้นปี"
     },
     "ms": {
         "Action": "Tindakan",
@@ -3709,7 +3761,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Sila tetapkan Kunci API Gemini dalam Tetapan, atau gunakan Chrome dengan AI terbina.",
         "AI generation failed.": "Penjanaan AI gagal.",
         "e.g., Summarize in 10 words": "cth., Ringkaskan dalam 10 patah perkataan",
-        "Updated At": "Dikemas kini"
+        "Updated At": "Dikemas kini",
+        "Skip weekends (Sat/Sun)": "Langkau hujung minggu (Sab/Aha)",
+        "Generate up to date": "Jana sehingga tarikh",
+        "End of month": "Hujung bulan",
+        "End of year": "Hujung tahun"
     },
     "tr": {
         "Action": "İşlem",
@@ -3974,7 +4030,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Lütfen Ayarlar’da bir Gemini API Anahtarı girin veya Yerleşik AI destekli Chrome kullanın.",
         "AI generation failed.": "AI oluşturma başarısız oldu.",
         "e.g., Summarize in 10 words": "örn. 10 kelimede özetle",
-        "Updated At": "Güncelleme"
+        "Updated At": "Güncelleme",
+        "Skip weekends (Sat/Sun)": "Hafta sonlarını atla (Cmt/Paz)",
+        "Generate up to date": "Tarihe kadar oluştur",
+        "End of month": "Ay sonu",
+        "End of year": "Yıl sonu"
     },
     "ar": {
         "Action": "إجراء",
@@ -4239,7 +4299,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "يرجى تعيين مفتاح Gemini API في الإعدادات، أو استخدام Chrome المزوّد بالذكاء الاصطناعي المدمج.",
         "AI generation failed.": "فشل التوليد بالذكاء الاصطناعي.",
         "e.g., Summarize in 10 words": "مثال: لخّص في 10 كلمات",
-        "Updated At": "تاريخ التحديث"
+        "Updated At": "تاريخ التحديث",
+        "Skip weekends (Sat/Sun)": "تخطي عطلة نهاية الأسبوع (السبت/الأحد)",
+        "Generate up to date": "إنشاء مسبق حتى تاريخ",
+        "End of month": "نهاية الشهر",
+        "End of year": "نهاية العام"
     },
     "hi": {
         "Action": "कार्रवाई",
@@ -4504,7 +4568,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "कृपया सेटिंग्स में Gemini API कुंजी सेट करें, या बिल्ट-इन AI वाले Chrome का उपयोग करें।",
         "AI generation failed.": "AI जनरेशन विफल रहा।",
         "e.g., Summarize in 10 words": "उदा., 10 शब्दों में सारांश लिखें",
-        "Updated At": "अपडेट समय"
+        "Updated At": "अपडेट समय",
+        "Skip weekends (Sat/Sun)": "सप्ताहांत छोड़ें (शनि/रवि)",
+        "Generate up to date": "तिथि तक पहले से बनाएँ",
+        "End of month": "महीने का अंत",
+        "End of year": "साल का अंत"
     },
     "pl": {
         "Action": "Akcja",
@@ -4769,7 +4837,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Ustaw klucz API Gemini w Ustawieniach lub użyj Chrome z wbudowanym AI.",
         "AI generation failed.": "Generowanie AI nie powiodło się.",
         "e.g., Summarize in 10 words": "np. Podsumuj w 10 słowach",
-        "Updated At": "Zaktualizowano"
+        "Updated At": "Zaktualizowano",
+        "Skip weekends (Sat/Sun)": "Pomiń weekendy (Sob/Niedz)",
+        "Generate up to date": "Wygeneruj do daty",
+        "End of month": "Koniec miesiąca",
+        "End of year": "Koniec roku"
     },
     "nl": {
         "Action": "Actie",
@@ -5034,7 +5106,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Stel een Gemini API-sleutel in bij Instellingen of gebruik Chrome met ingebouwde AI.",
         "AI generation failed.": "AI-generatie mislukt.",
         "e.g., Summarize in 10 words": "bijv. Samenvatten in 10 woorden",
-        "Updated At": "Bijgewerkt"
+        "Updated At": "Bijgewerkt",
+        "Skip weekends (Sat/Sun)": "Weekenden overslaan (Za/Zo)",
+        "Generate up to date": "Genereren tot datum",
+        "End of month": "Einde van de maand",
+        "End of year": "Einde van het jaar"
     },
     "uk": {
         "Action": "Дія",
@@ -5299,7 +5375,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Вкажіть API-ключ Gemini у Налаштуваннях або використовуйте Chrome із вбудованим ШІ.",
         "AI generation failed.": "Помилка генерації ШІ.",
         "e.g., Summarize in 10 words": "напр., Підсумувати в 10 словах",
-        "Updated At": "Оновлено"
+        "Updated At": "Оновлено",
+        "Skip weekends (Sat/Sun)": "Пропускати вихідні (Сб/Нд)",
+        "Generate up to date": "Створити до дати",
+        "End of month": "Кінець місяця",
+        "End of year": "Кінець року"
     },
     "tl": {
         "Action": "Aksyon",
@@ -5564,7 +5644,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Mangyaring maglagay ng Gemini API Key sa Mga Setting, o gumamit ng Chrome na may Built-in AI.",
         "AI generation failed.": "Nabigo ang pagbuo ng AI.",
         "e.g., Summarize in 10 words": "hal., Ibuod sa 10 salita",
-        "Updated At": "Na-update"
+        "Updated At": "Na-update",
+        "Skip weekends (Sat/Sun)": "Laktawan ang weekend (Sab/Lin)",
+        "Generate up to date": "Bumuo hanggang petsa",
+        "End of month": "Katapusan ng buwan",
+        "End of year": "Katapusan ng taon"
     },
     "sv": {
         "Action": "Åtgärd",
@@ -5829,7 +5913,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Ange en Gemini API-nyckel i Inställningar eller använd Chrome med inbyggd AI.",
         "AI generation failed.": "AI-generering misslyckades.",
         "e.g., Summarize in 10 words": "t.ex. Sammanfatta med 10 ord",
-        "Updated At": "Uppdaterad"
+        "Updated At": "Uppdaterad",
+        "Skip weekends (Sat/Sun)": "Hoppa över helger (Lör/Sön)",
+        "Generate up to date": "Generera till datum",
+        "End of month": "Slutet av månaden",
+        "End of year": "Slutet av året"
     },
     "cs": {
         "Action": "Akce",
@@ -6094,7 +6182,11 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "Nastavte prosím klíč API Gemini v Nastavení, nebo použijte Chrome s vestavěnou AI.",
         "AI generation failed.": "Generování AI selhalo.",
         "e.g., Summarize in 10 words": "např. Shrň do 10 slov",
-        "Updated At": "Aktualizováno"
+        "Updated At": "Aktualizováno",
+        "Skip weekends (Sat/Sun)": "Přeskočit víkendy (So/Ne)",
+        "Generate up to date": "Vygenerovat do data",
+        "End of month": "Konec měsíce",
+        "End of year": "Konec roku"
     },
     "ta": {
         "Action": "செயல்",
@@ -6359,6 +6451,10 @@ export const translations = {
         "Please set a Gemini API Key in Settings, or use Chrome with Built-in AI.": "அமைப்புகளில் Gemini API திறவுகோலை அமைக்கவும் அல்லது உள்ளமைந்த AI கொண்ட Chrome ஐப் பயன்படுத்தவும்.",
         "AI generation failed.": "AI உருவாக்கம் தோல்வியடைந்தது.",
         "e.g., Summarize in 10 words": "எ.கா., 10 சொற்களில் சுருக்கவும்",
-        "Updated At": "புதுப்பிக்கப்பட்ட நேரம்"
+        "Updated At": "புதுப்பிக்கப்பட்ட நேரம்",
+        "Skip weekends (Sat/Sun)": "வார இறுதிகளைத் தவிர்க்கவும் (சனி/ஞாயிறு)",
+        "Generate up to date": "தேதி வரை உருவாக்கு",
+        "End of month": "மாத இறுதி",
+        "End of year": "ஆண்டு இறுதி"
     }
 }

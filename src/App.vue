@@ -1908,6 +1908,35 @@
                 class="px-3 py-2 text-sm font-medium rounded-md border transition-colors"
             >{{ opt.label }}</button>
         </div>
+        <div v-if="recurringModal.frequency" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2.5">
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                <input type="checkbox" v-model="recurringModal.skipWeekends" class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer">
+                <span>{{ translate('Skip weekends (Sat/Sun)') }}</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
+                <input type="checkbox" v-model="recurringModal.useEndDate" class="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 cursor-pointer">
+                <span>{{ translate('Generate up to date') }}</span>
+            </label>
+            <div v-if="recurringModal.useEndDate" class="pl-6 space-y-1.5">
+                <input
+                    type="date"
+                    v-model="recurringModal.endDate"
+                    class="w-full border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                <div class="flex items-center gap-2">
+                    <button
+                        type="button"
+                        @click="setRecurringEndDatePreset('month')"
+                        class="px-2 py-0.5 text-xs rounded border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                    >{{ translate('End of month') }}</button>
+                    <button
+                        type="button"
+                        @click="setRecurringEndDatePreset('year')"
+                        class="px-2 py-0.5 text-xs rounded border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                    >{{ translate('End of year') }}</button>
+                </div>
+            </div>
+        </div>
         <p v-if="recurringModalNextDate" class="text-xs text-gray-500 dark:text-gray-400 mt-4">
             📅 {{ translate('Next auto-add') }}: <span class="font-semibold text-indigo-600 dark:text-indigo-400">{{ recurringModalNextDate }}</span>
         </p>
@@ -2383,7 +2412,10 @@ export default {
         const recurringModal = ref({
             isOpen: false,
             rowId: null,
-            frequency: ''
+            frequency: '',
+            skipWeekends: false,
+            useEndDate: false,
+            endDate: ''
         })
 
         const editingColId = ref(null)
@@ -7825,18 +7857,26 @@ export default {
             return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
         }
 
-        const getNextRecurringDate = (dateStr, frequency, anchorDay) => {
+        const getNextRecurringDate = (dateStr, frequency, anchorDay, options = {}) => {
             const parsed = parseYmd(dateStr)
             if (!parsed || !frequency) return null
             const { year, month, day } = parsed
             const anchor = anchorDay || day
+            const skipWeekends = Boolean(options?.skipWeekends)
+            const adjustWeekend = (d) => {
+                if (!skipWeekends) return d
+                const dow = d.getDay()
+                if (dow === 6) d.setDate(d.getDate() + 2)
+                else if (dow === 0) d.setDate(d.getDate() + 1)
+                return d
+            }
 
             if (frequency === 'daily') {
-                const d = new Date(year, month - 1, day + 1)
+                const d = adjustWeekend(new Date(year, month - 1, day + 1))
                 return formatYmd(d.getFullYear(), d.getMonth() + 1, d.getDate())
             }
             if (frequency === 'weekly') {
-                const d = new Date(year, month - 1, day + 7)
+                const d = adjustWeekend(new Date(year, month - 1, day + 7))
                 return formatYmd(d.getFullYear(), d.getMonth() + 1, d.getDate())
             }
 
@@ -7853,15 +7893,49 @@ export default {
             const nextYear = Math.floor(totalMonths / 12)
             const nextMonth = (totalMonths % 12) + 1
             const maxDay = new Date(nextYear, nextMonth, 0).getDate()
-            return formatYmd(nextYear, nextMonth, Math.min(anchor, maxDay))
+            const d = adjustWeekend(new Date(nextYear, nextMonth - 1, Math.min(anchor, maxDay)))
+            return formatYmd(d.getFullYear(), d.getMonth() + 1, d.getDate())
+        }
+
+        const getEndOfMonthYmd = (dateStr) => {
+            const parsed = parseYmd(dateStr) || parseYmd(getDate().todayDate)
+            if (!parsed) return ''
+            const maxDay = new Date(parsed.year, parsed.month, 0).getDate()
+            if (parsed.day < maxDay) {
+                return formatYmd(parsed.year, parsed.month, maxDay)
+            }
+            const nextMonthEnd = new Date(parsed.year, parsed.month + 1, 0)
+            return formatYmd(nextMonthEnd.getFullYear(), nextMonthEnd.getMonth() + 1, nextMonthEnd.getDate())
+        }
+
+        const setRecurringEndDatePreset = (preset) => {
+            const row = rows.value.find(r => r.id === recurringModal.value.rowId)
+            const dateCol = getPrimaryDateColumn()
+            const baseDate = (row && dateCol && parseYmd(row[dateCol.id])) ? row[dateCol.id] : getDate().todayDate
+            const parsed = parseYmd(baseDate) || parseYmd(getDate().todayDate)
+            if (!parsed) return
+            if (preset === 'year') {
+                const endYear = (parsed.month === 12 && parsed.day === 31) ? parsed.year + 1 : parsed.year
+                recurringModal.value.endDate = formatYmd(endYear, 12, 31)
+            } else {
+                recurringModal.value.endDate = getEndOfMonthYmd(baseDate)
+            }
         }
 
         const getRecurringTooltip = (row) => {
             if (!row?.recurring?.frequency) return ''
-            const label = getRecurringLabel(row.recurring.frequency)
+            const parts = [getRecurringLabel(row.recurring.frequency)]
+            if (row.recurring.skipWeekends) parts.push(translate('Skip weekends (Sat/Sun)'))
             const dateCol = getPrimaryDateColumn()
-            const nextDate = dateCol ? getNextRecurringDate(row[dateCol.id], row.recurring.frequency, row.recurring.anchorDay) : null
-            return nextDate ? `${label} · ${translate('Next auto-add')}: ${nextDate}` : label
+            const nextDate = dateCol
+                ? getNextRecurringDate(row[dateCol.id], row.recurring.frequency, row.recurring.anchorDay, { skipWeekends: row.recurring.skipWeekends })
+                : null
+            if (row.recurring.endDate) {
+                parts.push(`${translate('Generate up to date')}: ${row.recurring.endDate}`)
+            } else if (nextDate) {
+                parts.push(`${translate('Next auto-add')}: ${nextDate}`)
+            }
+            return parts.join(' · ')
         }
 
         const recurringModalNextDate = computed(() => {
@@ -7871,17 +7945,24 @@ export default {
             if (!row || !dateCol) return ''
             const baseDate = parseYmd(row[dateCol.id]) ? row[dateCol.id] : getDate().todayDate
             const anchorDay = parseYmd(baseDate)?.day
-            return getNextRecurringDate(baseDate, recurringModal.value.frequency, anchorDay) || ''
+            return getNextRecurringDate(baseDate, recurringModal.value.frequency, anchorDay, {
+                skipWeekends: recurringModal.value.skipWeekends
+            }) || ''
         })
 
         const openRecurringModal = (targetRow = null) => {
             const row = targetRow || activeMenuRow.value
             closeActionMenu()
             if (!row) return
+            const dateCol = getPrimaryDateColumn()
+            const baseDate = (dateCol && parseYmd(row[dateCol.id])) ? row[dateCol.id] : getDate().todayDate
             recurringModal.value = {
                 isOpen: true,
                 rowId: row.id,
-                frequency: row.recurring?.frequency || ''
+                frequency: row.recurring?.frequency || '',
+                skipWeekends: Boolean(row.recurring?.skipWeekends),
+                useEndDate: Boolean(row.recurring?.endDate),
+                endDate: row.recurring?.endDate || getEndOfMonthYmd(baseDate)
             }
         }
 
@@ -7893,7 +7974,7 @@ export default {
         const isSameRecurringContent = (rowA, rowB, dateColId) => {
             if (rowA[dateColId] !== rowB[dateColId]) return false
             for (const col of columns.value) {
-                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'ai' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo') continue
+                if (col.id === dateColId || isCalcType(col.type) || col.type === 'translate' || col.type === 'ai' || col.type === 'exchange' || col.type === 'stock' || col.type === 'photo' || col.type === 'updatedAt') continue
                 const valA = rowA[col.id] ?? ''
                 const valB = rowB[col.id] ?? ''
                 if (Array.isArray(valA) || Array.isArray(valB)) {
@@ -7913,12 +7994,16 @@ export default {
             if (!recurringSources.length) return 0
 
             const { todayDate } = getDate()
-            const MAX_CATCHUP_PER_ROW = 36
+            const nowDateTime = getDateTimeNow()
+            const MAX_CATCHUP_PER_ROW = 366
             const createdRows = []
             let changed = false
 
             for (const sourceRow of recurringSources) {
                 const freq = sourceRow.recurring?.frequency
+                const skipWeekends = Boolean(sourceRow.recurring?.skipWeekends)
+                const endDate = parseYmd(sourceRow.recurring?.endDate) ? sourceRow.recurring.endDate : ''
+                const limitDate = endDate || todayDate
                 const baseDateStr = sourceRow[dateCol.id]
                 const parsedBase = parseYmd(baseDateStr)
                 if (!freq || !parsedBase) continue
@@ -7929,12 +8014,15 @@ export default {
                 let iterations = 0
 
                 while (iterations < MAX_CATCHUP_PER_ROW) {
-                    const nextDate = getNextRecurringDate(cursorDate, freq, anchorDay)
-                    if (!nextDate || nextDate > todayDate) break
+                    const nextDate = getNextRecurringDate(cursorDate, freq, anchorDay, { skipWeekends })
+                    if (!nextDate || nextDate > limitDate) break
 
                     const candidate = structuredClone(toRaw(latestRow))
                     candidate[dateCol.id] = nextDate
                     delete candidate.recurring
+                    columns.value.forEach(col => {
+                        if (col.type === 'updatedAt') candidate[col.id] = nowDateTime
+                    })
 
                     const existingMatch = [...rows.value, ...createdRows].find(r => isSameRecurringContent(r, candidate, dateCol.id))
                     if (existingMatch) {
@@ -7952,7 +8040,12 @@ export default {
 
                 if (latestRow !== sourceRow) {
                     delete sourceRow.recurring
-                    latestRow.recurring = { frequency: freq, anchorDay }
+                    latestRow.recurring = {
+                        frequency: freq,
+                        anchorDay,
+                        ...(skipWeekends ? { skipWeekends: true } : {}),
+                        ...(endDate ? { endDate } : {})
+                    }
                     changed = true
                 }
             }
@@ -7974,6 +8067,9 @@ export default {
         const saveRecurringSetting = () => {
             const row = rows.value.find(r => r.id === recurringModal.value.rowId)
             const freq = recurringModal.value.frequency
+            const skipWeekends = Boolean(recurringModal.value.skipWeekends)
+            const useEndDate = Boolean(recurringModal.value.useEndDate)
+            const endDate = useEndDate && parseYmd(recurringModal.value.endDate) ? recurringModal.value.endDate : ''
             closeRecurringModal()
             if (!row) return
 
@@ -7988,7 +8084,12 @@ export default {
                 row[dateCol.id] = getDate().todayDate
             }
             const anchorDay = dateCol ? (parseYmd(row[dateCol.id])?.day || 1) : 1
-            row.recurring = { frequency: freq, anchorDay }
+            row.recurring = {
+                frequency: freq,
+                anchorDay,
+                ...(skipWeekends ? { skipWeekends: true } : {}),
+                ...(endDate ? { endDate } : {})
+            }
             onDataEdited('rows')
             processRecurringRows(true)
         }
@@ -11967,6 +12068,7 @@ gain.gain.linearRampToValueAtTime(0.18, now + 0.01)
             openRecurringModal,
             closeRecurringModal,
             saveRecurringSetting,
+            setRecurringEndDatePreset,
             pushRowToCalendar,
             canUndo,
             canRedo,
